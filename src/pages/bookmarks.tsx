@@ -11,7 +11,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import {useEffect,useState} from 'react';
+import {useEffect, useState} from 'react';
 
 import Page from '../components/Layout/Page';
 import Header from '../components/Sections/Header';
@@ -45,17 +45,22 @@ export default function BookmarksPage() {
     fetchBookmarks();
   }, []);
 
-  const fetchBookmarks = () => {
-    fetch('/api/bookmarks')
-      .then(res => res.json())
-      .then(data => {
-        setBookmarks(data.bookmarks || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load bookmarks');
-        setLoading(false);
-      });
+  const fetchBookmarks = async () => {
+    try {
+      const res = await fetch('/api/bookmarks');
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to load bookmarks');
+      }
+
+      setBookmarks(data.bookmarks || []);
+      setLoading(false);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load bookmarks';
+      setError(errorMessage);
+      setLoading(false);
+    }
   };
 
   const categories = Array.from(new Set(bookmarks.map(b => b.category))).sort();
