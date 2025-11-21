@@ -17,16 +17,13 @@ const Footer: FC = memo(() => (
       <div className="flex gap-x-4 text-neutral-500">
         <Socials />
       </div>
-      <a
-        className="-m-2 flex items-center gap-x-1 rounded-md p-2 ring-yellow focus:outline-none focus:ring-2"
-        >
+      <a className="-m-2 flex items-center gap-x-1 rounded-md p-2 ring-yellow focus:outline-none focus:ring-2">
         <BoltIcon className="h-5 w-5 text-yellow" />
         <span>
           Made by <span className="text-white">Ananthan</span>
           <span className="italic text-yellow">Tharmavelautham</span>
         </span>
       </a>
-      
     </div>
   </div>
 ));

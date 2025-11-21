@@ -32,7 +32,7 @@ interface HeroActionItem {
   text: string;
   primary?: boolean;
   Icon?: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, 'ref'>>;
-  onClick?: () => void;  // Add this line
+  onClick?: () => void; // Add this line
 }
 
 /**

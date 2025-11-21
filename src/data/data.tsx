@@ -63,9 +63,8 @@ export const SectionId = {
 
 export type SectionId = (typeof SectionId)[keyof typeof SectionId];
 
-
 const handleDownloadClick = () => {
-  const userCode = window.prompt("Please enter the code:");
+  const userCode = window.prompt('Please enter the code:');
 
   if (userCode === '1992') {
     window.open('/assets/resume.pdf', '_blank');
@@ -83,12 +82,13 @@ export const heroData: Hero = {
   description: (
     <>
       <p className="prose-sm text-stone-200 sm:prose-base lg:prose-lg">
-        I'm a Toronto based <strong className="text-stone-100">Supply Chain Professional</strong>, currently working
-        at <strong className="text-stone-100">Hydro One</strong> supporting construction and engineering procurement, supply chain management, project management, and category management.
+        I'm a Toronto based <strong className="text-stone-100">Supply Chain Professional</strong>, currently working at{' '}
+        <strong className="text-stone-100">Hydro One</strong> supporting construction and engineering procurement,
+        supply chain management, project management, and category management.
       </p>
       <p className="prose-sm text-stone-200 sm:prose-base lg:prose-lg">
-        In my free time time, you can catch me playing <strong className="text-stone-100">Chess</strong>,
-        working on <strong className="text-stone-100">Coding Projects</strong>, or exploring beautiful{' '}
+        In my free time time, you can catch me playing <strong className="text-stone-100">Chess</strong>, working on{' '}
+        <strong className="text-stone-100">Coding Projects</strong>, or exploring beautiful{' '}
         <strong className="text-stone-100">Toronto</strong>.
       </p>
     </>
@@ -194,14 +194,14 @@ export const skills: SkillGroup[] = [
   },
 ];
 
-
 /**
  * Portfolio section
  */
 export const portfolioItems: PortfolioItem[] = [
   {
     title: 'Procurement Efficiency Model',
-    description: 'Developed an analytical model to optimize procurement processes, resulting in a 40% increase in efficiency.',
+    description:
+      'Developed an analytical model to optimize procurement processes, resulting in a 40% increase in efficiency.',
     url: 'https://procurementmodel.com',
     image: porfolioImage1,
   },
@@ -213,13 +213,15 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     title: 'Supply Chain Post-Pandemic',
-    description: 'Successfully navigated post-pandemic supply chain constraints, negotiating optimal contract terms and conditions.',
+    description:
+      'Successfully navigated post-pandemic supply chain constraints, negotiating optimal contract terms and conditions.',
     url: 'https://supplychainpostpandemic.com',
     image: porfolioImage3,
   },
   {
     title: 'Vendor Managed Inventory Program',
-    description: 'Coordinated the procurement of technically complex engineering construction contracts and vendor managed inventory programs.',
+    description:
+      'Coordinated the procurement of technically complex engineering construction contracts and vendor managed inventory programs.',
     url: 'https://vendormanagedinventory.com',
     image: porfolioImage4,
   },
@@ -255,7 +257,8 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     title: 'Renewable Generation Supply Chain',
-    description: 'Managed renewable generation supply chain, setting time-targeted tasks and ensuring program effectiveness.',
+    description:
+      'Managed renewable generation supply chain, setting time-targeted tasks and ensuring program effectiveness.',
     url: 'https://renewablegeneration.com',
     image: porfolioImage10,
   },
@@ -276,7 +279,12 @@ export const credentials: TimelineItem[] = [
       </a>
     ),
     title: 'Professional Engineer (P.Eng)',
-    content: <p>Obtained Professional Engineer (P.Eng) certification, demonstrating expertise in engineering principles and practices.</p>,
+    content: (
+      <p>
+        Obtained Professional Engineer (P.Eng) certification, demonstrating expertise in engineering principles and
+        practices.
+      </p>
+    ),
   },
   {
     date: '2017', // Year you obtained the credential
@@ -286,9 +294,13 @@ export const credentials: TimelineItem[] = [
       </a>
     ),
     title: 'Certified Supply Chain Professional (CSCP)',
-    content: <p>Achieved CSCP certification, validating my expertise in supply chain management and ability to streamline operations.</p>,
-  }
-  ,
+    content: (
+      <p>
+        Achieved CSCP certification, validating my expertise in supply chain management and ability to streamline
+        operations.
+      </p>
+    ),
+  },
   {
     date: '2017', // Year you obtained the credential
     location: (
@@ -297,10 +309,14 @@ export const credentials: TimelineItem[] = [
       </a>
     ),
     title: 'Project Management Professional (PMP)',
-    content: <p>Received PMP certification, affirming my skills in project management, including planning, execution, and monitoring.</p>,
+    content: (
+      <p>
+        Received PMP certification, affirming my skills in project management, including planning, execution, and
+        monitoring.
+      </p>
+    ),
   },
 ];
-
 
 /**
  * Resume section -- TODO: Standardize resume contact format or offer MDX
@@ -316,13 +332,17 @@ export const education: TimelineItem[] = [
     date: '2022',
     location: 'Centennial College of Applied Arts and Technology',
     title: 'Software Engineering Technology (Diploma)',
-    content: <p>Acquired practical skills in software engineering, including coding, data structures, and algorithms.</p>,
+    content: (
+      <p>Acquired practical skills in software engineering, including coding, data structures, and algorithms.</p>
+    ),
   },
   {
     date: '2020',
     location: 'Osgoode Hall Law School of York University',
     title: 'Certificates in Public Procurement Law & Practice, Contract Management and Negotiation',
-    content: <p>Received specialized training in public procurement law, contract management, and negotiation techniques.</p>,
+    content: (
+      <p>Received specialized training in public procurement law, contract management, and negotiation techniques.</p>
+    ),
   },
 ];
 
@@ -333,7 +353,8 @@ export const experience: TimelineItem[] = [
     title: 'Sourcing Category Lead, Category Management',
     content: (
       <p>
-        Specialize in contract administration and procurement strategy. Successfully navigated post-pandemic supply chain constraints, achieving optimal contract terms and conditions.
+        Specialize in contract administration and procurement strategy. Successfully navigated post-pandemic supply
+        chain constraints, achieving optimal contract terms and conditions.
       </p>
     ),
   },
@@ -343,7 +364,8 @@ export const experience: TimelineItem[] = [
     title: 'Senior Procurement Specialist- Supply Chain',
     content: (
       <p>
-        Responsible for planning and coordinating the procurement of technically complex engineering construction contracts. Developed procurement strategies that considered market conditions and end-user needs.
+        Responsible for planning and coordinating the procurement of technically complex engineering construction
+        contracts. Developed procurement strategies that considered market conditions and end-user needs.
       </p>
     ),
   },
@@ -353,7 +375,9 @@ export const experience: TimelineItem[] = [
     title: 'First Line Manager, Renewable Generation - Supply Chain',
     content: (
       <p>
-        Supervised subordinates and ensured programs were implemented effectively. Provided advice and guidance on procurement strategies and risk management. Offered analytical and strategic supply planning support for complex projects.
+        Supervised subordinates and ensured programs were implemented effectively. Provided advice and guidance on
+        procurement strategies and risk management. Offered analytical and strategic supply planning support for complex
+        projects.
       </p>
     ),
   },
@@ -363,7 +387,8 @@ export const experience: TimelineItem[] = [
     title: 'Contract Officer',
     content: (
       <p>
-        Managed the tendering process, including drafting of contractual documents and evaluation of bids. Offered strategic recommendations on pricing and contract strategy for high-value, complex projects.
+        Managed the tendering process, including drafting of contractual documents and evaluation of bids. Offered
+        strategic recommendations on pricing and contract strategy for high-value, complex projects.
       </p>
     ),
   },
@@ -373,7 +398,8 @@ export const experience: TimelineItem[] = [
     title: 'Contract Administrator',
     content: (
       <p>
-        Developed and led the implementation of a unique reporting tool for project managers. Managed post-award contract administration, ensuring compliance and drafting change orders as needed.
+        Developed and led the implementation of a unique reporting tool for project managers. Managed post-award
+        contract administration, ensuring compliance and drafting change orders as needed.
       </p>
     ),
   },
@@ -387,7 +413,7 @@ export const testimonial: TestimonialSection = {
   testimonials: [
     {
       name: 'Emily Johnson',
-      text: 'Ananthan is a procurement wizard. His strategic approach to contract management saved our department millions and increased efficiency by 40%. He\'s not just a team player; he\'s a team leader.',
+      text: "Ananthan is a procurement wizard. His strategic approach to contract management saved our department millions and increased efficiency by 40%. He's not just a team player; he's a team leader.",
       image: 'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/169.jpg',
     },
     {
@@ -397,12 +423,11 @@ export const testimonial: TestimonialSection = {
     },
     {
       name: 'Sarah Williams',
-      text: 'Ananthan\'s contributions to our supply chain strategies were invaluable. His data-driven recommendations led to cost savings of up to 30% on individual projects. He\'s a true asset to any team.',
+      text: "Ananthan's contributions to our supply chain strategies were invaluable. His data-driven recommendations led to cost savings of up to 30% on individual projects. He's a true asset to any team.",
       image: 'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/69.jpg',
     },
   ],
 };
-
 
 /**
  * Contact section
@@ -410,7 +435,8 @@ export const testimonial: TestimonialSection = {
 
 export const contact: ContactSection = {
   headerText: 'Get in touch.',
-  description: 'Hey there! Thanks for stopping by. If you\'d like to get in touch, the best way to reach me is through the contact form below. I\'m looking forward to hearing from you!',
+  description:
+    "Hey there! Thanks for stopping by. If you'd like to get in touch, the best way to reach me is through the contact form below. I'm looking forward to hearing from you!",
   items: [
     {
       type: ContactType.Email,
