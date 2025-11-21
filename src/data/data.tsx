@@ -414,17 +414,17 @@ export const testimonial: TestimonialSection = {
     {
       name: 'Emily Johnson',
       text: "Ananthan is a procurement wizard. His strategic approach to contract management saved our department millions and increased efficiency by 40%. He's not just a team player; he's a team leader.",
-      image: 'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/169.jpg',
+      image: 'https://ui-avatars.com/api/?name=John+Doe&background=random',
     },
     {
-      name: 'Michael Smith',
-      text: 'I had the pleasure of working with Ananthan on several high-stakes projects. His ability to negotiate and manage complex contracts is unparalleled. He has a knack for balancing diverse stakeholder interests for optimal results.',
-      image: 'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/14.jpg',
+      name: 'Jane Doe',
+      text: 'Here you should write some nice things that someone has said about you. Encourage them to be specific and include important details. Notes about your leadership skills and performance are also great.',
+      image: 'https://ui-avatars.com/api/?name=Jane+Doe&background=random',
     },
     {
-      name: 'Sarah Williams',
-      text: "Ananthan's contributions to our supply chain strategies were invaluable. His data-driven recommendations led to cost savings of up to 30% on individual projects. He's a true asset to any team.",
-      image: 'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/69.jpg',
+      name: 'Someone else',
+      text: 'Add several of these, and keep them as fresh as possible, but be sure to focus on quality testimonials with specific details, not just generic praise.',
+      image: 'https://ui-avatars.com/api/?name=Someone+Else&background=random',
     },
   ],
 };

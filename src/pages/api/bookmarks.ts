@@ -37,8 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       res.status(405).json({error: 'Method not allowed'});
     }
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({error: 'Failed to process request'});
+  } catch (e: unknown) {
+    console.error('API Error:', e);
+    const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+    res.status(500).json({error: `Failed to process request: ${errorMessage}`});
   }
 }

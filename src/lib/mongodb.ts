@@ -22,8 +22,13 @@ if (uri) {
     clientPromise = globalWithMongo._mongoClientPromise;
   } else {
     // In production mode, it's best to not use a global variable.
-    client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+    try {
+      client = new MongoClient(uri, options);
+      clientPromise = client.connect();
+    } catch (error) {
+      console.error('Failed to connect to MongoDB:', error);
+      clientPromise = null;
+    }
   }
 } else {
   console.warn('MongoDB URI not configured. Bookmark and database features will be disabled.');
