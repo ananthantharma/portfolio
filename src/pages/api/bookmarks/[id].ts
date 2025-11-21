@@ -11,6 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!clientPromise) {
+      return res.status(503).json({error: 'Database not configured. Please set MONGODB_URI environment variable.'});
+    }
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'BookmarkManager');
     const collection = db.collection('bookmarks');

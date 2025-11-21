@@ -14,6 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({error: 'Missing required fields'});
     }
 
+    if (!clientPromise) {
+      return res.status(503).json({error: 'Database not configured. Please set MONGODB_URI environment variable.'});
+    }
+
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'BookmarkManager');
 
