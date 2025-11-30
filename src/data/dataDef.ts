@@ -93,6 +93,7 @@ export interface TimelineItem {
   location: string | JSX.Element;
   title: string;
   content?: JSX.Element;
+  image?: string | StaticImageData;
 }
 
 /**

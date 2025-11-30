@@ -1,4 +1,5 @@
 /* eslint-disable object-curly-spacing */
+/* eslint-disable simple-import-sort/imports */
 import {
   AcademicCapIcon,
   ArrowDownTrayIcon,
@@ -16,6 +17,16 @@ import TwitterIcon from '../components/Icon/TwitterIcon';
 import heroImage from '../images/header-background.webp';
 import profilepic from '../images/profilepic.jpg';
 import testimonialImage from '../images/testimonial.webp';
+import aeclLogo from '../images/Logo/AECL logo.png';
+import apicsLogo from '../images/Logo/apics.png';
+import carletonLogo from '../images/Logo/carleton.png';
+import centennialLogo from '../images/Logo/centennial.png';
+import cnlLogo from '../images/Logo/CNL Logo.png';
+import hydroOneLogo from '../images/Logo/Hydro One logo.png';
+import uoitLogo from '../images/Logo/Ontario University Logo.png';
+import opgLogo from '../images/Logo/OPG logo.png';
+import peoLogo from '../images/Logo/PEO.png';
+import pmpLogo from '../images/Logo/PMP.png';
 import {
   About,
   ContactSection,
@@ -99,39 +110,46 @@ export const heroData: Hero = {
  */
 export const heroTimeline: TimelineItem[] = [
   {
-    date: 'Dec 2025 – Present',
-    location: 'Ontario Power Generation, Oshawa, ON',
+    date: 'July 2024 - Present',
+    location: 'Ontario Power Generation',
     title: 'Senior Manager, Supply Chain',
+    image: opgLogo,
   },
   {
-    date: 'Feb 2024 – Dec 2025',
-    location: 'Hydro One, Toronto, ON',
-    title: 'Manager, IT Procurement and Contract Management',
+    date: 'March 2023 - July 2024',
+    location: 'Hydro One',
+    title: 'Manager, IT Procurement',
+    image: hydroOneLogo,
   },
   {
-    date: 'Sept 2022 – Feb 2024',
-    location: 'Hydro One, Toronto, ON',
-    title: 'Sourcing Category Lead, Category Management',
+    date: 'May 2022 - March 2023',
+    location: 'Hydro One',
+    title: 'Sourcing Category Lead',
+    image: hydroOneLogo,
   },
   {
-    date: 'Mar 2021 – Sept 2022',
-    location: 'Ontario Power Generation, Courtice, ON',
-    title: 'Senior Procurement Specialist – Supply Chain',
+    date: 'October 2021 - May 2022',
+    location: 'Ontario Power Generation',
+    title: 'Senior Procurement Specialist',
+    image: opgLogo,
   },
   {
-    date: 'Feb 2019 – Mar 2021',
-    location: 'Ontario Power Generation, Etobicoke, ON',
-    title: 'First Line Manager, Renewable Generation – Supply Chain',
+    date: 'November 2018 - October 2021',
+    location: 'Ontario Power Generation',
+    title: 'First Line Manager',
+    image: opgLogo,
   },
   {
-    date: 'Oct 2013 – Oct 2015',
-    location: 'Canadian Nuclear Laboratories Ltd., Port Hope, ON',
+    date: 'May 2017 - November 2018',
+    location: 'Canadian Nuclear Laboratories',
     title: 'Contract Officer',
+    image: cnlLogo,
   },
   {
-    date: 'Jan 2012 – Oct 2013',
-    location: 'Atomic Energy of Canada Ltd., Chalk River, ON',
+    date: 'September 2014 - May 2017',
+    location: 'Atomic Energy of Canada Ltd.',
     title: 'Contract Administrator',
+    image: aeclLogo,
   },
 ];
 
@@ -227,39 +245,45 @@ export const skills: SkillGroup[] = [
  */
 export const heroEducation: TimelineItem[] = [
   {
-    date: '2025',
-    location: 'Sprott School of Business, Carleton University',
-    title: 'Master of Business Administration, Business Analytics (MBA)',
-  },
-  {
     date: '2023',
-    location: 'Professional Engineers Ontario (PEO)',
-    title: 'Professional Engineer (P.Eng)',
+    location: 'Carleton University',
+    title: 'Master of Business Administration (MBA)',
+    image: carletonLogo,
   },
   {
     date: '2022',
-    location: 'Centennial College of Applied Arts and Technology',
-    title: 'Software Engineering Technology (Diploma)',
+    location: 'Professional Engineers Ontario',
+    title: 'Professional Engineer (P.Eng.)',
+    image: peoLogo,
   },
   {
-    date: '2020',
-    location: 'Osgoode Hall Law School of York University',
-    title: 'Certificates in Public Procurement Law & Practice, Contract Management and Negotiation',
+    date: '2022',
+    location: 'Centennial College',
+    title: 'Software Engineering Technology',
+    image: centennialLogo,
   },
   {
-    date: '2017',
-    location: 'American Production and Inventory Control Society (APICS Toronto Chapter)',
+    date: '2021',
+    location: 'Osgoode Hall Law School',
+    title: 'Certificate in Public Procurement Law',
+  },
+  {
+    date: '2019',
+    location: 'APICS',
     title: 'Certified Supply Chain Professional (CSCP)',
+    image: apicsLogo,
+  },
+  {
+    date: '2019',
+    location: 'Project Management Institute',
+    title: 'Project Management Professional (PMP)',
+    image: pmpLogo,
   },
   {
     date: '2017',
-    location: 'Project Management Institute (PMI)',
-    title: 'Project Management Professional (PMP)',
-  },
-  {
-    date: '2012',
-    location: 'University of Ontario Institute of Technology (UOIT)',
-    title: 'Bachelor of Mechanical Engineering with Honors (B.Eng.)',
+    location: 'Ontario Tech University',
+    title: 'Bachelor of Engineering (B.Eng), Nuclear Engineering',
+    image: uoitLogo,
   },
 ];
 
@@ -383,7 +407,7 @@ export const contact: ContactSection = {
  */
 export const socialLinks: Social[] = [
   { label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma' },
-  { label: 'LinkedIn', Icon: LinkedInIcon, href: 'https://www.linkedin.com/in/ananthan/' },
+  { label: 'LinkedIn', Icon: LinkedInIcon, href: 'https://www.linkedin.com/in/ananthan-tharmavelautham-p-eng-mba-pmp-cscp-26218493/' },
   { label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/' },
   { label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp' },
 ];
