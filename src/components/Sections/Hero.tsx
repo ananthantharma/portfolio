@@ -2,16 +2,15 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { FC, memo, useMemo } from 'react';
+import { FC, memo } from 'react';
 
-import { credentials, education, heroData, heroTimeline, SectionId } from '../../data/data';
+import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
 import TimelineBox from '../TimelineBox';
 
 const Hero: FC = memo(() => {
   const { imageSrc, name, description, actions } = heroData;
-  const educationAndCredentials = useMemo(() => [...education, ...credentials], []);
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
@@ -61,7 +60,7 @@ const Hero: FC = memo(() => {
             {/* Education & Credentials - Right Side (Desktop only) */}
             <div className="hidden h-full items-center lg:col-span-3 lg:flex">
               <div className="h-[80vh] w-full">
-                <TimelineBox items={educationAndCredentials} title="Education & Credentials" />
+                <TimelineBox items={heroEducation} title="Education & Credentials" />
               </div>
             </div>
           </div>

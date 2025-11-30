@@ -19,7 +19,7 @@ const TimelineBox: FC<TimelineBoxProps> = memo(({ title, items }) => {
                             <div className="mb-1 text-sm text-gray-400 lg:text-base">{item.date}</div>
                             <h3 className="text-lg font-bold text-white lg:text-xl">{item.title}</h3>
                             <div className="mb-2 text-sm font-medium text-orange-400 lg:text-base">{item.location}</div>
-                            <div className="text-sm text-gray-300 lg:text-base">{item.content}</div>
+                            {item.content && <div className="text-sm text-gray-300 lg:text-base">{item.content}</div>}
                         </div>
                     ))}
                 </div>

@@ -102,81 +102,36 @@ export const heroTimeline: TimelineItem[] = [
     date: 'Dec 2025 – Present',
     location: 'Ontario Power Generation, Oshawa, ON',
     title: 'Senior Manager, Supply Chain',
-    content: (
-      <p>
-        Provide strategic direction and oversight for OPG’s Category Management across nuclear, thermal, hydro, and
-        corporate functions, managing a complex portfolio with over $1 billion in spend. Lead and mentor a team of
-        Category Leads, fostering a high-performance culture focused on cost efficiency and business value creation.
-      </p>
-    ),
   },
   {
     date: 'Feb 2024 – Dec 2025',
     location: 'Hydro One, Toronto, ON',
     title: 'Manager, IT Procurement and Contract Management',
-    content: (
-      <p>
-        Led a cross-functional IT Contract Management team overseeing enterprise-wide software, hardware, and
-        professional services portfolios. Drove process transformation initiatives to modernize procurement operations
-        and managed complex negotiations with key technology vendors including Broadcom, OpenText, Microsoft, and SAP.
-      </p>
-    ),
   },
   {
     date: 'Sept 2022 – Feb 2024',
     location: 'Hydro One, Toronto, ON',
     title: 'Sourcing Category Lead, Category Management',
-    content: (
-      <p>
-        Specialized in contract administration and procurement strategy. Successfully navigated post-pandemic supply chain
-        constraints, achieving optimal contract terms and conditions.
-      </p>
-    ),
   },
   {
     date: 'Mar 2021 – Sept 2022',
     location: 'Ontario Power Generation, Courtice, ON',
     title: 'Senior Procurement Specialist – Supply Chain',
-    content: (
-      <p>
-        Responsible for planning and coordinating the procurement of technically complex engineering construction
-        contracts. Developed procurement strategies that considered market conditions and end-user needs.
-      </p>
-    ),
   },
   {
     date: 'Feb 2019 – Mar 2021',
     location: 'Ontario Power Generation, Etobicoke, ON',
     title: 'First Line Manager, Renewable Generation – Supply Chain',
-    content: (
-      <p>
-        Supervised subordinates and ensured programs were implemented effectively. Provided advice and guidance on
-        procurement strategies and risk management. Offered analytical and strategic supply planning support for complex
-        projects.
-      </p>
-    ),
   },
   {
     date: 'Oct 2013 – Oct 2015',
     location: 'Canadian Nuclear Laboratories Ltd., Port Hope, ON',
     title: 'Contract Officer',
-    content: (
-      <p>
-        Managed the tendering process, including drafting of contractual documents and evaluation of bids. Offered
-        strategic recommendations on pricing and contract strategy for high-value, complex projects.
-      </p>
-    ),
   },
   {
     date: 'Jan 2012 – Oct 2013',
     location: 'Atomic Energy of Canada Ltd., Chalk River, ON',
     title: 'Contract Administrator',
-    content: (
-      <p>
-        Developed and led the implementation of a unique reporting tool for project managers. Managed post-award
-        contract administration, ensuring compliance and drafting change orders as needed.
-      </p>
-    ),
   },
 ];
 
@@ -267,86 +222,44 @@ export const skills: SkillGroup[] = [
 ];
 
 
-// Add this new array for Credentials
-export const credentials: TimelineItem[] = [
+/**
+ * Education & Credentials (Hero)
+ */
+export const heroEducation: TimelineItem[] = [
   {
-    date: '2017', // Year you obtained the credential
-    location: (
-      <a href="https://www.ascm.org/about-ascm/" rel="noopener noreferrer" target="_blank">
-        American Production and Inventory Control Society (APICS Toronto Chapter)
-      </a>
-    ),
-    title: 'Certified Supply Chain Professional (CSCP)',
-    content: (
-      <p>
-        Achieved CSCP certification, validating my expertise in supply chain management and ability to streamline
-        operations.
-      </p>
-    ),
-  },
-  {
-    date: '2017', // Year you obtained the credential
-    location: (
-      <a href="https://www.pmi.org/certifications/project-management-pmp" rel="noopener noreferrer" target="_blank">
-        Project Management Institute (PMI)
-      </a>
-    ),
-    title: 'Project Management Professional (PMP)',
-    content: (
-      <p>
-        Received PMP certification, affirming my skills in project management, including planning, execution, and
-        monitoring.
-      </p>
-    ),
+    date: '2025',
+    location: 'Sprott School of Business, Carleton University',
+    title: 'Master of Business Administration, Business Analytics (MBA)',
   },
   {
     date: '2023',
-    location: (
-      <a href="https://www.peo.on.ca/about-peo/what-is-peo" rel="noopener noreferrer" target="_blank">
-        Professional Engineers Ontario (PEO)
-      </a>
-    ),
+    location: 'Professional Engineers Ontario (PEO)',
     title: 'Professional Engineer (P.Eng)',
-    content: (
-      <p>
-        Obtained Professional Engineer (P.Eng) certification, demonstrating expertise in engineering principles and
-        practices.
-      </p>
-    ),
-  },
-];
-
-/**
- * Resume section -- TODO: Standardize resume contact format or offer MDX
- */
-export const education: TimelineItem[] = [
-  {
-    date: '2025', // Assuming recent or current
-    location: 'Sprott School of Business, Carleton University',
-    title: 'Master of Business Administration, Business Analytics (MBA)',
-    content: <p>Focused on Business Analytics and Strategic Management.</p>,
-  },
-  {
-    date: '2012',
-    location: 'University of Ontario Institute of Technology (UOIT)',
-    title: 'Bachelor of Mechanical Engineering with Honors (B.Eng.)',
-    content: <p>Specialized in mechanical engineering with a focus on project management and team collaboration.</p>,
   },
   {
     date: '2022',
     location: 'Centennial College of Applied Arts and Technology',
     title: 'Software Engineering Technology (Diploma)',
-    content: (
-      <p>Acquired practical skills in software engineering, including coding, data structures, and algorithms.</p>
-    ),
   },
   {
     date: '2020',
     location: 'Osgoode Hall Law School of York University',
     title: 'Certificates in Public Procurement Law & Practice, Contract Management and Negotiation',
-    content: (
-      <p>Received specialized training in public procurement law, contract management, and negotiation techniques.</p>
-    ),
+  },
+  {
+    date: '2017',
+    location: 'American Production and Inventory Control Society (APICS Toronto Chapter)',
+    title: 'Certified Supply Chain Professional (CSCP)',
+  },
+  {
+    date: '2017',
+    location: 'Project Management Institute (PMI)',
+    title: 'Project Management Professional (PMP)',
+  },
+  {
+    date: '2012',
+    location: 'University of Ontario Institute of Technology (UOIT)',
+    title: 'Bachelor of Mechanical Engineering with Honors (B.Eng.)',
   },
 ];
 

@@ -1,7 +1,8 @@
-import {StaticImageData} from 'next/image';
-import {FC, ForwardRefExoticComponent, SVGProps} from 'react';
+/* eslint-disable object-curly-spacing */
+import { StaticImageData } from 'next/image';
+import { FC, ForwardRefExoticComponent, SVGProps } from 'react';
 
-import {IconProps} from '../components/Icon/Icon';
+import { IconProps } from '../components/Icon/Icon';
 
 export interface HomepageMeta {
   title: string;
@@ -89,9 +90,9 @@ export interface PortfolioItem {
  */
 export interface TimelineItem {
   date: string;
-  location: React.ReactNode; // Changed from string
+  location: string | JSX.Element;
   title: string;
-  content: React.ReactNode;
+  content?: JSX.Element;
 }
 
 /**
