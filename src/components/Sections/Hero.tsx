@@ -1,8 +1,9 @@
 /* eslint-disable object-curly-spacing */
+/* eslint-disable react/jsx-sort-props */
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { FC, memo, useEffect, useState } from 'react';
+import { FC, memo } from 'react';
 
 import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
@@ -11,22 +12,6 @@ import TimelineBox from '../TimelineBox';
 
 const Hero: FC = memo(() => {
   const { imageSrc, name, actions } = heroData;
-  const [text, setText] = useState('');
-  const fullText = "I'm a Toronto based Supply Chain Professional, currently working at Hydro One supporting construction and engineering procurement, supply chain management, project management, and category management.";
-
-  useEffect(() => {
-    let i = 0;
-    const typingInterval = setInterval(() => {
-      if (i < fullText.length) {
-        setText(fullText.substring(0, i + 1));
-        i++;
-      } else {
-        clearInterval(typingInterval);
-      }
-    }, 30); // Adjust speed here
-
-    return () => clearInterval(typingInterval);
-  }, []);
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
@@ -51,34 +36,38 @@ const Hero: FC = memo(() => {
 
             {/* Main Hero Content - Center (50%) */}
             <div className="col-span-1 flex h-full items-center justify-center lg:col-span-6">
-              <div className="flex flex-col items-center gap-y-8 rounded-[20px] border border-white/10 bg-white/5 p-8 text-center shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[16px]">
-                <h1 className="bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-5xl font-extrabold text-transparent sm:text-6xl lg:text-7xl xl:text-8xl">
+              <div className="flex flex-col items-center gap-y-8 text-center">
+                {/* Massive Name with Gradient */}
+                <h1
+                  className="animate-fade-in-down bg-gradient-to-b from-white to-neon-cyan bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
+                  style={{ textShadow: '0 0 30px rgba(0,255,255,0.3)' }}
+                >
                   {name}
                 </h1>
-                <div className="max-w-[600px] text-lg font-light leading-relaxed text-gray-200 sm:text-xl">
-                  {text}
-                  <span className="animate-pulse text-neon-cyan">|</span>
-                </div>
-                <div className="flex gap-x-6 text-white">
-                  <Socials />
-                </div>
-                <div className="flex w-full justify-center gap-x-6">
-                  {actions.map(({ href, text, primary, Icon, onClick }) => (
-                    <a
-                      className={classNames(
-                        'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
-                        primary
-                          ? 'bg-electric-amber text-black ring-electric-amber hover:shadow-[0_0_20px_#FFAE00]'
-                          : 'border-2 border-white text-white ring-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]',
-                      )}
-                      href={href}
-                      key={text}
-                      onClick={onClick}>
-                      <span className="relative z-10">{text}</span>
-                      {Icon && <Icon className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />}
-                      {primary && <div className="absolute inset-0 -z-0 translate-y-full bg-white transition-transform duration-300 group-hover:translate-y-0 opacity-20" />}
-                    </a>
-                  ))}
+
+                {/* Glass Bar for Actions */}
+                <div className="flex animate-fade-in-up flex-col items-center gap-y-6 rounded-2xl border border-white/10 bg-white/5 px-8 py-6 backdrop-blur-md transition-all hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.2)]" style={{ animationDelay: '200ms' }}>
+                  <div className="flex gap-x-6 text-white">
+                    <Socials />
+                  </div>
+                  <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  <div className="flex w-full justify-center gap-x-6">
+                    {actions.map(({ href, text, primary, Icon, onClick }) => (
+                      <a
+                        className={classNames(
+                          'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
+                          primary
+                            ? 'bg-neon-cyan text-black ring-neon-cyan hover:shadow-[0_0_20px_#00FFFF]'
+                            : 'border border-white/30 text-white ring-white hover:bg-white/10 hover:border-white',
+                        )}
+                        href={href}
+                        key={text}
+                        onClick={onClick}>
+                        <span className="relative z-10">{text}</span>
+                        {Icon && <Icon className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -99,6 +88,22 @@ const Hero: FC = memo(() => {
           </a>
         </div>
       </div>
+      <style jsx global>{`
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down {
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+      `}</style>
     </Section>
   );
 });

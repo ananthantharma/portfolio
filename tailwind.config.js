@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Space Grotesk', 'sans-serif'],
       },
       colors: {
         yellow: '#efc603',
