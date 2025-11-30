@@ -2,15 +2,16 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { FC, memo } from 'react';
+import { FC, memo, useMemo } from 'react';
 
-import { heroData, SectionId } from '../../data/data';
+import { credentials, education, heroData, heroTimeline, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
-import WorkTimeline from '../WorkTimeline';
+import TimelineBox from '../TimelineBox';
 
 const Hero: FC = memo(() => {
   const { imageSrc, name, description, actions } = heroData;
+  const educationAndCredentials = useMemo(() => [...education, ...credentials], []);
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
@@ -24,16 +25,8 @@ const Hero: FC = memo(() => {
         />
         <div className="z-10 w-full max-w-screen-xl px-4 lg:px-0">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            {/* Timeline - Left Side (Desktop only) */}
-            <div className="hidden lg:col-span-4 lg:flex lg:justify-end lg:items-center">
-              <div className="max-h-[80vh] overflow-y-auto rounded-xl bg-gray-900/60 p-6 backdrop-blur-sm">
-                <h3 className="mb-4 text-lg font-bold text-white">Work Experience</h3>
-                <WorkTimeline />
-              </div>
-            </div>
-
-            {/* Main Hero Content */}
-            <div className="col-span-1 flex items-center justify-center lg:col-span-8">
+            {/* Main Hero Content - Left Side */}
+            <div className="col-span-1 flex items-center justify-center lg:col-span-7">
               <div className="flex flex-col items-center gap-y-6 rounded-xl bg-gray-800/40 p-6 text-center shadow-lg backdrop-blur-sm">
                 <h1 className="text-4xl font-bold text-white sm:text-5xl lg:text-7xl">{name}</h1>
                 {description}
@@ -56,6 +49,12 @@ const Hero: FC = memo(() => {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Timelines - Right Side (Desktop only) */}
+            <div className="hidden lg:col-span-5 lg:flex lg:flex-col lg:gap-y-6 lg:justify-center">
+              <TimelineBox items={heroTimeline} title="Work Experience" />
+              <TimelineBox items={educationAndCredentials} title="Education & Credentials" />
             </div>
           </div>
         </div>
