@@ -1,3 +1,4 @@
+/* eslint-disable object-curly-spacing */
 import {
   AcademicCapIcon,
   ArrowDownTrayIcon,
@@ -109,18 +110,104 @@ export const heroData: Hero = {
 };
 
 /**
+ * Hero Timeline (Work Experience)
+ */
+export const heroTimeline: TimelineItem[] = [
+  {
+    date: 'Dec 2025 – Present',
+    location: 'Ontario Power Generation, Oshawa, ON',
+    title: 'Senior Manager, Supply Chain',
+    content: (
+      <p>
+        Provide strategic direction and oversight for OPG’s Category Management across nuclear, thermal, hydro, and
+        corporate functions, managing a complex portfolio with over $1 billion in spend. Lead and mentor a team of
+        Category Leads, fostering a high-performance culture focused on cost efficiency and business value creation.
+      </p>
+    ),
+  },
+  {
+    date: 'Feb 2024 – Dec 2025',
+    location: 'Hydro One, Toronto, ON',
+    title: 'Manager, IT Procurement and Contract Management',
+    content: (
+      <p>
+        Led a cross-functional IT Contract Management team overseeing enterprise-wide software, hardware, and
+        professional services portfolios. Drove process transformation initiatives to modernize procurement operations
+        and managed complex negotiations with key technology vendors including Broadcom, OpenText, Microsoft, and SAP.
+      </p>
+    ),
+  },
+  {
+    date: 'Sept 2022 – Feb 2024',
+    location: 'Hydro One, Toronto, ON',
+    title: 'Sourcing Category Lead, Category Management',
+    content: (
+      <p>
+        Specialized in contract administration and procurement strategy. Successfully navigated post-pandemic supply chain
+        constraints, achieving optimal contract terms and conditions.
+      </p>
+    ),
+  },
+  {
+    date: 'Mar 2021 – Sept 2022',
+    location: 'Ontario Power Generation, Courtice, ON',
+    title: 'Senior Procurement Specialist – Supply Chain',
+    content: (
+      <p>
+        Responsible for planning and coordinating the procurement of technically complex engineering construction
+        contracts. Developed procurement strategies that considered market conditions and end-user needs.
+      </p>
+    ),
+  },
+  {
+    date: 'Feb 2019 – Mar 2021',
+    location: 'Ontario Power Generation, Etobicoke, ON',
+    title: 'First Line Manager, Renewable Generation – Supply Chain',
+    content: (
+      <p>
+        Supervised subordinates and ensured programs were implemented effectively. Provided advice and guidance on
+        procurement strategies and risk management. Offered analytical and strategic supply planning support for complex
+        projects.
+      </p>
+    ),
+  },
+  {
+    date: 'Oct 2013 – Oct 2015',
+    location: 'Canadian Nuclear Laboratories Ltd., Port Hope, ON',
+    title: 'Contract Officer',
+    content: (
+      <p>
+        Managed the tendering process, including drafting of contractual documents and evaluation of bids. Offered
+        strategic recommendations on pricing and contract strategy for high-value, complex projects.
+      </p>
+    ),
+  },
+  {
+    date: 'Jan 2012 – Oct 2013',
+    location: 'Atomic Energy of Canada Ltd., Chalk River, ON',
+    title: 'Contract Administrator',
+    content: (
+      <p>
+        Developed and led the implementation of a unique reporting tool for project managers. Managed post-award
+        contract administration, ensuring compliance and drafting change orders as needed.
+      </p>
+    ),
+  },
+];
+
+/**
  * About section
  */
 export const aboutData: About = {
   profileImageSrc: profilepic,
   description: `Certified as a P.Eng, PMP, and CSCP, I bring a unique blend of software engineering and procurement expertise to the table. With a track record of achieving over $75 million in procurement savings and a 40% increase in operational efficiency, I excel in contract management and stakeholder negotiations`,
   aboutItems: [
-    {label: 'Location', text: 'Toronto, ON', Icon: MapIcon},
-    {label: 'Age', text: '35', Icon: CalendarIcon},
-    {label: 'Nationality', text: 'Canadian / Tamil', Icon: FlagIcon},
-    {label: 'Interests', text: 'Chess, Coding, Photography, Gaming, Golf', Icon: SparklesIcon},
-    {label: 'Study', text: 'University of Ontario I.T. ', Icon: AcademicCapIcon},
-    {label: 'Employment', text: 'Hydro One', Icon: BuildingOffice2Icon},
+    { label: 'Location', text: 'Toronto, ON', Icon: MapIcon },
+    { label: 'Age', text: '35', Icon: CalendarIcon },
+    { label: 'Nationality', text: 'Canadian / Tamil', Icon: FlagIcon },
+    { label: 'Interests', text: 'Chess, Coding, Photography, Gaming, Golf', Icon: SparklesIcon },
+    { label: 'Study', text: 'University of Ontario I.T. ', Icon: AcademicCapIcon },
+    { label: 'Employment', text: 'Hydro One', Icon: BuildingOffice2Icon },
   ],
 };
 
@@ -323,6 +410,12 @@ export const credentials: TimelineItem[] = [
  */
 export const education: TimelineItem[] = [
   {
+    date: '2025', // Assuming recent or current
+    location: 'Sprott School of Business, Carleton University',
+    title: 'Master of Business Administration, Business Analytics (MBA)',
+    content: <p>Focused on Business Analytics and Strategic Management.</p>,
+  },
+  {
     date: '2012',
     location: 'University of Ontario Institute of Technology (UOIT)',
     title: 'Bachelor of Mechanical Engineering with Honors (B.Eng.)',
@@ -465,8 +558,8 @@ export const contact: ContactSection = {
  * Social items
  */
 export const socialLinks: Social[] = [
-  {label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma'},
-  {label: 'LinkedIn', Icon: LinkedInIcon, href: 'https://www.linkedin.com/in/ananthan/'},
-  {label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/'},
-  {label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp'},
+  { label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma' },
+  { label: 'LinkedIn', Icon: LinkedInIcon, href: 'https://www.linkedin.com/in/ananthan/' },
+  { label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/' },
+  { label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp' },
 ];
