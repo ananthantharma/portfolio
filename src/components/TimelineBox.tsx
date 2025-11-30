@@ -16,12 +16,12 @@ const TimelineBox: FC<TimelineBoxProps> = memo(({ title, items }) => {
                 <div className="flex flex-col gap-y-4">
                     {items.map((item, index) => (
                         <div
-                            className="group relative transform rounded-r-lg border-l-[3px] border-neon-cyan bg-[rgba(10,20,40,0.6)] p-4 shadow-lg backdrop-blur-sm transition-all duration-300 hover:translate-x-2 hover:bg-[rgba(10,20,40,0.8)] hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+                            className="group relative transform rounded-r-lg border-l-[3px] border-electric-amber bg-[rgba(10,20,40,0.6)] p-4 shadow-lg backdrop-blur-sm transition-all duration-300 hover:translate-x-2 hover:bg-[rgba(10,20,40,0.8)] hover:shadow-[0_0_15px_rgba(255,174,0,0.3)]"
                             key={index}
                             style={{ animation: `fadeInUp 0.5s ease-out ${index * 100 + 500}ms backwards` }}
                         >
                             <div className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">{item.date}</div>
-                            <h3 className="text-lg font-bold text-neon-cyan lg:text-xl">{item.title}</h3>
+                            <h3 className="text-lg font-bold text-electric-amber lg:text-xl">{item.title}</h3>
                             <div className="text-sm font-medium text-white lg:text-base">{item.location}</div>
                             {item.content && <div className="mt-2 text-sm text-gray-300 lg:text-base">{item.content}</div>}
                         </div>

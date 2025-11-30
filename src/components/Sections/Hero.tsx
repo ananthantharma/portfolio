@@ -39,14 +39,15 @@ const Hero: FC = memo(() => {
               <div className="flex flex-col items-center gap-y-8 text-center">
                 {/* Massive Name with Gradient */}
                 <h1
-                  className="animate-fade-in-down bg-gradient-to-b from-white to-neon-cyan bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
-                  style={{ textShadow: '0 0 30px rgba(0,255,255,0.3)' }}
+                  className="animate-fade-in-down bg-gradient-to-b from-white to-electric-amber bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
+                  style={{ textShadow: '0 0 30px rgba(255,174,0,0.3)' }}
                 >
                   {name}
+                  <span className="animate-pulse text-electric-amber">|</span>
                 </h1>
 
                 {/* Glass Bar for Actions */}
-                <div className="flex animate-fade-in-up flex-col items-center gap-y-6 rounded-2xl border border-white/10 bg-white/5 px-8 py-6 backdrop-blur-md transition-all hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.2)]" style={{ animationDelay: '200ms' }}>
+                <div className="flex animate-fade-in-up flex-col items-center gap-y-6 rounded-2xl border border-white/10 bg-white/5 px-8 py-6 backdrop-blur-md transition-all hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,174,0,0.2)]" style={{ animationDelay: '200ms' }}>
                   <div className="flex gap-x-6 text-white">
                     <Socials />
                   </div>
@@ -57,7 +58,7 @@ const Hero: FC = memo(() => {
                         className={classNames(
                           'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
                           primary
-                            ? 'bg-neon-cyan text-black ring-neon-cyan hover:shadow-[0_0_20px_#00FFFF]'
+                            ? 'bg-electric-amber text-black ring-electric-amber hover:shadow-[0_0_20px_#FFAE00]'
                             : 'border border-white/30 text-white ring-white hover:bg-white/10 hover:border-white',
                         )}
                         href={href}
