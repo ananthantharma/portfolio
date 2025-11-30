@@ -23,10 +23,15 @@ const Hero: FC = memo(() => {
           priority
           src={imageSrc}
         />
-        <div className="z-10 w-full max-w-screen-xl px-4 lg:px-0">
+        <div className="z-10 w-full px-4 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            {/* Main Hero Content - Left Side */}
-            <div className="col-span-1 flex items-center justify-center lg:col-span-7">
+            {/* Work Experience - Left Side (Desktop only) */}
+            <div className="hidden lg:col-span-3 lg:flex lg:flex-col lg:justify-center">
+              <TimelineBox items={heroTimeline} title="Work Experience" />
+            </div>
+
+            {/* Main Hero Content - Center */}
+            <div className="col-span-1 flex items-center justify-center lg:col-span-6">
               <div className="flex flex-col items-center gap-y-6 rounded-xl bg-gray-800/40 p-6 text-center shadow-lg backdrop-blur-sm">
                 <h1 className="text-4xl font-bold text-white sm:text-5xl lg:text-7xl">{name}</h1>
                 {description}
@@ -51,9 +56,8 @@ const Hero: FC = memo(() => {
               </div>
             </div>
 
-            {/* Timelines - Right Side (Desktop only) */}
-            <div className="hidden lg:col-span-5 lg:flex lg:flex-col lg:gap-y-6 lg:justify-center">
-              <TimelineBox items={heroTimeline} title="Work Experience" />
+            {/* Education & Credentials - Right Side (Desktop only) */}
+            <div className="hidden lg:col-span-3 lg:flex lg:flex-col lg:justify-center">
               <TimelineBox items={educationAndCredentials} title="Education & Credentials" />
             </div>
           </div>

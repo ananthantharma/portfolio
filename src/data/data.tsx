@@ -357,21 +357,6 @@ export const portfolioItems: PortfolioItem[] = [
 // Add this new array for Credentials
 export const credentials: TimelineItem[] = [
   {
-    date: '2023',
-    location: (
-      <a href="https://www.peo.on.ca/about-peo/what-is-peo" rel="noopener noreferrer" target="_blank">
-        Professional Engineers Ontario (PEO)
-      </a>
-    ),
-    title: 'Professional Engineer (P.Eng)',
-    content: (
-      <p>
-        Obtained Professional Engineer (P.Eng) certification, demonstrating expertise in engineering principles and
-        practices.
-      </p>
-    ),
-  },
-  {
     date: '2017', // Year you obtained the credential
     location: (
       <a href="https://www.ascm.org/about-ascm/" rel="noopener noreferrer" target="_blank">
@@ -398,6 +383,21 @@ export const credentials: TimelineItem[] = [
       <p>
         Received PMP certification, affirming my skills in project management, including planning, execution, and
         monitoring.
+      </p>
+    ),
+  },
+  {
+    date: '2023',
+    location: (
+      <a href="https://www.peo.on.ca/about-peo/what-is-peo" rel="noopener noreferrer" target="_blank">
+        Professional Engineers Ontario (PEO)
+      </a>
+    ),
+    title: 'Professional Engineer (P.Eng)',
+    content: (
+      <p>
+        Obtained Professional Engineer (P.Eng) certification, demonstrating expertise in engineering principles and
+        practices.
       </p>
     ),
   },
