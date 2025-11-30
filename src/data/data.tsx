@@ -14,17 +14,6 @@ import InstagramIcon from '../components/Icon/InstagramIcon';
 import LinkedInIcon from '../components/Icon/LinkedInIcon';
 import TwitterIcon from '../components/Icon/TwitterIcon';
 import heroImage from '../images/header-background.webp';
-import porfolioImage1 from '../images/portfolio/portfolio-1.jpg';
-import porfolioImage2 from '../images/portfolio/portfolio-2.jpg';
-import porfolioImage3 from '../images/portfolio/portfolio-3.jpg';
-import porfolioImage4 from '../images/portfolio/portfolio-4.jpg';
-import porfolioImage5 from '../images/portfolio/portfolio-5.jpg';
-import porfolioImage6 from '../images/portfolio/portfolio-6.jpg';
-import porfolioImage7 from '../images/portfolio/portfolio-7.jpg';
-import porfolioImage8 from '../images/portfolio/portfolio-8.jpg';
-import porfolioImage9 from '../images/portfolio/portfolio-9.jpg';
-import porfolioImage10 from '../images/portfolio/portfolio-10.jpg';
-import porfolioImage11 from '../images/portfolio/portfolio-11.jpg';
 import profilepic from '../images/profilepic.jpg';
 import testimonialImage from '../images/testimonial.webp';
 import {
@@ -33,7 +22,6 @@ import {
   ContactType,
   Hero,
   HomepageMeta,
-  PortfolioItem,
   SkillGroup,
   Social,
   TestimonialSection,
@@ -55,10 +43,9 @@ export const SectionId = {
   Hero: 'hero',
   About: 'about',
   Contact: 'contact',
-  Portfolio: 'portfolio',
   Stats: 'stats',
   Testimonials: 'testimonials',
-} as const;;
+} as const;
 
 export type SectionId = (typeof SectionId)[keyof typeof SectionId];
 
@@ -279,81 +266,7 @@ export const skills: SkillGroup[] = [
   },
 ];
 
-/**
- * Portfolio section
- */
-export const portfolioItems: PortfolioItem[] = [
-  {
-    title: 'Procurement Efficiency Model',
-    description:
-      'Developed an analytical model to optimize procurement processes, resulting in a 40% increase in efficiency.',
-    url: 'https://procurementmodel.com',
-    image: porfolioImage1,
-  },
-  {
-    title: 'Multi-Million Dollar Contract Management',
-    description: 'Administered and managed over 50 high-value contracts across various departments and organizations.',
-    url: 'https://contractmanagement.com',
-    image: porfolioImage2,
-  },
-  {
-    title: 'Supply Chain Post-Pandemic',
-    description:
-      'Successfully navigated post-pandemic supply chain constraints, negotiating optimal contract terms and conditions.',
-    url: 'https://supplychainpostpandemic.com',
-    image: porfolioImage3,
-  },
-  {
-    title: 'Vendor Managed Inventory Program',
-    description:
-      'Coordinated the procurement of technically complex engineering construction contracts and vendor managed inventory programs.',
-    url: 'https://vendormanagedinventory.com',
-    image: porfolioImage4,
-  },
-  {
-    title: 'Stakeholder Engagement',
-    description: 'Skilled in engaging multiple stakeholders across various departments to achieve common goals.',
-    url: 'https://stakeholderengagement.com',
-    image: porfolioImage5,
-  },
-  {
-    title: 'Cost Optimization Strategy',
-    description: 'Made data-driven recommendations that achieved up to 30% cost savings on individual projects.',
-    url: 'https://costoptimization.com',
-    image: porfolioImage6,
-  },
-  {
-    title: 'Team Leadership & Guidance',
-    description: 'Provided advice and guidance to Supply Chain staff on procurement strategies and risk management.',
-    url: 'https://teamleadership.com',
-    image: porfolioImage7,
-  },
-  {
-    title: 'Commercial Contract Drafting',
-    description: 'Developed, negotiated, and drafted complex commercial agreements, including amendments.',
-    url: 'https://commercialcontractdrafting.com',
-    image: porfolioImage8,
-  },
-  {
-    title: 'Audit Support',
-    description: 'Provided daily support to internal and external auditors to ensure transparency and efficiency.',
-    url: 'https://auditsupport.com',
-    image: porfolioImage9,
-  },
-  {
-    title: 'Renewable Generation Supply Chain',
-    description:
-      'Managed renewable generation supply chain, setting time-targeted tasks and ensuring program effectiveness.',
-    url: 'https://renewablegeneration.com',
-    image: porfolioImage10,
-  },
-  {
-    title: 'Defective Work Management',
-    description: 'Facilitated the defective work management process within the context of existing agreements.',
-    url: 'https://defectiveworkmanagement.com',
-    image: porfolioImage11,
-  },
-];
+
 // Add this new array for Credentials
 export const credentials: TimelineItem[] = [
   {
