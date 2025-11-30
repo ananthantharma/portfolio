@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import {MongoClient} from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -8,7 +8,7 @@ let clientPromise: Promise<MongoClient> | null = null;
 
 // Only initialize MongoDB if URI is provided
 if (!uri) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"')
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
 if (process.env.NODE_ENV === 'development') {

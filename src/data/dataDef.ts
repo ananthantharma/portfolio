@@ -149,3 +149,15 @@ export interface Social {
   Icon: FC<IconProps>;
   href: string;
 }
+
+/**
+ * Password Manager
+ */
+export interface PasswordEntry {
+  _id: string;
+  title: string;
+  site?: string;
+  username?: string;
+  password?: string;
+  notes?: string;
+}

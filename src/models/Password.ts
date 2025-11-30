@@ -1,19 +1,19 @@
-import mongoose, { Schema, model, models } from 'mongoose';
+import {model, models, Schema} from 'mongoose';
 
 const PasswordSchema = new Schema({
-    userEmail: {
-        type: String,
-        required: true,
-    },
-    title: {
-        type: String,
-        required: true,
-    },
-    site: {
-        type: String,
-        required: false,
-        default: Date.now,
-    },
+  userEmail: {
+    type: String,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  site: {
+    type: String,
+    required: false,
+    default: Date.now,
+  },
 });
 
 const Password = models.Password || model('Password', PasswordSchema);

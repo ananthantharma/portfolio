@@ -24,7 +24,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { memo, useCallback, useEffect, useState } from 'react';
+import {memo, useCallback, useEffect, useState} from 'react';
 
 import Page from '../components/Layout/Page';
 import Header from '../components/Sections/Header';
@@ -60,18 +60,18 @@ interface DraggableBookmarkProps {
 
 // Draggable Bookmark Component
 const DraggableBookmark = memo(
-  ({ bookmark, onEdit, onDelete, isEditing, editForm, setEditForm, saveEdit, cancelEdit }: DraggableBookmarkProps) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  ({bookmark, onEdit, onDelete, isEditing, editForm, setEditForm, saveEdit, cancelEdit}: DraggableBookmarkProps) => {
+    const {attributes, listeners, setNodeRef, transform, isDragging} = useDraggable({
       id: `bookmark-${bookmark._id}`,
-      data: { type: 'bookmark', bookmark },
+      data: {type: 'bookmark', bookmark},
       disabled: isEditing, // Disable drag when editing
     });
 
     const style = transform
       ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 999,
-      }
+          transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+          zIndex: 999,
+        }
       : undefined;
 
     if (isDragging) {
@@ -95,28 +95,28 @@ const DraggableBookmark = memo(
           <div className="space-y-3" onPointerDown={e => e.stopPropagation()}>
             <input
               className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+              onChange={e => setEditForm({...editForm, title: e.target.value})}
               placeholder="Title"
               type="text"
               value={editForm.title}
             />
             <input
               className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              onChange={e => setEditForm({ ...editForm, url: e.target.value })}
+              onChange={e => setEditForm({...editForm, url: e.target.value})}
               placeholder="URL"
               type="url"
               value={editForm.url}
             />
             <input
               className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+              onChange={e => setEditForm({...editForm, category: e.target.value})}
               placeholder="Category"
               type="text"
               value={editForm.category}
             />
             <textarea
               className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-              onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+              onChange={e => setEditForm({...editForm, description: e.target.value})}
               placeholder="Description (optional)"
               rows={2}
               value={editForm.description}
@@ -230,9 +230,9 @@ const DroppableCategory = memo(
     categories,
   }: DroppableCategoryProps) => {
     // Make it droppable (for bookmarks and other categories)
-    const { setNodeRef: setDropRef, isOver } = useDroppable({
+    const {setNodeRef: setDropRef, isOver} = useDroppable({
       id: `category-${category}`,
-      data: { type: 'category', category },
+      data: {type: 'category', category},
     });
 
     // Make it draggable (for merging)
@@ -244,15 +244,15 @@ const DroppableCategory = memo(
       isDragging,
     } = useDraggable({
       id: `category-drag-${category}`,
-      data: { type: 'category', category },
+      data: {type: 'category', category},
       disabled: isEditing || !!mergingCategory,
     });
 
     const style = transform
       ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 999,
-      }
+          transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+          zIndex: 999,
+        }
       : undefined;
 
     // Combine refs
@@ -312,16 +312,18 @@ const DroppableCategory = memo(
 
     return (
       <div
-        className={`relative group touch-none ${isOver ? 'ring-2 ring-orange-500 ring-inset rounded-lg' : ''} ${isDragging ? 'opacity-50' : ''
-          }`}
+        className={`relative group touch-none ${isOver ? 'ring-2 ring-orange-500 ring-inset rounded-lg' : ''} ${
+          isDragging ? 'opacity-50' : ''
+        }`}
         ref={setRefs}
         style={style}
         {...listeners}
         {...attributes}>
         <div className="flex items-center">
           <button
-            className={`flex-1 text-left px-3 py-2 rounded-lg text-sm transition-colors ${isSelected ? 'bg-orange-500 text-white font-medium' : 'text-neutral-300 hover:bg-neutral-700'
-              }`}
+            className={`flex-1 text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              isSelected ? 'bg-orange-500 text-white font-medium' : 'text-neutral-300 hover:bg-neutral-700'
+            }`}
             onClick={onClick}>
             {category}
             <span className="float-right text-xs opacity-70">({count})</span>
@@ -361,7 +363,7 @@ export default function BookmarksPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>({ title: '', url: '', category: '', description: '' });
+  const [editForm, setEditForm] = useState<EditForm>({title: '', url: '', category: '', description: ''});
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [mergingCategory, setMergingCategory] = useState<string | null>(null);
@@ -372,7 +374,7 @@ export default function BookmarksPage() {
     category: '',
     description: '',
   });
-  type DragItem = { type: 'bookmark'; bookmark: BookmarkData } | { type: 'category'; category: string };
+  type DragItem = {type: 'bookmark'; bookmark: BookmarkData} | {type: 'category'; category: string};
   const [activeDragItem, setActiveDragItem] = useState<DragItem | null>(null);
 
   const sensors = useSensors(
@@ -440,113 +442,125 @@ export default function BookmarksPage() {
 
   const cancelEdit = useCallback(() => {
     setEditingId(null);
-    setEditForm({ title: '', url: '', category: '', description: '' });
+    setEditForm({title: '', url: '', category: '', description: ''});
   }, []);
 
-  const saveEdit = useCallback(async (id: string, data?: EditForm) => {
-    try {
-      const response = await fetch(`/api/bookmarks/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data || editForm),
-      });
+  const saveEdit = useCallback(
+    async (id: string, data?: EditForm) => {
+      try {
+        const response = await fetch(`/api/bookmarks/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data || editForm),
+        });
 
-      if (response.ok) {
-        fetchBookmarks();
-        cancelEdit();
-      } else {
+        if (response.ok) {
+          fetchBookmarks();
+          cancelEdit();
+        } else {
+          alert('Failed to update bookmark');
+        }
+      } catch {
         alert('Failed to update bookmark');
       }
-    } catch {
-      alert('Failed to update bookmark');
-    }
-  }, [editForm, fetchBookmarks, cancelEdit]);
+    },
+    [editForm, fetchBookmarks, cancelEdit],
+  );
 
-  const deleteBookmark = useCallback(async (id: string) => {
-    if (!confirm('Are you sure you want to delete this bookmark?')) return;
+  const deleteBookmark = useCallback(
+    async (id: string) => {
+      if (!confirm('Are you sure you want to delete this bookmark?')) return;
 
-    try {
-      const response = await fetch(`/api/bookmarks/${id}`, {
-        method: 'DELETE',
-      });
+      try {
+        const response = await fetch(`/api/bookmarks/${id}`, {
+          method: 'DELETE',
+        });
 
-      if (response.ok) {
-        fetchBookmarks();
-      } else {
+        if (response.ok) {
+          fetchBookmarks();
+        } else {
+          alert('Failed to delete bookmark');
+        }
+      } catch {
         alert('Failed to delete bookmark');
       }
-    } catch {
-      alert('Failed to delete bookmark');
-    }
-  }, [fetchBookmarks]);
+    },
+    [fetchBookmarks],
+  );
 
   const startCategoryEdit = useCallback((category: string) => {
     setEditingCategory(category);
     setNewCategoryName(category);
   }, []);
 
-  const saveCategoryRename = useCallback(async (oldCategory: string) => {
-    if (!newCategoryName.trim() || newCategoryName === oldCategory) {
-      setEditingCategory(null);
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/categories/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldCategory, newCategory: newCategoryName }),
-      });
-
-      if (response.ok) {
-        fetchBookmarks();
+  const saveCategoryRename = useCallback(
+    async (oldCategory: string) => {
+      if (!newCategoryName.trim() || newCategoryName === oldCategory) {
         setEditingCategory(null);
-        if (selectedCategory === oldCategory) {
-          setSelectedCategory(newCategoryName);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/categories/update', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({oldCategory, newCategory: newCategoryName}),
+        });
+
+        if (response.ok) {
+          fetchBookmarks();
+          setEditingCategory(null);
+          if (selectedCategory === oldCategory) {
+            setSelectedCategory(newCategoryName);
+          }
+        } else {
+          alert('Failed to rename category');
         }
-      } else {
+      } catch {
         alert('Failed to rename category');
       }
-    } catch {
-      alert('Failed to rename category');
-    }
-  }, [fetchBookmarks, newCategoryName, selectedCategory]);
+    },
+    [fetchBookmarks, newCategoryName, selectedCategory],
+  );
 
   const startCategoryMerge = useCallback((category: string) => {
     setMergingCategory(category);
   }, []);
 
-  const mergeCategories = useCallback(async (fromCategory: string, toCategory: string) => {
-    if (fromCategory === toCategory) {
-      setMergingCategory(null);
-      return;
-    }
-
-    if (!confirm(`Merge all bookmarks from "${fromCategory}" into "${toCategory}"?`)) {
-      setMergingCategory(null);
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/categories/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldCategory: fromCategory, newCategory: toCategory }),
-      });
-
-      if (response.ok) {
-        fetchBookmarks();
+  const mergeCategories = useCallback(
+    async (fromCategory: string, toCategory: string) => {
+      if (fromCategory === toCategory) {
         setMergingCategory(null);
-        if (selectedCategory === fromCategory) {
-          setSelectedCategory(toCategory);
+        return;
+      }
+
+      if (!confirm(`Merge all bookmarks from "${fromCategory}" into "${toCategory}"?`)) {
+        setMergingCategory(null);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/categories/update', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({oldCategory: fromCategory, newCategory: toCategory}),
+        });
+
+        if (response.ok) {
+          fetchBookmarks();
+          setMergingCategory(null);
+          if (selectedCategory === fromCategory) {
+            setSelectedCategory(toCategory);
+          }
+        } else {
+          alert('Failed to merge categories');
         }
-      } else {
+      } catch {
         alert('Failed to merge categories');
       }
-    } catch {
-      alert('Failed to merge categories');
-    }
-  }, [fetchBookmarks, selectedCategory]);
+    },
+    [fetchBookmarks, selectedCategory],
+  );
 
   const createBookmark = useCallback(async () => {
     if (!newBookmarkForm.title || !newBookmarkForm.url || !newBookmarkForm.category) {
@@ -557,14 +571,14 @@ export default function BookmarksPage() {
     try {
       const response = await fetch('/api/bookmarks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(newBookmarkForm),
       });
 
       if (response.ok) {
         fetchBookmarks();
         setIsCreating(false);
-        setNewBookmarkForm({ title: '', url: '', category: '', description: '' });
+        setNewBookmarkForm({title: '', url: '', category: '', description: ''});
       } else {
         alert('Failed to create bookmark');
       }
@@ -575,13 +589,13 @@ export default function BookmarksPage() {
 
   // Drag and Drop Handlers
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event;
+    const {active} = event;
     setActiveDragItem(active.data.current as DragItem);
   }, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
+      const {active, over} = event;
       setActiveDragItem(null);
 
       if (!over) return;
@@ -634,10 +648,11 @@ export default function BookmarksPage() {
                 </h2>
                 <div className="space-y-1">
                   <button
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedCategory === null
-                      ? 'bg-orange-500 text-white font-medium'
-                      : 'text-neutral-300 hover:bg-neutral-700'
-                      }`}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      selectedCategory === null
+                        ? 'bg-orange-500 text-white font-medium'
+                        : 'text-neutral-300 hover:bg-neutral-700'
+                    }`}
                     onClick={() => setSelectedCategory(null)}>
                     All Bookmarks
                     <span className="float-right text-xs opacity-70">({bookmarks.length})</span>
@@ -772,7 +787,7 @@ export default function BookmarksPage() {
                     <input
                       autoFocus
                       className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      onChange={e => setNewBookmarkForm({ ...newBookmarkForm, title: e.target.value })}
+                      onChange={e => setNewBookmarkForm({...newBookmarkForm, title: e.target.value})}
                       placeholder="Enter bookmark title"
                       type="text"
                       value={newBookmarkForm.title}
@@ -782,7 +797,7 @@ export default function BookmarksPage() {
                     <label className="block text-sm text-neutral-400 mb-1">URL *</label>
                     <input
                       className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      onChange={e => setNewBookmarkForm({ ...newBookmarkForm, url: e.target.value })}
+                      onChange={e => setNewBookmarkForm({...newBookmarkForm, url: e.target.value})}
                       placeholder="https://example.com"
                       type="url"
                       value={newBookmarkForm.url}
@@ -793,7 +808,7 @@ export default function BookmarksPage() {
                     <input
                       className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       list="categories-list"
-                      onChange={e => setNewBookmarkForm({ ...newBookmarkForm, category: e.target.value })}
+                      onChange={e => setNewBookmarkForm({...newBookmarkForm, category: e.target.value})}
                       placeholder="Enter category"
                       type="text"
                       value={newBookmarkForm.category}
@@ -808,7 +823,7 @@ export default function BookmarksPage() {
                     <label className="block text-sm text-neutral-400 mb-1">Description</label>
                     <textarea
                       className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
-                      onChange={e => setNewBookmarkForm({ ...newBookmarkForm, description: e.target.value })}
+                      onChange={e => setNewBookmarkForm({...newBookmarkForm, description: e.target.value})}
                       placeholder="Optional description"
                       rows={3}
                       value={newBookmarkForm.description}
@@ -825,7 +840,7 @@ export default function BookmarksPage() {
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
                       onClick={() => {
                         setIsCreating(false);
-                        setNewBookmarkForm({ title: '', url: '', category: '', description: '' });
+                        setNewBookmarkForm({title: '', url: '', category: '', description: ''});
                       }}>
                       <X className="w-4 h-4" />
                       Cancel
