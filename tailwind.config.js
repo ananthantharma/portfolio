@@ -5,12 +5,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Space Grotesk', 'sans-serif'],
+        sans: ['Outfit', 'sans-serif'],
       },
       colors: {
         yellow: '#efc603',
-        'electric-amber': '#FFAE00',
-        'neon-cyan': '#00FFFF',
       },
       keyframes: {
         typing: {

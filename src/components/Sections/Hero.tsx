@@ -30,7 +30,7 @@ const Hero: FC = memo(() => {
             {/* Work Experience - Left Side (25%) */}
             <div className="hidden h-full items-center lg:col-span-3 lg:flex">
               <div className="h-[80vh] w-full">
-                <TimelineBox items={heroTimeline} title="Work Experience" />
+                <TimelineBox items={heroTimeline} side="right" title="Work Experience" />
               </div>
             </div>
 
@@ -39,26 +39,28 @@ const Hero: FC = memo(() => {
               <div className="flex flex-col items-center gap-y-8 text-center">
                 {/* Massive Name with Gradient */}
                 <h1
-                  className="animate-fade-in-down bg-gradient-to-b from-white to-electric-amber bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
-                  style={{ textShadow: '0 0 30px rgba(255,174,0,0.3)' }}
+                  className="animate-fade-in-down bg-gradient-to-r from-[#00C9FF] to-[#92FE9D] bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
+                  style={{ textShadow: '0 0 40px rgba(0,201,255,0.3)' }}
                 >
                   {name}
-                  <span className="animate-pulse text-electric-amber">|</span>
+                  <span className="animate-pulse text-cyan-400">|</span>
                 </h1>
 
-                {/* Glass Bar for Actions */}
-                <div className="flex animate-fade-in-up flex-col items-center gap-y-6 rounded-2xl border border-white/10 bg-white/5 px-8 py-6 backdrop-blur-md transition-all hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,174,0,0.2)]" style={{ animationDelay: '200ms' }}>
-                  <div className="flex gap-x-6 text-white">
+                {/* Actions & Socials - Clean Layout */}
+                <div className="flex animate-fade-in-up flex-col items-center gap-y-8" style={{ animationDelay: '200ms' }}>
+                  {/* Social Icons - Larger & Glowing */}
+                  <div className="flex gap-x-8 text-white">
                     <Socials />
                   </div>
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+                  {/* Buttons */}
                   <div className="flex w-full justify-center gap-x-6">
                     {actions.map(({ href, text, primary, Icon, onClick }) => (
                       <a
                         className={classNames(
                           'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
                           primary
-                            ? 'bg-electric-amber text-black ring-electric-amber hover:shadow-[0_0_20px_#FFAE00]'
+                            ? 'bg-cyan-400 text-black ring-cyan-400 hover:shadow-[0_0_30px_#00C9FF]'
                             : 'border border-white/30 text-white ring-white hover:bg-white/10 hover:border-white',
                         )}
                         href={href}
@@ -76,7 +78,7 @@ const Hero: FC = memo(() => {
             {/* Education & Credentials - Right Side (25%) */}
             <div className="hidden h-full items-center lg:col-span-3 lg:flex">
               <div className="h-[80vh] w-full">
-                <TimelineBox items={heroEducation} title="Education & Credentials" />
+                <TimelineBox items={heroEducation} side="left" title="Education & Credentials" />
               </div>
             </div>
           </div>
