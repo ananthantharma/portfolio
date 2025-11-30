@@ -1,17 +1,17 @@
 /* eslint-disable object-curly-spacing */
 /* eslint-disable react/jsx-sort-props */
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import {ChevronDownIcon} from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { FC, memo } from 'react';
+import {FC, memo} from 'react';
 
-import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
+import {heroData, heroEducation, heroTimeline, SectionId} from '../../data/data';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
 import TimelineBox from '../TimelineBox';
 
 const Hero: FC = memo(() => {
-  const { imageSrc, name, actions } = heroData;
+  const {imageSrc, name, actions} = heroData;
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
@@ -40,14 +40,15 @@ const Hero: FC = memo(() => {
                 {/* Massive Name with Gradient */}
                 <h1
                   className="animate-fade-in-down bg-gradient-to-r from-[#00C9FF] to-[#92FE9D] bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
-                  style={{ textShadow: '0 0 40px rgba(0,201,255,0.3)' }}
-                >
+                  style={{textShadow: '0 0 40px rgba(0,201,255,0.3)'}}>
                   {name}
                   <span className="animate-pulse text-cyan-400">|</span>
                 </h1>
 
                 {/* Actions & Socials - Clean Layout */}
-                <div className="flex animate-fade-in-up flex-col items-center gap-y-8" style={{ animationDelay: '200ms' }}>
+                <div
+                  className="flex animate-fade-in-up flex-col items-center gap-y-8"
+                  style={{animationDelay: '200ms'}}>
                   {/* Social Icons - Larger & Glowing */}
                   <div className="flex gap-x-8 text-white">
                     <Socials />
@@ -55,7 +56,7 @@ const Hero: FC = memo(() => {
 
                   {/* Buttons */}
                   <div className="flex w-full justify-center gap-x-6">
-                    {actions.map(({ href, text, primary, Icon, onClick }) => (
+                    {actions.map(({href, text, primary, Icon, onClick}) => (
                       <a
                         className={classNames(
                           'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
@@ -67,7 +68,9 @@ const Hero: FC = memo(() => {
                         key={text}
                         onClick={onClick}>
                         <span className="relative z-10">{text}</span>
-                        {Icon && <Icon className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />}
+                        {Icon && (
+                          <Icon className="relative z-10 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                        )}
                       </a>
                     ))}
                   </div>
@@ -93,18 +96,30 @@ const Hero: FC = memo(() => {
       </div>
       <style jsx global>{`
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         .animate-fade-in-down {
-            animation: fadeInDown 0.8s ease-out forwards;
+          animation: fadeInDown 0.8s ease-out forwards;
         }
         .animate-fade-in-up {
-            animation: fadeInUp 0.8s ease-out forwards;
+          animation: fadeInUp 0.8s ease-out forwards;
         }
       `}</style>
     </Section>
