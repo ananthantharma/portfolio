@@ -1,4 +1,4 @@
-import {model, models, Schema} from 'mongoose';
+import { model, models, Schema } from 'mongoose';
 
 const PasswordSchema = new Schema({
   userEmail: {
@@ -12,6 +12,21 @@ const PasswordSchema = new Schema({
   site: {
     type: String,
     required: false,
+  },
+  username: {
+    type: String,
+    required: false,
+  },
+  password: {
+    type: String,
+    required: false,
+  },
+  notes: {
+    type: String,
+    required: false,
+  },
+  createdAt: {
+    type: Date,
     default: Date.now,
   },
 });
