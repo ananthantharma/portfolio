@@ -12,24 +12,19 @@ import {ITransaction} from '@/models/Transaction';
 // ...
 
 export default function FinanceDashboard() {
-    console.log('Rendering FinanceDashboard');
     const [transactions, setTransactions] = useState<ITransaction[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const fetchTransactions = React.useCallback(async () => {
-        console.log('Fetching transactions...');
         try {
             const res = await fetch('/api/finance/transactions');
-            console.log('Fetch response status:', res.status);
             const data = await res.json();
-            console.log('Fetched data:', data);
             setTransactions(data);
         } catch (error) {
             console.error('Error fetching transactions:', error);
         } finally {
             setLoading(false);
-            console.log('Loading set to false');
         }
     }, []);
 
@@ -135,7 +130,7 @@ export default function FinanceDashboard() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 border-2 border-red-500 p-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                 <button
@@ -145,6 +140,12 @@ export default function FinanceDashboard() {
                     Add Transaction
                 </button>
             </div>
+
+            {transactions.length === 0 && (
+                <div className="rounded-md bg-blue-900 p-4 text-white">
+                    <p>No transactions found. Click "Add Transaction" to get started.</p>
+                </div>
+            )}
 
             <SummaryCards
                 netCashFlow={netCashFlow}
