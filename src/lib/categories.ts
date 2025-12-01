@@ -1,0 +1,18 @@
+export const BUDGET_CATEGORIES = {
+    "Housing": ["Rent / Mortgage", "Property Taxes", "Home Insurance", "Condo/HOA Fees", "Home Repairs & Maintenance", "Home Improvements", "Furniture & Appliances", "Garden / Lawn Care", "Security Systems", "Moving Costs"],
+    "Utilities": ["Electricity", "Water", "Natural Gas / Heating", "Waste & Recycling", "Internet", "Phone (Cell + Landline)", "Cable / Streaming Services"],
+    "Transportation": ["Car Payments", "Car Insurance", "Fuel", "Maintenance", "Repairs", "Parking Fees", "Public Transit", "Ride-Share", "Taxis", "License/Registration", "Vehicle Depreciation"],
+    "Food & Groceries": ["Groceries", "Dining Out", "Coffee Shops", "Meal Delivery Services", "Snacks", "Work Lunches"],
+    "Healthcare & Medical": ["Health Insurance Premiums", "Dental Insurance", "Vision Insurance", "Prescription Medications", "Doctor Visits", "Dentist", "Optometrist", "Specialist Visits", "Physiotherapy", "Chiropractic", "Mental Health / Therapy"],
+    "Insurance": ["Life Insurance", "Disability Insurance", "Critical Illness Insurance", "Travel Insurance", "Pet Insurance"],
+    "Personal Spending": ["Clothing & Shoes", "Haircuts & Grooming", "Cosmetics / Skincare", "Gym Membership", "Personal Care Products", "Laundry / Dry Cleaning", "Hobbies", "Subscriptions"],
+    "Recreation & Entertainment": ["Movies / Shows", "Streaming Services", "Sports / Events", "Video Games", "Books / Magazines", "Vacations", "Hotel / Airfare", "Theme Parks", "Family Outings"],
+    "Child & Family": ["Childcare / Daycare", "School Fees", "School Supplies", "Kids Clothing", "Kids Activities", "Toys", "Baby Supplies", "Tutoring", "RESP Contributions"],
+    "Savings & Debt": ["Emergency Fund", "Retirement Savings (RRSP)", "TFSA Contributions", "Non-Registered Investments", "Credit Card Payments", "Loan Payments", "Student Loans", "Line of Credit", "Wealth Management Fees"],
+    "Giving": ["Charitable Donations", "Religious Contributions", "Family Support", "Gifts"],
+    "Business/Work": ["Work Clothing", "Tools & Equipment", "Professional Fees", "Licensing & Certifications", "Education", "Union Dues", "Home Office Supplies", "Software Subscriptions"],
+    "Pets": ["Pet Food", "Pet Supplies", "Grooming", "Vet Visits", "Medications", "Boarding"],
+    "Miscellaneous": ["Bank Fees", "Postage", "Lost Items", "Penalties", "Misc Purchases"]
+};
+
+export const INCOME_CATEGORIES = ["Salary", "Bonuses", "Commission", "Overtime", "Rental Income", "Investment Income", "Dividends", "Capital Gains", "Side Hustle", "Child Benefits (CCB)", "Tax Refunds", "Other"];

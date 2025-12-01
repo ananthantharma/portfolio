@@ -1,51 +1,58 @@
 import mongoose, {Document, Model, Schema} from 'mongoose';
 
+import {BUDGET_CATEGORIES, INCOME_CATEGORIES} from '@/lib/categories';
+
+// Data Transfer Object (DTO) for creating/updating items
 export interface IBudgetItemData {
     name: string;
     amount: number;
     type: 'Income' | 'Expense';
     category: string;
+    subcategory: string;
     propertyTag: string;
     isVariable: boolean;
 }
 
-export interface IBudgetItem extends IBudgetItemData, Document {
-    createdAt: Date;
-    updatedAt: Date;
-}
+// Mongoose Document Interface
+export interface IBudgetItem extends IBudgetItemData, Document { }
 
 const BudgetItemSchema: Schema = new Schema(
     {
-        name: {
-            type: String,
-            required: [true, 'Please provide a name for this item.'],
-            maxlength: [60, 'Name cannot be more than 60 characters'],
-        },
-        amount: {
-            type: Number,
-            required: [true, 'Please provide a monthly amount.'],
-        },
-        type: {
-            type: String,
-            enum: ['Income', 'Expense'],
-            required: [true, 'Please specify if this is an Income or Expense.'],
-        },
+        name: {required: true, type: String},
+        amount: {required: true, type: Number},
+        type: {enum: ['Income', 'Expense'], required: true, type: String},
         category: {
+            required: true,
             type: String,
-            required: [true, 'Please specify a category.'],
+            validate: {
+                validator: function (v: string) {
+                    // Allow "Income" as a category for Income items
+                    if (v === 'Income') return true;
+                    // Otherwise must be a key in BUDGET_CATEGORIES
+                    return Object.keys(BUDGET_CATEGORIES).includes(v);
+                },
+                message: (props: { value: string }) => `${props.value} is not a valid category!`,
+            },
         },
-        propertyTag: {
+        subcategory: {
+            required: true,
             type: String,
-            default: 'General',
+            validate: {
+                validator: function (this: IBudgetItem, v: string) {
+                    if (this.type === 'Income') {
+                        return INCOME_CATEGORIES.includes(v);
+                    }
+                    const validSubcategories =
+                        BUDGET_CATEGORIES[this.category as keyof typeof BUDGET_CATEGORIES];
+                    return validSubcategories && validSubcategories.includes(v);
+                },
+                message: (props: { value: string }) => `${props.value} is not a valid subcategory!`,
+            },
         },
-        isVariable: {
-            type: Boolean,
-            default: false,
-        },
+        propertyTag: {default: 'General', type: String},
+        isVariable: {default: false, type: Boolean},
     },
-    {
-        timestamps: true,
-    }
+    {timestamps: true}
 );
 
 const BudgetItem: Model<IBudgetItem> =

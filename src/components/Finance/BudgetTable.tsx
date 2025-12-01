@@ -1,6 +1,7 @@
 import {PencilSquareIcon, TrashIcon} from '@heroicons/react/24/outline';
 import React from 'react';
 
+import {BUDGET_CATEGORIES} from '@/lib/categories';
 import {IBudgetItem} from '@/models/BudgetItem';
 
 interface BudgetTableProps {
@@ -21,45 +22,41 @@ const BudgetTable: React.FC<BudgetTableProps> = React.memo(({items, onEdit, onDe
     const incomeItems = items.filter(item => item.type === 'Income');
     const totalIncome = incomeItems.reduce((acc, item) => acc + item.amount, 0);
 
-    // Group 2: Fixed Property Expenses (Grouped by Property)
-    const propertyExpenses = items.filter(
-        item => item.type === 'Expense' && item.propertyTag !== 'General'
-    );
-    // Group by property tag
-    const propertyGroups = propertyExpenses.reduce((acc, item) => {
-        if (!acc[item.propertyTag]) {
-            acc[item.propertyTag] = [];
+    // Group 2: Expenses by Category
+    const expenseItems = items.filter(item => item.type === 'Expense');
+    const expenseGroups: Record<string, IBudgetItem[]> = {};
+
+    // Initialize groups based on defined categories to maintain order, but only if they have items
+    Object.keys(BUDGET_CATEGORIES).forEach(category => {
+        const categoryItems = expenseItems.filter(item => item.category === category);
+        if (categoryItems.length > 0) {
+            expenseGroups[category] = categoryItems;
         }
-        acc[item.propertyTag].push(item);
-        return acc;
-    }, {} as Record<string, IBudgetItem[]>);
+    });
 
-    // Group 3: Variable/Living Expenses (General Expenses)
-    const livingExpenses = items.filter(
-        item => item.type === 'Expense' && item.propertyTag === 'General'
+    // Catch any expenses with categories not in the list (legacy data or "Other")
+    const otherExpenses = expenseItems.filter(
+        item => !Object.keys(BUDGET_CATEGORIES).includes(item.category)
     );
-    const totalLivingExpenses = livingExpenses.reduce((acc, item) => acc + item.amount, 0);
+    if (otherExpenses.length > 0) {
+        expenseGroups['Other / Uncategorized'] = otherExpenses;
+    }
 
-    const renderTableSection = (title: string, data: IBudgetItem[], total?: number) => (
+    const renderTableSection = (title: string, data: IBudgetItem[], total: number) => (
         <div className="mb-8 overflow-hidden rounded-xl bg-gray-800 shadow-lg">
             <div className="flex items-center justify-between border-b border-gray-700 bg-gray-750 px-6 py-4">
                 <h3 className="text-lg font-semibold text-white">{title}</h3>
-                {total !== undefined && (
-                    <span className="text-lg font-bold text-emerald-400">{formatCurrency(total)}</span>
-                )}
+                <span className="text-lg font-bold text-emerald-400">{formatCurrency(total)}</span>
             </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-700">
                     <thead className="bg-gray-900/50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
-                                Name
+                                Subcategory
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
-                                Category
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400">
-                                Type
+                                Property Tag
                             </th>
                             <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-400">
                                 Monthly Amount
@@ -73,21 +70,12 @@ const BudgetTable: React.FC<BudgetTableProps> = React.memo(({items, onEdit, onDe
                         {data.map(item => (
                             <tr className="hover:bg-gray-700/50" key={item._id as string}>
                                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-white">
-                                    {item.name}
+                                    {item.subcategory || item.name}
+                                    {/* Fallback to name if subcategory missing (legacy data) */}
+                                    <span className="ml-2 text-xs text-gray-500">({item.name})</span>
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
-                                    {item.category}
-                                </td>
-                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
-                                    {item.isVariable ? (
-                                        <span className="inline-flex items-center rounded-full bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400">
-                                            Variable
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center rounded-full bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400">
-                                            Fixed
-                                        </span>
-                                    )}
+                                    {item.propertyTag}
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-bold text-white">
                                     {formatCurrency(item.amount)}
@@ -108,13 +96,6 @@ const BudgetTable: React.FC<BudgetTableProps> = React.memo(({items, onEdit, onDe
                                 </td>
                             </tr>
                         ))}
-                        {data.length === 0 && (
-                            <tr>
-                                <td className="px-6 py-4 text-center text-sm text-gray-500" colSpan={5}>
-                                    No items in this section.
-                                </td>
-                            </tr>
-                        )}
                     </tbody>
                 </table>
             </div>
@@ -126,18 +107,11 @@ const BudgetTable: React.FC<BudgetTableProps> = React.memo(({items, onEdit, onDe
             {/* Group 1: Income */}
             {renderTableSection('Income Sources', incomeItems, totalIncome)}
 
-            {/* Group 2: Property Expenses */}
-            {Object.entries(propertyGroups).map(([property, items]) => {
+            {/* Group 2: Expenses by Category */}
+            {Object.entries(expenseGroups).map(([category, items]) => {
                 const total = items.reduce((acc, i) => acc + i.amount, 0);
-                return (
-                    <div key={property}>
-                        {renderTableSection(`Property Expenses: ${property}`, items, total)}
-                    </div>
-                );
+                return <div key={category}>{renderTableSection(category, items, total)}</div>;
             })}
-
-            {/* Group 3: Living Expenses */}
-            {renderTableSection('Variable & Living Expenses', livingExpenses, totalLivingExpenses)}
         </div>
     );
 });

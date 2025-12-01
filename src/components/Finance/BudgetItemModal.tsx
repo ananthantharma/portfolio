@@ -1,6 +1,7 @@
 import {Dialog, Transition} from '@headlessui/react';
 import React, {Fragment, useEffect, useState} from 'react';
 
+import {BUDGET_CATEGORIES, INCOME_CATEGORIES} from '@/lib/categories';
 import {IBudgetItem, IBudgetItemData} from '@/models/BudgetItem';
 
 interface BudgetItemModalProps {
@@ -10,22 +11,6 @@ interface BudgetItemModalProps {
     initialData?: IBudgetItem | null;
 }
 
-const CATEGORIES = [
-    'Housing',
-    'Transportation',
-    'Food',
-    'Utilities',
-    'Insurance',
-    'Healthcare',
-    'Saving, Investing, & Debt Payments',
-    'Personal Spending',
-    'Recreation & Entertainment',
-    'Miscellaneous',
-    'Rental Income',
-    'Salary',
-    'Other Income',
-];
-
 const PROPERTY_TAGS = ['General', '197 Randall', '89 Laing'];
 
 const BudgetItemModal: React.FC<BudgetItemModalProps> = React.memo(
@@ -33,28 +18,57 @@ const BudgetItemModal: React.FC<BudgetItemModalProps> = React.memo(
         const [name, setName] = useState('');
         const [amount, setAmount] = useState('');
         const [type, setType] = useState<'Income' | 'Expense'>('Expense');
-        const [category, setCategory] = useState(CATEGORIES[0]);
+        const [category, setCategory] = useState('');
+        const [subcategory, setSubcategory] = useState('');
         const [propertyTag, setPropertyTag] = useState('General');
         const [isVariable, setIsVariable] = useState(false);
 
+        // Initialize or reset form state
         useEffect(() => {
             if (initialData) {
                 setName(initialData.name);
                 setAmount(initialData.amount.toString());
                 setType(initialData.type);
                 setCategory(initialData.category);
+                setSubcategory(initialData.subcategory);
                 setPropertyTag(initialData.propertyTag);
                 setIsVariable(initialData.isVariable);
             } else {
-                // Reset defaults
+                // Defaults for new item
                 setName('');
                 setAmount('');
                 setType('Expense');
-                setCategory(CATEGORIES[0]);
+                setCategory(Object.keys(BUDGET_CATEGORIES)[0]); // Default to first expense category
+                setSubcategory(Object.values(BUDGET_CATEGORIES)[0][0]); // Default to first subcategory
                 setPropertyTag('General');
                 setIsVariable(false);
             }
         }, [initialData, isOpen]);
+
+        // Handle Type change
+        const handleTypeChange = (newType: 'Income' | 'Expense') => {
+            setType(newType);
+            if (newType === 'Income') {
+                setCategory('Income');
+                setSubcategory(INCOME_CATEGORIES[0]);
+            } else {
+                const firstCategory = Object.keys(BUDGET_CATEGORIES)[0];
+                setCategory(firstCategory);
+                setSubcategory(BUDGET_CATEGORIES[firstCategory as keyof typeof BUDGET_CATEGORIES][0]);
+            }
+        };
+
+        // Handle Category change
+        const handleCategoryChange = (newCategory: string) => {
+            setCategory(newCategory);
+            if (type === 'Expense') {
+                // Reset subcategory to first item of new category
+                const subcats = BUDGET_CATEGORIES[newCategory as keyof typeof BUDGET_CATEGORIES];
+                if (subcats && subcats.length > 0) {
+                    setSubcategory(subcats[0]);
+                }
+            }
+        };
 
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
@@ -63,11 +77,18 @@ const BudgetItemModal: React.FC<BudgetItemModalProps> = React.memo(
                 amount: parseFloat(amount),
                 type,
                 category,
+                subcategory,
                 propertyTag,
                 isVariable,
             });
             onClose();
         };
+
+        // Get available subcategories based on current state
+        const availableSubcategories =
+            type === 'Income'
+                ? INCOME_CATEGORIES
+                : BUDGET_CATEGORIES[category as keyof typeof BUDGET_CATEGORIES] || [];
 
         return (
             <Transition appear as={Fragment} show={isOpen}>
@@ -129,7 +150,7 @@ const BudgetItemModal: React.FC<BudgetItemModalProps> = React.memo(
                                                 <label className="block text-sm font-medium text-gray-400">Type</label>
                                                 <select
                                                     className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-                                                    onChange={e => setType(e.target.value as 'Income' | 'Expense')}
+                                                    onChange={e => handleTypeChange(e.target.value as 'Income' | 'Expense')}
                                                     value={type}>
                                                     <option value="Income">Income</option>
                                                     <option value="Expense">Expense</option>
@@ -155,11 +176,30 @@ const BudgetItemModal: React.FC<BudgetItemModalProps> = React.memo(
                                             <label className="block text-sm font-medium text-gray-400">Category</label>
                                             <select
                                                 className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-                                                onChange={e => setCategory(e.target.value)}
+                                                disabled={type === 'Income'}
+                                                onChange={e => handleCategoryChange(e.target.value)}
                                                 value={category}>
-                                                {CATEGORIES.map(cat => (
-                                                    <option key={cat} value={cat}>
-                                                        {cat}
+                                                {type === 'Income' ? (
+                                                    <option value="Income">Income</option>
+                                                ) : (
+                                                    Object.keys(BUDGET_CATEGORIES).map(cat => (
+                                                        <option key={cat} value={cat}>
+                                                            {cat}
+                                                        </option>
+                                                    ))
+                                                )}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-400">Subcategory</label>
+                                            <select
+                                                className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                                                onChange={e => setSubcategory(e.target.value)}
+                                                value={subcategory}>
+                                                {availableSubcategories.map(sub => (
+                                                    <option key={sub} value={sub}>
+                                                        {sub}
                                                     </option>
                                                 ))}
                                             </select>
