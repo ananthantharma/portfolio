@@ -12,19 +12,24 @@ import {ITransaction} from '@/models/Transaction';
 // ...
 
 export default function FinanceDashboard() {
+    console.log('Rendering FinanceDashboard');
     const [transactions, setTransactions] = useState<ITransaction[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const fetchTransactions = React.useCallback(async () => {
+        console.log('Fetching transactions...');
         try {
             const res = await fetch('/api/finance/transactions');
+            console.log('Fetch response status:', res.status);
             const data = await res.json();
+            console.log('Fetched data:', data);
             setTransactions(data);
         } catch (error) {
             console.error('Error fetching transactions:', error);
         } finally {
             setLoading(false);
+            console.log('Loading set to false');
         }
     }, []);
 
