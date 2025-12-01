@@ -52,17 +52,9 @@ export default function FinanceDashboard() {
         }
     }, [fetchTransactions]);
 
-    // ...
-
     const handleCloseModal = React.useCallback(() => {
         setIsModalOpen(false);
     }, []);
-
-    return (
-        // ...
-        <TransactionModal isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleAddTransaction} />
-        // ...
-    );
 
     const handleDeleteTransaction = React.useCallback(async (id: string) => {
         // TODO: Implement delete API
@@ -130,7 +122,7 @@ export default function FinanceDashboard() {
     }
 
     return (
-        <div className="space-y-6 border-2 border-red-500 p-4">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                 <button
