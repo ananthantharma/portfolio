@@ -5,10 +5,10 @@ interface SummaryCardsProps {
   totalIncome: number;
   totalExpenses: number;
   netCashFlow: number;
-  rentalProfitability: number;
+  rentalPerformance: number;
 }
 
-const SummaryCards: React.FC<SummaryCardsProps> = React.memo(({totalIncome, totalExpenses, netCashFlow, rentalProfitability}) => {
+const SummaryCards: React.FC<SummaryCardsProps> = React.memo(({totalIncome, totalExpenses, netCashFlow, rentalPerformance}) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-CA', {
       style: 'currency',
@@ -18,32 +18,32 @@ const SummaryCards: React.FC<SummaryCardsProps> = React.memo(({totalIncome, tota
 
   const cards = [
     {
-      title: 'Total Income',
+      title: 'Total Monthly Income',
       amount: totalIncome,
       icon: BanknotesIcon,
       color: 'bg-emerald-500',
       textColor: 'text-emerald-500',
     },
     {
-      title: 'Total Expenses',
+      title: 'Total Monthly Expenses',
       amount: totalExpenses,
       icon: ArrowDownIcon,
       color: 'bg-rose-500',
       textColor: 'text-rose-500',
     },
     {
-      title: 'Net Cash Flow',
+      title: 'Projected Net Cash Flow',
       amount: netCashFlow,
       icon: ArrowUpIcon,
       color: netCashFlow >= 0 ? 'bg-blue-500' : 'bg-red-500',
       textColor: netCashFlow >= 0 ? 'text-blue-500' : 'text-red-500',
     },
     {
-      title: 'Rental Profitability',
-      amount: rentalProfitability,
+      title: 'Rental Portfolio Performance',
+      amount: rentalPerformance,
       icon: HomeModernIcon,
-      color: rentalProfitability >= 0 ? 'bg-indigo-500' : 'bg-orange-500',
-      textColor: rentalProfitability >= 0 ? 'text-indigo-500' : 'text-orange-500',
+      color: rentalPerformance >= 0 ? 'bg-indigo-500' : 'bg-orange-500',
+      textColor: rentalPerformance >= 0 ? 'text-indigo-500' : 'text-orange-500',
     },
   ];
 
