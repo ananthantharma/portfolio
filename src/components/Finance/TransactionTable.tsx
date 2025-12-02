@@ -11,11 +11,9 @@ interface Transaction {
   property?:
     | {
         name: string;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }
     | string
-    | null
-    | any; // Allow any for ObjectId or populated object
+    | null;
 }
 
 interface TransactionTableProps {
