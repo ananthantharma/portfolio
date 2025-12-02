@@ -6,17 +6,17 @@ import Property from '@/models/Property';
 import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(_request: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({error: 'Unauthorized'}, {status: 401});
-        }
-
-        await dbConnect();
-        const properties = await Property.find({}).sort({name: 1});
-        return NextResponse.json(properties);
-    } catch (error) {
-        console.error('Error fetching properties:', error);
-        return NextResponse.json({error: 'Internal Server Error'}, {status: 500});
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
+
+    await dbConnect();
+    const properties = await Property.find({}).sort({name: 1});
+    return NextResponse.json(properties);
+  } catch (error) {
+    console.error('Error fetching properties:', error);
+    return NextResponse.json({error: 'Internal Server Error'}, {status: 500});
+  }
 }

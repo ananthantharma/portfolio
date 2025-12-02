@@ -1,4 +1,3 @@
-
 import {Dialog, Transition} from '@headlessui/react';
 import {XMarkIcon} from '@heroicons/react/24/outline';
 import React, {Fragment, useEffect, useState} from 'react';
@@ -18,11 +17,30 @@ interface TransactionModalProps {
 
 const INCOME_CATEGORIES = ['Salary (Ananthan)', 'Salary (Sai)', 'Rental Income', 'Child Benefits'];
 const EXPENSE_CATEGORIES = [
-  'Mortgage', 'Property Tax', 'Hydro/Electricity', 'Water/Sewer', 'Gas', 'House Insurance', // Housing
-  'TREB Fees', 'RECO Insurance', 'CREA/OREA Fees', 'ReMax Fees', 'P.Eng Dues', 'PMP Certification', // Professional
-  'Groceries', 'Dining Out', 'Car Insurance', 'Gas (Auto)', 'Internet', 'Phone (Bell/Fido)', // Living
-  'Daycare/Hanu School', 'Activities', // Family
-  'Google One', 'YouTube Premium', 'ChatGPT', 'Amazon' // Subscriptions
+  'Mortgage',
+  'Property Tax',
+  'Hydro/Electricity',
+  'Water/Sewer',
+  'Gas',
+  'House Insurance', // Housing
+  'TREB Fees',
+  'RECO Insurance',
+  'CREA/OREA Fees',
+  'ReMax Fees',
+  'P.Eng Dues',
+  'PMP Certification', // Professional
+  'Groceries',
+  'Dining Out',
+  'Car Insurance',
+  'Gas (Auto)',
+  'Internet',
+  'Phone (Bell/Fido)', // Living
+  'Daycare/Hanu School',
+  'Activities', // Family
+  'Google One',
+  'YouTube Premium',
+  'ChatGPT',
+  'Amazon', // Subscriptions
 ];
 
 const TransactionModal: React.FC<TransactionModalProps> = React.memo(({isOpen, onClose, onSave}) => {

@@ -6,53 +6,53 @@ import BudgetItem from '@/models/BudgetItem';
 import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions);
 
-    if (!session) {
-        return res.status(401).json({success: false, message: 'Unauthorized'});
-    }
+  if (!session) {
+    return res.status(401).json({success: false, message: 'Unauthorized'});
+  }
 
-    await dbConnect();
+  await dbConnect();
 
-    const {
-        query: {id},
-        method,
-    } = req;
+  const {
+    query: {id},
+    method,
+  } = req;
 
-    switch (method) {
-        case 'PUT':
-            try {
-                const budgetItem = await BudgetItem.findByIdAndUpdate(id, req.body, {
-                    new: true,
-                    runValidators: true,
-                });
+  switch (method) {
+    case 'PUT':
+      try {
+        const budgetItem = await BudgetItem.findByIdAndUpdate(id, req.body, {
+          new: true,
+          runValidators: true,
+        });
 
-                if (!budgetItem) {
-                    return res.status(404).json({success: false});
-                }
+        if (!budgetItem) {
+          return res.status(404).json({success: false});
+        }
 
-                res.status(200).json(budgetItem);
-            } catch (error) {
-                res.status(400).json({success: false, error});
-            }
-            break;
+        res.status(200).json(budgetItem);
+      } catch (error) {
+        res.status(400).json({success: false, error});
+      }
+      break;
 
-        case 'DELETE':
-            try {
-                const deletedBudgetItem = await BudgetItem.deleteOne({_id: id});
+    case 'DELETE':
+      try {
+        const deletedBudgetItem = await BudgetItem.deleteOne({_id: id});
 
-                if (!deletedBudgetItem) {
-                    return res.status(404).json({success: false});
-                }
+        if (!deletedBudgetItem) {
+          return res.status(404).json({success: false});
+        }
 
-                res.status(200).json({success: true, data: {}});
-            } catch (error) {
-                res.status(400).json({success: false, error});
-            }
-            break;
+        res.status(200).json({success: true, data: {}});
+      } catch (error) {
+        res.status(400).json({success: false, error});
+      }
+      break;
 
-        default:
-            res.status(400).json({success: false});
-            break;
-    }
+    default:
+      res.status(400).json({success: false});
+      break;
+  }
 }

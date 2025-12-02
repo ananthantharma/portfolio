@@ -7,7 +7,7 @@ export interface ITransaction {
   amount: number;
   type: 'Income' | 'Expense';
   category: string;
-  property?: mongoose.Types.ObjectId | { _id: string; name: string; type: string };
+  property?: mongoose.Types.ObjectId | {_id: string; name: string; type: string};
   isRecurring: boolean;
 }
 

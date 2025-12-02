@@ -8,10 +8,14 @@ interface Transaction {
   amount: number;
   type: 'Income' | 'Expense';
   category: string;
-  property?: {
-    name: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } | string | null | any; // Allow any for ObjectId or populated object
+  property?:
+    | {
+        name: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }
+    | string
+    | null
+    | any; // Allow any for ObjectId or populated object
 }
 
 interface TransactionTableProps {
@@ -90,8 +94,9 @@ const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transacti
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">{transaction.category}</td>
                 <td
-                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
+                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${
+                    transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
                   {transaction.type === 'Income' ? '+' : '-'}
                   {formatCurrency(transaction.amount)}
                 </td>
