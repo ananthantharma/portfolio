@@ -1,8 +1,8 @@
-import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import {Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User} from 'lucide-react';
+import React, {useEffect, useRef, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { getChatResponse } from '../lib/gemini';
+import {getChatResponse} from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -34,7 +34,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
+export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +45,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
@@ -84,12 +84,12 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
     const userMessage = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', parts: userMessage }]);
+    setMessages(prev => [...prev, {role: 'user', parts: userMessage}]);
     setIsLoading(true);
 
     try {
       const response = await getChatResponse(apiKey, messages, userMessage, selectedModel, systemInstruction);
-      setMessages(prev => [...prev, { role: 'model', parts: response }]);
+      setMessages(prev => [...prev, {role: 'model', parts: response}]);
     } catch (error: unknown) {
       console.error('Error getting response:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -187,8 +187,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
               <div
                 className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  ? 'bg-blue-600 text-white rounded-tr-none'
+                  : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
                   }`}>
                 <div className="prose prose-invert max-w-none text-sm sm:text-base">
                   <ReactMarkdown>{msg.parts}</ReactMarkdown>
