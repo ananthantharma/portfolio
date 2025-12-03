@@ -1,8 +1,8 @@
-import {Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User} from 'lucide-react';
-import React, {useEffect, useRef, useState} from 'react';
+import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import {getChatResponse} from '../lib/gemini';
+import { getChatResponse } from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -34,7 +34,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
+export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -45,7 +45,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -84,12 +84,12 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
     const userMessage = input.trim();
     setInput('');
-    setMessages(prev => [...prev, {role: 'user', parts: userMessage}]);
+    setMessages(prev => [...prev, { role: 'user', parts: userMessage }]);
     setIsLoading(true);
 
     try {
       const response = await getChatResponse(apiKey, messages, userMessage, selectedModel, systemInstruction);
-      setMessages(prev => [...prev, {role: 'model', parts: response}]);
+      setMessages(prev => [...prev, { role: 'model', parts: response }]);
     } catch (error: unknown) {
       console.error('Error getting response:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -124,6 +124,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             className="bg-zinc-700 text-zinc-100 text-sm rounded-lg px-3 py-1.5 border border-zinc-600 focus:ring-2 focus:ring-blue-500 outline-none"
             onChange={e => setSelectedModel(e.target.value)}
             value={selectedModel}>
+            <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+            <option value="gemini-3-pro-image-preview">Gemini 3 Pro Image Preview</option>
             <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
             <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
             <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
@@ -139,9 +141,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             </div>
           )}
           <button
-            className={`text-sm transition-colors flex items-center gap-2 ${
-              activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-            }`}
+            className={`text-sm transition-colors flex items-center gap-2 ${activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
             onClick={handleEmailRefine}
             title="Start Email Refiner Gem">
             <FilePenLine className="w-4 h-4" />
@@ -179,18 +180,16 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
           <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
             <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                }`}>
+                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                  }`}>
                 {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
               </div>
 
               <div
-                className={`px-4 py-3 rounded-2xl ${
-                  msg.role === 'user'
+                className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
                     ? 'bg-blue-600 text-white rounded-tr-none'
                     : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                }`}>
+                  }`}>
                 <div className="prose prose-invert max-w-none text-sm sm:text-base">
                   <ReactMarkdown>{msg.parts}</ReactMarkdown>
                 </div>
