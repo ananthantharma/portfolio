@@ -1,0 +1,41 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { NextResponse } from 'next/server';
+
+// Initialize Gemini
+// Ensure GOOGLE_API_KEY is set in your .env.local file
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
+
+export async function POST(req: Request) {
+    try {
+        const { prompt } = await req.json();
+
+        if (!process.env.GOOGLE_API_KEY) {
+            return NextResponse.json(
+                { error: 'Missing API Key configuration' },
+                { status: 500 }
+            );
+        }
+
+        if (!prompt) {
+            return NextResponse.json(
+                { error: 'Prompt is required' },
+                { status: 400 }
+            );
+        }
+
+        // Use the flash model (gemini-1.5-flash) as requested/standard efficient model
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        return NextResponse.json({ text });
+    } catch (error) {
+        console.error('Gemini API Error:', error);
+        return NextResponse.json(
+            { error: 'Failed to generate content' },
+            { status: 500 }
+        );
+    }
+}

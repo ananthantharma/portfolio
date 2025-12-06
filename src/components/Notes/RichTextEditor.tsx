@@ -8,7 +8,7 @@ import React from 'react';
 const ReactQuill = dynamic(() => import('react-quill'), {
     ssr: false,
     loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
-}) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}) as any;
 
 interface RichTextEditorProps {
     value: string;
@@ -47,10 +47,11 @@ const formats = [
     'image',
 ];
 
-const RichTextEditor: React.FC<RichTextEditorProps> = React.memo(({ value, onChange, placeholder }) => {
+const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ value, onChange, placeholder }, ref) => {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col relative">
             <ReactQuill
+                ref={ref}
                 className="flex-1 h-full"
                 formats={formats}
                 modules={modules}
@@ -83,4 +84,4 @@ const RichTextEditor: React.FC<RichTextEditorProps> = React.memo(({ value, onCha
 
 RichTextEditor.displayName = 'RichTextEditor';
 
-export default RichTextEditor;
+export default React.memo(RichTextEditor);
