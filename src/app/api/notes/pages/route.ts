@@ -13,10 +13,23 @@ export async function GET(request: Request) {
   await dbConnect();
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
+  const isFlagged = searchParams.get('isFlagged') === 'true';
 
   try {
-    const query = sectionId ? { sectionId } : {};
-    const pages = await NotePage.find(query).sort({ updatedAt: -1 });
+    let query = {};
+    if (isFlagged) {
+      query = { isFlagged: true };
+    } else if (sectionId) {
+      query = { sectionId };
+    }
+
+    const pages = await NotePage.find(query)
+      .sort({ updatedAt: -1 })
+      .populate({
+        path: 'sectionId',
+        select: 'categoryId name', // Populate categoryId to allow full navigation
+      });
+
     return NextResponse.json({ success: true, data: pages });
   } catch (error) {
     return NextResponse.json({ success: false, error: error }, { status: 400 });

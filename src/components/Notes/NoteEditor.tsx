@@ -1,5 +1,7 @@
 'use client';
 
+import { FlagIcon } from '@heroicons/react/24/outline'; // Outline for unflagged
+import { FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid'; // Solid for flagged
 import React, { useEffect, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
@@ -9,18 +11,22 @@ import RichTextEditor from './RichTextEditor';
 interface NoteEditorProps {
   page: INotePage | null;
   onSave: (id: string, content: string) => void;
+  onToggleFlag: (id: string, isFlagged: boolean) => void;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onToggleFlag }) => {
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
+  const [isFlagged, setIsFlagged] = useState(false);
 
   useEffect(() => {
     if (page) {
       setContent(page.content || '');
+      setIsFlagged(page.isFlagged || false);
       setIsDirty(false);
     } else {
       setContent('');
+      setIsFlagged(false);
     }
   }, [page]);
 
@@ -28,6 +34,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
     if (page) {
       onSave(page._id as string, content);
       setIsDirty(false);
+    }
+  };
+
+  const handleToggleFlag = () => {
+    if (page) {
+      const newFlagState = !isFlagged;
+      setIsFlagged(newFlagState);
+      onToggleFlag(page._id as string, newFlagState);
     }
   };
 
@@ -51,13 +65,23 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
           <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
           <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
         </div>
-        <button
-          className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
-            }`}
-          disabled={!isDirty}
-          onClick={handleSave}>
-          Save
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleToggleFlag}
+            className={`rounded-full p-2 transition-colors ${isFlagged ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+              }`}
+            title={isFlagged ? "Unflag task" : "Flag as key task"}
+          >
+            {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
+          </button>
+          <button
+            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
+              }`}
+            disabled={!isDirty}
+            onClick={handleSave}>
+            Save
+          </button>
+        </div>
       </div>
       <div className="flex-1 overflow-hidden p-4">
         <RichTextEditor

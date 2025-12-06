@@ -4,6 +4,7 @@ export interface INotePage extends Document {
   title: string;
   content: string;
   sectionId: mongoose.Types.ObjectId;
+  isFlagged: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,10 @@ const NotePageSchema: Schema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'NoteSection',
       required: true,
+    },
+    isFlagged: {
+      type: Boolean,
+      default: false,
     },
   },
   {
