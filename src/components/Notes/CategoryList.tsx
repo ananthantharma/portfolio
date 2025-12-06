@@ -1,5 +1,6 @@
+import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
 import { INoteCategory } from '@/models/NoteCategory';
 
 interface CategoryListProps {
@@ -11,7 +12,7 @@ interface CategoryListProps {
     onDeleteCategory: (id: string) => void;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({
+const CategoryList: React.FC<CategoryListProps> = React.memo(({
     categories,
     selectedCategoryId,
     onSelectCategory,
@@ -50,8 +51,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
             <div className="flex items-center justify-between border-b border-gray-200 p-4">
                 <h2 className="text-lg font-semibold text-gray-700">Notebooks</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
                     className="rounded-full p-1 hover:bg-gray-200 text-gray-600"
+                    onClick={() => setIsAdding(true)}
                     title="Add Notebook"
                 >
                     <PlusIcon className="h-5 w-5" />
@@ -63,21 +64,21 @@ const CategoryList: React.FC<CategoryListProps> = ({
                     <div className="p-2">
                         <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                             <input
-                                type="text"
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                placeholder="New Notebook"
-                                className="w-full border-none p-0 text-sm focus:ring-0"
                                 autoFocus
+                                className="w-full border-none p-0 text-sm focus:ring-0"
+                                onChange={(e) => setNewCategoryName(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleAdd();
                                     if (e.key === 'Escape') setIsAdding(false);
                                 }}
+                                placeholder="New Notebook"
+                                type="text"
+                                value={newCategoryName}
                             />
-                            <button onClick={handleAdd} className="text-green-600">
+                            <button className="text-green-600" onClick={handleAdd}>
                                 <CheckIcon className="h-4 w-4" />
                             </button>
-                            <button onClick={() => setIsAdding(false)} className="text-red-600">
+                            <button className="text-red-600" onClick={() => setIsAdding(false)}>
                                 <XMarkIcon className="h-4 w-4" />
                             </button>
                         </div>
@@ -90,20 +91,20 @@ const CategoryList: React.FC<CategoryListProps> = ({
                             {editingId === category._id ? (
                                 <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                                     <input
-                                        type="text"
-                                        value={editName}
-                                        onChange={(e) => setEditName(e.target.value)}
-                                        className="w-full border-none p-0 text-sm focus:ring-0"
                                         autoFocus
+                                        className="w-full border-none p-0 text-sm focus:ring-0"
+                                        onChange={(e) => setEditName(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') handleRename();
                                             if (e.key === 'Escape') setEditingId(null);
                                         }}
+                                        type="text"
+                                        value={editName}
                                     />
-                                    <button onClick={handleRename} className="text-green-600">
+                                    <button className="text-green-600" onClick={handleRename}>
                                         <CheckIcon className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => setEditingId(null)} className="text-red-600">
+                                    <button className="text-red-600" onClick={() => setEditingId(null)}>
                                         <XMarkIcon className="h-4 w-4" />
                                     </button>
                                 </div>
@@ -118,22 +119,22 @@ const CategoryList: React.FC<CategoryListProps> = ({
                                     <span className="truncate">{category.name}</span>
                                     <div className="hidden space-x-1 group-hover:flex">
                                         <button
+                                            className="text-gray-500 hover:text-blue-600"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 startEditing(category);
                                             }}
-                                            className="text-gray-500 hover:text-blue-600"
                                         >
                                             <PencilIcon className="h-4 w-4" />
                                         </button>
                                         <button
+                                            className="text-gray-500 hover:text-red-600"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 if (confirm('Are you sure you want to delete this notebook and all its pages?')) {
                                                     onDeleteCategory(category._id as string);
                                                 }
                                             }}
-                                            className="text-gray-500 hover:text-red-600"
                                         >
                                             <TrashIcon className="h-4 w-4" />
                                         </button>
@@ -146,6 +147,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
             </div>
         </div>
     );
-};
+});
+
+CategoryList.displayName = 'CategoryList';
 
 export default CategoryList;

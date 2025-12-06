@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+
 import CategoryList from './CategoryList';
-import PageList from './PageList';
 import NoteEditor from './NoteEditor';
+import PageList from './PageList';
+
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
 
-const NotesLayout: React.FC = () => {
+const NotesLayout: React.FC = React.memo(() => {
     const [categories, setCategories] = useState<INoteCategory[]>([]);
     const [pages, setPages] = useState<INotePage[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -146,33 +148,35 @@ const NotesLayout: React.FC = () => {
             <div className="w-64 flex-shrink-0">
                 <CategoryList
                     categories={categories}
-                    selectedCategoryId={selectedCategoryId}
-                    onSelectCategory={setSelectedCategoryId}
                     onAddCategory={handleAddCategory}
-                    onRenameCategory={handleRenameCategory}
                     onDeleteCategory={handleDeleteCategory}
+                    onRenameCategory={handleRenameCategory}
+                    onSelectCategory={setSelectedCategoryId}
+                    selectedCategoryId={selectedCategoryId}
                 />
             </div>
 
             {/* Column 2: Pages */}
             <div className="w-64 flex-shrink-0">
                 <PageList
+                    loading={loadingPages}
+                    onAddPage={handleAddPage}
+                    onDeletePage={handleDeletePage}
+                    onRenamePage={handleRenamePage}
+                    onSelectPage={setSelectedPageId}
                     pages={pages}
                     selectedPageId={selectedPageId}
-                    onSelectPage={setSelectedPageId}
-                    onAddPage={handleAddPage}
-                    onRenamePage={handleRenamePage}
-                    onDeletePage={handleDeletePage}
-                    loading={loadingPages}
                 />
             </div>
 
             {/* Column 3: Editor */}
             <div className="flex-1 overflow-hidden">
-                <NoteEditor page={selectedPage} onSave={handleSavePageContent} />
+                <NoteEditor onSave={handleSavePageContent} page={selectedPage} />
             </div>
         </div>
     );
-};
+});
+
+NotesLayout.displayName = 'NotesLayout';
 
 export default NotesLayout;

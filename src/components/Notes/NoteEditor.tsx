@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { INotePage } from '@/models/NotePage';
 
 interface NoteEditorProps {
@@ -6,7 +7,7 @@ interface NoteEditorProps {
     onSave: (id: string, content: string) => void;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = ({ page, onSave }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
     const [content, setContent] = useState('');
     const [isDirty, setIsDirty] = useState(false);
 
@@ -44,29 +45,31 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ page, onSave }) => {
                     </span>
                 </div>
                 <button
-                    onClick={handleSave}
-                    disabled={!isDirty}
                     className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty
                             ? 'bg-blue-600 hover:bg-blue-700'
                             : 'cursor-not-allowed bg-gray-300'
                         }`}
+                    disabled={!isDirty}
+                    onClick={handleSave}
                 >
                     Save
                 </button>
             </div>
             <div className="flex-1 p-6">
                 <textarea
-                    value={content}
+                    className="h-full w-full resize-none border-none p-0 text-lg text-gray-800 focus:ring-0"
                     onChange={(e) => {
                         setContent(e.target.value);
                         setIsDirty(true);
                     }}
-                    className="h-full w-full resize-none border-none p-0 text-lg text-gray-800 focus:ring-0"
                     placeholder="Start typing your notes here..."
+                    value={content}
                 />
             </div>
         </div>
     );
-};
+});
+
+NoteEditor.displayName = 'NoteEditor';
 
 export default NoteEditor;

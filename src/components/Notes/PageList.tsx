@@ -1,5 +1,6 @@
+import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
 import { INotePage } from '@/models/NotePage';
 
 interface PageListProps {
@@ -12,7 +13,7 @@ interface PageListProps {
     loading: boolean;
 }
 
-const PageList: React.FC<PageListProps> = ({
+const PageList: React.FC<PageListProps> = React.memo(({
     pages,
     selectedPageId,
     onSelectPage,
@@ -56,8 +57,8 @@ const PageList: React.FC<PageListProps> = ({
             <div className="flex items-center justify-between border-b border-gray-200 p-4">
                 <h2 className="text-lg font-semibold text-gray-700">Pages</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
                     className="rounded-full p-1 hover:bg-gray-100 text-gray-600"
+                    onClick={() => setIsAdding(true)}
                     title="Add Page"
                 >
                     <PlusIcon className="h-5 w-5" />
@@ -69,21 +70,21 @@ const PageList: React.FC<PageListProps> = ({
                     <div className="p-2">
                         <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                             <input
-                                type="text"
-                                value={newPageTitle}
-                                onChange={(e) => setNewPageTitle(e.target.value)}
-                                placeholder="New Page"
-                                className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
                                 autoFocus
+                                className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
+                                onChange={(e) => setNewPageTitle(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') handleAdd();
                                     if (e.key === 'Escape') setIsAdding(false);
                                 }}
+                                placeholder="New Page"
+                                type="text"
+                                value={newPageTitle}
                             />
-                            <button onClick={handleAdd} className="text-green-600">
+                            <button className="text-green-600" onClick={handleAdd}>
                                 <CheckIcon className="h-4 w-4" />
                             </button>
-                            <button onClick={() => setIsAdding(false)} className="text-red-600">
+                            <button className="text-red-600" onClick={() => setIsAdding(false)}>
                                 <XMarkIcon className="h-4 w-4" />
                             </button>
                         </div>
@@ -96,20 +97,20 @@ const PageList: React.FC<PageListProps> = ({
                             {editingId === page._id ? (
                                 <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                                     <input
-                                        type="text"
-                                        value={editTitle}
-                                        onChange={(e) => setEditTitle(e.target.value)}
-                                        className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
                                         autoFocus
+                                        className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
+                                        onChange={(e) => setEditTitle(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') handleRename();
                                             if (e.key === 'Escape') setEditingId(null);
                                         }}
+                                        type="text"
+                                        value={editTitle}
                                     />
-                                    <button onClick={handleRename} className="text-green-600">
+                                    <button className="text-green-600" onClick={handleRename}>
                                         <CheckIcon className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => setEditingId(null)} className="text-red-600">
+                                    <button className="text-red-600" onClick={() => setEditingId(null)}>
                                         <XMarkIcon className="h-4 w-4" />
                                     </button>
                                 </div>
@@ -129,22 +130,22 @@ const PageList: React.FC<PageListProps> = ({
                                     </div>
                                     <div className="hidden space-x-1 group-hover:flex">
                                         <button
+                                            className="text-gray-400 hover:text-blue-600"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 startEditing(page);
                                             }}
-                                            className="text-gray-400 hover:text-blue-600"
                                         >
                                             <PencilIcon className="h-4 w-4" />
                                         </button>
                                         <button
+                                            className="text-gray-400 hover:text-red-600"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 if (confirm('Are you sure you want to delete this page?')) {
                                                     onDeletePage(page._id as string);
                                                 }
                                             }}
-                                            className="text-gray-400 hover:text-red-600"
                                         >
                                             <TrashIcon className="h-4 w-4" />
                                         </button>
@@ -157,6 +158,8 @@ const PageList: React.FC<PageListProps> = ({
             </div>
         </div>
     );
-};
+});
+
+PageList.displayName = 'PageList';
 
 export default PageList;
