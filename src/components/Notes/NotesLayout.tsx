@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import CategoryList from './CategoryList';
 import NoteEditor from './NoteEditor';
@@ -53,92 +53,88 @@ const NotesLayout: React.FC = React.memo(() => {
     };
 
     // Category Operations
-    const handleAddCategory = async (name: string) => {
+    const handleAddCategory = useCallback(async (name: string) => {
         try {
             const response = await axios.post('/api/notes/categories', { name });
-            setCategories([...categories, response.data.data]);
+            setCategories((prev) => [...prev, response.data.data]);
         } catch (error) {
             console.error('Error adding category:', error);
         }
-    };
+    }, []);
 
-    const handleRenameCategory = async (id: string, name: string) => {
+    const handleRenameCategory = useCallback(async (id: string, name: string) => {
         try {
             const response = await axios.put(`/api/notes/categories/${id}`, { name });
-            setCategories(
-                categories.map((cat) =>
+            setCategories((prev) =>
+                prev.map((cat) =>
                     cat._id === id ? response.data.data : cat
                 )
             );
         } catch (error) {
             console.error('Error renaming category:', error);
         }
-    };
+    }, []);
 
-    const handleDeleteCategory = async (id: string) => {
+    const handleDeleteCategory = useCallback(async (id: string) => {
         try {
             await axios.delete(`/api/notes/categories/${id}`);
-            setCategories(categories.filter((cat) => cat._id !== id));
-            if (selectedCategoryId === id) {
-                setSelectedCategoryId(null);
-            }
+            setCategories((prev) => prev.filter((cat) => cat._id !== id));
+            setSelectedCategoryId((prev) => (prev === id ? null : prev));
         } catch (error) {
             console.error('Error deleting category:', error);
         }
-    };
+    }, []);
 
     // Page Operations
-    const handleAddPage = async (title: string) => {
+    const handleAddPage = useCallback(async (title: string) => {
         if (!selectedCategoryId) return;
         try {
             const response = await axios.post('/api/notes/pages', {
                 title,
                 categoryId: selectedCategoryId,
             });
-            setPages([response.data.data, ...pages]);
+            setPages((prev) => [response.data.data, ...prev]);
             setSelectedPageId(response.data.data._id as string);
         } catch (error) {
             console.error('Error adding page:', error);
         }
-    };
+    }, [selectedCategoryId]);
 
-    const handleRenamePage = async (id: string, title: string) => {
+    const handleRenamePage = useCallback(async (id: string, title: string) => {
         try {
             const response = await axios.put(`/api/notes/pages/${id}`, { title });
-            setPages(
-                pages.map((page) =>
+            setPages((prev) =>
+                prev.map((page) =>
                     page._id === id ? response.data.data : page
                 )
             );
         } catch (error) {
             console.error('Error renaming page:', error);
         }
-    };
+    }, []);
 
-    const handleDeletePage = async (id: string) => {
+    const handleDeletePage = useCallback(async (id: string) => {
         try {
             await axios.delete(`/api/notes/pages/${id}`);
-            setPages(pages.filter((page) => page._id !== id));
-            if (selectedPageId === id) {
-                setSelectedPageId(null);
-            }
+            setPages((prev) => prev.filter((page) => page._id !== id));
+            setSelectedPageId((prev) => (prev === id ? null : prev));
         } catch (error) {
             console.error('Error deleting page:', error);
         }
-    };
+    }, []);
 
-    const handleSavePageContent = async (id: string, content: string) => {
+    const handleSavePageContent = useCallback(async (id: string, content: string) => {
         try {
             const response = await axios.put(`/api/notes/pages/${id}`, { content });
-            setPages(
-                pages.map((page) =>
+            setPages((prev) =>
+                prev.map((page) =>
                     page._id === id ? response.data.data : page
                 )
             );
         } catch (error) {
             console.error('Error saving page content:', error);
         }
-    };
+    }, []);
 
     const selectedPage = pages.find((p) => p._id === selectedPageId) || null;
 

@@ -1,6 +1,5 @@
-'use client';
-
 import React from 'react';
+
 import NotesLayout from '@/components/Notes/NotesLayout';
 
 export default function NotesPage() {
