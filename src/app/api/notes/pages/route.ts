@@ -14,11 +14,14 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
   const isFlagged = searchParams.get('isFlagged') === 'true';
+  const isImportant = searchParams.get('isImportant') === 'true';
 
   try {
     let query = {};
     if (isFlagged) {
       query = { isFlagged: true };
+    } else if (isImportant) {
+      query = { isImportant: true };
     } else if (sectionId) {
       query = { sectionId };
     }

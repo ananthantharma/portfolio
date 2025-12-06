@@ -1,13 +1,16 @@
+'use client';
+
+import axios from 'axios';
 import { Dialog, Transition } from '@headlessui/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlagIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import { FlagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
 import { INoteSection } from '@/models/NoteSection';
 
 import CategoryList from './CategoryList';
-import KeyTasksModal from './KeyTasksModal';
+import FlaggedItemsModal from './FlaggedItemsModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
 import SectionList from './SectionList';
@@ -22,6 +25,9 @@ const NotesLayout: React.FC = React.memo(() => {
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
+  const [isImportantOpen, setIsImportantOpen] = useState(false);
+  const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
+  const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -108,8 +114,14 @@ const NotesLayout: React.FC = React.memo(() => {
     return response.data.data;
   };
 
+  const fetchImportantTasks = async () => {
+    const response = await axios.get('/api/notes/pages?isImportant=true');
+    return response.data.data;
+  };
+
   const handleJumpToTask = async (task: any) => { // Using any for the populated fields temporarily
     setIsKeyTasksOpen(false);
+    setIsImportantOpen(false);
     // We need to navigate to this task.
     // The task object from API (populated) has sectionId which is an object { _id, categoryId, name } or similar.
     // Wait, population: select: 'categoryId name'. So sectionId field is an object.
@@ -142,7 +154,6 @@ const NotesLayout: React.FC = React.memo(() => {
     // 1. Set Category. 
     // 2. We can't await state updates.
     // Let's modify the effects to NOT clear if the value we are about to set is compatible? No.
-
     // BETTER: Using a ref to skip clearing?
     // Or just allow the flicker? User won't see it if fast.
     // But clearing ID `setSelectedSectionId(null)` is the problem.
@@ -283,9 +294,9 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
-  const handleToggleFlag = useCallback(async (id: string, isFlagged: boolean) => {
+  const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { isFlagged });
+      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error("Error toggling flag", error);
@@ -299,36 +310,49 @@ const NotesLayout: React.FC = React.memo(() => {
       {/* Top Toolbar for Key Tasks - Added this wrapper div for the main layout to include header */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2">
         <span className="text-sm font-semibold text-gray-500">Workspace</span>
-        <button
-          onClick={() => setIsKeyTasksOpen(true)}
-          className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-gray-50 border border-red-200"
-        >
-          <FlagIcon className="h-4 w-4" />
-          Key Tasks
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsImportantOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
+          >
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            Important
+          </button>
+          <button
+            onClick={() => setIsKeyTasksOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-gray-50 border border-red-200"
+          >
+            <FlagIcon className="h-4 w-4" />
+            Key Tasks
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Column 1: Categories */}
-        <div className="w-64 flex-shrink-0 border-r border-gray-200">
+        <div className={`${isCategoryCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <CategoryList
             categories={categories}
+            isCollapsed={isCategoryCollapsed}
             onAddCategory={handleAddCategory}
             onDeleteCategory={handleDeleteCategory}
             onRenameCategory={handleRenameCategory}
             onSelectCategory={setSelectedCategoryId}
+            onToggleCollapse={() => setIsCategoryCollapsed(!isCategoryCollapsed)}
             selectedCategoryId={selectedCategoryId}
           />
         </div>
 
         {/* Column 2: Sections */}
-        <div className="w-64 flex-shrink-0 border-r border-gray-200">
+        <div className={`${isSectionCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <SectionList
+            isCollapsed={isSectionCollapsed}
             loading={loadingSections}
             onAddSection={handleAddSection}
             onDeleteSection={handleDeleteSection}
             onRenameSection={handleRenameSection}
             onSelectSection={setSelectedSectionId}
+            onToggleCollapse={() => setIsSectionCollapsed(!isSectionCollapsed)}
             sections={sections}
             selectedSectionId={selectedSectionId}
           />
@@ -357,10 +381,21 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
       </div>
 
-      <KeyTasksModal
-        fetchFlaggedTasks={fetchFlaggedTasks}
+      <FlaggedItemsModal
+        title="Key Tasks"
+        icon="flag"
+        fetchItems={fetchFlaggedTasks}
         isOpen={isKeyTasksOpen}
         onClose={() => setIsKeyTasksOpen(false)}
+        onSelectTask={handleJumpToTask}
+      />
+
+      <FlaggedItemsModal
+        title="Important"
+        icon="important"
+        fetchItems={fetchImportantTasks}
+        isOpen={isImportantOpen}
+        onClose={() => setIsImportantOpen(false)}
         onSelectTask={handleJumpToTask}
       />
     </div>

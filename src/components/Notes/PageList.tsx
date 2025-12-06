@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
@@ -30,6 +30,11 @@ const PageList: React.FC<PageListProps> = React.memo(
       }
     };
 
+    const handleAddToday = () => {
+      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      onAddPage(today);
+    };
+
     const startEditing = (page: INotePage) => {
       setEditingId(page._id as string);
       setEditTitle(page.title);
@@ -51,12 +56,20 @@ const PageList: React.FC<PageListProps> = React.memo(
       <div className="flex h-full flex-col border-r border-gray-200 bg-white">
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
           <h2 className="text-lg font-semibold text-gray-700">Pages</h2>
-          <button
-            className="rounded-full p-1 hover:bg-gray-100 text-gray-600"
-            onClick={() => setIsAdding(true)}
-            title="Add Page">
-            <PlusIcon className="h-5 w-5" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="rounded-full p-1 hover:bg-gray-100 text-gray-600"
+              onClick={handleAddToday}
+              title="Add Today">
+              <CalendarIcon className="h-5 w-5" />
+            </button>
+            <button
+              className="rounded-full p-1 hover:bg-gray-100 text-gray-600"
+              onClick={() => setIsAdding(true)}
+              title="Add Page">
+              <PlusIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">

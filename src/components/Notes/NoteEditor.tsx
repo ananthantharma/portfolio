@@ -1,7 +1,7 @@
 'use client';
 
-import { FlagIcon } from '@heroicons/react/24/outline'; // Outline for unflagged
-import { FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid'; // Solid for flagged
+import { ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Outline for unflagged
+import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid'; // Solid for flagged
 import React, { useEffect, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
@@ -11,22 +11,25 @@ import RichTextEditor from './RichTextEditor';
 interface NoteEditorProps {
   page: INotePage | null;
   onSave: (id: string, content: string) => void;
-  onToggleFlag: (id: string, isFlagged: boolean) => void;
+  onToggleFlag: (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => void;
 }
 
 const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onToggleFlag }) => {
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
+  const [isImportant, setIsImportant] = useState(false);
 
   useEffect(() => {
     if (page) {
       setContent(page.content || '');
       setIsFlagged(page.isFlagged || false);
+      setIsImportant(page.isImportant || false);
       setIsDirty(false);
     } else {
       setContent('');
       setIsFlagged(false);
+      setIsImportant(false);
     }
   }, [page]);
 
@@ -37,11 +40,19 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onTogg
     }
   };
 
-  const handleToggleFlag = () => {
+  const handleToggleFlagged = () => {
     if (page) {
       const newFlagState = !isFlagged;
       setIsFlagged(newFlagState);
-      onToggleFlag(page._id as string, newFlagState);
+      onToggleFlag(page._id as string, 'isFlagged', newFlagState);
+    }
+  };
+
+  const handleToggleImportant = () => {
+    if (page) {
+      const newImportantState = !isImportant;
+      setIsImportant(newImportantState);
+      onToggleFlag(page._id as string, 'isImportant', newImportantState);
     }
   };
 
@@ -67,7 +78,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onTogg
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handleToggleFlag}
+            onClick={handleToggleImportant}
+            className={`rounded-full p-2 transition-colors ${isImportant ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+              }`}
+            title={isImportant ? "Mark as not important" : "Mark as important"}
+          >
+            {isImportant ? <ExclamationTriangleIconSolid className="h-6 w-6" /> : <ExclamationTriangleIcon className="h-6 w-6" />}
+          </button>
+          <button
+            onClick={handleToggleFlagged}
             className={`rounded-full p-2 transition-colors ${isFlagged ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
               }`}
             title={isFlagged ? "Unflag task" : "Flag as key task"}
