@@ -1,3 +1,5 @@
+'use client';
+
 import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 
