@@ -85,15 +85,15 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = React.memo(({ fetchI
                                         <ul className="divide-y divide-gray-100">
                                             {items.map((item) => (
                                                 <li
-                                                    key={item._id}
                                                     className="py-3 hover:bg-gray-50 cursor-pointer rounded-md px-2 transition-colors"
+                                                    key={item._id}
                                                     onClick={() => onSelectTask(item)}
                                                 >
                                                     <div className="flex items-start justify-between">
                                                         <div>
                                                             <p className="font-medium text-gray-900">{item.title}</p>
                                                             <p className="text-xs text-gray-500">
-                                                                {(item.sectionId as any)?.name ? `${(item.sectionId as any).name}` : 'Unknown Section'}
+                                                                {(item.sectionId as unknown as { name: string })?.name ? `${(item.sectionId as unknown as { name: string }).name}` : 'Unknown Section'}
                                                             </p>
                                                         </div>
                                                         <span className="text-xs text-gray-400">

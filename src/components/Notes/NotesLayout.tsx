@@ -1,8 +1,8 @@
 'use client';
 
+import { ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
@@ -37,25 +37,6 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     if (selectedCategoryId) {
       fetchSections(selectedCategoryId);
-      // Only clear downstream selection if we are not navigating to a specific flagged page
-      // (This logic is tricky if automated, but standard behavior implies reset on manual click. 
-      // If setting via state, we might need a flag to prevent clearing, but usually effect runs after state update)
-      // Actually, if we set selectedCategoryId, this runs. If we intend to set all 3, we should batch or ensure this doesn't wipe it.
-      // But typically React state updates batch. Let's see. 
-      // Simplified: If we set them all at once, the effects might race.
-      // Better approach: Depend on IDs. If we change ID, we fetch.
-      // If we set selectedSectionId immediately after, it might be fine.
-      // Let's stick to standard behavior: Clearing downstream is correct when *user* clicks upstream.
-      // But when *programmatically* setting, we want to preserve.
-      // Current "manual" behavior: User clicks Category -> setSelected(id). Effect runs -> fetchSections -> clear Section.
-      // Problem: Programmatic set -> setSelectedCategory(A), setSelectedSection(B). Effect A runs -> Clears Section to null. Protocol fails.
-      // Fix: Check if the new selectedCategoryId implies a different context or if we are just hydrating.
-      // Actually, the easiest fix for "Jump to Note" is to update the effect to NOT clear if the current section belongs to the category.
-      // But we don't know the future state in the effect.
-      // Alternative: Don't clear in effect? No, we must clear if user switches context.
-      // We'll leave it for now and test. Use `isNavigating` ref if needed? 
-      // Or just load everything? 
-      // Let's try standard. If "Jump" fails, I'll refactor logic to be more robust (e.g., verify validity).
     } else {
       setSections([]);
       setPages([]);
@@ -68,7 +49,6 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     if (selectedSectionId) {
       fetchPages(selectedSectionId);
-      // Same issue with page clearing.
     } else {
       setPages([]);
       setSelectedPageId(null);
@@ -108,72 +88,31 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   };
 
-  const fetchFlaggedTasks = async () => {
+  const fetchFlaggedTasks = useCallback(async () => {
     const response = await axios.get('/api/notes/pages?isFlagged=true');
     return response.data.data;
-  };
+  }, []);
 
-  const fetchImportantTasks = async () => {
+  const fetchImportantTasks = useCallback(async () => {
     const response = await axios.get('/api/notes/pages?isImportant=true');
     return response.data.data;
-  };
+  }, []);
 
-  const handleJumpToTask = async (task: any) => { // Using any for the populated fields temporarily
+  const handleJumpToTask = useCallback(async (task: INotePage) => {
     setIsKeyTasksOpen(false);
     setIsImportantOpen(false);
-    // We need to navigate to this task.
-    // The task object from API (populated) has sectionId which is an object { _id, categoryId, name } or similar.
-    // Wait, population: select: 'categoryId name'. So sectionId field is an object.
-    // We need to extract IDs.
 
-    const sectionObj = task.sectionId;
+    // We cast sectionId to unknown then to INoteSection because it's populated but typed as string | INoteSection
+    const sectionObj = task.sectionId as unknown as INoteSection;
+
     if (!sectionObj || !sectionObj.categoryId) {
       alert("Cannot locate note: Missing section info.");
       return;
     }
 
-    const targetCategoryId = sectionObj.categoryId;
-    const targetSectionId = sectionObj._id;
-    const targetPageId = task._id;
-
-    // WORKAROUND for the Effect Clearing conflict:
-    // We manually fetch the data needed for the target state, SET the data, AND SET the IDs.
-    // This prevents the effects from triggering "fetch and clear" cycles because the data will be already consistent?
-    // No, effects run on ID change.
-    // Solution: Set Category -> Wait -> Set Section -> Wait -> Set Page? No, slow.
-    // Solution: Just set them. The effects check `if (selected...) fetch`.
-    // The `fetch` calls set state.
-    // The issue is `setSelectedSectionId(null)` in the category effect.
-    // We can remove the automatic clearing from effects?
-    // No, let's try to just set them and see if React batches it enough or if we need to be smarter.
-    // Actually, if we set `setSelectedCategoryId` it triggers effect.
-    // We should probably chain them?
-
-    // Let's try:
-    // 1. Set Category. 
-    // 2. We can't await state updates.
-    // Let's modify the effects to NOT clear if the value we are about to set is compatible? No.
-    // BETTER: Using a ref to skip clearing?
-    // Or just allow the flicker? User won't see it if fast.
-    // But clearing ID `setSelectedSectionId(null)` is the problem.
-
-    // I will disable the "auto-clear" in effects temporarily using a ref if I can, or just modify the effects.
-    // Let's modify the effects to ONLY clear if the new ID is different?
-    // `if (selectedCategoryId)` -> fetch. The clearing `setSelectedSectionId(null)` is intended to reset selection on manual change.
-
-    // Lets blindly set them all.
-    setSelectedCategoryId(targetCategoryId);
-    // We need to fetch sections for this category immediately or let effect do it?
-    // Let effect do it. But effect clears section ID!
-    // So we have to wait for effect to run?
-
-    // Hack: We can fetch data manually here and set it, essentially bypassing the effect data fetch, but the effect will still run.
-    // Let's try just setting them. If it fails (resets to null), I'll improve it.
-    // Actually, I'll use a timeout hack to set downstream IDs?
-    // setSelectedCategoryId(targetCategoryId);
-    // setTimeout(() => setSelectedSectionId(targetSectionId), 100);
-    // setTimeout(() => setSelectedPageId(targetPageId), 200);
-    // This is ugly but robust enough for this context.
+    const targetCategoryId = sectionObj.categoryId as unknown as string;
+    const targetSectionId = sectionObj._id as string;
+    const targetPageId = task._id as string;
 
     setSelectedCategoryId(targetCategoryId);
     setTimeout(() => {
@@ -182,7 +121,7 @@ const NotesLayout: React.FC = React.memo(() => {
         setSelectedPageId(targetPageId);
       }, 150);
     }, 150);
-  };
+  }, []);
 
   // Category Operations
   const handleAddCategory = useCallback(async (name: string) => {
