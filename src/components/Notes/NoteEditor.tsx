@@ -20,6 +20,37 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onTogg
   const [isFlagged, setIsFlagged] = useState(false);
   const [isImportant, setIsImportant] = useState(false);
 
+  // Refs to track current state for auto-save cleanup
+  const contentRef = React.useRef(content);
+  const isDirtyRef = React.useRef(isDirty);
+  const onSaveRef = React.useRef(onSave);
+
+  // Sync refs with state
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
+
+  // Auto-save on unmount or page switch
+  useEffect(() => {
+    const currentId = page?._id;
+
+    return () => {
+      // Check if we have a valid ID and unsaved changes
+      if (currentId && isDirtyRef.current) {
+        console.log(`Auto-saving note ${currentId}`);
+        onSaveRef.current(currentId, contentRef.current);
+      }
+    };
+  }, [page?._id]); // Only re-run when page ID changes (switch) or on unmount
+
   useEffect(() => {
     if (page) {
       setContent(page.content || '');
