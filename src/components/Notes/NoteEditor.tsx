@@ -1,16 +1,18 @@
+'use client';
+
 import { Dialog, Transition } from '@headlessui/react';
-import { ArrowPathIcon, CheckIcon, SparklesIcon, XMarkIcon, ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Outline for unflagged and AI
-import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid'; // Solid for flagged
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { ArrowPathIcon, CheckIcon, ExclamationTriangleIcon, FlagIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
 interface NoteEditorProps {
-  page: INotePage | null;
   onSave: (id: string, content: string) => void;
   onToggleFlag: (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => void;
+  page: INotePage | null;
 }
 
 const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
@@ -26,9 +28,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
 
   // Refs
-  const contentRef = React.useRef(content);
-  const isDirtyRef = React.useRef(isDirty);
-  const onSaveRef = React.useRef(onSave);
+  const contentRef = useRef(content);
+  const isDirtyRef = useRef(isDirty);
+  const onSaveRef = useRef(onSave);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillRef = useRef<any>(null);
 
   // Sync refs with state
@@ -55,7 +58,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         onSaveRef.current(currentId, contentRef.current);
       }
     };
-  }, [page?._id]); // Only re-run when page ID changes (switch) or on unmount
+  }, [page?._id]);
 
   useEffect(() => {
     if (page) {
@@ -93,16 +96,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
   };
 
-  const handleContentChange = React.useCallback((val: string) => {
+  const handleContentChange = useCallback((val: string) => {
     setContent(val);
     setIsDirty(true);
   }, []);
 
   const handleGenerateAI = async () => {
-    const quill = quillRef.current?.getEditor();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
     if (!quill) return;
 
-    let range = quill.getSelection();
+    const range = quill.getSelection();
     let text = '';
 
     if (range && range.length > 0) {
@@ -150,16 +154,20 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   };
 
   const handleInsertAI = () => {
-    const quill = quillRef.current?.getEditor();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
     if (quill && insertionRange) {
       quill.deleteText(insertionRange.index, insertionRange.length);
       quill.insertText(insertionRange.index, generatedText);
-      // Trigger update manually if needed, but onChange usually catches it
     } else {
       alert("Could not insert text. Lost selection context.");
     }
     setIsModalOpen(false);
   };
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
   if (!page) {
     return (
@@ -221,7 +229,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
       {/* Gemini Result Modal */}
       <Transition appear as={Fragment} show={isModalOpen}>
-        <Dialog as="div" className="relative z-50" onClose={() => setIsModalOpen(false)}>
+        <Dialog as="div" className="relative z-50" onClose={handleCloseModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -255,7 +263,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                       Gemini Suggestion
                     </div>
                     {!isGenerating && (
-                      <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-500">
+                      <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500">
                         <XMarkIcon className="h-5 w-5" />
                       </button>
                     )}
@@ -277,7 +285,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                     <div className="mt-6 flex justify-end gap-3">
                       <button
                         className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={handleCloseModal}
                       >
                         Cancel
                       </button>

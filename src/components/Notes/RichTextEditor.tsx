@@ -6,14 +6,15 @@ import dynamic from 'next/dynamic';
 import React from 'react';
 
 const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
     loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
+    ssr: false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }) as any;
 
 interface RichTextEditorProps {
-    value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    value: string;
 }
 
 const modules = {
@@ -47,7 +48,8 @@ const formats = [
     'image',
 ];
 
-const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ value, onChange, placeholder }, ref) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
     return (
         <div className="h-full flex flex-col relative">
             <ReactQuill
