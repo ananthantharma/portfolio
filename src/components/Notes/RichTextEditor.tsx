@@ -49,16 +49,17 @@ const formats = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
+const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
     return (
         <div className="h-full flex flex-col relative">
             <ReactQuill
-                ref={ref}
+                // eslint-disable-next-line react/jsx-sort-props
                 className="flex-1 h-full"
                 formats={formats}
                 modules={modules}
                 onChange={onChange}
                 placeholder={placeholder}
+                ref={ref}
                 theme="snow"
                 value={value}
             />
@@ -82,8 +83,8 @@ const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ onChange, p
       `}</style>
         </div>
     );
-});
+}));
 
 RichTextEditor.displayName = 'RichTextEditor';
 
-export default React.memo(RichTextEditor);
+export default RichTextEditor;
