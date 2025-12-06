@@ -220,9 +220,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       </div>
       <div className="flex-1 overflow-hidden p-4">
         <RichTextEditor
-          ref={quillRef}
           onChange={handleContentChange}
           placeholder="Start typing your notes here..."
+          ref={quillRef}
           value={content}
         />
       </div>
