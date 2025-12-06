@@ -228,8 +228,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       </div>
 
       {/* Gemini Result Modal */}
-      <Transition appear as={Fragment} show={isModalOpen}>
-        <Dialog as="div" className="relative z-50" onClose={handleCloseModal}>
+      <Transition appear={true} as={Fragment} show={isModalOpen}>
+        <Dialog className="relative z-50" onClose={handleCloseModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -263,7 +263,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                       Gemini Suggestion
                     </div>
                     {!isGenerating && (
-                      <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500">
+                      <button className="text-gray-400 hover:text-gray-500" onClick={handleCloseModal}>
                         <XMarkIcon className="h-5 w-5" />
                       </button>
                     )}
