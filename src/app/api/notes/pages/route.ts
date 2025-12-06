@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 import dbConnect from '@/lib/dbConnect';
 import NotePage from '@/models/NotePage';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);

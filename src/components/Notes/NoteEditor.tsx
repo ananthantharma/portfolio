@@ -31,6 +31,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
     }
   };
 
+  const handleContentChange = React.useCallback((val: string) => {
+    setContent(val);
+    setIsDirty(true);
+  }, []);
+
   if (!page) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-gray-400">
@@ -40,7 +45,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-white text-gray-900">
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
@@ -56,10 +61,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave }) => {
       </div>
       <div className="flex-1 overflow-hidden p-4">
         <RichTextEditor
-          onChange={(val) => {
-            setContent(val);
-            setIsDirty(true);
-          }}
+          onChange={handleContentChange}
           placeholder="Start typing your notes here..."
           value={content}
         />

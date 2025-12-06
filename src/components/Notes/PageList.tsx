@@ -1,9 +1,9 @@
 'use client';
 
-import {CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {useState} from 'react';
+import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
 interface PageListProps {
   pages: INotePage[];
@@ -16,7 +16,7 @@ interface PageListProps {
 }
 
 const PageList: React.FC<PageListProps> = React.memo(
-  ({pages, selectedPageId, onSelectPage, onAddPage, onRenamePage, onDeletePage, loading}) => {
+  ({ pages, selectedPageId, onSelectPage, onAddPage, onRenamePage, onDeletePage, loading }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newPageTitle, setNewPageTitle] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,7 +65,7 @@ const PageList: React.FC<PageListProps> = React.memo(
               <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                 <input
                   autoFocus
-                  className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
+                  className="w-full border-none bg-transparent p-0 text-sm focus:ring-0 text-gray-900"
                   onChange={e => setNewPageTitle(e.target.value)}
                   onKeyDown={e => {
                     if (e.key === 'Enter') handleAdd();
@@ -92,7 +92,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                   <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                     <input
                       autoFocus
-                      className="w-full border-none bg-transparent p-0 text-sm focus:ring-0"
+                      className="w-full border-none bg-transparent p-0 text-sm focus:ring-0 text-gray-900"
                       onChange={e => setEditTitle(e.target.value)}
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleRename();
@@ -110,11 +110,10 @@ const PageList: React.FC<PageListProps> = React.memo(
                   </div>
                 ) : (
                   <div
-                    className={`group flex cursor-pointer items-center justify-between rounded-md p-3 text-sm transition-colors ${
-                      selectedPageId === page._id
-                        ? 'bg-gray-100 font-medium text-gray-900 border-l-4 border-blue-500'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`group flex cursor-pointer items-center justify-between rounded-md p-3 text-sm transition-colors ${selectedPageId === page._id
+                      ? 'bg-gray-100 font-medium text-gray-900 border-l-4 border-blue-500'
+                      : 'text-gray-600 hover:bg-gray-50'
+                      }`}
                     onClick={() => onSelectPage(page._id as string)}>
                     <div className="flex flex-col overflow-hidden">
                       <span className="truncate">{page.title}</span>

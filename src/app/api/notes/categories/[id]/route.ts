@@ -1,11 +1,10 @@
-import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { getServerSession } from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
 import NoteCategory from '@/models/NoteCategory';
 import NotePage from '@/models/NotePage';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export async function PUT(
   request: Request,

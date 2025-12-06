@@ -14,7 +14,7 @@ export default async function NotesLayout({ children }: { children: React.ReactN
     return (
         <div className="min-h-screen bg-gray-900 text-white">
             <nav className="border-b border-gray-800 bg-gray-900">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         <div className="flex items-center">
                             <div className="flex-shrink-0">
@@ -40,7 +40,7 @@ export default async function NotesLayout({ children }: { children: React.ReactN
                 </div>
             </nav>
             <main>
-                <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">{children}</div>
+                <div className="w-full h-[calc(100vh-64px)]">{children}</div>
             </main>
         </div>
     );

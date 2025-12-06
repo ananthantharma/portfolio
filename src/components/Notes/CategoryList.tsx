@@ -1,9 +1,9 @@
 'use client';
 
-import {CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {useState} from 'react';
+import { CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
+import { INoteCategory } from '@/models/NoteCategory';
 
 interface CategoryListProps {
   categories: INoteCategory[];
@@ -15,7 +15,7 @@ interface CategoryListProps {
 }
 
 const CategoryList: React.FC<CategoryListProps> = React.memo(
-  ({categories, selectedCategoryId, onSelectCategory, onAddCategory, onRenameCategory, onDeleteCategory}) => {
+  ({ categories, selectedCategoryId, onSelectCategory, onAddCategory, onRenameCategory, onDeleteCategory }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -60,7 +60,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                 <input
                   autoFocus
-                  className="w-full border-none p-0 text-sm focus:ring-0"
+                  className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                   onChange={e => setNewCategoryName(e.target.value)}
                   onKeyDown={e => {
                     if (e.key === 'Enter') handleAdd();
@@ -87,7 +87,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                   <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                     <input
                       autoFocus
-                      className="w-full border-none p-0 text-sm focus:ring-0"
+                      className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                       onChange={e => setEditName(e.target.value)}
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleRename();
@@ -105,11 +105,10 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                   </div>
                 ) : (
                   <div
-                    className={`group flex cursor-pointer items-center justify-between rounded-md p-2 text-sm ${
-                      selectedCategoryId === category._id
-                        ? 'bg-blue-100 text-blue-900'
-                        : 'text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`group flex cursor-pointer items-center justify-between rounded-md p-2 text-sm ${selectedCategoryId === category._id
+                      ? 'bg-blue-100 text-blue-900'
+                      : 'text-gray-700 hover:bg-gray-200'
+                      }`}
                     onClick={() => onSelectCategory(category._id as string)}>
                     <span className="truncate">{category.name}</span>
                     <div className="hidden space-x-1 group-hover:flex">
