@@ -1,178 +1,169 @@
 'use client';
 
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
 
 import CategoryList from './CategoryList';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
 
 const NotesLayout: React.FC = React.memo(() => {
-    const [categories, setCategories] = useState<INoteCategory[]>([]);
-    const [pages, setPages] = useState<INotePage[]>([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-    const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-    const [loadingPages, setLoadingPages] = useState(false);
+  const [categories, setCategories] = useState<INoteCategory[]>([]);
+  const [pages, setPages] = useState<INotePage[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [loadingPages, setLoadingPages] = useState(false);
 
-    // Fetch categories on mount
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-    // Fetch pages when category changes
-    useEffect(() => {
-        if (selectedCategoryId) {
-            fetchPages(selectedCategoryId);
-            setSelectedPageId(null);
-        } else {
-            setPages([]);
-            setSelectedPageId(null);
-        }
-    }, [selectedCategoryId]);
+  // Fetch pages when category changes
+  useEffect(() => {
+    if (selectedCategoryId) {
+      fetchPages(selectedCategoryId);
+      setSelectedPageId(null);
+    } else {
+      setPages([]);
+      setSelectedPageId(null);
+    }
+  }, [selectedCategoryId]);
 
-    const fetchCategories = async () => {
-        try {
-            const response = await axios.get('/api/notes/categories');
-            setCategories(response.data.data);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('/api/notes/categories');
+      setCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
-    const fetchPages = async (categoryId: string) => {
-        setLoadingPages(true);
-        try {
-            const response = await axios.get(`/api/notes/pages?categoryId=${categoryId}`);
-            setPages(response.data.data);
-        } catch (error) {
-            console.error('Error fetching pages:', error);
-        } finally {
-            setLoadingPages(false);
-        }
-    };
+  const fetchPages = async (categoryId: string) => {
+    setLoadingPages(true);
+    try {
+      const response = await axios.get(`/api/notes/pages?categoryId=${categoryId}`);
+      setPages(response.data.data);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+    } finally {
+      setLoadingPages(false);
+    }
+  };
 
-    // Category Operations
-    const handleAddCategory = useCallback(async (name: string) => {
-        try {
-            const response = await axios.post('/api/notes/categories', { name });
-            setCategories((prev) => [...prev, response.data.data]);
-        } catch (error) {
-            console.error('Error adding category:', error);
-        }
-    }, []);
+  // Category Operations
+  const handleAddCategory = useCallback(async (name: string) => {
+    try {
+      const response = await axios.post('/api/notes/categories', {name});
+      setCategories(prev => [...prev, response.data.data]);
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
+  }, []);
 
-    const handleRenameCategory = useCallback(async (id: string, name: string) => {
-        try {
-            const response = await axios.put(`/api/notes/categories/${id}`, { name });
-            setCategories((prev) =>
-                prev.map((cat) =>
-                    cat._id === id ? response.data.data : cat
-                )
-            );
-        } catch (error) {
-            console.error('Error renaming category:', error);
-        }
-    }, []);
+  const handleRenameCategory = useCallback(async (id: string, name: string) => {
+    try {
+      const response = await axios.put(`/api/notes/categories/${id}`, {name});
+      setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
+    } catch (error) {
+      console.error('Error renaming category:', error);
+    }
+  }, []);
 
-    const handleDeleteCategory = useCallback(async (id: string) => {
-        try {
-            await axios.delete(`/api/notes/categories/${id}`);
-            setCategories((prev) => prev.filter((cat) => cat._id !== id));
-            setSelectedCategoryId((prev) => (prev === id ? null : prev));
-        } catch (error) {
-            console.error('Error deleting category:', error);
-        }
-    }, []);
+  const handleDeleteCategory = useCallback(async (id: string) => {
+    try {
+      await axios.delete(`/api/notes/categories/${id}`);
+      setCategories(prev => prev.filter(cat => cat._id !== id));
+      setSelectedCategoryId(prev => (prev === id ? null : prev));
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
+  }, []);
 
-    // Page Operations
-    const handleAddPage = useCallback(async (title: string) => {
-        if (!selectedCategoryId) return;
-        try {
-            const response = await axios.post('/api/notes/pages', {
-                title,
-                categoryId: selectedCategoryId,
-            });
-            setPages((prev) => [response.data.data, ...prev]);
-            setSelectedPageId(response.data.data._id as string);
-        } catch (error) {
-            console.error('Error adding page:', error);
-        }
-    }, [selectedCategoryId]);
+  // Page Operations
+  const handleAddPage = useCallback(
+    async (title: string) => {
+      if (!selectedCategoryId) return;
+      try {
+        const response = await axios.post('/api/notes/pages', {
+          title,
+          categoryId: selectedCategoryId,
+        });
+        setPages(prev => [response.data.data, ...prev]);
+        setSelectedPageId(response.data.data._id as string);
+      } catch (error) {
+        console.error('Error adding page:', error);
+      }
+    },
+    [selectedCategoryId],
+  );
 
-    const handleRenamePage = useCallback(async (id: string, title: string) => {
-        try {
-            const response = await axios.put(`/api/notes/pages/${id}`, { title });
-            setPages((prev) =>
-                prev.map((page) =>
-                    page._id === id ? response.data.data : page
-                )
-            );
-        } catch (error) {
-            console.error('Error renaming page:', error);
-        }
-    }, []);
+  const handleRenamePage = useCallback(async (id: string, title: string) => {
+    try {
+      const response = await axios.put(`/api/notes/pages/${id}`, {title});
+      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
+    } catch (error) {
+      console.error('Error renaming page:', error);
+    }
+  }, []);
 
-    const handleDeletePage = useCallback(async (id: string) => {
-        try {
-            await axios.delete(`/api/notes/pages/${id}`);
-            setPages((prev) => prev.filter((page) => page._id !== id));
-            setSelectedPageId((prev) => (prev === id ? null : prev));
-        } catch (error) {
-            console.error('Error deleting page:', error);
-        }
-    }, []);
+  const handleDeletePage = useCallback(async (id: string) => {
+    try {
+      await axios.delete(`/api/notes/pages/${id}`);
+      setPages(prev => prev.filter(page => page._id !== id));
+      setSelectedPageId(prev => (prev === id ? null : prev));
+    } catch (error) {
+      console.error('Error deleting page:', error);
+    }
+  }, []);
 
-    const handleSavePageContent = useCallback(async (id: string, content: string) => {
-        try {
-            const response = await axios.put(`/api/notes/pages/${id}`, { content });
-            setPages((prev) =>
-                prev.map((page) =>
-                    page._id === id ? response.data.data : page
-                )
-            );
-        } catch (error) {
-            console.error('Error saving page content:', error);
-        }
-    }, []);
+  const handleSavePageContent = useCallback(async (id: string, content: string) => {
+    try {
+      const response = await axios.put(`/api/notes/pages/${id}`, {content});
+      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
+    } catch (error) {
+      console.error('Error saving page content:', error);
+    }
+  }, []);
 
-    const selectedPage = pages.find((p) => p._id === selectedPageId) || null;
+  const selectedPage = pages.find(p => p._id === selectedPageId) || null;
 
-    return (
-        <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-white shadow-xl">
-            {/* Column 1: Categories */}
-            <div className="w-64 flex-shrink-0">
-                <CategoryList
-                    categories={categories}
-                    onAddCategory={handleAddCategory}
-                    onDeleteCategory={handleDeleteCategory}
-                    onRenameCategory={handleRenameCategory}
-                    onSelectCategory={setSelectedCategoryId}
-                    selectedCategoryId={selectedCategoryId}
-                />
-            </div>
+  return (
+    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-white shadow-xl">
+      {/* Column 1: Categories */}
+      <div className="w-64 flex-shrink-0">
+        <CategoryList
+          categories={categories}
+          onAddCategory={handleAddCategory}
+          onDeleteCategory={handleDeleteCategory}
+          onRenameCategory={handleRenameCategory}
+          onSelectCategory={setSelectedCategoryId}
+          selectedCategoryId={selectedCategoryId}
+        />
+      </div>
 
-            {/* Column 2: Pages */}
-            <div className="w-64 flex-shrink-0">
-                <PageList
-                    loading={loadingPages}
-                    onAddPage={handleAddPage}
-                    onDeletePage={handleDeletePage}
-                    onRenamePage={handleRenamePage}
-                    onSelectPage={setSelectedPageId}
-                    pages={pages}
-                    selectedPageId={selectedPageId}
-                />
-            </div>
+      {/* Column 2: Pages */}
+      <div className="w-64 flex-shrink-0">
+        <PageList
+          loading={loadingPages}
+          onAddPage={handleAddPage}
+          onDeletePage={handleDeletePage}
+          onRenamePage={handleRenamePage}
+          onSelectPage={setSelectedPageId}
+          pages={pages}
+          selectedPageId={selectedPageId}
+        />
+      </div>
 
-            {/* Column 3: Editor */}
-            <div className="flex-1 overflow-hidden">
-                <NoteEditor onSave={handleSavePageContent} page={selectedPage} />
-            </div>
-        </div>
-    );
+      {/* Column 3: Editor */}
+      <div className="flex-1 overflow-hidden">
+        <NoteEditor onSave={handleSavePageContent} page={selectedPage} />
+      </div>
+    </div>
+  );
 });
 
 NotesLayout.displayName = 'NotesLayout';

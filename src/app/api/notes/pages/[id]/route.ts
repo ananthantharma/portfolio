@@ -3,10 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import NotePage from '@/models/NotePage';
 
-export async function PUT(
-    request: Request,
-    { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
     await dbConnect();
     try {
         const body = await request.json();
@@ -15,10 +12,7 @@ export async function PUT(
             runValidators: true,
         });
         if (!page) {
-            return NextResponse.json(
-                { success: false, error: 'Page not found' },
-                { status: 404 }
-            );
+            return NextResponse.json({ success: false, error: 'Page not found' }, { status: 404 });
         }
         return NextResponse.json({ success: true, data: page });
     } catch (error) {
@@ -26,18 +20,12 @@ export async function PUT(
     }
 }
 
-export async function DELETE(
-    request: Request,
-    { params }: { params: { id: string } }
-) {
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
     await dbConnect();
     try {
         const page = await NotePage.findByIdAndDelete(params.id);
         if (!page) {
-            return NextResponse.json(
-                { success: false, error: 'Page not found' },
-                { status: 404 }
-            );
+            return NextResponse.json({ success: false, error: 'Page not found' }, { status: 404 });
         }
         return NextResponse.json({ success: true, data: {} });
     } catch (error) {

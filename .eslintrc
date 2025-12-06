@@ -65,10 +65,7 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "object-curly-spacing": [
-      "error",
-      "always"
-    ],
+    "object-curly-spacing": "off",
     "react/jsx-curly-brace-presence": [
       2,
       "never"

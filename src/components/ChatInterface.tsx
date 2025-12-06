@@ -141,8 +141,9 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             </div>
           )}
           <button
-            className={`text-sm transition-colors flex items-center gap-2 ${activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-              }`}
+            className={`text-sm transition-colors flex items-center gap-2 ${
+              activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+            }`}
             onClick={handleEmailRefine}
             title="Start Email Refiner Gem">
             <FilePenLine className="w-4 h-4" />
@@ -180,16 +181,18 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
           <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
             <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                  }`}>
+                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                }`}>
                 {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
               </div>
 
               <div
-                className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-tr-none'
-                  : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                  }`}>
+                className={`px-4 py-3 rounded-2xl ${
+                  msg.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                }`}>
                 <div className="prose prose-invert max-w-none text-sm sm:text-base">
                   <ReactMarkdown>{msg.parts}</ReactMarkdown>
                 </div>

@@ -44,7 +44,7 @@ import {
  */
 export const homePageMeta: HomepageMeta = {
   title: ' Resume Template',
-  description: "Ananthan Tharmavelautham",
+  description: 'Ananthan Tharmavelautham',
 };
 
 /**
@@ -160,12 +160,12 @@ export const aboutData: About = {
   profileImageSrc: profilepic,
   description: `Certified as a P.Eng, PMP, and CSCP, I bring a unique blend of software engineering and procurement expertise to the table. With a track record of achieving over $75 million in procurement savings and a 40% increase in operational efficiency, I excel in contract management and stakeholder negotiations`,
   aboutItems: [
-    { label: 'Location', text: 'Toronto, ON', Icon: MapIcon },
-    { label: 'Age', text: '35', Icon: CalendarIcon },
-    { label: 'Nationality', text: 'Canadian / Tamil', Icon: FlagIcon },
-    { label: 'Interests', text: 'Chess, Coding, Photography, Gaming, Golf', Icon: SparklesIcon },
-    { label: 'Study', text: 'University of Ontario I.T. ', Icon: AcademicCapIcon },
-    { label: 'Employment', text: 'Hydro One', Icon: BuildingOffice2Icon },
+    {label: 'Location', text: 'Toronto, ON', Icon: MapIcon},
+    {label: 'Age', text: '35', Icon: CalendarIcon},
+    {label: 'Nationality', text: 'Canadian / Tamil', Icon: FlagIcon},
+    {label: 'Interests', text: 'Chess, Coding, Photography, Gaming, Golf', Icon: SparklesIcon},
+    {label: 'Study', text: 'University of Ontario I.T. ', Icon: AcademicCapIcon},
+    {label: 'Employment', text: 'Hydro One', Icon: BuildingOffice2Icon},
   ],
 };
 
@@ -405,12 +405,12 @@ export const contact: ContactSection = {
  * Social items
  */
 export const socialLinks: Social[] = [
-  { label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma' },
+  {label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma'},
   {
     label: 'LinkedIn',
     Icon: LinkedInIcon,
     href: 'https://www.linkedin.com/in/ananthan-tharmavelautham-p-eng-mba-pmp-cscp-26218493/',
   },
-  { label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/' },
-  { label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp' },
+  {label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/'},
+  {label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp'},
 ];
