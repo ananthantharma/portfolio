@@ -3,12 +3,12 @@
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { INoteCategory } from '@/models/NoteCategory';
+import { INotePage } from '@/models/NotePage';
+
 import CategoryList from './CategoryList';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
-
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
 
 const NotesLayout: React.FC = React.memo(() => {
     const [categories, setCategories] = useState<INoteCategory[]>([]);
