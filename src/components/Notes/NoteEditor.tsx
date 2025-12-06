@@ -14,7 +14,7 @@ interface NoteEditorProps {
   onToggleFlag: (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => void;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onToggleFlag }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
@@ -109,17 +109,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ page, onSave, onTogg
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handleToggleImportant}
             className={`rounded-full p-2 transition-colors ${isImportant ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
               }`}
+            onClick={handleToggleImportant}
             title={isImportant ? "Mark as not important" : "Mark as important"}
           >
             {isImportant ? <ExclamationTriangleIconSolid className="h-6 w-6" /> : <ExclamationTriangleIcon className="h-6 w-6" />}
           </button>
           <button
-            onClick={handleToggleFlagged}
             className={`rounded-full p-2 transition-colors ${isFlagged ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
               }`}
+            onClick={handleToggleFlagged}
             title={isFlagged ? "Unflag task" : "Flag as key task"}
           >
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}

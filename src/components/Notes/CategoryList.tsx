@@ -17,7 +17,7 @@ interface CategoryListProps {
 }
 
 const CategoryList: React.FC<CategoryListProps> = React.memo(
-  ({ categories, selectedCategoryId, onSelectCategory, onAddCategory, onRenameCategory, onDeleteCategory, isCollapsed, onToggleCollapse }) => {
+  ({ categories, isCollapsed, onAddCategory, onDeleteCategory, onRenameCategory, onSelectCategory, onToggleCollapse, selectedCategoryId }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -60,8 +60,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               </button>
             )}
             <button
-              onClick={onToggleCollapse}
               className="rounded-full p-1 hover:bg-gray-200 text-gray-500"
+              onClick={onToggleCollapse}
               title={isCollapsed ? "Expand" : "Collapse"}
             >
               {isCollapsed ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />}

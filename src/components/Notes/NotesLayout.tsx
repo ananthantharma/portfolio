@@ -1,9 +1,8 @@
 'use client';
 
 import axios from 'axios';
-import { Dialog, Transition } from '@headlessui/react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import { ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
@@ -305,6 +304,14 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const selectedPage = pages.find(p => p._id === selectedPageId) || null;
 
+  const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
+  const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
+  const handleCloseImportant = useCallback(() => setIsImportantOpen(false), []);
+  const handleCloseKeyTasks = useCallback(() => setIsKeyTasksOpen(false), []);
+  const handleToggleCategoryCollapse = useCallback(() => setIsCategoryCollapsed(!isCategoryCollapsed), [isCategoryCollapsed]);
+  const handleToggleSectionCollapse = useCallback(() => setIsSectionCollapsed(!isSectionCollapsed), [isSectionCollapsed]);
+
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-white shadow-xl">
       {/* Top Toolbar for Key Tasks - Added this wrapper div for the main layout to include header */}
@@ -312,15 +319,15 @@ const NotesLayout: React.FC = React.memo(() => {
         <span className="text-sm font-semibold text-gray-500">Workspace</span>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsImportantOpen(true)}
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
+            onClick={handleOpenImportant}
           >
             <ExclamationTriangleIcon className="h-4 w-4" />
             Important
           </button>
           <button
-            onClick={() => setIsKeyTasksOpen(true)}
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-gray-50 border border-red-200"
+            onClick={handleOpenKeyTasks}
           >
             <FlagIcon className="h-4 w-4" />
             Key Tasks
@@ -338,7 +345,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onDeleteCategory={handleDeleteCategory}
             onRenameCategory={handleRenameCategory}
             onSelectCategory={setSelectedCategoryId}
-            onToggleCollapse={() => setIsCategoryCollapsed(!isCategoryCollapsed)}
+            onToggleCollapse={handleToggleCategoryCollapse}
             selectedCategoryId={selectedCategoryId}
           />
         </div>
@@ -352,7 +359,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onDeleteSection={handleDeleteSection}
             onRenameSection={handleRenameSection}
             onSelectSection={setSelectedSectionId}
-            onToggleCollapse={() => setIsSectionCollapsed(!isSectionCollapsed)}
+            onToggleCollapse={handleToggleSectionCollapse}
             sections={sections}
             selectedSectionId={selectedSectionId}
           />
@@ -382,21 +389,21 @@ const NotesLayout: React.FC = React.memo(() => {
       </div>
 
       <FlaggedItemsModal
-        title="Key Tasks"
-        icon="flag"
         fetchItems={fetchFlaggedTasks}
+        icon="flag"
         isOpen={isKeyTasksOpen}
-        onClose={() => setIsKeyTasksOpen(false)}
+        onClose={handleCloseKeyTasks}
         onSelectTask={handleJumpToTask}
+        title="Key Tasks"
       />
 
       <FlaggedItemsModal
-        title="Important"
-        icon="important"
         fetchItems={fetchImportantTasks}
+        icon="important"
         isOpen={isImportantOpen}
-        onClose={() => setIsImportantOpen(false)}
+        onClose={handleCloseImportant}
         onSelectTask={handleJumpToTask}
+        title="Important"
       />
     </div>
   );

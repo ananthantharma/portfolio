@@ -18,7 +18,7 @@ interface SectionListProps {
 }
 
 const SectionList: React.FC<SectionListProps> = React.memo(
-    ({ sections, selectedSectionId, onSelectSection, onAddSection, onRenameSection, onDeleteSection, loading, isCollapsed, onToggleCollapse }) => {
+    ({ isCollapsed, loading, onAddSection, onDeleteSection, onRenameSection, onSelectSection, onToggleCollapse, sections, selectedSectionId }) => {
         const [isAdding, setIsAdding] = useState(false);
         const [newSectionName, setNewSectionName] = useState('');
         const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,8 +65,8 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             </button>
                         )}
                         <button
-                            onClick={onToggleCollapse}
                             className="rounded-full p-1 hover:bg-gray-200 text-gray-500"
+                            onClick={onToggleCollapse}
                             title={isCollapsed ? "Expand" : "Collapse"}
                         >
                             {isCollapsed ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />}

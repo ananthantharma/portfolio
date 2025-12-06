@@ -1,29 +1,23 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { FlagIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, FlagIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { Fragment, useEffect, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
 
 interface FlaggedItemsModalProps {
+    fetchItems: () => Promise<INotePage[]>;
+    icon?: 'flag' | 'important';
     isOpen: boolean;
     onClose: () => void;
-    onSelectTask: (task: any) => void;
-    fetchItems: () => Promise<INotePage[]>;
+    onSelectTask: (task: INotePage) => void;
     title: string;
-    icon?: 'flag' | 'important';
 }
 
-const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, onSelectTask, fetchItems, title, icon = 'flag' }) => {
+const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = React.memo(({ fetchItems, icon = 'flag', isOpen, onClose, onSelectTask, title }) => {
     const [items, setItems] = useState<INotePage[]>([]);
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (isOpen) {
-            loadItems();
-        }
-    }, [isOpen]);
-
-    const loadItems = async () => {
+    const loadItems = React.useCallback(async () => {
         setLoading(true);
         try {
             const data = await fetchItems();
@@ -33,10 +27,16 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, 
         } finally {
             setLoading(false);
         }
-    };
+    }, [fetchItems, title]);
+
+    useEffect(() => {
+        if (isOpen) {
+            loadItems();
+        }
+    }, [isOpen, loadItems]);
 
     return (
-        <Transition appear show={isOpen} as={Fragment}>
+        <Transition appear as={Fragment} show={isOpen}>
             <Dialog as="div" className="relative z-50" onClose={onClose}>
                 <Transition.Child
                     as={Fragment}
@@ -62,7 +62,7 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, 
                             leaveTo="opacity-0 scale-95"
                         >
                             <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                <div className="flex justify-between items-center mb-4">
+                                <div className="flex items-center justify-between mb-4">
                                     <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 flex items-center gap-2">
                                         {icon === 'important' ? (
                                             <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
@@ -71,7 +71,7 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, 
                                         )}
                                         {title}
                                     </Dialog.Title>
-                                    <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
+                                    <button className="text-gray-400 hover:text-gray-500" onClick={onClose}>
                                         <XMarkIcon className="h-5 w-5" />
                                     </button>
                                 </div>
@@ -83,17 +83,17 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, 
                                         <div className="text-center py-4 text-gray-500">No items found.</div>
                                     ) : (
                                         <ul className="divide-y divide-gray-100">
-                                            {items.map((item: any) => (
+                                            {items.map((item) => (
                                                 <li
                                                     key={item._id}
                                                     className="py-3 hover:bg-gray-50 cursor-pointer rounded-md px-2 transition-colors"
                                                     onClick={() => onSelectTask(item)}
                                                 >
-                                                    <div className="flex justify-between items-start">
+                                                    <div className="flex items-start justify-between">
                                                         <div>
                                                             <p className="font-medium text-gray-900">{item.title}</p>
                                                             <p className="text-xs text-gray-500">
-                                                                {item.sectionId?.name ? `${item.sectionId.name}` : 'Unknown Section'}
+                                                                {(item.sectionId as any)?.name ? `${(item.sectionId as any).name}` : 'Unknown Section'}
                                                             </p>
                                                         </div>
                                                         <span className="text-xs text-gray-400">
@@ -112,6 +112,6 @@ const FlaggedItemsModal: React.FC<FlaggedItemsModalProps> = ({ isOpen, onClose, 
             </Dialog>
         </Transition>
     );
-};
+});
 
 export default FlaggedItemsModal;
