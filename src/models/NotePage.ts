@@ -1,9 +1,9 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INotePage extends Document {
   title: string;
   content: string;
-  categoryId: mongoose.Types.ObjectId;
+  sectionId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,9 +19,9 @@ const NotePageSchema: Schema = new Schema(
       type: String,
       default: '',
     },
-    categoryId: {
+    sectionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'NoteCategory',
+      ref: 'NoteSection',
       required: true,
     },
   },

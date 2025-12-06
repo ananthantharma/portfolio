@@ -1,6 +1,14 @@
 /* eslint-disable object-curly-spacing */
 import { Dialog, Transition } from '@headlessui/react';
-import { Bars3BottomRightIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3BottomRightIcon,
+  BookmarkIcon,
+  ChatBubbleLeftRightIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { FC, Fragment, memo, useCallback, useMemo, useState } from 'react';
@@ -37,6 +45,9 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
     return (
       <header className="fixed top-0 z-50 hidden w-full bg-neutral-900/50 p-4 backdrop-blur sm:block" id={headerID}>
         <nav className="flex justify-center gap-x-8">
+          <Link className={inactiveClass} href="/">
+            <span className="flex items-center gap-2"><HomeIcon className="h-5 w-5" /> Home</span>
+          </Link>
           {navSections.map(section => (
             <NavItem
               activeClass={activeClass}
@@ -47,19 +58,19 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
             />
           ))}
           <Link className={inactiveClass} href="/chat">
-            AI Chat
+            <span className="flex items-center gap-2"><ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat</span>
           </Link>
           <Link className={inactiveClass} href="/bookmarks">
-            Bookmarks
+            <span className="flex items-center gap-2"><BookmarkIcon className="h-5 w-5" /> Bookmarks</span>
           </Link>
           <Link className={inactiveClass} href="/dashboard">
-            Secure Login
+            <span className="flex items-center gap-2"><LockClosedIcon className="h-5 w-5" /> Secure Login</span>
           </Link>
           <Link className={inactiveClass} href="/finance">
-            Finance
+            <span className="flex items-center gap-2"><CurrencyDollarIcon className="h-5 w-5" /> Finance</span>
           </Link>
           <Link className={inactiveClass} href="/notes">
-            Notes
+            <span className="flex items-center gap-2"><DocumentTextIcon className="h-5 w-5" /> Notes</span>
           </Link>
         </nav>
       </header>
@@ -110,6 +121,9 @@ const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null
               leaveTo="-translate-x-full">
               <div className="relative w-4/5 bg-stone-800">
                 <nav className="mt-5 flex flex-col gap-y-2 px-2">
+                  <Link className={inactiveClass} href="/" onClick={toggleOpen}>
+                    <span className="flex items-center gap-2"><HomeIcon className="h-5 w-5" /> Home</span>
+                  </Link>
                   {navSections.map(section => (
                     <NavItem
                       activeClass={activeClass}
@@ -121,19 +135,19 @@ const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null
                     />
                   ))}
                   <Link className={inactiveClass} href="/chat" onClick={toggleOpen}>
-                    AI Chat
+                    <span className="flex items-center gap-2"><ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat</span>
                   </Link>
                   <Link className={inactiveClass} href="/bookmarks" onClick={toggleOpen}>
-                    Bookmarks
+                    <span className="flex items-center gap-2"><BookmarkIcon className="h-5 w-5" /> Bookmarks</span>
                   </Link>
                   <Link className={inactiveClass} href="/dashboard" onClick={toggleOpen}>
-                    Secure Login
+                    <span className="flex items-center gap-2"><LockClosedIcon className="h-5 w-5" /> Secure Login</span>
                   </Link>
                   <Link className={inactiveClass} href="/finance" onClick={toggleOpen}>
-                    Finance
+                    <span className="flex items-center gap-2"><CurrencyDollarIcon className="h-5 w-5" /> Finance</span>
                   </Link>
                   <Link className={inactiveClass} href="/notes" onClick={toggleOpen}>
-                    Notes
+                    <span className="flex items-center gap-2"><DocumentTextIcon className="h-5 w-5" /> Notes</span>
                   </Link>
                 </nav>
               </div>

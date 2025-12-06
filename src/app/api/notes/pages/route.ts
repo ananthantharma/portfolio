@@ -12,10 +12,10 @@ export async function GET(request: Request) {
   }
   await dbConnect();
   const { searchParams } = new URL(request.url);
-  const categoryId = searchParams.get('categoryId');
+  const sectionId = searchParams.get('sectionId');
 
   try {
-    const query = categoryId ? { categoryId } : {};
+    const query = sectionId ? { sectionId } : {};
     const pages = await NotePage.find(query).sort({ updatedAt: -1 });
     return NextResponse.json({ success: true, data: pages });
   } catch (error) {
