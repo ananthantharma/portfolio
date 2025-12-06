@@ -1,0 +1,83 @@
+'use client';
+
+import 'react-quill/dist/quill.snow.css';
+
+import dynamic from 'next/dynamic';
+import React from 'react';
+
+const ReactQuill = dynamic(() => import('react-quill'), {
+    ssr: false,
+    loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
+}) as any;
+
+interface RichTextEditorProps {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+}
+
+const modules = {
+    toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        [{ font: [] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+        [{ align: [] }],
+        ['link', 'image'],
+        ['clean'],
+    ],
+};
+
+const formats = [
+    'header',
+    'font',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'blockquote',
+    'color',
+    'background',
+    'list',
+    'bullet',
+    'indent',
+    'align',
+    'link',
+    'image',
+];
+
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder }) => {
+    return (
+        <div className="h-full flex flex-col">
+            <ReactQuill
+                className="flex-1 h-full"
+                formats={formats}
+                modules={modules}
+                onChange={onChange}
+                placeholder={placeholder}
+                theme="snow"
+                value={value}
+            />
+            <style global jsx>{`
+        .quill {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        .ql-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .ql-editor {
+          flex: 1;
+          overflow-y: auto;
+        }
+      `}</style>
+        </div>
+    );
+};
+
+export default RichTextEditor;

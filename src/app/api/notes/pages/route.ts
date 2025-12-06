@@ -1,29 +1,39 @@
-import {NextResponse} from 'next/server';
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 import dbConnect from '@/lib/dbConnect';
 import NotePage from '@/models/NotePage';
 
 export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   await dbConnect();
-  const {searchParams} = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const categoryId = searchParams.get('categoryId');
 
   try {
-    const query = categoryId ? {categoryId} : {};
-    const pages = await NotePage.find(query).sort({createdAt: -1});
-    return NextResponse.json({success: true, data: pages});
+    const query = categoryId ? { categoryId } : {};
+    const pages = await NotePage.find(query).sort({ updatedAt: -1 });
+    return NextResponse.json({ success: true, data: pages });
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    return NextResponse.json({ success: false, error: error }, { status: 400 });
   }
 }
 
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   await dbConnect();
   try {
     const body = await request.json();
     const page = await NotePage.create(body);
-    return NextResponse.json({success: true, data: page}, {status: 201});
+    return NextResponse.json({ success: true, data: page }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    return NextResponse.json({ success: false, error: error }, { status: 400 });
   }
 }
