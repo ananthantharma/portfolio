@@ -1,5 +1,6 @@
 /* eslint-disable object-curly-spacing */
 /* eslint-disable react/jsx-sort-props */
+/* eslint-disable simple-import-sort/imports */
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
