@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { NextResponse } from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
+import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import NotePage from '@/models/NotePage';
 import NoteSection from '@/models/NoteSection'; // Ensure registration
-import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(request: Request) {
@@ -13,6 +13,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   await dbConnect();
+
+  // Ensure models are registered to avoid MissingSchemaError during population
+  console.log('Registered Models:', NoteSection.modelName, NoteCategory.modelName);
+
   const { searchParams } = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
   const isFlagged = searchParams.get('isFlagged') === 'true';
