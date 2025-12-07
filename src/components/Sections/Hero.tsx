@@ -5,8 +5,8 @@ import classNames from 'classnames';
 import Image from 'next/image';
 import { FC, memo } from 'react';
 
-import CircuitBoardLoader from '../CircuitBoardLoader';
 import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
+import CircuitBoardLoader from '../CircuitBoardLoader';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
 import TimelineBox from '../TimelineBox';
