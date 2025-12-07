@@ -9,8 +9,8 @@ interface SectionListProps {
     sections: INoteSection[];
     selectedSectionId: string | null;
     onSelectSection: (id: string) => void;
-    onAddSection: (name: string) => void;
-    onRenameSection: (id: string, name: string) => void;
+    onAddSection: (name: string, color?: string) => void;
+    onRenameSection: (id: string, name: string, color?: string) => void;
     onDeleteSection: (id: string) => void;
     loading: boolean;
     isCollapsed: boolean;
@@ -21,13 +21,16 @@ const SectionList: React.FC<SectionListProps> = React.memo(
     ({ isCollapsed, loading, onAddSection, onDeleteSection, onRenameSection, onSelectSection, onToggleCollapse, sections, selectedSectionId }) => {
         const [isAdding, setIsAdding] = useState(false);
         const [newSectionName, setNewSectionName] = useState('');
+        const [newSectionColor, setNewSectionColor] = useState('#000000');
         const [editingId, setEditingId] = useState<string | null>(null);
         const [editName, setEditName] = useState('');
+        const [editColor, setEditColor] = useState('#000000');
 
         const handleAdd = () => {
             if (newSectionName.trim()) {
-                onAddSection(newSectionName);
+                onAddSection(newSectionName, newSectionColor);
                 setNewSectionName('');
+                setNewSectionColor('#000000');
                 setIsAdding(false);
             }
         };
@@ -35,13 +38,15 @@ const SectionList: React.FC<SectionListProps> = React.memo(
         const startEditing = (section: INoteSection) => {
             setEditingId(section._id as string);
             setEditName(section.name);
+            setEditColor(section.color || '#000000');
         };
 
         const handleRename = () => {
             if (editingId && editName.trim()) {
-                onRenameSection(editingId, editName);
+                onRenameSection(editingId, editName, editColor);
                 setEditingId(null);
                 setEditName('');
+                setEditColor('#000000');
             }
         };
 
@@ -80,6 +85,13 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             <div className="p-2">
                                 <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                                     <input
+                                        type="color"
+                                        value={newSectionColor}
+                                        onChange={(e) => setNewSectionColor(e.target.value)}
+                                        className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                                        title="Pick a color"
+                                    />
+                                    <input
                                         autoFocus
                                         className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                                         onChange={e => setNewSectionName(e.target.value)}
@@ -107,6 +119,13 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                                     {editingId === section._id ? (
                                         <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                                             <input
+                                                type="color"
+                                                value={editColor}
+                                                onChange={(e) => setEditColor(e.target.value)}
+                                                className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                                                title="Pick a color"
+                                            />
+                                            <input
                                                 autoFocus
                                                 className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                                                 onChange={e => setEditName(e.target.value)}
@@ -131,7 +150,15 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                                                 : 'text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             onClick={() => onSelectSection(section._id as string)}>
-                                            <span className="truncate">{section.name}</span>
+                                            <div className="flex items-center gap-2 truncate">
+                                                {section.color && (
+                                                    <span
+                                                        className="h-3 w-3 rounded-full flex-shrink-0"
+                                                        style={{ backgroundColor: section.color }}
+                                                    />
+                                                )}
+                                                <span className="truncate">{section.name}</span>
+                                            </div>
                                             <div className="hidden space-x-1 group-hover:flex">
                                                 <button
                                                     className="text-gray-500 hover:text-blue-600"

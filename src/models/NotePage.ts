@@ -3,6 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 export interface INotePage extends Document {
   title: string;
   content: string;
+  color?: string;
   sectionId: mongoose.Types.ObjectId;
   isFlagged: boolean;
   isImportant: boolean;
@@ -20,6 +21,10 @@ const NotePageSchema: Schema = new Schema(
     content: {
       type: String,
       default: '',
+    },
+    color: {
+      type: String,
+      default: '#000000',
     },
     sectionId: {
       type: mongoose.Schema.Types.ObjectId,

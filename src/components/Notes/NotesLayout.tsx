@@ -124,18 +124,18 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   // Category Operations
-  const handleAddCategory = useCallback(async (name: string) => {
+  const handleAddCategory = useCallback(async (name: string, color?: string) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name });
+      const response = await axios.post('/api/notes/categories', { name, color });
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
     }
   }, []);
 
-  const handleRenameCategory = useCallback(async (id: string, name: string) => {
+  const handleRenameCategory = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/categories/${id}`, { name });
+      const response = await axios.put(`/api/notes/categories/${id}`, { name, color });
       setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
     } catch (error) {
       console.error('Error renaming category:', error);
@@ -153,11 +153,12 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [selectedCategoryId]);
 
   // Section Operations
-  const handleAddSection = useCallback(async (name: string) => {
+  const handleAddSection = useCallback(async (name: string, color?: string) => {
     if (!selectedCategoryId) return;
     try {
       const response = await axios.post('/api/notes/sections', {
         name,
+        color,
         categoryId: selectedCategoryId,
       });
       setSections(prev => [...prev, response.data.data]);
@@ -167,9 +168,9 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, [selectedCategoryId]);
 
-  const handleRenameSection = useCallback(async (id: string, name: string) => {
+  const handleRenameSection = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/sections/${id}`, { name });
+      const response = await axios.put(`/api/notes/sections/${id}`, { name, color });
       setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
     } catch (error) {
       console.error('Error renaming section:', error);
@@ -188,11 +189,12 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Page Operations
   const handleAddPage = useCallback(
-    async (title: string) => {
+    async (title: string, color?: string) => {
       if (!selectedSectionId) return;
       try {
         const response = await axios.post('/api/notes/pages', {
           title,
+          color,
           sectionId: selectedSectionId,
         });
         setPages(prev => [response.data.data, ...prev]);
@@ -204,9 +206,9 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
-  const handleRenamePage = useCallback(async (id: string, title: string) => {
+  const handleRenamePage = useCallback(async (id: string, title: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { title });
+      const response = await axios.put(`/api/notes/pages/${id}`, { title, color });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error renaming page:', error);

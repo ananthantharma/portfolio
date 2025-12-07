@@ -9,8 +9,8 @@ interface PageListProps {
   pages: INotePage[];
   selectedPageId: string | null;
   onSelectPage: (id: string) => void;
-  onAddPage: (title: string) => void;
-  onRenamePage: (id: string, title: string) => void;
+  onAddPage: (title: string, color?: string) => void;
+  onRenamePage: (id: string, title: string, color?: string) => void;
   onDeletePage: (id: string) => void;
   loading: boolean;
 }
@@ -19,13 +19,16 @@ const PageList: React.FC<PageListProps> = React.memo(
   ({ pages, selectedPageId, onSelectPage, onAddPage, onRenamePage, onDeletePage, loading }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newPageTitle, setNewPageTitle] = useState('');
+    const [newPageColor, setNewPageColor] = useState('#000000');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState('');
+    const [editColor, setEditColor] = useState('#000000');
 
     const handleAdd = () => {
       if (newPageTitle.trim()) {
-        onAddPage(newPageTitle);
+        onAddPage(newPageTitle, newPageColor);
         setNewPageTitle('');
+        setNewPageColor('#000000');
         setIsAdding(false);
       }
     };
@@ -38,13 +41,15 @@ const PageList: React.FC<PageListProps> = React.memo(
     const startEditing = (page: INotePage) => {
       setEditingId(page._id as string);
       setEditTitle(page.title);
+      setEditColor(page.color || '#000000');
     };
 
     const handleRename = () => {
       if (editingId && editTitle.trim()) {
-        onRenamePage(editingId, editTitle);
+        onRenamePage(editingId, editTitle, editColor);
         setEditingId(null);
         setEditTitle('');
+        setEditColor('#000000');
       }
     };
 
@@ -77,6 +82,13 @@ const PageList: React.FC<PageListProps> = React.memo(
             <div className="p-2">
               <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                 <input
+                  type="color"
+                  value={newPageColor}
+                  onChange={(e) => setNewPageColor(e.target.value)}
+                  className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                  title="Pick a color"
+                />
+                <input
                   autoFocus
                   className="w-full border-none bg-transparent p-0 text-sm focus:ring-0 text-gray-900"
                   onChange={e => setNewPageTitle(e.target.value)}
@@ -104,6 +116,13 @@ const PageList: React.FC<PageListProps> = React.memo(
                 {editingId === page._id ? (
                   <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                     <input
+                      type="color"
+                      value={editColor}
+                      onChange={(e) => setEditColor(e.target.value)}
+                      className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                      title="Pick a color"
+                    />
+                    <input
                       autoFocus
                       className="w-full border-none bg-transparent p-0 text-sm focus:ring-0 text-gray-900"
                       onChange={e => setEditTitle(e.target.value)}
@@ -129,7 +148,15 @@ const PageList: React.FC<PageListProps> = React.memo(
                       }`}
                     onClick={() => onSelectPage(page._id as string)}>
                     <div className="flex flex-col overflow-hidden">
-                      <span className="truncate">{page.title}</span>
+                      <div className="flex items-center gap-2">
+                        {page.color && (
+                          <span
+                            className="h-3 w-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: page.color }}
+                          />
+                        )}
+                        <span className="truncate">{page.title}</span>
+                      </div>
                       <span className="truncate text-xs text-gray-400">
                         {new Date(page.updatedAt).toLocaleDateString()}
                       </span>

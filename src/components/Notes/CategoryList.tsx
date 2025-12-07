@@ -9,8 +9,8 @@ interface CategoryListProps {
   categories: INoteCategory[];
   selectedCategoryId: string | null;
   onSelectCategory: (id: string) => void;
-  onAddCategory: (name: string) => void;
-  onRenameCategory: (id: string, name: string) => void;
+  onAddCategory: (name: string, color?: string) => void;
+  onRenameCategory: (id: string, name: string, color?: string) => void;
   onDeleteCategory: (id: string) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -20,13 +20,16 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
   ({ categories, isCollapsed, onAddCategory, onDeleteCategory, onRenameCategory, onSelectCategory, onToggleCollapse, selectedCategoryId }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [newCategoryColor, setNewCategoryColor] = useState('#000000');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
+    const [editColor, setEditColor] = useState('#000000');
 
     const handleAdd = () => {
       if (newCategoryName.trim()) {
-        onAddCategory(newCategoryName);
+        onAddCategory(newCategoryName, newCategoryColor);
         setNewCategoryName('');
+        setNewCategoryColor('#000000');
         setIsAdding(false);
       }
     };
@@ -34,13 +37,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     const startEditing = (category: INoteCategory) => {
       setEditingId(category._id as string);
       setEditName(category.name);
+      setEditColor(category.color || '#000000');
     };
 
     const handleRename = () => {
       if (editingId && editName.trim()) {
-        onRenameCategory(editingId, editName);
+        onRenameCategory(editingId, editName, editColor);
         setEditingId(null);
         setEditName('');
+        setEditColor('#000000');
       }
     };
 
@@ -75,6 +80,13 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               <div className="p-2">
                 <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                   <input
+                    type="color"
+                    value={newCategoryColor}
+                    onChange={(e) => setNewCategoryColor(e.target.value)}
+                    className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                    title="Pick a color"
+                  />
+                  <input
                     autoFocus
                     className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                     onChange={e => setNewCategoryName(e.target.value)}
@@ -102,6 +114,13 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                   {editingId === category._id ? (
                     <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                       <input
+                        type="color"
+                        value={editColor}
+                        onChange={(e) => setEditColor(e.target.value)}
+                        className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                        title="Pick a color"
+                      />
+                      <input
                         autoFocus
                         className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
                         onChange={e => setEditName(e.target.value)}
@@ -126,7 +145,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                         : 'text-gray-700 hover:bg-gray-200'
                         }`}
                       onClick={() => onSelectCategory(category._id as string)}>
-                      <span className="truncate">{category.name}</span>
+                      <div className="flex items-center gap-2 truncate">
+                        {category.color && (
+                          <span
+                            className="h-3 w-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: category.color }}
+                          />
+                        )}
+                        <span className="truncate">{category.name}</span>
+                      </div>
                       <div className="hidden space-x-1 group-hover:flex">
                         <button
                           className="text-gray-500 hover:text-blue-600"
