@@ -9,7 +9,7 @@ import InstagramIcon from '../components/Icon/InstagramIcon';
 import LinkedInIcon from '../components/Icon/LinkedInIcon';
 import TwitterIcon from '../components/Icon/TwitterIcon';
 import heroImage from '../images/header-background.webp';
-import aeclLogo from '../images/Logo/aecl.jpg';
+import aeclLogo from '../images/Logo/AECL logo.png';
 import apicsLogo from '../images/Logo/apics.png';
 import carletonLogo from '../images/Logo/carleton.png';
 import centennialLogo from '../images/Logo/centennial.png';
