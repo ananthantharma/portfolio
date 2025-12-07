@@ -31,6 +31,7 @@ export async function POST(req: Request) {
         const text = response.text();
 
         return NextResponse.json({ text });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error('Gemini API Error:', error);
         return NextResponse.json(
