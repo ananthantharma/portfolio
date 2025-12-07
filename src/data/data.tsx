@@ -1,13 +1,7 @@
 /* eslint-disable object-curly-spacing */
 /* eslint-disable simple-import-sort/imports */
 import {
-  AcademicCapIcon,
   ArrowDownTrayIcon,
-  BuildingOffice2Icon,
-  CalendarIcon,
-  FlagIcon,
-  MapIcon,
-  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 import GithubIcon from '../components/Icon/GithubIcon';
@@ -15,9 +9,7 @@ import InstagramIcon from '../components/Icon/InstagramIcon';
 import LinkedInIcon from '../components/Icon/LinkedInIcon';
 import TwitterIcon from '../components/Icon/TwitterIcon';
 import heroImage from '../images/header-background.webp';
-import profilepic from '../images/profilepic.jpg';
-import testimonialImage from '../images/testimonial.webp';
-import aeclLogo from '../images/Logo/AECL logo.png';
+import aeclLogo from '../images/Logo/aecl.jpg';
 import apicsLogo from '../images/Logo/apics.png';
 import carletonLogo from '../images/Logo/carleton.png';
 import centennialLogo from '../images/Logo/centennial.png';
@@ -28,14 +20,12 @@ import opgLogo from '../images/Logo/OPG logo.png';
 import peoLogo from '../images/Logo/PEO.png';
 import pmpLogo from '../images/Logo/PMP.png';
 import {
-  About,
   ContactSection,
   ContactType,
   Hero,
   HomepageMeta,
   SkillGroup,
   Social,
-  TestimonialSection,
   TimelineItem,
 } from './dataDef';
 
@@ -52,10 +42,8 @@ export const homePageMeta: HomepageMeta = {
  */
 export const SectionId = {
   Hero: 'hero',
-  About: 'about',
   Contact: 'contact',
   Stats: 'stats',
-  Testimonials: 'testimonials',
 } as const;
 
 export type SectionId = (typeof SectionId)[keyof typeof SectionId];
@@ -156,18 +144,7 @@ export const heroTimeline: TimelineItem[] = [
 /**
  * About section
  */
-export const aboutData: About = {
-  profileImageSrc: profilepic,
-  description: `Certified as a P.Eng, PMP, and CSCP, I bring a unique blend of software engineering and procurement expertise to the table. With a track record of achieving over $75 million in procurement savings and a 40% increase in operational efficiency, I excel in contract management and stakeholder negotiations`,
-  aboutItems: [
-    { label: 'Location', text: 'Toronto, ON', Icon: MapIcon },
-    { label: 'Age', text: '35', Icon: CalendarIcon },
-    { label: 'Nationality', text: 'Canadian / Tamil', Icon: FlagIcon },
-    { label: 'Interests', text: 'Chess, Coding, Photography, Gaming, Golf', Icon: SparklesIcon },
-    { label: 'Study', text: 'University of Ontario I.T. ', Icon: AcademicCapIcon },
-    { label: 'Employment', text: 'Hydro One', Icon: BuildingOffice2Icon },
-  ],
-};
+
 
 /**
  * Skills section
@@ -345,29 +322,7 @@ export const experience: TimelineItem[] = [
   },
 ];
 
-/**
- * Testimonial section
- */
-export const testimonial: TestimonialSection = {
-  imageSrc: testimonialImage,
-  testimonials: [
-    {
-      name: 'Emily Johnson',
-      text: "Ananthan is a procurement wizard. His strategic approach to contract management saved our department millions and increased efficiency by 40%. He's not just a team player; he's a team leader.",
-      image: 'https://ui-avatars.com/api/?name=John+Doe&background=random',
-    },
-    {
-      name: 'Jane Doe',
-      text: 'Here you should write some nice things that someone has said about you. Encourage them to be specific and include important details. Notes about your leadership skills and performance are also great.',
-      image: 'https://ui-avatars.com/api/?name=Jane+Doe&background=random',
-    },
-    {
-      name: 'Someone else',
-      text: 'Add several of these, and keep them as fresh as possible, but be sure to focus on quality testimonials with specific details, not just generic praise.',
-      image: 'https://ui-avatars.com/api/?name=Someone+Else&background=random',
-    },
-  ],
-};
+
 
 /**
  * Contact section
