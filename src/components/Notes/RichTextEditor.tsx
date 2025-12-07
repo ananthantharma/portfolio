@@ -50,6 +50,7 @@ const formats = [
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillRef = React.useRef<any>(null);
 
     React.useImperativeHandle(ref, () => ({
@@ -72,6 +73,13 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
         }
     }), []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleRef = React.useCallback((el: any) => {
+        // Capture the internal ref
+        quillRef.current = el;
+        if (el) console.log("Internal ReactQuill ref captured:", el);
+    }, []);
+
     return (
         <div className="h-full flex flex-col relative">
             <ReactQuill
@@ -81,11 +89,7 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 modules={modules}
                 onChange={onChange}
                 placeholder={placeholder}
-                ref={(el: any) => {
-                    // Capture the internal ref
-                    quillRef.current = el;
-                    if (el) console.log("Internal ReactQuill ref captured:", el);
-                }}
+                ref={handleRef}
                 theme="snow"
                 value={value}
             />
