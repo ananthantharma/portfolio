@@ -38,7 +38,7 @@ const Hero: FC = memo(() => {
 
             {/* Main Hero Content - Center (50%) */}
             <div className="col-span-1 flex h-full items-center justify-center lg:col-span-6">
-              <div className="flex flex-col items-center gap-y-8 text-center">
+              <div className="flex w-full flex-col items-center gap-y-8 text-center">
                 {/* Circuit Board Loader replacing the name */}
                 <div className="w-full h-40 lg:h-48">
                   <CircuitBoardLoader />

@@ -5,7 +5,7 @@ const CircuitBoardLoader: React.FC = memo(() => {
     return (
         <div className="main-container">
             <div className="loader">
-                <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+                <svg height="100%" viewBox="0 0 800 500" width="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="chipGradient" x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stopColor="#2d2d2d"></stop>
