@@ -31,10 +31,13 @@ export async function POST(req: Request) {
         const text = response.text();
 
         return NextResponse.json({ text });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Gemini API Error:', error);
         return NextResponse.json(
-            { error: 'Failed to generate content' },
+            {
+                error: 'Failed to generate content',
+                details: error.message || error.toString()
+            },
             { status: 500 }
         );
     }

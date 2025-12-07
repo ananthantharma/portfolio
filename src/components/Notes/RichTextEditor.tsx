@@ -63,7 +63,6 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
     React.useImperativeHandle(ref, () => ({
         getEditor: () => {
             if (quillRef.current) {
-                console.log("Returning editor instance via useImperativeHandle");
                 // Check if the ref.current is the ReactQuill component or the editor instance directly
                 // ReactQuill 2.0 component often has getEditor() method
                 if (typeof quillRef.current.getEditor === 'function') {
@@ -75,7 +74,6 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 // Fallback: return the ref itself if it looks like the editor
                 return quillRef.current;
             }
-            console.warn("quillRef.current is null in useImperativeHandle");
             return null;
         }
     }), []);
@@ -84,7 +82,6 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
     const handleRef = React.useCallback((el: any) => {
         // Capture the internal ref
         quillRef.current = el;
-        if (el) console.log("Internal ReactQuill ref captured:", el);
     }, []);
 
     return (
