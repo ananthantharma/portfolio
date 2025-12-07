@@ -169,8 +169,7 @@ const CircuitBoardLoader: React.FC = memo(() => {
 
         .loader {
           width: 100%;
-          max-width: 800px;
-          min-width: 320px;
+          max-width: 100%;
         }
 
         .trace-bg {
