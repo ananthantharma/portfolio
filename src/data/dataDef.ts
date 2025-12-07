@@ -1,8 +1,8 @@
 /* eslint-disable object-curly-spacing */
-import {StaticImageData} from 'next/image';
-import {FC, ForwardRefExoticComponent, SVGProps} from 'react';
+import { StaticImageData } from 'next/image';
+import { FC, ForwardRefExoticComponent, SVGProps } from 'react';
 
-import {IconProps} from '../components/Icon/Icon';
+import { IconProps } from '../components/Icon/Icon';
 
 export interface HomepageMeta {
   title: string;
@@ -36,20 +36,7 @@ interface HeroActionItem {
   onClick?: () => void; // Add this line
 }
 
-/**
- * About section
- */
-export interface About {
-  profileImageSrc?: string;
-  description: string;
-  aboutItems: AboutItem[];
-}
 
-export interface AboutItem {
-  label: string;
-  text: string;
-  Icon?: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, 'ref'>>;
-}
 
 /**
  * Stat section
@@ -96,19 +83,7 @@ export interface TimelineItem {
   image?: string | StaticImageData;
 }
 
-/**
- * Testimonial section
- */
-export interface TestimonialSection {
-  imageSrc?: string | StaticImageData;
-  testimonials: Testimonial[];
-}
 
-export interface Testimonial {
-  image?: string;
-  name: string;
-  text: string;
-}
 
 /**
  * Contact section
