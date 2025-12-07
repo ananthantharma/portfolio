@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
 import NotePage from '@/models/NotePage';
+import NoteSection from '@/models/NoteSection'; // Ensure registration
+import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(request: Request) {
@@ -35,6 +37,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data: pages });
   } catch (error) {
+    console.error("Error fetching pages:", error);
     return NextResponse.json({ success: false, error: error }, { status: 400 });
   }
 }
