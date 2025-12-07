@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
