@@ -40,8 +40,10 @@ const Hero: FC = memo(() => {
             <div className="col-span-1 flex h-full items-center justify-center lg:col-span-6">
               <div className="flex w-full flex-col items-center gap-y-8 text-center">
                 {/* Circuit Board Loader replacing the name */}
-                <div className="w-full h-40 lg:h-48">
-                  <CircuitBoardLoader />
+                <div className="flex h-[500px] w-full items-center justify-center lg:h-[600px]">
+                  <div className="flex h-full w-full scale-150 items-center justify-center lg:scale-[2.5]">
+                    <CircuitBoardLoader />
+                  </div>
                 </div>
 
                 {/* Actions & Socials - Clean Layout */}
