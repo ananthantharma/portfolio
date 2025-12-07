@@ -5,11 +5,17 @@ import 'react-quill/dist/quill.snow.css';
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-const ReactQuill = dynamic(() => import('react-quill'), {
-    loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
-    ssr: false,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}) as any;
+const ReactQuill = dynamic(
+    async () => {
+        const { default: RQ } = await import('react-quill');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/display-name
+        return ({ forwardedRef, ...props }: any) => <RQ ref={forwardedRef} {...props} />;
+    },
+    {
+        loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
+        ssr: false,
+    }
+);
 
 interface RichTextEditorProps {
     onChange: (value: string) => void;
@@ -86,10 +92,10 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 // eslint-disable-next-line react/jsx-sort-props
                 className="flex-1 h-full"
                 formats={formats}
+                forwardedRef={handleRef}
                 modules={modules}
                 onChange={onChange}
                 placeholder={placeholder}
-                ref={handleRef}
                 theme="snow"
                 value={value}
             />
