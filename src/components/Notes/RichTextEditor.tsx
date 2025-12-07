@@ -50,15 +50,27 @@ const formats = [
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleRef = React.useCallback((el: any) => {
-        console.log("ReactQuill Ref callback:", el);
-        if (typeof ref === 'function') {
-            ref(el);
-        } else if (ref) {
-            ref.current = el;
+    const quillRef = React.useRef<any>(null);
+
+    React.useImperativeHandle(ref, () => ({
+        getEditor: () => {
+            if (quillRef.current) {
+                console.log("Returning editor instance via useImperativeHandle");
+                // Check if the ref.current is the ReactQuill component or the editor instance directly
+                // ReactQuill 2.0 component often has getEditor() method
+                if (typeof quillRef.current.getEditor === 'function') {
+                    return quillRef.current.getEditor();
+                } else if (typeof quillRef.current.editor !== 'undefined') {
+                    // Sometimes it might expose editor property directly
+                    return quillRef.current.editor;
+                }
+                // Fallback: return the ref itself if it looks like the editor
+                return quillRef.current;
+            }
+            console.warn("quillRef.current is null in useImperativeHandle");
+            return null;
         }
-    }, [ref]);
+    }), []);
 
     return (
         <div className="h-full flex flex-col relative">
@@ -69,7 +81,11 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 modules={modules}
                 onChange={onChange}
                 placeholder={placeholder}
-                ref={handleRef}
+                ref={(el: any) => {
+                    // Capture the internal ref
+                    quillRef.current = el;
+                    if (el) console.log("Internal ReactQuill ref captured:", el);
+                }}
                 theme="snow"
                 value={value}
             />
