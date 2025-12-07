@@ -144,7 +144,8 @@ const CircuitBoardLoader: React.FC = memo(() => {
                         x="400"
                         y="240"
                     >
-                        Ananthan Tharmavelautham
+                        <tspan x="400" y="232">Ananthan</tspan>
+                        <tspan x="400" y="252">Tharmavelautham</tspan>
                     </text>
 
                     <circle cx="100" cy="100" fill="black" r="5"></circle>
