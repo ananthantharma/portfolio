@@ -23,8 +23,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Use gemini-pro as a fallback since gemini-1.5-flash was not found (404)
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        // Use gemini-3-pro-preview as requested by user
+        const model = genAI.getGenerativeModel({ model: 'gemini-3-pro-preview' });
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
