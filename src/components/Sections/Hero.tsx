@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import Image from 'next/image';
 import { FC, memo } from 'react';
 
+import CircuitBoardLoader from '../CircuitBoardLoader';
 import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
@@ -37,13 +38,10 @@ const Hero: FC = memo(() => {
             {/* Main Hero Content - Center (50%) */}
             <div className="col-span-1 flex h-full items-center justify-center lg:col-span-6">
               <div className="flex flex-col items-center gap-y-8 text-center">
-                {/* Massive Name with Gradient */}
-                <h1
-                  className="animate-fade-in-down bg-gradient-to-r from-[#00C9FF] to-[#92FE9D] bg-clip-text text-6xl font-extrabold text-transparent sm:text-7xl lg:text-8xl xl:text-9xl"
-                  style={{ textShadow: '0 0 40px rgba(0,201,255,0.3)' }}>
-                  {name}
-                  <span className="animate-pulse text-cyan-400">|</span>
-                </h1>
+                {/* Circuit Board Loader replacing the name */}
+                <div className="w-full h-40 lg:h-48">
+                  <CircuitBoardLoader />
+                </div>
 
                 {/* Actions & Socials - Clean Layout */}
                 <div
