@@ -1,8 +1,5 @@
 /* eslint-disable object-curly-spacing */
 /* eslint-disable simple-import-sort/imports */
-import {
-  ArrowDownTrayIcon,
-} from '@heroicons/react/24/outline';
 
 import GithubIcon from '../components/Icon/GithubIcon';
 import InstagramIcon from '../components/Icon/InstagramIcon';
@@ -48,16 +45,6 @@ export const SectionId = {
 
 export type SectionId = (typeof SectionId)[keyof typeof SectionId];
 
-const handleDownloadClick = () => {
-  const userCode = window.prompt('Please enter the code:');
-
-  if (userCode === '1992') {
-    window.open('/assets/resume.pdf', '_blank');
-  } else {
-    alert('Incorrect code. Please try again.');
-  }
-};
-
 /**
  * Hero section
  */
@@ -78,19 +65,7 @@ export const heroData: Hero = {
       </p>
     </>
   ),
-  actions: [
-    {
-      text: 'Resume',
-      primary: true,
-      Icon: ArrowDownTrayIcon,
-      onClick: handleDownloadClick,
-    },
-    {
-      href: `#${SectionId.Contact}`,
-      text: 'Contact',
-      primary: false,
-    },
-  ],
+  actions: [],
 };
 
 /**

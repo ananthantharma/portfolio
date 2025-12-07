@@ -9,7 +9,6 @@ import { FC, memo } from 'react';
 import CircuitBoardLoader from '../CircuitBoardLoader';
 import { heroData, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
-import Socials from '../Socials';
 
 const Hero: FC = memo(() => {
   const { imageSrc, name, actions } = heroData;
@@ -42,10 +41,6 @@ const Hero: FC = memo(() => {
                 <div
                   className="flex animate-fade-in-up flex-col items-center gap-y-8"
                   style={{ animationDelay: '200ms' }}>
-                  {/* Social Icons - Larger & Glowing */}
-                  <div className="flex gap-x-8 text-white">
-                    <Socials />
-                  </div>
 
                   {/* Buttons */}
                   <div className="flex w-full justify-center gap-x-6">

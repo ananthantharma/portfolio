@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 
-import { heroEducation, heroTimeline } from '../data/data';
+import { heroEducation, heroTimeline, socialLinks } from '../data/data';
 import { TimelineItem } from '../data/dataDef';
 
 /* --- 2. HELPERS --- */
@@ -213,10 +213,26 @@ const UnifiedCircuitSection = memo(() => {
                     <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
 
                     <foreignObject height={chipHeight} width={chipWidth} x="0" y="0">
-                        <div className="w-full h-full flex flex-col items-center justify-center">
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-y-4">
                             <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
                                 <ScrambledText delay={200} text="Ananthan" /><br />
                                 <ScrambledText delay={800} text="Tharmavelautham" />
+                            </div>
+
+                            {/* Social Icons moved inside the chip */}
+                            <div className="flex gap-x-4">
+                                {socialLinks.map(({ label, Icon, href }) => (
+                                    <a
+                                        aria-label={label}
+                                        className="text-gray-400 transition-all duration-300 hover:text-[#00FF41] hover:scale-110"
+                                        href={href}
+                                        key={label}
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                    >
+                                        <Icon className="h-6 w-6" />
+                                    </a>
+                                ))}
                             </div>
                         </div>
                     </foreignObject>
