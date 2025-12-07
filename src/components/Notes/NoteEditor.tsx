@@ -1,8 +1,17 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import { ArrowPathIcon, CheckIcon, ExclamationTriangleIcon, FlagIcon, SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid';
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+  FlagIcon,
+  SparklesIcon,
+  TrashIcon,
+  WrenchIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
@@ -212,6 +221,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
         </div>
         <div className="flex gap-2">
+          <button
+            className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:bg-indigo-300"
+            disabled={!editorFocused}
+            onClick={handleRefineAI}
+            type="button"
+          >
+            <WrenchIcon className="h-4 w-4" />
+            Refine
+          </button>
           <button
             className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:bg-gray-300"
             onClick={handleGenerateAI}

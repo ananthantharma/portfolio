@@ -7,7 +7,8 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 export async function POST(req: Request) {
     try {
-        const { prompt } = await req.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { prompt, model: requestedModel } = await req.json();
 
         if (!process.env.GOOGLE_API_KEY) {
             return NextResponse.json(
@@ -23,8 +24,12 @@ export async function POST(req: Request) {
             );
         }
 
-        // Use gemini-3-pro-preview as requested by user
-        const model = genAI.getGenerativeModel({ model: 'gemini-3-pro-preview' });
+        // Use requested model or fallback to gemini-3-pro-preview
+        // Using gemini-3-pro-preview as default as requested by user
+        const modelToUse = requestedModel || 'gemini-3-pro-preview';
+        console.log(`Using Gemini model: ${modelToUse}`);
+
+        const model = genAI.getGenerativeModel({ model: modelToUse });
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
