@@ -1,14 +1,11 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import {
-  ArrowLeftIcon,
-  ArrowPathIcon,
+ArrowPathIcon,
   CheckIcon,
   ExclamationTriangleIcon,
   FlagIcon,
   SparklesIcon,
-  TrashIcon,
   WrenchIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
