@@ -208,18 +208,22 @@ const UnifiedCircuitSection = memo(() => {
                     })}
                 </g>
 
-                {/* --- 3. CENTER CHIP --- */}
+                {/* --- 3. CENTER CHIP (Replaced with Glassmorphism) --- */}
                 <g transform={`translate(${centerX - (chipWidth / 2)}, ${centerY - (chipHeight / 2)})`}>
-                    <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
+
+                    {/* REMOVED: SVG Rect Background 
+              <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
+          */}
 
                     <foreignObject height={chipHeight} width={chipWidth} x="0" y="0">
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-y-4">
+                        {/* Glassmorphism Container */}
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-y-4 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(0,255,65,0.1)]">
                             <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
                                 <ScrambledText delay={200} text="Ananthan" /><br />
                                 <ScrambledText delay={800} text="Tharmavelautham" />
                             </div>
 
-                            {/* Social Icons moved inside the chip */}
+                            {/* Social Icons */}
                             <div className="flex gap-x-4">
                                 {socialLinks.map(({ label, Icon, href }) => (
                                     <a
