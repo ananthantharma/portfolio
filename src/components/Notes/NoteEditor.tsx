@@ -1,7 +1,8 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-ArrowPathIcon,
+import {
+  ArrowPathIcon,
   CheckIcon,
   ExclamationTriangleIcon,
   FlagIcon,
@@ -9,7 +10,26 @@ ArrowPathIcon,
   WrenchIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid';
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+
+const REFINE_PROMPT = `I need you to rewrite the text I provide below. Please follow these strict style guidelines:
+
+Tone: Aim for a "7 out of 10" on the professionalism scale. It should be polished, grammatically correct, and respectful, but not stiff, academic, or overly formal. Think "competent colleague" rather than "lawyer" or "professor."
+
+Punctuation Constraints: Do not use em-dashes (—), en-dashes (–), or hyphens (-) to connect clauses. AI tends to overuse these. Instead, rely on periods to create punchy sentences, or commas where necessary.
+
+Human-like Flow:
+
+Avoid robotic transition words like "moreover," "furthermore," "subsequently," or "in conclusion."
+
+Use simple, strong verbs. Avoid corporate fluff (e.g., use "use" instead of "utilize," use "help" instead of "facilitate").
+
+Vary your sentence length, but lean toward shorter, clearer sentences.
+
+Goal: Make it sound natural and spoken, as if a clear communicator wrote it quickly but carefully.
+
+Here is the text to rewrite:`;
 
 import { INotePage } from '@/models/NotePage';
 
@@ -106,6 +126,81 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setContent(val);
     setIsDirty(true);
   }, []);
+
+  const handleRefineAI = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quillComponent: any = quillRef.current;
+
+    if (!quillComponent) return;
+
+    let quill;
+    try {
+      quill = quillComponent.getEditor();
+    } catch (e) {
+      console.error("Error getting editor from ref:", e);
+    }
+
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    let text = '';
+
+    if (range && range.length > 0) {
+      text = quill.getText(range.index, range.length);
+    } else {
+      const windowSelection = window.getSelection();
+      if (windowSelection && windowSelection.toString().length > 0) {
+        text = windowSelection.toString();
+      }
+    }
+
+    if (!text || text.trim().length === 0) {
+      alert("Please select some text to refine.");
+      return;
+    }
+
+    if (range) {
+      setInsertionRange(range);
+    } else {
+      setInsertionRange(null);
+    }
+
+    setIsModalOpen(true);
+    setIsGenerating(true);
+    setGeneratedText('');
+
+    const fullPrompt = `${REFINE_PROMPT}\n\n"${text}"`;
+
+    try {
+      const response = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          model: 'gemini-2.5-flash'
+        }),
+      });
+      const data = await response.json();
+      console.log("Refine AI Response:", data);
+
+      if (!response.ok) {
+        console.error("Refine AI Error Details:", data);
+        setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
+        return;
+      }
+
+      if (data.text) {
+        setGeneratedText(data.text);
+      } else {
+        setGeneratedText('Failed to refine content.');
+      }
+    } catch (error) {
+      console.error(error);
+      setGeneratedText('Error connecting to Gemini.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleGenerateAI = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -220,7 +315,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         <div className="flex gap-2">
           <button
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:bg-indigo-300"
-            disabled={!editorFocused}
             onClick={handleRefineAI}
             type="button"
           >
