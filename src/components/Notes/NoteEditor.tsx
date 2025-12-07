@@ -159,6 +159,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         body: JSON.stringify({ prompt: text }),
       });
       const data = await response.json();
+      console.log("Gemini API Response:", data);
+
+      if (!response.ok) {
+        console.error("Gemini API Error Details:", data);
+        setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
+        return;
+      }
+
       if (data.text) {
         setGeneratedText(data.text);
       } else {
