@@ -179,13 +179,13 @@ const CircuitBoardLoader: React.FC = memo(() => {
 
         .neon-text {
           fill: #fff;
-          text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+          text-shadow: 0 0 5px #606a72ff, 0 0 10px #606a72ff, 0 0 20px #606a72ff, 0 0 40px #606a72ff, 0 0 80px #606a72ff;
           animation: glow 1.5s infinite alternate;
         }
 
         @keyframes glow {
           0% {
-            text-shadow: 0 0 5px #ff005e, 0 0 10px #ff005e, 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 80px #ff005e;
+            text-shadow: 0 0 5px #606a72ff, 0 0 10px #606a72ff, 0 0 20px #606a72ff, 0 0 40px #606a72ff, 0 0 80px #606a72ff;
           }
           100% {
             text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff, 0 0 40px #00d4ff, 0 0 80px #00d4ff, 0 0 160px #00d4ff;
