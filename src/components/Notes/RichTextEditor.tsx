@@ -20,6 +20,7 @@ const ReactQuill = dynamic(
 
 interface RichTextEditorProps {
     onChange: (value: string) => void;
+    onBlur?: () => void;
     placeholder?: string;
     value: string;
 }
@@ -56,7 +57,7 @@ const formats = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
+const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillRef = React.useRef<any>(null);
 
@@ -92,6 +93,7 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 formats={formats}
                 forwardedRef={handleRef}
                 modules={modules}
+                onBlur={onBlur} // Pass onBlur
                 onChange={onChange}
                 placeholder={placeholder}
                 theme="snow"
