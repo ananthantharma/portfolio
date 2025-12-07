@@ -80,11 +80,11 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               <div className="p-2">
                 <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                   <input
+                    className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                    onChange={(e) => setNewCategoryColor(e.target.value)}
+                    title="Pick a color"
                     type="color"
                     value={newCategoryColor}
-                    onChange={(e) => setNewCategoryColor(e.target.value)}
-                    className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
-                    title="Pick a color"
                   />
                   <input
                     autoFocus
@@ -114,11 +114,11 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                   {editingId === category._id ? (
                     <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                       <input
+                        className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                        onChange={(e) => setEditColor(e.target.value)}
+                        title="Pick a color"
                         type="color"
                         value={editColor}
-                        onChange={(e) => setEditColor(e.target.value)}
-                        className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
-                        title="Pick a color"
                       />
                       <input
                         autoFocus

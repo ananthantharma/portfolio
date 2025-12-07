@@ -82,11 +82,11 @@ const PageList: React.FC<PageListProps> = React.memo(
             <div className="p-2">
               <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                 <input
+                  className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                  onChange={(e) => setNewPageColor(e.target.value)}
+                  title="Pick a color"
                   type="color"
                   value={newPageColor}
-                  onChange={(e) => setNewPageColor(e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
-                  title="Pick a color"
                 />
                 <input
                   autoFocus
@@ -116,11 +116,11 @@ const PageList: React.FC<PageListProps> = React.memo(
                 {editingId === page._id ? (
                   <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                     <input
+                      className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                      onChange={(e) => setEditColor(e.target.value)}
+                      title="Pick a color"
                       type="color"
                       value={editColor}
-                      onChange={(e) => setEditColor(e.target.value)}
-                      className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
-                      title="Pick a color"
                     />
                     <input
                       autoFocus
