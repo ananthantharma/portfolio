@@ -49,7 +49,7 @@ const formats = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
+const RichTextEditor = React.forwardRef<any, RichTextEditorProps>(({ onChange, placeholder, value }, ref) => {
     return (
         <div className="h-full flex flex-col relative">
             <ReactQuill
@@ -59,7 +59,14 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
                 modules={modules}
                 onChange={onChange}
                 placeholder={placeholder}
-                ref={ref}
+                ref={(el: any) => {
+                    console.log("ReactQuill Ref callback:", el);
+                    if (typeof ref === 'function') {
+                        ref(el);
+                    } else if (ref) {
+                        ref.current = el;
+                    }
+                }}
                 theme="snow"
                 value={value}
             />
@@ -83,7 +90,7 @@ const RichTextEditor = React.memo(React.forwardRef<any, RichTextEditorProps>(({ 
       `}</style>
         </div>
     );
-}));
+});
 
 RichTextEditor.displayName = 'RichTextEditor';
 
