@@ -169,7 +169,10 @@ const CircuitBoardLoader: React.FC = memo(() => {
 
         .loader {
           width: 100%;
-          max-width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
 
         .trace-bg {
