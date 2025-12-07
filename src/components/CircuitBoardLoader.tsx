@@ -1,11 +1,12 @@
-import React, { memo, useState, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
 import { heroEducation, heroTimeline } from '../data/data';
+import { TimelineItem } from '../data/dataDef';
 
 /* --- 2. HELPERS --- */
 
 // The "Hacker" Text Effect
-const ScrambledText = ({ text, delay = 0 }: { text: string; delay?: number }) => {
+const ScrambledText = memo(({ delay = 0, text }: { delay?: number; text: string }) => {
     const [displayText, setDisplayText] = useState('');
     const chars = "#.^^{-!#$_№:0#{+.@}-??{4@%=.,^!?2@%\\;1}]?{%:%|{f[4{4%0%'1_0<{0%]>'42";
     const requestRef = useRef<number>();
@@ -30,18 +31,19 @@ const ScrambledText = ({ text, delay = 0 }: { text: string; delay?: number }) =>
         };
     }, [text, delay]);
     return <span>{displayText}</span>;
-};
+});
+ScrambledText.displayName = 'ScrambledText';
 
 // The Card rendered inside SVG
-const SvgCard = ({ x, y, item, align = 'left' }: { x: number, y: number, item: any, align?: 'left' | 'right' }) => {
+const SvgCard = memo(({ align = 'left', item, x, y }: { align?: 'left' | 'right'; item: TimelineItem; x: number; y: number }) => {
     const isLeft = align === 'left';
 
     // Handle StaticImageData or string path for image
-    const imageSrc = item.image && typeof item.image === 'object' && 'src' in item.image ? item.image.src : item.image;
+    const imageSrc = item.image && typeof item.image === 'object' && 'src' in item.image ? item.image.src : item.image as string;
 
     return (
         // Reduced height to 80px for tighter packing
-        <foreignObject x={isLeft ? x - 500 : x} y={y - 40} width="500" height="80" style={{ overflow: 'visible' }}>
+        <foreignObject height="80" style={{ overflow: 'visible' }} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
             <div className={`flex w-full h-full items-center ${isLeft ? 'justify-end pr-6' : 'justify-start pl-6'}`}>
 
                 {/* THE CARD 
@@ -71,7 +73,7 @@ const SvgCard = ({ x, y, item, align = 'left' }: { x: number, y: number, item: a
                             {item.title}
                         </h3>
                         <div className="text-xs font-medium text-slate-300">
-                            {item.location}
+                            {item.location as React.ReactNode}
                         </div>
                     </div>
                 </div>
@@ -83,7 +85,8 @@ const SvgCard = ({ x, y, item, align = 'left' }: { x: number, y: number, item: a
             </div>
         </foreignObject>
     );
-};
+});
+SvgCard.displayName = 'SvgCard';
 
 /* --- 3. MAIN COMPONENT --- */
 const UnifiedCircuitSection = memo(() => {
@@ -117,7 +120,7 @@ const UnifiedCircuitSection = memo(() => {
 
     return (
         <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden">
-            <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full">
+            <svg className="w-full h-full" viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
                 <defs>
                     <linearGradient id="chipGradient" x1="0" x2="0" y1="0" y2="1">
                         <stop offset="0%" stopColor="#2d2d2d" />
@@ -150,20 +153,22 @@ const UnifiedCircuitSection = memo(() => {
                                 {/* The Trace Line */}
                                 <path
                                     d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
-                                    fill="none" stroke="#333" strokeWidth="3"
+                                    fill="none"
+                                    stroke="#333"
+                                    strokeWidth="3"
                                 />
                                 <path
+                                    className="animate-flow"
                                     d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
                                     fill="none"
                                     stroke={colors[i % colors.length]}
                                     strokeWidth="3"
-                                    className="animate-flow"
                                 />
                                 {/* The Pin on the Chip */}
-                                <rect x={pinX - 10} y={pinY - 6} width="10" height="12" rx="2" fill="url(#pinGradient)" />
+                                <rect fill="url(#pinGradient)" height="12" rx="2" width="10" x={pinX - 10} y={pinY - 6} />
 
                                 {/* The Card */}
-                                <SvgCard x={cardEdgeX} y={cardY} item={item} align="left" />
+                                <SvgCard align="left" item={item} x={cardEdgeX} y={cardY} />
                             </g>
                         );
                     })}
@@ -185,17 +190,19 @@ const UnifiedCircuitSection = memo(() => {
                             <g key={`edu-${i}`}>
                                 <path
                                     d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
-                                    fill="none" stroke="#333" strokeWidth="3"
+                                    fill="none"
+                                    stroke="#333"
+                                    strokeWidth="3"
                                 />
                                 <path
+                                    className="animate-flow-reverse"
                                     d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
                                     fill="none"
                                     stroke={colors[i % colors.length]}
                                     strokeWidth="3"
-                                    className="animate-flow-reverse"
                                 />
-                                <rect x={pinX} y={pinY - 6} width="10" height="12" rx="2" fill="url(#pinGradient)" />
-                                <SvgCard x={cardEdgeX} y={cardY} item={item} align="right" />
+                                <rect fill="url(#pinGradient)" height="12" rx="2" width="10" x={pinX} y={pinY - 6} />
+                                <SvgCard align="right" item={item} x={cardEdgeX} y={cardY} />
                             </g>
                         );
                     })}
@@ -203,13 +210,13 @@ const UnifiedCircuitSection = memo(() => {
 
                 {/* --- 3. CENTER CHIP --- */}
                 <g transform={`translate(${centerX - (chipWidth / 2)}, ${centerY - (chipHeight / 2)})`}>
-                    <rect width={chipWidth} height={chipHeight} rx="30" fill="url(#chipGradient)" stroke="#222" strokeWidth="4" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" />
+                    <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
 
-                    <foreignObject x="0" y="0" width={chipWidth} height={chipHeight}>
+                    <foreignObject height={chipHeight} width={chipWidth} x="0" y="0">
                         <div className="w-full h-full flex flex-col items-center justify-center">
                             <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
-                                <ScrambledText text="Ananthan" delay={200} /><br />
-                                <ScrambledText text="Tharmavelautham" delay={800} />
+                                <ScrambledText delay={200} text="Ananthan" /><br />
+                                <ScrambledText delay={800} text="Tharmavelautham" />
                             </div>
                         </div>
                     </foreignObject>
