@@ -130,169 +130,37 @@ const CircuitBoardLoader: React.FC = memo(() => {
                             rx="2"
                             width="8"
                             x="470"
+                            y="265"
+                        ></rect>
+                    </g>
 
-                            import React, {memo} from 'react';
+                    <text
+                        alignmentBaseline="middle"
+                        className="neon-text"
+                        fontFamily="Arial, sans-serif"
+                        fontSize="14"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        x="400"
+                        y="240"
+                    >
+                        <tspan x="400" y="232">Ananthan</tspan>
+                        <tspan x="400" y="252">Tharmavelautham</tspan>
+                    </text>
 
-const CircuitBoardLoader: React.FC = memo(() => {
-    return (
-                        <div className="main-container">
-                            <div className="loader">
-                                {/* Tighter viewBox to reduce empty vertical space and zoom in on the circuit */}
-                                <svg height="100%" viewBox="0 50 800 350" width="100%" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="chipGradient" x1="0" x2="0" y1="0" y2="1">
-                                            <stop offset="0%" stopColor="#2d2d2d"></stop>
-                                            <stop offset="100%" stopColor="#0f0f0f"></stop>
-                                        </linearGradient>
+                    <circle cx="100" cy="100" fill="black" r="5"></circle>
+                    <circle cx="80" cy="180" fill="black" r="5"></circle>
+                    <circle cx="60" cy="260" fill="black" r="5"></circle>
+                    <circle cx="100" cy="350" fill="black" r="5"></circle>
 
-                                        <linearGradient id="textGradient" x1="0" x2="0" y1="0" y2="1">
-                                            <stop offset="0%" stopColor="#eeeeee"></stop>
-                                            <stop offset="100%" stopColor="#888888"></stop>
-                                        </linearGradient>
+                    <circle cx="700" cy="90" fill="black" r="5"></circle>
+                    <circle cx="740" cy="160" fill="black" r="5"></circle>
+                    <circle cx="720" cy="250" fill="black" r="5"></circle>
+                    <circle cx="680" cy="340" fill="black" r="5"></circle>
+                </svg>
+            </div>
 
-                                        <linearGradient id="pinGradient" x1="1" x2="0" y1="0" y2="0">
-                                            <stop offset="0%" stopColor="#bbbbbb"></stop>
-                                            <stop offset="50%" stopColor="#888888"></stop>
-                                            <stop offset="100%" stopColor="#555555"></stop>
-                                        </linearGradient>
-                                    </defs>
-
-                                    <g id="traces">
-                                        <path className="trace-bg" d="M100 100 H200 V210 H326"></path>
-                                        <path className="trace-flow purple" d="M100 100 H200 V210 H326"></path>
-
-                                        <path className="trace-bg" d="M80 180 H180 V230 H326"></path>
-                                        <path className="trace-flow blue" d="M80 180 H180 V230 H326"></path>
-
-                                        <path className="trace-bg" d="M60 260 H150 V250 H326"></path>
-                                        <path className="trace-flow yellow" d="M60 260 H150 V250 H326"></path>
-
-                                        <path className="trace-bg" d="M100 350 H200 V270 H326"></path>
-                                        <path className="trace-flow green" d="M100 350 H200 V270 H326"></path>
-
-                                        <path className="trace-bg" d="M700 90 H560 V210 H474"></path>
-                                        <path className="trace-flow blue" d="M700 90 H560 V210 H474"></path>
-
-                                        <path className="trace-bg" d="M740 160 H580 V230 H474"></path>
-                                        <path className="trace-flow green" d="M740 160 H580 V230 H474"></path>
-
-                                        <path className="trace-bg" d="M720 250 H590 V250 H474"></path>
-                                        <path className="trace-flow red" d="M720 250 H590 V250 H474"></path>
-
-                                        <path className="trace-bg" d="M680 340 H570 V270 H474"></path>
-                                        <path className="trace-flow yellow" d="M680 340 H570 V270 H474"></path>
-                                    </g>
-
-                                    <rect
-                                        fill="url(#chipGradient)"
-                                        filter="drop-shadow(0 0 6px rgba(0,0,0,0.8))"
-                                        height="100"
-                                        rx="20"
-                                        ry="20"
-                                        stroke="#222"
-                                        strokeWidth="3"
-                                        width="140"
-                                        x="330"
-                                        y="190"
-                                    ></rect>
-
-                                    <g>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="322"
-                                            y="205"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="322"
-                                            y="225"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="322"
-                                            y="245"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="322"
-                                            y="265"
-                                        ></rect>
-                                    </g>
-
-                                    <g>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="470"
-                                            y="205"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="470"
-                                            y="225"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="470"
-                                            y="245"
-                                        ></rect>
-                                        <rect
-                                            fill="url(#pinGradient)"
-                                            height="10"
-                                            rx="2"
-                                            width="8"
-                                            x="470"
-                                            y="265"
-                                        ></rect>
-                                    </g>
-
-                                    <text
-                                        alignmentBaseline="middle"
-                                        className="neon-text"
-                                        fontFamily="Arial, sans-serif"
-                                        fontSize="14"
-                                        fontWeight="bold"
-                                        textAnchor="middle"
-                                        x="400"
-                                        y="240"
-                                    >
-                                        <tspan x="400" y="232">Ananthan</tspan>
-                                        <tspan x="400" y="252">Tharmavelautham</tspan>
-                                    </text>
-
-                                    <circle cx="100" cy="100" fill="black" r="5"></circle>
-                                    <circle cx="80" cy="180" fill="black" r="5"></circle>
-                                    <circle cx="60" cy="260" fill="black" r="5"></circle>
-                                    <circle cx="100" cy="350" fill="black" r="5"></circle>
-
-                                    <circle cx="700" cy="90" fill="black" r="5"></circle>
-                                    <circle cx="740" cy="160" fill="black" r="5"></circle>
-                                    <circle cx="720" cy="250" fill="black" r="5"></circle>
-                                    <circle cx="680" cy="340" fill="black" r="5"></circle>
-                                </svg>
-                            </div>
-
-                            <style jsx>{`
+            <style jsx>{`
         .main-container {
           display: flex;
           justify-content: center;
@@ -349,10 +217,10 @@ const CircuitBoardLoader: React.FC = memo(() => {
           to { stroke-dashoffset: 0; }
         }
       `}</style>
-                        </div>
-                        );
+        </div>
+    );
 });
 
-                        CircuitBoardLoader.displayName = 'CircuitBoardLoader';
+CircuitBoardLoader.displayName = 'CircuitBoardLoader';
 
-                        export default CircuitBoardLoader;
+export default CircuitBoardLoader;
