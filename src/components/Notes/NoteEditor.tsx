@@ -102,21 +102,48 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   }, []);
 
   const handleGenerateAI = async () => {
+    console.log("Ask AI button clicked");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    if (!quill) return;
+    const quillComponent: any = quillRef.current;
+    console.log("Quill Ref Current:", quillComponent);
+
+    if (!quillComponent) {
+      console.error("Quill ref is null");
+      return;
+    }
+
+    // React-Quill exposes getEditor() or sometimes accessing editor directly depends on version/wrapper
+    // If using dynamic import with ssr:false, the ref might be the component instance.
+    let quill;
+    try {
+      quill = quillComponent.getEditor();
+    } catch (e) {
+      console.error("Error getting editor from ref:", e);
+    }
+
+    if (!quill) {
+      console.error("Quill instance not found");
+      return;
+    }
+
+    console.log("Quill instance found");
 
     const range = quill.getSelection();
+    console.log("Selection Range:", range);
+
     let text = '';
 
     if (range && range.length > 0) {
       text = quill.getText(range.index, range.length);
     } else {
+      console.log("No quill selection, trying window selection");
       const windowSelection = window.getSelection();
       if (windowSelection && windowSelection.toString().length > 0) {
         text = windowSelection.toString();
       }
     }
+
+    console.log("Selected Text:", text);
 
     if (!text || text.trim().length === 0) {
       alert("Please select some text in the note to ask AI.");
@@ -134,12 +161,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setGeneratedText('');
 
     try {
+      console.log("Fetching from Gemini...");
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: text }),
       });
       const data = await response.json();
+      console.log("Gemini Response:", data);
       if (data.text) {
         setGeneratedText(data.text);
       } else {
