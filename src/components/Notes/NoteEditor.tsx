@@ -13,6 +13,12 @@ import {
 import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid';
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
+
+
+import { INotePage } from '@/models/NotePage';
+
+import RichTextEditor from './RichTextEditor';
+
 const REFINE_PROMPT = `I need you to rewrite the text I provide below. Please follow these strict style guidelines:
 
 Tone: Aim for a "7 out of 10" on the professionalism scale. It should be polished, grammatically correct, and respectful, but not stiff, academic, or overly formal. Think "competent colleague" rather than "lawyer" or "professor."
@@ -30,10 +36,6 @@ Vary your sentence length, but lean toward shorter, clearer sentences.
 Goal: Make it sound natural and spoken, as if a clear communicator wrote it quickly but carefully.
 
 Here is the text to rewrite:`;
-
-import { INotePage } from '@/models/NotePage';
-
-import RichTextEditor from './RichTextEditor';
 
 interface NoteEditorProps {
   onSave: (id: string, content: string) => void;
