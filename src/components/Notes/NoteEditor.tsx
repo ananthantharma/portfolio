@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
