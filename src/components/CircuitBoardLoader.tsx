@@ -1,249 +1,237 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 
-const CircuitBoardLoader: React.FC = memo(() => {
-    // The name to be displayed and glitched
-    const name = "Ananthan Tharmavelautham";
-    const [firstName, lastName] = name.split(' ');
-    const textX = "400";
-    const line1Y = "232";
-    const line2Y = "252";
+import { heroEducation, heroTimeline } from '../data/data';
 
-    // The SVG structure remains mostly the same, but the text group is now glitched
+/* --- 2. HELPERS --- */
+
+// The "Hacker" Text Effect
+const ScrambledText = ({ text, delay = 0 }: { text: string; delay?: number }) => {
+    const [displayText, setDisplayText] = useState('');
+    const chars = "#.^^{-!#$_№:0#{+.@}-??{4@%=.,^!?2@%\\;1}]?{%:%|{f[4{4%0%'1_0<{0%]>'42";
+    const requestRef = useRef<number>();
+    const startTimeRef = useRef<number | null>(null);
+    const iterationRef = useRef(0);
+
+    useEffect(() => {
+        const animate = (time: number) => {
+            if (!startTimeRef.current) startTimeRef.current = time;
+            const progress = time - startTimeRef.current;
+            if (progress > 50) {
+                setDisplayText(text.split("").map((l, i) => i < iterationRef.current ? l : chars[Math.floor(Math.random() * chars.length)]).join(""));
+                iterationRef.current += 1 / 4;
+                startTimeRef.current = time;
+            }
+            if (iterationRef.current < text.length) requestRef.current = requestAnimationFrame(animate);
+        };
+        const timeoutId = setTimeout(() => requestRef.current = requestAnimationFrame(animate), delay);
+        return () => {
+            clearTimeout(timeoutId);
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, [text, delay]);
+    return <span>{displayText}</span>;
+};
+
+// The Card rendered inside SVG
+const SvgCard = ({ x, y, item, align = 'left' }: { x: number, y: number, item: any, align?: 'left' | 'right' }) => {
+    const isLeft = align === 'left';
+
+    // Handle StaticImageData or string path for image
+    const imageSrc = item.image && typeof item.image === 'object' && 'src' in item.image ? item.image.src : item.image;
+
     return (
-        <div className="main-container">
-            <div className="loader">
-                {/* Tighter viewBox to reduce empty vertical space and zoom in on the circuit */}
-                <svg height="100%" viewBox="0 50 800 350" width="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        {/* ... (Gradients unchanged) ... */}
-                        <linearGradient id="chipGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor="#2d2d2d"></stop>
-                            <stop offset="100%" stopColor="#0f0f0f"></stop>
-                        </linearGradient>
-                        <linearGradient id="textGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stopColor="#eeeeee"></stop>
-                            <stop offset="100%" stopColor="#888888"></stop>
-                        </linearGradient>
-                        <linearGradient id="pinGradient" x1="1" x2="0" y1="0" y2="0">
-                            <stop offset="0%" stopColor="#bbbbbb"></stop>
-                            <stop offset="50%" stopColor="#888888"></stop>
-                            <stop offset="100%" stopColor="#555555"></stop>
-                        </linearGradient>
-                    </defs>
+        // Reduced height to 80px for tighter packing
+        <foreignObject x={isLeft ? x - 500 : x} y={y - 40} width="500" height="80" style={{ overflow: 'visible' }}>
+            <div className={`flex w-full h-full items-center ${isLeft ? 'justify-end pr-6' : 'justify-start pl-6'}`}>
 
-                    <g id="traces">
-                        {/* ... (Traces unchanged) ... */}
-                        <path className="trace-bg" d="M100 100 H200 V210 H326"></path>
-                        <path className="trace-flow purple" d="M100 100 H200 V210 H326"></path>
-                        <path className="trace-bg" d="M80 180 H180 V230 H326"></path>
-                        <path className="trace-flow blue" d="M80 180 H180 V230 H326"></path>
-                        <path className="trace-bg" d="M60 260 H150 V250 H326"></path>
-                        <path className="trace-flow yellow" d="M60 260 H150 V250 H326"></path>
-                        <path className="trace-bg" d="M100 350 H200 V270 H326"></path>
-                        <path className="trace-flow green" d="M100 350 H200 V270 H326"></path>
-                        <path className="trace-bg" d="M700 90 H560 V210 H474"></path>
-                        <path className="trace-flow blue" d="M700 90 H560 V210 H474"></path>
-                        <path className="trace-bg" d="M740 160 H580 V230 H474"></path>
-                        <path className="trace-flow green" d="M740 160 H580 V230 H474"></path>
-                        <path className="trace-bg" d="M720 250 H590 V250 H474"></path>
-                        <path className="trace-flow red" d="M720 250 H590 V250 H474"></path>
-                        <path className="trace-bg" d="M680 340 H570 V270 H474"></path>
-                        <path className="trace-flow yellow" d="M680 340 H570 V270 H474"></path>
-                    </g>
+                {/* THE CARD 
+                   Reduced Scale
+                */}
+                <div className={`group relative flex w-full max-w-[480px] items-center gap-x-3 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.03)] p-3 shadow-2xl backdrop-blur-md transition-all duration-300 hover:border-cyan-400/50 hover:bg-[rgba(255,255,255,0.08)] hover:shadow-[0_0_30px_rgba(0,201,255,0.3)]
+                    ${isLeft ? 'flex-row-reverse text-right' : 'flex-row text-left'}
+                `}>
 
-                    <rect
-                        fill="url(#chipGradient)"
-                        filter="drop-shadow(0 0 6px rgba(0,0,0,0.8))"
-                        height="100"
-                        rx="20"
-                        ry="20"
-                        stroke="#222"
-                        strokeWidth="3"
-                        width="140"
-                        x="330"
-                        y="190"
-                    ></rect>
+                    {/* Logo - Medium Size (h-12) */}
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-inner">
+                        {imageSrc ? (
+                            <div className="relative w-full h-full">
+                                <img alt="logo" className="h-full w-full object-contain" src={imageSrc} />
+                            </div>
+                        ) : (
+                            <span className="text-[10px] font-bold text-black">NO IMG</span>
+                        )}
+                    </div>
 
-                    {/* ... (Pins unchanged) ... */}
-                    <g>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="322" y="205"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="322" y="225"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="322" y="245"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="322" y="265"></rect>
-                    </g>
-                    <g>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="470" y="205"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="470" y="225"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="470" y="245"></rect>
-                        <rect fill="url(#pinGradient)" height="10" rx="2" width="8" x="470" y="265"></rect>
-                    </g>
+                    {/* Text Content - Smaller Fonts */}
+                    <div className="flex-1 min-w-0">
+                        <div className="mb-0.5 text-xs font-medium uppercase tracking-wider text-slate-400">
+                            {item.date}
+                        </div>
+                        <h3 className="truncate bg-gradient-to-r from-[#00C9FF] to-[#92FE9D] bg-clip-text text-base font-bold text-transparent">
+                            {item.title}
+                        </h3>
+                        <div className="text-xs font-medium text-slate-300">
+                            {item.location}
+                        </div>
+                    </div>
+                </div>
 
-                    {/* --- GLITCH TEXT IMPLEMENTATION --- */}
-                    {/* The outer group is necessary to apply the `shift` animation (transform: skewX) to all layers */}
-                    <g
-                        className="glitch-container"
-                        fontFamily="Arial, sans-serif"
-                        fontSize="14"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                        x={textX}
-                        y="240"
-                    >
-                        {/* 1. Base Text Layer (Replaces original text) */}
-                        <text className="glitch-base">
-                            <tspan x={textX} y={line1Y}>{firstName}</tspan>
-                            <tspan x={textX} y={line2Y}>{lastName}</tspan>
-                        </text>
-
-                        {/* 2. Glitch Copy 1 (Replaces ::before) */}
-                        <text className="glitch-copy-1">
-                            <tspan x={textX} y={line1Y}>{firstName}</tspan>
-                            <tspan x={textX} y={line2Y}>{lastName}</tspan>
-                        </text>
-
-                        {/* 3. Glitch Copy 2 (Replaces ::after) */}
-                        <text className="glitch-copy-2">
-                            <tspan x={textX} y={line1Y}>{firstName}</tspan>
-                            <tspan x={textX} y={line2Y}>{lastName}</tspan>
-                        </text>
-                    </g>
-                    {/* --- END GLITCH TEXT IMPLEMENTATION --- */}
-
-                    {/* ... (Circles unchanged) ... */}
-                    <circle cx="100" cy="100" fill="black" r="5"></circle>
-                    <circle cx="80" cy="180" fill="black" r="5"></circle>
-                    <circle cx="60" cy="260" fill="black" r="5"></circle>
-                    <circle cx="100" cy="350" fill="black" r="5"></circle>
-                    <circle cx="700" cy="90" fill="black" r="5"></circle>
-                    <circle cx="740" cy="160" fill="black" r="5"></circle>
-                    <circle cx="720" cy="250" fill="black" r="5"></circle>
-                    <circle cx="680" cy="340" fill="black" r="5"></circle>
-                </svg>
+                {/* Connector Dot on the card edge */}
+                <div className={`absolute top-1/2 w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_15px_cyan] transform -translate-y-1/2 
+                    ${isLeft ? 'right-3' : 'left-3'}
+                `} />
             </div>
+        </foreignObject>
+    );
+};
+
+/* --- 3. MAIN COMPONENT --- */
+const UnifiedCircuitSection = memo(() => {
+    // Dynamic Layout Calculations
+    const ITEM_HEIGHT = 110; // Tighter vertical spacing
+    const TOP_OFFSET = 60;
+
+    // Map data to local variables for clarity
+    const workItems = heroTimeline;
+    const eduItems = heroEducation;
+
+    // Determine height based on the longest list
+    const maxItems = Math.max(workItems.length, eduItems.length);
+    const svgHeight = (maxItems * ITEM_HEIGHT) + (TOP_OFFSET * 2);
+
+    // WIDENED COORDINATE SYSTEM
+    const svgWidth = 1920;
+
+    // Center positions
+    const centerX = svgWidth / 2;
+    const centerY = svgHeight / 2;
+    // Larger Chip (UNCHANGED)
+    const chipWidth = 320;
+    const chipHeight = 200;
+
+    // Pin logic
+    const pinSpacing = 25; // More space between pins on the chip
+
+    // Colors for the "Flow" animation
+    const colors = ["#9900ff", "#00ccff", "#ffea00", "#00ff15", "#ff3300"];
+
+    return (
+        <div className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden">
+            <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full">
+                <defs>
+                    <linearGradient id="chipGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#2d2d2d" />
+                        <stop offset="100%" stopColor="#0f0f0f" />
+                    </linearGradient>
+                    <linearGradient id="pinGradient" x1="1" x2="0" y1="0" y2="0">
+                        <stop offset="0%" stopColor="#bbbbbb" />
+                        <stop offset="100%" stopColor="#555555" />
+                    </linearGradient>
+                </defs>
+
+                {/* --- 1. LEFT SIDE (WORK) --- */}
+                <g id="left-traces">
+                    {workItems.map((item, i) => {
+                        const cardY = TOP_OFFSET + (i * ITEM_HEIGHT);
+                        // Calculate pin Y position based on new spacing
+                        const totalPinsHeight = workItems.length * pinSpacing;
+                        const startPinY = centerY - (totalPinsHeight / 2);
+                        const pinY = startPinY + (i * pinSpacing);
+
+                        // Layout Coordinates for WIDE screen - Pushed to Edges
+                        const cardEdgeX = 550; // Position cards at the far left edge (50px margin + 500px width)
+                        const pinX = centerX - (chipWidth / 2); // Left side of chip
+
+                        // Dynamic elbow bend 
+                        const midX = centerX - 300;
+
+                        return (
+                            <g key={`work-${i}`}>
+                                {/* The Trace Line */}
+                                <path
+                                    d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                                    fill="none" stroke="#333" strokeWidth="3"
+                                />
+                                <path
+                                    d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                                    fill="none"
+                                    stroke={colors[i % colors.length]}
+                                    strokeWidth="3"
+                                    className="animate-flow"
+                                />
+                                {/* The Pin on the Chip */}
+                                <rect x={pinX - 10} y={pinY - 6} width="10" height="12" rx="2" fill="url(#pinGradient)" />
+
+                                {/* The Card */}
+                                <SvgCard x={cardEdgeX} y={cardY} item={item} align="left" />
+                            </g>
+                        );
+                    })}
+                </g>
+
+                {/* --- 2. RIGHT SIDE (EDUCATION) --- */}
+                <g id="right-traces">
+                    {eduItems.map((item, i) => {
+                        const cardY = TOP_OFFSET + (i * ITEM_HEIGHT);
+                        const totalPinsHeight = eduItems.length * pinSpacing;
+                        const startPinY = centerY - (totalPinsHeight / 2);
+                        const pinY = startPinY + (i * pinSpacing);
+
+                        const cardEdgeX = svgWidth - 550; // Position cards at far right edge (50px margin + 500px width)
+                        const pinX = centerX + (chipWidth / 2); // Right side of chip
+                        const midX = centerX + 300; // Elbow bend X
+
+                        return (
+                            <g key={`edu-${i}`}>
+                                <path
+                                    d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                                    fill="none" stroke="#333" strokeWidth="3"
+                                />
+                                <path
+                                    d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                                    fill="none"
+                                    stroke={colors[i % colors.length]}
+                                    strokeWidth="3"
+                                    className="animate-flow-reverse"
+                                />
+                                <rect x={pinX} y={pinY - 6} width="10" height="12" rx="2" fill="url(#pinGradient)" />
+                                <SvgCard x={cardEdgeX} y={cardY} item={item} align="right" />
+                            </g>
+                        );
+                    })}
+                </g>
+
+                {/* --- 3. CENTER CHIP --- */}
+                <g transform={`translate(${centerX - (chipWidth / 2)}, ${centerY - (chipHeight / 2)})`}>
+                    <rect width={chipWidth} height={chipHeight} rx="30" fill="url(#chipGradient)" stroke="#222" strokeWidth="4" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" />
+
+                    <foreignObject x="0" y="0" width={chipWidth} height={chipHeight}>
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                            <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
+                                <ScrambledText text="Ananthan" delay={200} /><br />
+                                <ScrambledText text="Tharmavelautham" delay={800} />
+                            </div>
+                        </div>
+                    </foreignObject>
+                </g>
+
+            </svg>
 
             <style jsx>{`
-                /* ... (Other styles remain the same) ... */
-                .main-container {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100%;
-                    width: 100%;
-                }
-
-                .loader {
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-
-                /* --- GLITCH STYLES --- */
-                .glitch-container {
-                    /* Applies the 'shift' animation (skew) to the whole text block */
-                    animation: shift 1s ease-in-out infinite alternate;
-                }
-
-                /* Base text layer */
-                .glitch-base {
-                    fill: #fff;
-                }
-                
-                /* Copies that create the ghost/glitch effect */
-                .glitch-copy-1,
-                .glitch-copy-2 {
-                    /* Inherit position on the SVG */
-                    alignment-baseline: middle;
-                    text-anchor: middle;
-                    fill: currentColor; /* Allows color class to control fill/stroke */
-                    opacity: 0.8;
-                }
-
-                .glitch-copy-1 {
-                    /* Analogous to ::before */
-                    animation: glitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-                    color: #ff8b00; /* Orange color from your CSS */
-                }
-
-                .glitch-copy-2 {
-                    /* Analogous to ::after */
-                    animation: glitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
-                    color: #57e500; /* Green color from your CSS */
-                }
-
-                @keyframes glitch {
-                    0% {
-                        transform: translate(0);
-                    }
-                    20% {
-                        transform: translate(-3px, 3px);
-                    }
-                    40% {
-                        transform: translate(-3px, -3px);
-                    }
-                    60% {
-                        transform: translate(3px, 3px);
-                    }
-                    80% {
-                        transform: translate(3px, -3px);
-                    }
-                    to {
-                        transform: translate(0);
-                    }
-                }
-
-                @keyframes shift {
-                    0%, 40%, 44%, 58%, 61%, 65%, 69%, 73%, 100% {
-                        transform: skewX(0deg);
-                    }
-                    41% {
-                        transform: skewX(10deg);
-                    }
-                    42% {
-                        transform: skewX(-10deg);
-                    }
-                    59% {
-                        transform: skewX(40deg) skewY(10deg);
-                    }
-                    60% {
-                        transform: skewX(-40deg) skewY(-10deg);
-                    }
-                    63% {
-                        transform: skewX(10deg) skewY(-5deg);
-                    }
-                    70% {
-                        transform: skewX(-50deg) skewY(-20deg);
-                    }
-                    71% {
-                        transform: skewX(10deg) skewY(-10deg);
-                    }
-                }
-                /* --- END GLITCH STYLES --- */
-
-
-                .trace-bg {
-                    stroke: #333;
-                    stroke-width: 2;
-                    fill: none;
-                }
-
-                .trace-flow {
-                    stroke-width: 2;
-                    fill: none;
+                .animate-flow {
                     stroke-dasharray: 40 400;
-                    stroke-dashoffset: 438;
-                    filter: drop-shadow(0 0 6px currentColor);
-                    animation: flow 3s cubic-bezier(0.5, 0, 0.9, 1) infinite;
+                    stroke-dashoffset: 440;
+                    animation: flow 3s linear infinite;
                 }
-
-                .yellow { stroke: #ffea00; color: #ffea00; }
-                .blue { stroke: #00ccff; color: #00ccff; }
-                .green { stroke: #00ff15; color: #00ff15; }
-                .purple { stroke: #9900ff; color: #9900ff; }
-                .red { stroke: #ff3300; color: #ff3300; }
-
+                .animate-flow-reverse {
+                    stroke-dasharray: 40 400;
+                    stroke-dashoffset: 440;
+                    animation: flowReverse 3s linear infinite;
+                }
                 @keyframes flow {
+                    to { stroke-dashoffset: 0; }
+                }
+                @keyframes flowReverse {
                     to { stroke-dashoffset: 0; }
                 }
             `}</style>
@@ -251,6 +239,5 @@ const CircuitBoardLoader: React.FC = memo(() => {
     );
 });
 
-CircuitBoardLoader.displayName = 'CircuitBoardLoader';
-
-export default CircuitBoardLoader;
+UnifiedCircuitSection.displayName = 'UnifiedCircuitSection';
+export default UnifiedCircuitSection;

@@ -7,10 +7,9 @@ import Image from 'next/image';
 import { FC, memo } from 'react';
 
 import CircuitBoardLoader from '../CircuitBoardLoader';
-import { heroData, heroEducation, heroTimeline, SectionId } from '../../data/data';
+import { heroData, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
 import Socials from '../Socials';
-import TimelineBox from '../TimelineBox';
 
 const Hero: FC = memo(() => {
   const { imageSrc, name, actions } = heroData;
@@ -27,21 +26,14 @@ const Hero: FC = memo(() => {
         />
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/30 via-black/10 to-black/60" />
 
-        <div className="z-10 h-full w-full px-4 lg:px-8">
-          <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-            {/* Work Experience - Left Side (25%) */}
-            <div className="hidden h-full items-center lg:col-span-3 lg:flex">
-              <div className="h-[80vh] w-full">
-                <TimelineBox items={heroTimeline} side="right" title="Work Experience" />
-              </div>
-            </div>
-
-            {/* Main Hero Content - Center (50%) */}
-            <div className="col-span-1 flex h-full items-center justify-center lg:col-span-6">
+        <div className="z-10 h-full w-full">
+          <div className="flex h-full w-full items-center justify-center">
+            {/* Main Hero Content - Full Width */}
+            <div className="flex h-full w-full flex-col items-center justify-center">
               <div className="flex w-full flex-col items-center gap-y-8 text-center">
                 {/* Circuit Board Loader replacing the name */}
-                <div className="flex h-[320px] w-full items-center justify-center lg:h-[400px]">
-                  <div className="flex h-full w-full scale-100 items-center justify-center lg:scale-[1.6]">
+                <div className="flex w-full items-center justify-center">
+                  <div className="flex w-full items-center justify-center">
                     <CircuitBoardLoader />
                   </div>
                 </div>
@@ -76,13 +68,6 @@ const Hero: FC = memo(() => {
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Education & Credentials - Right Side (25%) */}
-            <div className="hidden h-full items-center lg:col-span-3 lg:flex">
-              <div className="h-[80vh] w-full">
-                <TimelineBox items={heroEducation} side="left" title="Education & Credentials" />
               </div>
             </div>
           </div>
