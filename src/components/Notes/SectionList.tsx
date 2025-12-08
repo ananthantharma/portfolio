@@ -1,9 +1,11 @@
-'use client';
-
+import { DndContext, DragEndEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState } from 'react';
 
 import { INoteSection } from '@/models/NoteSection';
+
+import { SortableItem } from './SortableItem';
 
 interface SectionListProps {
     sections: INoteSection[];
@@ -12,19 +14,41 @@ interface SectionListProps {
     onAddSection: (name: string, color?: string) => void;
     onRenameSection: (id: string, name: string, color?: string) => void;
     onDeleteSection: (id: string) => void;
+    onReorderSections: (newOrder: INoteSection[]) => void;
     loading: boolean;
     isCollapsed: boolean;
     onToggleCollapse: () => void;
 }
 
 const SectionList: React.FC<SectionListProps> = React.memo(
-    ({ isCollapsed, loading, onAddSection, onDeleteSection, onRenameSection, onSelectSection, onToggleCollapse, sections, selectedSectionId }) => {
+    ({ isCollapsed, loading, onAddSection, onDeleteSection, onRenameSection, onReorderSections, onSelectSection, onToggleCollapse, sections, selectedSectionId }) => {
         const [isAdding, setIsAdding] = useState(false);
         const [newSectionName, setNewSectionName] = useState('');
         const [newSectionColor, setNewSectionColor] = useState('#000000');
         const [editingId, setEditingId] = useState<string | null>(null);
         const [editName, setEditName] = useState('');
         const [editColor, setEditColor] = useState('#000000');
+
+        const sensors = useSensors(
+            useSensor(PointerSensor),
+            useSensor(KeyboardSensor, {
+                coordinateGetter: sortableKeyboardCoordinates,
+            })
+        );
+
+        const handleDragEnd = (event: DragEndEvent) => {
+            const { active, over } = event;
+
+            if (over && active.id !== over.id) {
+                const oldIndex = sections.findIndex((sec) => sec._id === active.id);
+                const newIndex = sections.findIndex((sec) => sec._id === over.id);
+
+                if (oldIndex !== -1 && newIndex !== -1) {
+                    const newOrder = arrayMove(sections, oldIndex, newIndex);
+                    onReorderSections(newOrder);
+                }
+            }
+        };
 
         const handleAdd = () => {
             if (newSectionName.trim()) {
@@ -113,77 +137,92 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             </div>
                         )}
 
-                        <ul className="space-y-1 p-2">
-                            {sections.map(section => (
-                                <li key={section._id as string}>
-                                    {editingId === section._id ? (
-                                        <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
-                                            <input
-                                                className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
-                                                onChange={(e) => setEditColor(e.target.value)}
-                                                title="Pick a color"
-                                                type="color"
-                                                value={editColor}
-                                            />
-                                            <input
-                                                autoFocus
-                                                className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
-                                                onChange={e => setEditName(e.target.value)}
-                                                onKeyDown={e => {
-                                                    if (e.key === 'Enter') handleRename();
-                                                    if (e.key === 'Escape') setEditingId(null);
-                                                }}
-                                                type="text"
-                                                value={editName}
-                                            />
-                                            <button className="text-green-600" onClick={handleRename}>
-                                                <CheckIcon className="h-4 w-4" />
-                                            </button>
-                                            <button className="text-red-600" onClick={() => setEditingId(null)}>
-                                                <XMarkIcon className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            className={`group flex cursor-pointer items-center justify-between rounded-md p-2 text-sm ${selectedSectionId === section._id
-                                                ? 'bg-blue-100 text-blue-900'
-                                                : 'text-gray-700 hover:bg-gray-200'
-                                                }`}
-                                            onClick={() => onSelectSection(section._id as string)}>
-                                            <div className="flex items-center gap-2 truncate">
-                                                {section.color && (
-                                                    <span
-                                                        className="h-3 w-3 rounded-full flex-shrink-0"
-                                                        style={{ backgroundColor: section.color }}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={sections.map(s => s._id as string)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <ul className="space-y-1 p-2">
+                                    {sections.map(section => (
+                                        <SortableItem key={section._id as string} id={section._id as string}>
+                                            {editingId === section._id ? (
+                                                <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
+                                                    <input
+                                                        className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
+                                                        onChange={(e) => setEditColor(e.target.value)}
+                                                        title="Pick a color"
+                                                        type="color"
+                                                        value={editColor}
+                                                        onPointerDown={e => e.stopPropagation()}
+                                                        onKeyDown={e => e.stopPropagation()}
                                                     />
-                                                )}
-                                                <span className="truncate">{section.name}</span>
-                                            </div>
-                                            <div className="hidden space-x-1 group-hover:flex">
-                                                <button
-                                                    className="text-gray-500 hover:text-blue-600"
-                                                    onClick={e => {
-                                                        e.stopPropagation();
-                                                        startEditing(section);
-                                                    }}>
-                                                    <PencilIcon className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    className="text-gray-500 hover:text-red-600"
-                                                    onClick={e => {
-                                                        e.stopPropagation();
-                                                        if (confirm('Are you sure you want to delete this section and all its pages?')) {
-                                                            onDeleteSection(section._id as string);
-                                                        }
-                                                    }}>
-                                                    <TrashIcon className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
+                                                    <input
+                                                        autoFocus
+                                                        className="w-full border-none p-0 text-sm focus:ring-0 text-gray-900"
+                                                        onChange={e => setEditName(e.target.value)}
+                                                        onKeyDown={e => {
+                                                            if (e.key === 'Enter') handleRename();
+                                                            if (e.key === 'Escape') setEditingId(null);
+                                                            e.stopPropagation();
+                                                        }}
+                                                        onPointerDown={e => e.stopPropagation()}
+                                                        type="text"
+                                                        value={editName}
+                                                    />
+                                                    <button className="text-green-600" onClick={handleRename}>
+                                                        <CheckIcon className="h-4 w-4" />
+                                                    </button>
+                                                    <button className="text-red-600" onClick={() => setEditingId(null)}>
+                                                        <XMarkIcon className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    className={`group flex cursor-pointer items-center justify-between rounded-md p-2 text-sm ${selectedSectionId === section._id
+                                                        ? 'bg-blue-100 text-blue-900'
+                                                        : 'text-gray-700 hover:bg-gray-200'
+                                                        }`}
+                                                    onClick={() => onSelectSection(section._id as string)}>
+                                                    <div className="flex items-center gap-2 truncate">
+                                                        {section.color && (
+                                                            <span
+                                                                className="h-3 w-3 rounded-full flex-shrink-0"
+                                                                style={{ backgroundColor: section.color }}
+                                                            />
+                                                        )}
+                                                        <span className="truncate">{section.name}</span>
+                                                    </div>
+                                                    <div className="hidden space-x-1 group-hover:flex">
+                                                        <button
+                                                            className="text-gray-500 hover:text-blue-600"
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                startEditing(section);
+                                                            }}>
+                                                            <PencilIcon className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            className="text-gray-500 hover:text-red-600"
+                                                            onClick={e => {
+                                                                e.stopPropagation();
+                                                                if (confirm('Are you sure you want to delete this section and all its pages?')) {
+                                                                    onDeleteSection(section._id as string);
+                                                                }
+                                                            }}>
+                                                            <TrashIcon className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </SortableItem>
+                                    ))}
+                                </ul>
+                            </SortableContext>
+                        </DndContext>
                     </div>
                 )}
             </div>

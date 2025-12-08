@@ -152,6 +152,18 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, [selectedCategoryId]);
 
+  const handleReorderCategories = useCallback(async (newOrder: INoteCategory[]) => {
+    setCategories(newOrder); // Optimistic update
+    try {
+      await axios.put('/api/notes/categories/reorder', {
+        items: newOrder.map((cat, index) => ({ id: cat._id, order: index }))
+      });
+    } catch (error) {
+      console.error('Error reordering categories:', error);
+      fetchCategories(); // Revert on error
+    }
+  }, []);
+
   // Section Operations
   const handleAddSection = useCallback(async (name: string, color?: string) => {
     if (!selectedCategoryId) return;
@@ -186,6 +198,18 @@ const NotesLayout: React.FC = React.memo(() => {
       console.error('Error deleting section:', error);
     }
   }, [selectedSectionId]);
+
+  const handleReorderSections = useCallback(async (newOrder: INoteSection[]) => {
+    setSections(newOrder);
+    try {
+      await axios.put('/api/notes/sections/reorder', {
+        items: newOrder.map((sec, index) => ({ id: sec._id, order: index }))
+      });
+    } catch (error) {
+      console.error('Error reordering sections:', error);
+      if (selectedCategoryId) fetchSections(selectedCategoryId);
+    }
+  }, [selectedCategoryId]);
 
   // Page Operations
   const handleAddPage = useCallback(
@@ -233,6 +257,18 @@ const NotesLayout: React.FC = React.memo(() => {
       console.error('Error saving page content:', error);
     }
   }, []);
+
+  const handleReorderPages = useCallback(async (newOrder: INotePage[]) => {
+    setPages(newOrder);
+    try {
+      await axios.put('/api/notes/pages/reorder', {
+        items: newOrder.map((page, index) => ({ id: page._id, order: index }))
+      });
+    } catch (error) {
+      console.error('Error reordering pages:', error);
+      if (selectedSectionId) fetchPages(selectedSectionId);
+    }
+  }, [selectedSectionId]);
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
@@ -285,6 +321,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onAddCategory={handleAddCategory}
             onDeleteCategory={handleDeleteCategory}
             onRenameCategory={handleRenameCategory}
+            onReorderCategories={handleReorderCategories}
             onSelectCategory={setSelectedCategoryId}
             onToggleCollapse={handleToggleCategoryCollapse}
             selectedCategoryId={selectedCategoryId}
@@ -299,6 +336,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onAddSection={handleAddSection}
             onDeleteSection={handleDeleteSection}
             onRenameSection={handleRenameSection}
+            onReorderSections={handleReorderSections}
             onSelectSection={setSelectedSectionId}
             onToggleCollapse={handleToggleSectionCollapse}
             sections={sections}
@@ -313,6 +351,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onAddPage={handleAddPage}
             onDeletePage={handleDeletePage}
             onRenamePage={handleRenamePage}
+            onReorderPages={handleReorderPages}
             onSelectPage={setSelectedPageId}
             pages={pages}
             selectedPageId={selectedPageId}

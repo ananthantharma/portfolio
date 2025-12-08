@@ -18,6 +18,10 @@ const NoteCategorySchema: Schema = new Schema(
       type: String,
       default: '#000000', // Default to black/transparent equivalent
     },
+    order: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

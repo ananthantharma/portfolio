@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     }
 
     const pages = await NotePage.find(query)
-      .sort({ updatedAt: -1 })
+      .sort({ order: 1 })
       .populate({
         path: 'sectionId',
         select: 'categoryId name', // Populate categoryId to allow full navigation
@@ -55,7 +55,8 @@ export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json();
-    const page = await NotePage.create(body);
+    const count = await NotePage.countDocuments({ sectionId: body.sectionId });
+    const page = await NotePage.create({ ...body, order: count });
     return NextResponse.json({ success: true, data: page }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ success: false, error: error }, { status: 400 });

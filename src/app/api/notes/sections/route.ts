@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     try {
         const query = categoryId ? { categoryId } : {};
-        const sections = await NoteSection.find(query).sort({ createdAt: 1 });
+        const sections = await NoteSection.find(query).sort({ order: 1 });
         return NextResponse.json({ success: true, data: sections });
     } catch (error) {
         return NextResponse.json({ success: false, error: error }, { status: 400 });
@@ -31,7 +31,8 @@ export async function POST(request: Request) {
     await dbConnect();
     try {
         const body = await request.json();
-        const section = await NoteSection.create(body);
+        const count = await NoteSection.countDocuments({ categoryId: body.categoryId });
+        const section = await NoteSection.create({ ...body, order: count });
         return NextResponse.json({ success: true, data: section }, { status: 201 });
     } catch (error) {
         return NextResponse.json({ success: false, error: error }, { status: 400 });
