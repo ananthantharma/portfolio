@@ -22,10 +22,18 @@ export async function GET(request: Request) {
   const sectionId = searchParams.get('sectionId');
   const isFlagged = searchParams.get('isFlagged') === 'true';
   const isImportant = searchParams.get('isImportant') === 'true';
+  const search = searchParams.get('search');
 
   try {
-    let query = {};
-    if (isFlagged) {
+    let query: any = {};
+    if (search) {
+      query = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { content: { $regex: search, $options: 'i' } },
+        ],
+      };
+    } else if (isFlagged) {
       query = { isFlagged: true };
     } else if (isImportant) {
       query = { isImportant: true };

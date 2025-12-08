@@ -1,6 +1,6 @@
 'use client';
 
-import { ExclamationTriangleIcon, FlagIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import { ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -12,6 +12,7 @@ import CategoryList from './CategoryList';
 import FlaggedItemsModal from './FlaggedItemsModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
+import SearchModal from './SearchModal';
 import SectionList from './SectionList';
 
 const NotesLayout: React.FC = React.memo(() => {
@@ -25,6 +26,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [loadingPages, setLoadingPages] = useState(false);
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
   const [isImportantOpen, setIsImportantOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
 
@@ -99,9 +101,15 @@ const NotesLayout: React.FC = React.memo(() => {
     return response.data.data;
   }, []);
 
+  const fetchSearchResults = useCallback(async (query: string) => {
+    const response = await axios.get(`/api/notes/pages?search=${encodeURIComponent(query)}`);
+    return response.data.data;
+  }, []);
+
   const handleJumpToTask = useCallback(async (task: INotePage) => {
     setIsKeyTasksOpen(false);
     setIsImportantOpen(false);
+    setIsSearchOpen(false);
 
     // We cast sectionId to unknown then to INoteSection because it's populated but typed as string | INoteSection
     const sectionObj = task.sectionId as unknown as INoteSection;
@@ -284,8 +292,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
   const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
+  const handleOpenSearch = useCallback(() => setIsSearchOpen(true), []);
   const handleCloseImportant = useCallback(() => setIsImportantOpen(false), []);
   const handleCloseKeyTasks = useCallback(() => setIsKeyTasksOpen(false), []);
+  const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
   const handleToggleCategoryCollapse = useCallback(() => setIsCategoryCollapsed(!isCategoryCollapsed), [isCategoryCollapsed]);
   const handleToggleSectionCollapse = useCallback(() => setIsSectionCollapsed(!isSectionCollapsed), [isSectionCollapsed]);
 
@@ -296,6 +306,13 @@ const NotesLayout: React.FC = React.memo(() => {
       <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2">
         <span className="text-sm font-semibold text-gray-500">Workspace</span>
         <div className="flex items-center gap-2">
+          <button
+            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 border border-gray-200"
+            onClick={handleOpenSearch}
+          >
+            <MagnifyingGlassIcon className="h-4 w-4" />
+            Search
+          </button>
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
             onClick={handleOpenImportant}
@@ -386,7 +403,14 @@ const NotesLayout: React.FC = React.memo(() => {
         onSelectTask={handleJumpToTask}
         title="Important"
       />
-    </div>
+
+      <SearchModal
+        fetchItems={fetchSearchResults}
+        isOpen={isSearchOpen}
+        onClose={handleCloseSearch}
+        onSelectTask={handleJumpToTask}
+      />
+    </div >
   );
 });
 
