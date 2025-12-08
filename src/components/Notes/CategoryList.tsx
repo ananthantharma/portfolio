@@ -1,7 +1,7 @@
-import { DndContext, DragEndEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { INoteCategory } from '@/models/NoteCategory';
 
@@ -9,14 +9,14 @@ import { SortableItem } from './SortableItem';
 
 interface CategoryListProps {
   categories: INoteCategory[];
-  selectedCategoryId: string | null;
-  onSelectCategory: (id: string) => void;
-  onAddCategory: (name: string, color?: string) => void;
-  onRenameCategory: (id: string, name: string, color?: string) => void;
-  onDeleteCategory: (id: string) => void;
-  onReorderCategories: (newOrder: INoteCategory[]) => void;
   isCollapsed: boolean;
+  onAddCategory: (name: string, color?: string) => void;
+  onDeleteCategory: (id: string) => void;
+  onRenameCategory: (id: string, name: string, color?: string) => void;
+  onReorderCategories: (newOrder: INoteCategory[]) => void;
+  onSelectCategory: (id: string) => void;
   onToggleCollapse: () => void;
+  selectedCategoryId: string | null;
 }
 
 const CategoryList: React.FC<CategoryListProps> = React.memo(
@@ -35,7 +35,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
       })
     );
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
@@ -47,7 +47,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
           onReorderCategories(newOrder);
         }
       }
-    };
+    }, [categories, onReorderCategories]);
 
     const handleAdd = () => {
       if (newCategoryName.trim()) {
@@ -133,9 +133,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
             )}
 
             <DndContext
-              sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
+              sensors={sensors}
             >
               <SortableContext
                 items={categories.map(c => c._id as string)}
@@ -143,18 +143,18 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               >
                 <ul className="space-y-1 p-2">
                   {categories.map(category => (
-                    <SortableItem key={category._id as string} id={category._id as string}>
+                    <SortableItem id={category._id as string} key={category._id as string}>
                       {editingId === category._id ? (
                         <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                           <input
                             className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
                             onChange={(e) => setEditColor(e.target.value)}
+                            onKeyDown={e => e.stopPropagation()}
+                            onPointerDown={e => e.stopPropagation()}
                             title="Pick a color"
                             type="color"
                             value={editColor}
-                            // Prevent drag usage on inputs
-                            onPointerDown={e => e.stopPropagation()}
-                            onKeyDown={e => e.stopPropagation()}
+                          // Prevent drag usage on inputs
                           />
                           <input
                             autoFocus
@@ -165,10 +165,10 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                               if (e.key === 'Escape') setEditingId(null);
                               e.stopPropagation(); // stop propagation for dnd
                             }}
-                            // Prevent drag usage on inputs
                             onPointerDown={e => e.stopPropagation()}
                             type="text"
                             value={editName}
+                          // Prevent drag usage on inputs
                           />
                           <button className="text-green-600" onClick={handleRename}>
                             <CheckIcon className="h-4 w-4" />

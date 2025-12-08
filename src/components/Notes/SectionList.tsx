@@ -1,23 +1,23 @@
-import { DndContext, DragEndEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { INoteSection } from '@/models/NoteSection';
 
 import { SortableItem } from './SortableItem';
 
 interface SectionListProps {
+    isCollapsed: boolean;
+    loading: boolean;
+    onAddSection: (name: string, color?: string) => void;
+    onDeleteSection: (id: string) => void;
+    onRenameSection: (id: string, name: string, color?: string) => void;
+    onReorderSections: (newOrder: INoteSection[]) => void;
+    onSelectSection: (id: string) => void;
+    onToggleCollapse: () => void;
     sections: INoteSection[];
     selectedSectionId: string | null;
-    onSelectSection: (id: string) => void;
-    onAddSection: (name: string, color?: string) => void;
-    onRenameSection: (id: string, name: string, color?: string) => void;
-    onDeleteSection: (id: string) => void;
-    onReorderSections: (newOrder: INoteSection[]) => void;
-    loading: boolean;
-    isCollapsed: boolean;
-    onToggleCollapse: () => void;
 }
 
 const SectionList: React.FC<SectionListProps> = React.memo(
@@ -36,7 +36,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
             })
         );
 
-        const handleDragEnd = (event: DragEndEvent) => {
+        const handleDragEnd = useCallback((event: DragEndEvent) => {
             const { active, over } = event;
 
             if (over && active.id !== over.id) {
@@ -48,7 +48,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                     onReorderSections(newOrder);
                 }
             }
-        };
+        }, [onReorderSections, sections]);
 
         const handleAdd = () => {
             if (newSectionName.trim()) {
@@ -138,9 +138,9 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                         )}
 
                         <DndContext
-                            sensors={sensors}
                             collisionDetection={closestCenter}
                             onDragEnd={handleDragEnd}
+                            sensors={sensors}
                         >
                             <SortableContext
                                 items={sections.map(s => s._id as string)}
@@ -148,17 +148,17 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             >
                                 <ul className="space-y-1 p-2">
                                     {sections.map(section => (
-                                        <SortableItem key={section._id as string} id={section._id as string}>
+                                        <SortableItem id={section._id as string} key={section._id as string}>
                                             {editingId === section._id ? (
                                                 <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
                                                     <input
                                                         className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
                                                         onChange={(e) => setEditColor(e.target.value)}
+                                                        onKeyDown={e => e.stopPropagation()}
+                                                        onPointerDown={e => e.stopPropagation()}
                                                         title="Pick a color"
                                                         type="color"
                                                         value={editColor}
-                                                        onPointerDown={e => e.stopPropagation()}
-                                                        onKeyDown={e => e.stopPropagation()}
                                                     />
                                                     <input
                                                         autoFocus
