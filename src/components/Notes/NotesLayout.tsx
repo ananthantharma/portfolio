@@ -35,23 +35,24 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Fetch sections when category changes
   useEffect(() => {
+    // Reset downstream state immediately to avoid stale data
+    setSections([]);
+    setPages([]);
+    setSelectedSectionId(null);
+    setSelectedPageId(null);
+
     if (selectedCategoryId) {
       fetchSections(selectedCategoryId);
-    } else {
-      setSections([]);
-      setPages([]);
-      setSelectedSectionId(null);
-      setSelectedPageId(null);
     }
   }, [selectedCategoryId]);
 
   // Fetch pages when section changes
   useEffect(() => {
+    setPages([]);
+    setSelectedPageId(null);
+
     if (selectedSectionId) {
       fetchPages(selectedSectionId);
-    } else {
-      setPages([]);
-      setSelectedPageId(null);
     }
   }, [selectedSectionId]);
 
