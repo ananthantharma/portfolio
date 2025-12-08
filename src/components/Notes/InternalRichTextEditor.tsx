@@ -4,13 +4,19 @@ import 'quill-better-table/dist/quill-better-table.css';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - quill-better-table does not have types
-import QuillBetterTable from 'quill-better-table';
+import QuillBetterTableModule from 'quill-better-table';
 import React from 'react';
 import ReactQuill, { Quill } from 'react-quill';
 
-Quill.register({
-    'modules/better-table': QuillBetterTable
-}, true);
+// Handle CJS/ESM interop
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const QuillBetterTable = (QuillBetterTableModule as any).default || QuillBetterTableModule;
+
+if (QuillBetterTable) {
+    Quill.register({
+        'modules/better-table': QuillBetterTable
+    }, true);
+}
 
 export interface RichTextEditorProps {
     onChange: (value: string) => void;
@@ -41,7 +47,8 @@ const modules = {
         }
     },
     keyboard: {
-        bindings: QuillBetterTable.keyboardBindings
+        // Safely access keyboardBindings
+        bindings: QuillBetterTable?.keyboardBindings || {}
     }
 };
 
