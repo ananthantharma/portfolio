@@ -36,7 +36,6 @@ const modules = {
         ['link', 'image'],
         ['clean'],
     ],
-    table: false,
     'better-table': {
         operationMenu: {
             items: {
