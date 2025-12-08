@@ -7,6 +7,7 @@ import React from 'react';
 
 const ReactQuill = dynamic(
     // eslint-disable-next-line react-memo/require-memo
+    // eslint-disable-next-line react-memo/require-memo
     async () => {
         const { default: RQ } = await import('react-quill');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/display-name
