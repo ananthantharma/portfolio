@@ -1,10 +1,12 @@
 
-import React from 'react';
-import ReactQuill, { Quill } from 'react-quill';
-// @ts-ignore - quill-better-table does not have types
-import QuillBetterTable from 'quill-better-table';
 import 'react-quill/dist/quill.snow.css';
 import 'quill-better-table/dist/quill-better-table.css';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - quill-better-table does not have types
+import QuillBetterTable from 'quill-better-table';
+import React from 'react';
+import ReactQuill, { Quill } from 'react-quill';
 
 Quill.register({
     'modules/better-table': QuillBetterTable
@@ -77,11 +79,11 @@ const InternalRichTextEditor = React.memo(React.forwardRef<any, RichTextEditorPr
             <ReactQuill
                 // eslint-disable-next-line react/jsx-sort-props
                 className="flex-1 h-full"
-                ref={handleRef}
                 modules={modules}
                 onBlur={onBlur} // Pass onBlur
                 onChange={onChange}
                 placeholder={placeholder}
+                ref={handleRef}
                 theme="snow"
                 value={value}
             />
