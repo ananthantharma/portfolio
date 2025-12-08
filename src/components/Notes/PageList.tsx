@@ -1,7 +1,7 @@
 import { DndContext, DragEndEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CalendarIcon, CheckIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
 
@@ -34,7 +34,7 @@ const PageList: React.FC<PageListProps> = React.memo(
       })
     );
 
-    const handleDragEnd = (event: DragEndEvent) => {
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
@@ -46,7 +46,7 @@ const PageList: React.FC<PageListProps> = React.memo(
           onReorderPages(newOrder);
         }
       }
-    };
+    }, [pages, onReorderPages]);
 
     const handleAdd = () => {
       if (newPageTitle.trim()) {
@@ -135,9 +135,9 @@ const PageList: React.FC<PageListProps> = React.memo(
           )}
 
           <DndContext
-            sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
+            sensors={sensors}
           >
             <SortableContext
               items={pages.map(p => p._id as string)}
@@ -145,18 +145,17 @@ const PageList: React.FC<PageListProps> = React.memo(
             >
               <ul className="space-y-1 p-2">
                 {pages.map(page => (
-                  <SortableItem key={page._id as string} id={page._id as string}>
+                  <SortableItem id={page._id as string} key={page._id as string}>
                     {editingId === page._id ? (
                       <div className="flex items-center space-x-2 rounded-md bg-gray-50 p-2 shadow-sm border border-gray-200">
                         <input
                           className="h-6 w-6 cursor-pointer rounded-full border-0 p-0"
                           onChange={(e) => setEditColor(e.target.value)}
+                          onKeyDown={e => e.stopPropagation()}
+                          onPointerDown={e => e.stopPropagation()}
                           title="Pick a color"
                           type="color"
                           value={editColor}
-                          // Prevent drag usage on inputs
-                          onPointerDown={e => e.stopPropagation()}
-                          onKeyDown={e => e.stopPropagation()}
                         />
                         <input
                           autoFocus
