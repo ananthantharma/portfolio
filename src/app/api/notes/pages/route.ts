@@ -25,20 +25,18 @@ export async function GET(request: Request) {
   const search = searchParams.get('search');
 
   try {
-    let query: any = {};
+    const query: Record<string, unknown> = {};
     if (search) {
-      query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { content: { $regex: search, $options: 'i' } },
-        ],
-      };
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ];
     } else if (isFlagged) {
-      query = { isFlagged: true };
+      query.isFlagged = true;
     } else if (isImportant) {
-      query = { isImportant: true };
+      query.isImportant = true;
     } else if (sectionId) {
-      query = { sectionId };
+      query.sectionId = sectionId;
     }
 
     const pages = await NotePage.find(query)

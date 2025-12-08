@@ -106,7 +106,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                                                         <div>
                                                             <p className="font-medium text-gray-900">{item.title}</p>
                                                             <p className="text-xs text-gray-500">
-                                                                {(item.sectionId as any)?.name ? `${(item.sectionId as any).name}` : 'Unknown Section'}
+                                                                {(item.sectionId as unknown as { name: string })?.name ? `${(item.sectionId as unknown as { name: string }).name}` : 'Unknown Section'}
                                                             </p>
                                                         </div>
                                                         <span className="text-xs text-gray-400">
