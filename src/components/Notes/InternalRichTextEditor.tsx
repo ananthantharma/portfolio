@@ -45,9 +45,7 @@ const modules = {
             }
         }
     },
-    keyboard: {
-        // Safely access keyboardBindings
-        bindings: QuillBetterTable?.keyboardBindings || {}
+}
     }
 };
 
