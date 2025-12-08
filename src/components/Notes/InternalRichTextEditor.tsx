@@ -39,15 +39,7 @@ const modules = {
         ['link', 'image'],
         ['clean'],
     ],
-    'better-table': {
-        operationMenu: {
-            items: {
-                unmergeCells: {
-                    text: 'Unmerge Cells'
-                }
-            }
-        }
-    },
+    'better-table': {},
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
