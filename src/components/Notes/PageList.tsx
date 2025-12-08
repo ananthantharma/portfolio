@@ -28,7 +28,11 @@ const PageList: React.FC<PageListProps> = React.memo(
     const [editColor, setEditColor] = useState('#000000');
 
     const sensors = useSensors(
-      useSensor(PointerSensor),
+      useSensor(PointerSensor, {
+        activationConstraint: {
+          distance: 8,
+        },
+      }),
       useSensor(KeyboardSensor, {
         coordinateGetter: sortableKeyboardCoordinates,
       })
