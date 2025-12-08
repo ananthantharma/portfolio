@@ -11,6 +11,9 @@ import ReactQuill, { Quill } from 'react-quill';
 // Handle CJS/ESM interop
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const QuillBetterTable = (QuillBetterTableModule as any).default || QuillBetterTableModule;
+console.log('QuillBetterTableModule:', QuillBetterTableModule);
+console.log('Resolved QuillBetterTable:', QuillBetterTable);
+
 
 if (QuillBetterTable) {
     Quill.register({
