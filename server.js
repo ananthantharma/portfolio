@@ -13,7 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Connection
-const dbURI = process.env.DB_URI || "mongodb+srv://lankanprinze:0fwgsfbZQjrIRTHd@cluster0.i1lbm7e.mongodb.net/?retryWrites=true&w=majority";
+const dbURI = process.env.DB_URI;
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch(err => console.error("Could not connect to MongoDB Atlas:", err));
@@ -30,14 +30,14 @@ const ContactForm = mongoose.model('ContactForm', contactFormSchema);
 // POST API Endpoint to Store Data
 app.post('/submitForm', async (req, res) => {
   const { name, email, message } = req.body;
-  
+
   try {
     const newContact = new ContactForm({
       name,
       email,
       message
     });
-    
+
     await newContact.save();
     res.status(200).json({ message: 'Form submitted successfully' });
   } catch (error) {
