@@ -1,17 +1,17 @@
 /* eslint-disable object-curly-spacing */
 /* eslint-disable react/jsx-sort-props */
 /* eslint-disable simple-import-sort/imports */
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import {ChevronDownIcon} from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Image from 'next/image';
-import { FC, memo } from 'react';
+import {FC, memo} from 'react';
 
 import CircuitBoardLoader from '../CircuitBoardLoader';
-import { heroData, SectionId } from '../../data/data';
+import {heroData, SectionId} from '../../data/data';
 import Section from '../Layout/Section';
 
 const Hero: FC = memo(() => {
-  const { imageSrc, name, actions } = heroData;
+  const {imageSrc, name, actions} = heroData;
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
@@ -40,11 +40,10 @@ const Hero: FC = memo(() => {
                 {/* Actions & Socials - Clean Layout */}
                 <div
                   className="flex animate-fade-in-up flex-col items-center gap-y-8"
-                  style={{ animationDelay: '200ms' }}>
-
+                  style={{animationDelay: '200ms'}}>
                   {/* Buttons */}
                   <div className="flex w-full justify-center gap-x-6">
-                    {actions.map(({ href, text, primary, Icon, onClick }) => (
+                    {actions.map(({href, text, primary, Icon, onClick}) => (
                       <a
                         className={classNames(
                           'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-base font-bold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',

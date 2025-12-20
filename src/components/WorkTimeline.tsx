@@ -1,7 +1,7 @@
 /* eslint-disable object-curly-spacing */
-import { FC, memo } from 'react';
+import {FC, memo} from 'react';
 
-import { heroTimeline } from '../data/data';
+import {heroTimeline} from '../data/data';
 
 const WorkTimeline: FC = memo(() => {
   return (

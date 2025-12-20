@@ -1,5 +1,5 @@
 /* eslint-disable object-curly-spacing */
-import { Dialog, Transition } from '@headlessui/react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   Bars3BottomRightIcon,
   BookmarkIcon,
@@ -11,10 +11,10 @@ import {
 } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import Link from 'next/link';
-import { FC, Fragment, memo, useCallback, useMemo, useState } from 'react';
+import {FC, Fragment, memo, useCallback, useMemo, useState} from 'react';
 
-import { SectionId } from '../../data/data';
-import { useNavObserver } from '../../hooks/useNavObserver';
+import {SectionId} from '../../data/data';
+import {useNavObserver} from '../../hooks/useNavObserver';
 
 export const headerID = 'headerNav';
 
@@ -36,8 +36,8 @@ const Header: FC = memo(() => {
   );
 });
 
-const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null }> = memo(
-  ({ navSections, currentSection }) => {
+const DesktopNav: FC<{navSections: SectionId[]; currentSection: SectionId | null}> = memo(
+  ({navSections, currentSection}) => {
     const baseClass =
       '-m-1.5 p-1.5 rounded-md font-bold first-letter:uppercase hover:transition-colors hover:duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 sm:hover:text-orange-500 text-neutral-100';
     const activeClass = classNames(baseClass, 'text-orange-500');
@@ -46,7 +46,9 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
       <header className="fixed top-0 z-50 hidden w-full bg-neutral-900/50 p-4 backdrop-blur sm:block" id={headerID}>
         <nav className="flex justify-center gap-x-8">
           <Link className={inactiveClass} href="/">
-            <span className="flex items-center gap-2"><HomeIcon className="h-5 w-5" /> Home</span>
+            <span className="flex items-center gap-2">
+              <HomeIcon className="h-5 w-5" /> Home
+            </span>
           </Link>
           {navSections.map(section => (
             <NavItem
@@ -58,19 +60,34 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
             />
           ))}
           <Link className={inactiveClass} href="/chat">
-            <span className="flex items-center gap-2"><ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat</span>
+            <span className="flex items-center gap-2">
+              <ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat
+            </span>
+          </Link>
+          <Link className={inactiveClass} href="/open">
+            <span className="flex items-center gap-2">
+              <ChatBubbleLeftRightIcon className="h-5 w-5" /> Open
+            </span>
           </Link>
           <Link className={inactiveClass} href="/bookmarks">
-            <span className="flex items-center gap-2"><BookmarkIcon className="h-5 w-5" /> Bookmarks</span>
+            <span className="flex items-center gap-2">
+              <BookmarkIcon className="h-5 w-5" /> Bookmarks
+            </span>
           </Link>
           <Link className={inactiveClass} href="/dashboard">
-            <span className="flex items-center gap-2"><LockClosedIcon className="h-5 w-5" /> Secure Login</span>
+            <span className="flex items-center gap-2">
+              <LockClosedIcon className="h-5 w-5" /> Secure Login
+            </span>
           </Link>
           <Link className={inactiveClass} href="/finance">
-            <span className="flex items-center gap-2"><CurrencyDollarIcon className="h-5 w-5" /> Finance</span>
+            <span className="flex items-center gap-2">
+              <CurrencyDollarIcon className="h-5 w-5" /> Finance
+            </span>
           </Link>
           <Link className={inactiveClass} href="/notes">
-            <span className="flex items-center gap-2"><DocumentTextIcon className="h-5 w-5" /> Notes</span>
+            <span className="flex items-center gap-2">
+              <DocumentTextIcon className="h-5 w-5" /> Notes
+            </span>
           </Link>
         </nav>
       </header>
@@ -78,8 +95,8 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
   },
 );
 
-const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null }> = memo(
-  ({ navSections, currentSection }) => {
+const MobileNav: FC<{navSections: SectionId[]; currentSection: SectionId | null}> = memo(
+  ({navSections, currentSection}) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const toggleOpen = useCallback(() => {
@@ -122,7 +139,9 @@ const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null
               <div className="relative w-4/5 bg-stone-800">
                 <nav className="mt-5 flex flex-col gap-y-2 px-2">
                   <Link className={inactiveClass} href="/" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><HomeIcon className="h-5 w-5" /> Home</span>
+                    <span className="flex items-center gap-2">
+                      <HomeIcon className="h-5 w-5" /> Home
+                    </span>
                   </Link>
                   {navSections.map(section => (
                     <NavItem
@@ -135,19 +154,34 @@ const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null
                     />
                   ))}
                   <Link className={inactiveClass} href="/chat" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat</span>
+                    <span className="flex items-center gap-2">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5" /> AI Chat
+                    </span>
+                  </Link>
+                  <Link className={inactiveClass} href="/open" onClick={toggleOpen}>
+                    <span className="flex items-center gap-2">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5" /> Open
+                    </span>
                   </Link>
                   <Link className={inactiveClass} href="/bookmarks" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><BookmarkIcon className="h-5 w-5" /> Bookmarks</span>
+                    <span className="flex items-center gap-2">
+                      <BookmarkIcon className="h-5 w-5" /> Bookmarks
+                    </span>
                   </Link>
                   <Link className={inactiveClass} href="/dashboard" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><LockClosedIcon className="h-5 w-5" /> Secure Login</span>
+                    <span className="flex items-center gap-2">
+                      <LockClosedIcon className="h-5 w-5" /> Secure Login
+                    </span>
                   </Link>
                   <Link className={inactiveClass} href="/finance" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><CurrencyDollarIcon className="h-5 w-5" /> Finance</span>
+                    <span className="flex items-center gap-2">
+                      <CurrencyDollarIcon className="h-5 w-5" /> Finance
+                    </span>
                   </Link>
                   <Link className={inactiveClass} href="/notes" onClick={toggleOpen}>
-                    <span className="flex items-center gap-2"><DocumentTextIcon className="h-5 w-5" /> Notes</span>
+                    <span className="flex items-center gap-2">
+                      <DocumentTextIcon className="h-5 w-5" /> Notes
+                    </span>
                   </Link>
                 </nav>
               </div>
@@ -165,7 +199,7 @@ const NavItem: FC<{
   activeClass: string;
   inactiveClass: string;
   onClick?: () => void;
-}> = memo(({ section, current, inactiveClass, activeClass, onClick }) => {
+}> = memo(({section, current, inactiveClass, activeClass, onClick}) => {
   return (
     <Link
       className={classNames(current ? activeClass : inactiveClass)}

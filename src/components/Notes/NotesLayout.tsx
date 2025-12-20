@@ -1,12 +1,12 @@
 'use client';
 
-import { ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import {ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon} from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
-import { INoteSection } from '@/models/NoteSection';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
+import {INoteSection} from '@/models/NoteSection';
 
 import CategoryList from './CategoryList';
 import FlaggedItemsModal from './FlaggedItemsModal';
@@ -115,7 +115,7 @@ const NotesLayout: React.FC = React.memo(() => {
     const sectionObj = task.sectionId as unknown as INoteSection;
 
     if (!sectionObj || !sectionObj.categoryId) {
-      alert("Cannot locate note: Missing section info.");
+      alert('Cannot locate note: Missing section info.');
       return;
     }
 
@@ -135,7 +135,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name, color });
+      const response = await axios.post('/api/notes/categories', {name, color});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -144,28 +144,31 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenameCategory = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/categories/${id}`, { name, color });
+      const response = await axios.put(`/api/notes/categories/${id}`, {name, color});
       setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
     } catch (error) {
       console.error('Error renaming category:', error);
     }
   }, []);
 
-  const handleDeleteCategory = useCallback(async (id: string) => {
-    try {
-      await axios.delete(`/api/notes/categories/${id}`);
-      setCategories(prev => prev.filter(cat => cat._id !== id));
-      if (selectedCategoryId === id) setSelectedCategoryId(null);
-    } catch (error) {
-      console.error('Error deleting category:', error);
-    }
-  }, [selectedCategoryId]);
+  const handleDeleteCategory = useCallback(
+    async (id: string) => {
+      try {
+        await axios.delete(`/api/notes/categories/${id}`);
+        setCategories(prev => prev.filter(cat => cat._id !== id));
+        if (selectedCategoryId === id) setSelectedCategoryId(null);
+      } catch (error) {
+        console.error('Error deleting category:', error);
+      }
+    },
+    [selectedCategoryId],
+  );
 
   const handleReorderCategories = useCallback(async (newOrder: INoteCategory[]) => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({ id: cat._id, order: index }))
+        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -174,51 +177,60 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   // Section Operations
-  const handleAddSection = useCallback(async (name: string, color?: string) => {
-    if (!selectedCategoryId) return;
-    try {
-      const response = await axios.post('/api/notes/sections', {
-        name,
-        color,
-        categoryId: selectedCategoryId,
-      });
-      setSections(prev => [...prev, response.data.data]);
-      setSelectedSectionId(response.data.data._id);
-    } catch (error) {
-      console.error('Error adding section:', error);
-    }
-  }, [selectedCategoryId]);
+  const handleAddSection = useCallback(
+    async (name: string, color?: string) => {
+      if (!selectedCategoryId) return;
+      try {
+        const response = await axios.post('/api/notes/sections', {
+          name,
+          color,
+          categoryId: selectedCategoryId,
+        });
+        setSections(prev => [...prev, response.data.data]);
+        setSelectedSectionId(response.data.data._id);
+      } catch (error) {
+        console.error('Error adding section:', error);
+      }
+    },
+    [selectedCategoryId],
+  );
 
   const handleRenameSection = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/sections/${id}`, { name, color });
+      const response = await axios.put(`/api/notes/sections/${id}`, {name, color});
       setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
     } catch (error) {
       console.error('Error renaming section:', error);
     }
   }, []);
 
-  const handleDeleteSection = useCallback(async (id: string) => {
-    try {
-      await axios.delete(`/api/notes/sections/${id}`);
-      setSections(prev => prev.filter(sec => sec._id !== id));
-      if (selectedSectionId === id) setSelectedSectionId(null);
-    } catch (error) {
-      console.error('Error deleting section:', error);
-    }
-  }, [selectedSectionId]);
+  const handleDeleteSection = useCallback(
+    async (id: string) => {
+      try {
+        await axios.delete(`/api/notes/sections/${id}`);
+        setSections(prev => prev.filter(sec => sec._id !== id));
+        if (selectedSectionId === id) setSelectedSectionId(null);
+      } catch (error) {
+        console.error('Error deleting section:', error);
+      }
+    },
+    [selectedSectionId],
+  );
 
-  const handleReorderSections = useCallback(async (newOrder: INoteSection[]) => {
-    setSections(newOrder);
-    try {
-      await axios.put('/api/notes/sections/reorder', {
-        items: newOrder.map((sec, index) => ({ id: sec._id, order: index }))
-      });
-    } catch (error) {
-      console.error('Error reordering sections:', error);
-      if (selectedCategoryId) fetchSections(selectedCategoryId);
-    }
-  }, [selectedCategoryId]);
+  const handleReorderSections = useCallback(
+    async (newOrder: INoteSection[]) => {
+      setSections(newOrder);
+      try {
+        await axios.put('/api/notes/sections/reorder', {
+          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
+        });
+      } catch (error) {
+        console.error('Error reordering sections:', error);
+        if (selectedCategoryId) fetchSections(selectedCategoryId);
+      }
+    },
+    [selectedCategoryId],
+  );
 
   // Page Operations
   const handleAddPage = useCallback(
@@ -241,50 +253,56 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenamePage = useCallback(async (id: string, title: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { title, color });
+      const response = await axios.put(`/api/notes/pages/${id}`, {title, color});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error renaming page:', error);
     }
   }, []);
 
-  const handleDeletePage = useCallback(async (id: string) => {
-    try {
-      await axios.delete(`/api/notes/pages/${id}`);
-      setPages(prev => prev.filter(page => page._id !== id));
-      if (selectedPageId === id) setSelectedPageId(null);
-    } catch (error) {
-      console.error('Error deleting page:', error);
-    }
-  }, [selectedPageId]);
+  const handleDeletePage = useCallback(
+    async (id: string) => {
+      try {
+        await axios.delete(`/api/notes/pages/${id}`);
+        setPages(prev => prev.filter(page => page._id !== id));
+        if (selectedPageId === id) setSelectedPageId(null);
+      } catch (error) {
+        console.error('Error deleting page:', error);
+      }
+    },
+    [selectedPageId],
+  );
 
   const handleSavePageContent = useCallback(async (id: string, content: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { content });
+      const response = await axios.put(`/api/notes/pages/${id}`, {content});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
     }
   }, []);
 
-  const handleReorderPages = useCallback(async (newOrder: INotePage[]) => {
-    setPages(newOrder);
-    try {
-      await axios.put('/api/notes/pages/reorder', {
-        items: newOrder.map((page, index) => ({ id: page._id, order: index }))
-      });
-    } catch (error) {
-      console.error('Error reordering pages:', error);
-      if (selectedSectionId) fetchPages(selectedSectionId);
-    }
-  }, [selectedSectionId]);
+  const handleReorderPages = useCallback(
+    async (newOrder: INotePage[]) => {
+      setPages(newOrder);
+      try {
+        await axios.put('/api/notes/pages/reorder', {
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+        });
+      } catch (error) {
+        console.error('Error reordering pages:', error);
+        if (selectedSectionId) fetchPages(selectedSectionId);
+      }
+    },
+    [selectedSectionId],
+  );
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
+      const response = await axios.put(`/api/notes/pages/${id}`, {[field]: value});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
-      console.error("Error toggling flag", error);
+      console.error('Error toggling flag', error);
     }
   }, []);
 
@@ -296,9 +314,14 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleCloseImportant = useCallback(() => setIsImportantOpen(false), []);
   const handleCloseKeyTasks = useCallback(() => setIsKeyTasksOpen(false), []);
   const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
-  const handleToggleCategoryCollapse = useCallback(() => setIsCategoryCollapsed(!isCategoryCollapsed), [isCategoryCollapsed]);
-  const handleToggleSectionCollapse = useCallback(() => setIsSectionCollapsed(!isSectionCollapsed), [isSectionCollapsed]);
-
+  const handleToggleCategoryCollapse = useCallback(
+    () => setIsCategoryCollapsed(!isCategoryCollapsed),
+    [isCategoryCollapsed],
+  );
+  const handleToggleSectionCollapse = useCallback(
+    () => setIsSectionCollapsed(!isSectionCollapsed),
+    [isSectionCollapsed],
+  );
 
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-white shadow-xl">
@@ -308,22 +331,19 @@ const NotesLayout: React.FC = React.memo(() => {
         <div className="flex items-center gap-2">
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 border border-gray-200"
-            onClick={handleOpenSearch}
-          >
+            onClick={handleOpenSearch}>
             <MagnifyingGlassIcon className="h-4 w-4" />
             Search
           </button>
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
-            onClick={handleOpenImportant}
-          >
+            onClick={handleOpenImportant}>
             <ExclamationTriangleIcon className="h-4 w-4" />
             Important
           </button>
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-gray-50 border border-red-200"
-            onClick={handleOpenKeyTasks}
-          >
+            onClick={handleOpenKeyTasks}>
             <FlagIcon className="h-4 w-4" />
             Key Tasks
           </button>
@@ -332,7 +352,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Column 1: Categories */}
-        <div className={`${isCategoryCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+        <div
+          className={`${
+            isCategoryCollapsed ? 'w-16' : 'w-64'
+          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -347,7 +370,10 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         {/* Column 2: Sections */}
-        <div className={`${isSectionCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+        <div
+          className={`${
+            isSectionCollapsed ? 'w-16' : 'w-64'
+          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -378,11 +404,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* Column 4: Editor */}
         <div className="flex-1 overflow-hidden">
-          <NoteEditor
-            onSave={handleSavePageContent}
-            onToggleFlag={handleToggleFlag}
-            page={selectedPage}
-          />
+          <NoteEditor onSave={handleSavePageContent} onToggleFlag={handleToggleFlag} page={selectedPage} />
         </div>
       </div>
 
@@ -410,7 +432,7 @@ const NotesLayout: React.FC = React.memo(() => {
         onClose={handleCloseSearch}
         onSelectTask={handleJumpToTask}
       />
-    </div >
+    </div>
   );
 });
 

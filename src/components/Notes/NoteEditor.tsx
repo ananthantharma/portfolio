@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition } from '@headlessui/react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -11,12 +11,13 @@ import {
   WrenchIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { ExclamationTriangleIcon as ExclamationTriangleIconSolid, FlagIcon as FlagIconSolid } from '@heroicons/react/24/solid';
-import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ExclamationTriangleIcon as ExclamationTriangleIconSolid,
+  FlagIcon as FlagIconSolid,
+} from '@heroicons/react/24/solid';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 
-
-
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
@@ -44,7 +45,7 @@ interface NoteEditorProps {
   page: INotePage | null;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag, page}) => {
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
@@ -54,7 +55,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
+  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
 
   // Refs
   const contentRef = useRef(content);
@@ -140,7 +141,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       quill = quillComponent.getEditor();
     } catch (e) {
-      console.error("Error getting editor from ref:", e);
+      console.error('Error getting editor from ref:', e);
     }
 
     if (!quill) return;
@@ -158,7 +159,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
 
     if (!text || text.trim().length === 0) {
-      alert("Please select some text to refine.");
+      alert('Please select some text to refine.');
       return;
     }
 
@@ -177,17 +178,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
-          model: 'gemini-2.5-flash'
+          model: 'gemini-2.5-flash',
         }),
       });
       const data = await response.json();
-      console.log("Refine AI Response:", data);
+      console.log('Refine AI Response:', data);
 
       if (!response.ok) {
-        console.error("Refine AI Error Details:", data);
+        console.error('Refine AI Error Details:', data);
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
@@ -210,7 +211,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     const quillComponent: any = quillRef.current;
 
     if (!quillComponent) {
-      console.error("Quill ref is null");
+      console.error('Quill ref is null');
       return;
     }
 
@@ -220,11 +221,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       quill = quillComponent.getEditor();
     } catch (e) {
-      console.error("Error getting editor from ref:", e);
+      console.error('Error getting editor from ref:', e);
     }
 
     if (!quill) {
-      console.error("Quill instance not found");
+      console.error('Quill instance not found');
       return;
     }
 
@@ -242,7 +243,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
 
     if (!text || text.trim().length === 0) {
-      alert("Please select some text in the note to ask AI.");
+      alert('Please select some text in the note to ask AI.');
       return;
     }
 
@@ -259,14 +260,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: text}),
       });
       const data = await response.json();
-      console.log("Gemini API Response:", data);
+      console.log('Gemini API Response:', data);
 
       if (!response.ok) {
-        console.error("Gemini API Error Details:", data);
+        console.error('Gemini API Error Details:', data);
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
@@ -291,7 +292,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       quill.deleteText(insertionRange.index, insertionRange.length);
       quill.insertText(insertionRange.index, generatedText);
     } else {
-      alert("Could not insert text. Lost selection context.");
+      alert('Could not insert text. Lost selection context.');
     }
     setIsModalOpen(false);
   };
@@ -319,38 +320,45 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           <button
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:bg-indigo-300"
             onClick={handleRefineAI}
-            type="button"
-          >
+            type="button">
             <WrenchIcon className="h-4 w-4" />
             Refine
           </button>
           <button
             className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:bg-gray-300"
             onClick={handleGenerateAI}
-            title="Ask AI"
-          >
+            title="Ask AI">
             <SparklesIcon className="h-5 w-5" />
             Ask AI
           </button>
           <button
-            className={`rounded-full p-2 transition-colors ${isImportant ? 'text-orange-500 bg-orange-50 hover:bg-orange-100' : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-              }`}
+            className={`rounded-full p-2 transition-colors ${
+              isImportant
+                ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+                : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+            }`}
             onClick={handleToggleImportant}
-            title={isImportant ? "Mark as not important" : "Mark as important"}
-          >
-            {isImportant ? <ExclamationTriangleIconSolid className="h-6 w-6" /> : <ExclamationTriangleIcon className="h-6 w-6" />}
+            title={isImportant ? 'Mark as not important' : 'Mark as important'}>
+            {isImportant ? (
+              <ExclamationTriangleIconSolid className="h-6 w-6" />
+            ) : (
+              <ExclamationTriangleIcon className="h-6 w-6" />
+            )}
           </button>
           <button
-            className={`rounded-full p-2 transition-colors ${isFlagged ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-              }`}
+            className={`rounded-full p-2 transition-colors ${
+              isFlagged
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+            }`}
             onClick={handleToggleFlagged}
-            title={isFlagged ? "Unflag task" : "Flag as key task"}
-          >
+            title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
           </button>
           <button
-            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
-              }`}
+            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${
+              isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
+            }`}
             disabled={!isDirty}
             onClick={handleSave}>
             Save
@@ -376,8 +384,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
             enterTo="opacity-100"
             leave="ease-in duration-200"
             leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
+            leaveTo="opacity-0">
             <div className="fixed inset-0 bg-black bg-opacity-25" />
           </Transition.Child>
 
@@ -390,13 +397,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                 enterTo="opacity-100 scale-100"
                 leave="ease-in duration-200"
                 leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
+                leaveTo="opacity-0 scale-95">
                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center"
-                  >
+                    className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <SparklesIcon className="h-5 w-5 text-purple-600" />
                       Gemini Suggestion
@@ -424,14 +429,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                     <div className="mt-6 flex justify-end gap-3">
                       <button
                         className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
-                        onClick={handleCloseModal}
-                      >
+                        onClick={handleCloseModal}>
                         Cancel
                       </button>
                       <button
                         className="inline-flex justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 gap-2 items-center"
-                        onClick={handleInsertAI}
-                      >
+                        onClick={handleInsertAI}>
                         <CheckIcon className="h-4 w-4" />
                         Insert
                       </button>

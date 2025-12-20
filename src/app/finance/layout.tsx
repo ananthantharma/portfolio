@@ -1,11 +1,11 @@
-import { CurrencyDollarIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import {CurrencyDollarIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
+import {redirect} from 'next/navigation';
+import {getServerSession} from 'next-auth';
 
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
-export default async function FinanceLayout({ children }: { children: React.ReactNode }) {
+export default async function FinanceLayout({children}: {children: React.ReactNode}) {
   const session = await getServerSession(authOptions);
 
   if (!session) {

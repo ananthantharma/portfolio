@@ -1,8 +1,8 @@
 /* eslint-disable object-curly-spacing */
-import { StaticImageData } from 'next/image';
-import { FC, ForwardRefExoticComponent, SVGProps } from 'react';
+import {StaticImageData} from 'next/image';
+import {FC, ForwardRefExoticComponent, SVGProps} from 'react';
 
-import { IconProps } from '../components/Icon/Icon';
+import {IconProps} from '../components/Icon/Icon';
 
 export interface HomepageMeta {
   title: string;
@@ -35,8 +35,6 @@ interface HeroActionItem {
   Icon?: ForwardRefExoticComponent<Omit<SVGProps<SVGSVGElement>, 'ref'>>;
   onClick?: () => void; // Add this line
 }
-
-
 
 /**
  * Stat section
@@ -82,8 +80,6 @@ export interface TimelineItem {
   content?: JSX.Element;
   image?: string | StaticImageData;
 }
-
-
 
 /**
  * Contact section

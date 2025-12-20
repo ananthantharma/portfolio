@@ -16,15 +16,7 @@ import uoitLogo from '../images/Logo/Ontario University Logo.png';
 import opgLogo from '../images/Logo/OPG logo.png';
 import peoLogo from '../images/Logo/PEO.png';
 import pmpLogo from '../images/Logo/PMP.png';
-import {
-  ContactSection,
-  ContactType,
-  Hero,
-  HomepageMeta,
-  SkillGroup,
-  Social,
-  TimelineItem,
-} from './dataDef';
+import {ContactSection, ContactType, Hero, HomepageMeta, SkillGroup, Social, TimelineItem} from './dataDef';
 
 /**
  * Page meta data
@@ -119,7 +111,6 @@ export const heroTimeline: TimelineItem[] = [
 /**
  * About section
  */
-
 
 /**
  * Skills section
@@ -297,8 +288,6 @@ export const experience: TimelineItem[] = [
   },
 ];
 
-
-
 /**
  * Contact section
  */
@@ -335,12 +324,12 @@ export const contact: ContactSection = {
  * Social items
  */
 export const socialLinks: Social[] = [
-  { label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma' },
+  {label: 'Github', Icon: GithubIcon, href: 'https://github.com/ananthantharma'},
   {
     label: 'LinkedIn',
     Icon: LinkedInIcon,
     href: 'https://www.linkedin.com/in/ananthan-tharmavelautham-p-eng-mba-pmp-cscp-26218493/',
   },
-  { label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/' },
-  { label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp' },
+  {label: 'Instagram', Icon: InstagramIcon, href: 'https://www.instagram.com/ananthan.tharma/'},
+  {label: 'Twitter', Icon: TwitterIcon, href: 'https://twitter.com/bloodripp'},
 ];
