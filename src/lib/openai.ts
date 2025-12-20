@@ -1,10 +1,15 @@
 export const getOpenAIChatResponse = async (
   apiKey: string,
-  history: {role: 'user' | 'assistant'; content: string}[],
+  history: { role: 'user' | 'assistant'; content: string }[],
   message: string,
   modelName: string = 'gpt-4o',
+  systemInstruction?: string,
 ) => {
-  const messages = [...history, {role: 'user', content: message}];
+  const messages = [
+    ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
+    ...history,
+    { role: 'user', content: message },
+  ];
 
   try {
     const response = await fetch('/api/openai/generate', {
