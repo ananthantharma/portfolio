@@ -1,14 +1,33 @@
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } };
+
+export type MessageContent = string | ContentPart[];
+
 export const getOpenAIChatResponse = async (
   apiKey: string,
-  history: { role: 'user' | 'assistant'; content: string }[],
+  history: { role: 'user' | 'assistant'; content: MessageContent }[],
   message: string,
   modelName: string = 'gpt-4o',
   systemInstruction?: string,
+  images?: string[]
 ) => {
+  let userContent: MessageContent = message;
+
+  if (images && images.length > 0) {
+    userContent = [
+      { type: 'text', text: message },
+      ...images.map(img => ({
+        type: 'image_url' as const,
+        image_url: { url: img }
+      }))
+    ];
+  }
+
   const messages = [
     ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
     ...history,
-    { role: 'user', content: message },
+    { role: 'user', content: userContent },
   ];
 
   try {

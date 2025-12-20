@@ -1,8 +1,11 @@
-import { Bot, FilePenLine, Loader2, MessageSquare, Plus, PlusCircle, Send, Trash2, User } from 'lucide-react';
+import { Bot, FilePenLine, Loader2, MessageSquare, Paperclip, Plus, PlusCircle, Send, Trash2, User, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-import { getOpenAIChatResponse } from '../lib/openai';
+import { getOpenAIChatResponse, MessageContent } from '../lib/openai';
+
+const plugins = [remarkGfm];
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -26,7 +29,7 @@ avoid using:
 
 interface Message {
   role: 'user' | 'assistant';
-  content: string;
+  content: MessageContent;
 }
 
 interface ChatSession {
@@ -66,9 +69,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
@@ -78,7 +83,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentSession?.messages]);
+  }, [currentSession?.messages, isLoading]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -111,6 +116,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const handleNewChat = () => {
     createNewSession();
     setInput('');
+    setSelectedImages([]);
   };
 
   const handleEmailRefine = () => {
@@ -120,6 +126,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       activeGem: 'Email Refiner'
     });
     setInput('');
+    setSelectedImages([]);
     // Focus the textarea
     setTimeout(() => {
       textareaRef.current?.focus();
@@ -141,19 +148,50 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedImages(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+      // Clear input so same file can be selected again
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !currentSessionId) return;
+    if ((!input.trim() && selectedImages.length === 0) || isLoading || !currentSessionId) return;
 
-    const userMessage = input.trim();
+    const userMessageText = input.trim();
+    const currentImages = [...selectedImages];
+
     setInput('');
+    setSelectedImages([]);
+
+    // Construct content for UI
+    let uiContent: MessageContent = userMessageText;
+    if (currentImages.length > 0) {
+      uiContent = [
+        { type: 'text', text: userMessageText },
+        ...currentImages.map(img => ({ type: 'image_url' as const, image_url: { url: img } }))
+      ];
+    }
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, { role: 'user', content: userMessage } as Message];
+      const newMessages = [...session.messages, { role: 'user', content: uiContent } as Message];
       // Update title if it's the first message and still named "New Chat"
       const newTitle = session.messages.length === 0 && session.title === 'New Chat'
-        ? userMessage.slice(0, 30) + (userMessage.length > 30 ? '...' : '')
+        ? (userMessageText.slice(0, 30) + (userMessageText.length > 30 ? '...' : '') || 'Image Chat')
         : session.title;
 
       return {
@@ -166,14 +204,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     setIsLoading(true);
 
     try {
-      // Need to get the latest state of the session references, but inside async using currentSession might be stale
-      // So we use the functional update pattern or just rely on the fact that we just updated it.
-      // Better to reconstruct for the API call from what we know we just added.
       const session = sessions.find(s => s.id === currentSessionId);
       const history = session ? session.messages : [];
       const systemInstruction = session?.systemInstruction;
 
-      const response = await getOpenAIChatResponse(apiKey, history, userMessage, selectedModel, systemInstruction);
+      const response = await getOpenAIChatResponse(apiKey, history, userMessageText, selectedModel, systemInstruction, currentImages);
 
       updateCurrentSession(s => ({
         ...s,
@@ -204,7 +239,33 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     }
   };
 
-  if (!currentSession) return null; // Should not happen due to useEffect
+  const renderMessageContent = (content: MessageContent) => {
+    if (typeof content === 'string') {
+      return <ReactMarkdown remarkPlugins={plugins}>{content}</ReactMarkdown>;
+    }
+    return (
+      <div className="flex flex-col gap-2">
+        {content.map((part, index) => {
+          if (part.type === 'image_url') {
+            return (
+              <img
+                alt="User upload"
+                className="max-w-full rounded-lg max-h-64 object-contain self-start"
+                key={index}
+                src={part.image_url.url}
+              />
+            );
+          }
+          if (part.type === 'text') {
+            return <ReactMarkdown key={index} remarkPlugins={plugins}>{part.text}</ReactMarkdown>;
+          }
+          return null;
+        })}
+      </div>
+    );
+  };
+
+  if (!currentSession) return null;
 
   return (
     <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
@@ -262,7 +323,6 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       <div className="flex-1 flex flex-col h-full min-w-0">
         <header className="flex items-center justify-between px-6 py-4 bg-zinc-800 border-b border-zinc-700">
           <div className="flex items-center gap-4">
-            {/* Mobile Menu Button could go here */}
             <div className="flex items-center gap-2">
               <Bot className="w-6 h-6 text-green-400" />
               <h1 className="text-lg font-semibold hidden sm:block">OpenAI Chat</h1>
@@ -293,7 +353,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
               <span className="hidden sm:inline">Refine Email</span>
             </button>
 
-            {/* Show New Chat button on mobile since sidebar is hidden */}
+            {/* Mobile New Chat Button */}
             <div className="md:hidden h-4 w-px bg-zinc-700"></div>
             <button
               className="md:hidden text-sm text-zinc-400 hover:text-green-400 transition-colors flex items-center gap-2"
@@ -328,7 +388,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
                     : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
                     }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    {renderMessageContent(msg.content)}
                   </div>
                 </div>
               </div>
@@ -350,24 +410,65 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
         {/* Input Area */}
         <div className="p-4 bg-zinc-900 border-t border-zinc-800">
-          <form className="max-w-4xl mx-auto relative flex items-end gap-2" onSubmit={handleSubmit}>
-            <div className="relative flex-1">
-              <textarea
-                className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
-                disabled={isLoading}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Message OpenAI..."
-                ref={textareaRef}
-                rows={1}
-                value={input}
+          <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
+            {selectedImages.length > 0 && (
+              <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+                {selectedImages.map((img, idx) => (
+                  <div className="relative group flex-shrink-0" key={idx}>
+                    <img
+                      alt="Preview"
+                      className="h-16 w-16 object-cover rounded-lg border border-zinc-700"
+                      src={img}
+                    />
+                    <button
+                      className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(idx)}
+                      type="button"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative flex items-end gap-2">
+              <input
+                accept="image/*"
+                className="hidden"
+                multiple
+                onChange={handleFileSelect}
+                ref={fileInputRef}
+                type="file"
               />
+
               <button
-                className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-green-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                disabled={!input.trim() || isLoading}
-                type="submit">
-                <Send className="w-5 h-5" />
+                className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload Image"
+                type="button"
+              >
+                <Paperclip className="w-5 h-5" />
               </button>
+
+              <div className="relative flex-1">
+                <textarea
+                  className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
+                  disabled={isLoading}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message OpenAI..."
+                  ref={textareaRef}
+                  rows={1}
+                  value={input}
+                />
+                <button
+                  className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-green-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
+                  disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
+                  type="submit">
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </form>
         </div>
