@@ -369,11 +369,43 @@ const NotesLayout: React.FC = React.memo(() => {
     [isSectionCollapsed],
   );
 
+  // Database Stats State
+  const [dbSize, setDbSize] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDbStats = async () => {
+      try {
+        const response = await axios.get('/api/database-stats');
+        if (response.data.success) {
+          setDbSize(formatBytes(response.data.data.totalSizeBytes));
+        }
+      } catch (error) {
+        console.error('Error fetching DB stats:', error);
+      }
+    };
+    fetchDbStats();
+  }, []);
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!+bytes) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  };
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-white shadow-xl">
       {/* Top Toolbar for Key Tasks - Added this wrapper div for the main layout to include header */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2">
-        <span className="text-sm font-semibold text-gray-500">Workspace</span>
+        <div className="flex items-baseline gap-2">
+          <span className="text-sm font-semibold text-gray-500">Workspace</span>
+          {dbSize && <span className="text-xs text-gray-400">({dbSize})</span>}
+        </div>
         <div className="flex items-center gap-2">
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 border border-gray-200"
