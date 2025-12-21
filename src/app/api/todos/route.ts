@@ -7,12 +7,19 @@ export async function POST(req: Request) {
     try {
         await dbConnect();
         const body = await req.json();
+        const { sourcePageId, title, priority, dueDate, category, notes } = body;
 
-        const todo = await ToDo.create(body);
+        const newToDo = await ToDo.create({
+            sourcePageId,
+            title,
+            priority,
+            dueDate,
+            category,
+            notes,
+        });
 
-        return NextResponse.json({ success: true, data: todo }, { status: 201 });
+        return NextResponse.json({ success: true, data: newToDo }, { status: 201 });
     } catch (error) {
-        console.error('Error creating ToDo:', error);
-        return NextResponse.json({ success: false, error: 'Failed to create ToDo' }, { status: 500 });
+        return NextResponse.json({ success: false, error: 'Failed to fetch To Dos' }, { status: 500 });
     }
 }

@@ -1,12 +1,12 @@
 'use client';
 
-import {ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon} from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import { ClipboardDocumentListIcon, ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 import axios from 'axios';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
-import {INotePage} from '@/models/NotePage';
-import {INoteSection} from '@/models/NoteSection';
+import { INoteCategory } from '@/models/NoteCategory';
+import { INotePage } from '@/models/NotePage';
+import { INoteSection } from '@/models/NoteSection';
 
 import CategoryList from './CategoryList';
 import FlaggedItemsModal from './FlaggedItemsModal';
@@ -14,6 +14,7 @@ import NoteEditor from './NoteEditor';
 import PageList from './PageList';
 import SearchModal from './SearchModal';
 import SectionList from './SectionList';
+import ToDoListModal from './ToDoListModal';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -135,7 +136,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string) => {
     try {
-      const response = await axios.post('/api/notes/categories', {name, color});
+      const response = await axios.post('/api/notes/categories', { name, color });
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -144,7 +145,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenameCategory = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/categories/${id}`, {name, color});
+      const response = await axios.put(`/api/notes/categories/${id}`, { name, color });
       setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
     } catch (error) {
       console.error('Error renaming category:', error);
@@ -168,7 +169,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
+        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -197,7 +198,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenameSection = useCallback(async (id: string, name: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/sections/${id}`, {name, color});
+      const response = await axios.put(`/api/notes/sections/${id}`, { name, color });
       setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
     } catch (error) {
       console.error('Error renaming section:', error);
@@ -222,7 +223,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
+          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -253,7 +254,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenamePage = useCallback(async (id: string, title: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {title, color});
+      const response = await axios.put(`/api/notes/pages/${id}`, { title, color });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error renaming page:', error);
@@ -275,7 +276,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleSavePageContent = useCallback(async (id: string, content: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {content});
+      const response = await axios.put(`/api/notes/pages/${id}`, { content });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -287,7 +288,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -299,7 +300,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {[field]: value});
+      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error toggling flag', error);
@@ -314,6 +315,13 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleCloseImportant = useCallback(() => setIsImportantOpen(false), []);
   const handleCloseKeyTasks = useCallback(() => setIsKeyTasksOpen(false), []);
   const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
+
+  // To Do List State
+  const [isToDoListOpen, setIsToDoListOpen] = useState(false);
+  const handleOpenToDoList = useCallback(() => setIsToDoListOpen(true), []);
+  const handleCloseToDoList = useCallback(() => setIsToDoListOpen(false), []);
+
+
   const handleToggleCategoryCollapse = useCallback(
     () => setIsCategoryCollapsed(!isCategoryCollapsed),
     [isCategoryCollapsed],
@@ -336,6 +344,12 @@ const NotesLayout: React.FC = React.memo(() => {
             Search
           </button>
           <button
+            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-teal-600 shadow-sm hover:bg-gray-50 border border-teal-200"
+            onClick={handleOpenToDoList}>
+            <ClipboardDocumentListIcon className="h-4 w-4" />
+            To Do List
+          </button>
+          <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
             onClick={handleOpenImportant}>
             <ExclamationTriangleIcon className="h-4 w-4" />
@@ -353,9 +367,8 @@ const NotesLayout: React.FC = React.memo(() => {
       <div className="flex flex-1 overflow-hidden">
         {/* Column 1: Categories */}
         <div
-          className={`${
-            isCategoryCollapsed ? 'w-16' : 'w-64'
-          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+          className={`${isCategoryCollapsed ? 'w-16' : 'w-64'
+            } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -371,9 +384,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* Column 2: Sections */}
         <div
-          className={`${
-            isSectionCollapsed ? 'w-16' : 'w-64'
-          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+          className={`${isSectionCollapsed ? 'w-16' : 'w-64'
+            } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -424,6 +436,11 @@ const NotesLayout: React.FC = React.memo(() => {
         onClose={handleCloseImportant}
         onSelectTask={handleJumpToTask}
         title="Important"
+      />
+
+      <ToDoListModal
+        isOpen={isToDoListOpen}
+        onClose={handleCloseToDoList}
       />
 
       <SearchModal

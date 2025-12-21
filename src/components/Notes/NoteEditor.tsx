@@ -315,7 +315,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   }, []);
 
   const handleSaveToDo = useCallback(
-    async (toDoData: { title: string; priority: string; dueDate: Date; category: string }) => {
+    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
       try {
         if (!page) return;
 

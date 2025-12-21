@@ -13,7 +13,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 interface ToDoModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: { title: string; priority: string; dueDate: Date; category: string }) => void;
+    onSave: (data: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => void;
     initialTitle: string;
 }
 
@@ -21,6 +21,7 @@ const PRIORITIES = [
     { name: 'High', value: 'High', icon: ExclamationCircleIcon, color: 'text-red-500' },
     { name: 'Medium', value: 'Medium', icon: ExclamationTriangleIcon, color: 'text-amber-500' },
     { name: 'Low', value: 'Low', icon: MinusCircleIcon, color: 'text-green-500' },
+    { name: 'None', value: 'None', icon: MinusCircleIcon, color: 'text-gray-400' },
 ];
 
 const CATEGORIES = [
@@ -35,8 +36,9 @@ const CATEGORIES = [
 
 const ToDoModal: React.FC<ToDoModalProps> = React.memo(({ isOpen, onClose, onSave, initialTitle }) => {
     const [title, setTitle] = useState(initialTitle);
-    const [priority, setPriority] = useState(PRIORITIES[1]);
+    const [priority, setPriority] = useState(PRIORITIES[3]); // Default to None (index 3)
     const [dueDate, setDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [notes, setNotes] = useState('');
 
     // User requested category "can be blank and is blank as default"
     const [selectedCategory, setSelectedCategory] = useState<{ name: string; value: string; color: string } | null>(null);
@@ -48,9 +50,10 @@ const ToDoModal: React.FC<ToDoModalProps> = React.memo(({ isOpen, onClose, onSav
     // Reset state when opening
     useEffect(() => {
         if (isOpen) {
-            setPriority(PRIORITIES[1]);
+            setPriority(PRIORITIES[3]); // Default to None
             setDueDate(new Date().toISOString().split('T')[0]);
             setSelectedCategory(null);
+            setNotes('');
         }
     }, [isOpen]);
 
@@ -60,6 +63,7 @@ const ToDoModal: React.FC<ToDoModalProps> = React.memo(({ isOpen, onClose, onSav
             priority: priority.value,
             dueDate: new Date(dueDate),
             category: selectedCategory ? selectedCategory.value : '',
+            notes,
         });
         onClose();
     };
@@ -210,6 +214,17 @@ const ToDoModal: React.FC<ToDoModalProps> = React.memo(({ isOpen, onClose, onSav
                                                 </Transition>
                                             </div>
                                         </Listbox>
+                                    </div>
+
+                                    {/* Notes */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                                        <textarea
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            rows={3}
+                                            value={notes}
+                                        />
                                     </div>
                                 </div>
 
