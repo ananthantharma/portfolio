@@ -1,20 +1,21 @@
-import {Dialog, Transition} from '@headlessui/react';
-import {MagnifyingGlassIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, useEffect, useState} from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { Fragment, useEffect, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
 interface SearchModalProps {
-  fetchItems: (query: string) => Promise<INotePage[]>;
+  fetchItems: (query: string, searchTitlesOnly: boolean) => Promise<INotePage[]>;
   isOpen: boolean;
   onClose: () => void;
   onSelectTask: (task: INotePage) => void;
 }
 
-const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen, onClose, onSelectTask}) => {
+const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen, onClose, onSelectTask }) => {
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<INotePage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchTitlesOnly, setSearchTitlesOnly] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -22,7 +23,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen,
       if (query.trim()) {
         setLoading(true);
         try {
-          const data = await fetchItems(query);
+          const data = await fetchItems(query, searchTitlesOnly);
           setItems(data);
         } catch (error) {
           console.error('Search failed', error);
@@ -35,13 +36,14 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen,
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, fetchItems]);
+  }, [query, fetchItems, searchTitlesOnly]);
 
   // Reset on open/close
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
       setItems([]);
+      setSearchTitlesOnly(false);
     }
   }, [isOpen]);
 
@@ -70,19 +72,33 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen,
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95">
               <Dialog.Panel className="mt-12 w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex items-center gap-2 border-b border-gray-200 pb-4">
-                  <MagnifyingGlassIcon className="h-6 w-6 text-gray-400" />
-                  <input
-                    autoFocus
-                    className="flex-1 border-none px-2 py-1 text-lg text-gray-900 placeholder-gray-400 focus:ring-0"
-                    onChange={e => setQuery(e.target.value)}
-                    placeholder="Search notes..."
-                    type="text"
-                    value={query}
-                  />
-                  <button className="text-gray-400 hover:text-gray-500" onClick={onClose}>
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
+                <div className="flex flex-col gap-2 border-b border-gray-200 pb-4">
+                  <div className="flex items-center gap-2">
+                    <MagnifyingGlassIcon className="h-6 w-6 text-gray-400" />
+                    <input
+                      autoFocus
+                      className="flex-1 border-none px-2 py-1 text-lg text-gray-900 placeholder-gray-400 focus:ring-0"
+                      onChange={e => setQuery(e.target.value)}
+                      placeholder="Search notes..."
+                      type="text"
+                      value={query}
+                    />
+                    <button className="text-gray-400 hover:text-gray-500" onClick={onClose}>
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 px-2">
+                    <input
+                      checked={searchTitlesOnly}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      id="searchTitlesOnly"
+                      onChange={e => setSearchTitlesOnly(e.target.checked)}
+                      type="checkbox"
+                    />
+                    <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchTitlesOnly">
+                      Search titles only (Notebooks, Sections, Pages)
+                    </label>
+                  </div>
                 </div>
 
                 <div className="mt-4 max-h-[60vh] overflow-y-auto">
@@ -103,8 +119,8 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen,
                             <div>
                               <p className="font-medium text-gray-900">{item.title}</p>
                               <p className="text-xs text-gray-500">
-                                {(item.sectionId as unknown as {name: string})?.name
-                                  ? `${(item.sectionId as unknown as {name: string}).name}`
+                                {(item.sectionId as unknown as { name: string })?.name
+                                  ? `${(item.sectionId as unknown as { name: string }).name}`
                                   : 'Unknown Section'}
                               </p>
                             </div>
