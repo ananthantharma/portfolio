@@ -10,15 +10,15 @@ import {
     XMarkIcon,
     BuildingOfficeIcon,
     PhoneIcon,
-    EnvelopeIcon,
+    EnvelopeIcon
 } from '@heroicons/react/24/outline';
 
 import {
     CONTACT_DEPARTMENTS,
     CONTACT_POSITIONS,
     CONTACT_TYPES,
-    IContact
-} from '@/models/Contact';
+    IContactBase as IContact
+} from '@/lib/contact-constants';
 import ContactFormModal, { ContactFormData } from './ContactFormModal';
 
 interface ContactListModalProps {

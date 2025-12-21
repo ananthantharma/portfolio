@@ -10,8 +10,8 @@ import {
     CONTACT_DEPARTMENTS,
     CONTACT_POSITIONS,
     CONTACT_TYPES,
-    IContact
-} from '@/models/Contact';
+    IContactBase as IContact
+} from '@/lib/contact-constants';
 
 export interface ContactFormData {
     name: string;
