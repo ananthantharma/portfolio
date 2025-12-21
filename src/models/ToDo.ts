@@ -3,7 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import { INotePage } from './NotePage';
 
 export interface IToDo extends Document {
-    sourcePageId: string | INotePage;
+    sourcePageId?: string | INotePage;
     title: string;
     priority: 'High' | 'Medium' | 'Low' | 'None';
     dueDate: Date;
@@ -16,7 +16,7 @@ export interface IToDo extends Document {
 
 const ToDoSchema = new Schema<IToDo>(
     {
-        sourcePageId: { type: Schema.Types.ObjectId, ref: 'NotePage', required: true },
+        sourcePageId: { type: Schema.Types.ObjectId, ref: 'NotePage', required: false },
         title: { type: String, required: true },
         priority: {
             type: String,

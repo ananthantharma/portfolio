@@ -11,10 +11,10 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { sourcePageId, title, priority, dueDate, category, notes } = body;
 
-        console.log('Creating To Do:', { title, priority, sourcePageId });
+        console.log('Creating To Do:', { title, priority, sourcePageId: sourcePageId || 'None' });
 
         const newToDo = await ToDo.create({
-            sourcePageId,
+            sourcePageId: sourcePageId || undefined,
             title,
             priority,
             dueDate,
@@ -35,7 +35,16 @@ export async function GET(_req: Request) {
         await dbConnect();
         // Potential filters could be added here later (e.g. ?isCompleted=false)
 
-        const todos = await ToDo.find().sort({ createdAt: -1 }).populate('sourcePageId', 'title');
+        const todos = await ToDo.find()
+            .sort({ createdAt: -1 })
+            .populate({
+                path: 'sourcePageId',
+                select: 'title sectionId',
+                populate: {
+                    path: 'sectionId',
+                    select: 'categoryId'
+                }
+            });
 
         console.log(`Fetched ${todos.length} todos`);
         return NextResponse.json({ success: true, data: todos });
