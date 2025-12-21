@@ -115,25 +115,55 @@ const NotesLayout: React.FC = React.memo(() => {
     setIsImportantOpen(false);
     setIsSearchOpen(false);
 
-    // We cast sectionId to unknown then to INoteSection because it's populated but typed as string | INoteSection
-    const sectionObj = task.sectionId as unknown as INoteSection;
+    // Cast to any to handle the 'type' property we injected in the API
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const extendedTask = task as any;
 
-    if (!sectionObj || !sectionObj.categoryId) {
-      alert('Cannot locate note: Missing section info.');
-      return;
-    }
+    if (extendedTask.type === 'section') {
+      // Handle Section/Notebook Result
+      const targetCategoryId = extendedTask.sectionId.categoryId;
 
-    const targetCategoryId = sectionObj.categoryId as unknown as string;
-    const targetSectionId = sectionObj._id as string;
-    const targetPageId = task._id as string;
+      setSelectedCategoryId(targetCategoryId);
 
-    setSelectedCategoryId(targetCategoryId);
-    setTimeout(() => {
-      setSelectedSectionId(targetSectionId);
+      // If it's a specific Section (not just a Notebook/Category match)
+      // We identify this by checking if the ID isn't the same as the category ID, 
+      // or strictly by the label we added. The API confirms sections have title '[Section] ...'
+      if ((extendedTask.title as string).startsWith('[Section]')) {
+        const targetSectionId = extendedTask._id;
+        setTimeout(() => {
+          setSelectedSectionId(targetSectionId);
+          // Ensure page is cleared so we see the list of pages in this section
+          setSelectedPageId(null);
+        }, 150);
+      } else {
+        // It's a Notebook match - just open the Category
+        setTimeout(() => {
+          setSelectedSectionId(null);
+          setSelectedPageId(null);
+        }, 150);
+      }
+    } else {
+      // Handle Standard Page Result
+      // We cast sectionId to unknown then to INoteSection because it's populated but typed as string | INoteSection
+      const sectionObj = task.sectionId as unknown as INoteSection;
+
+      if (!sectionObj || !sectionObj.categoryId) {
+        alert('Cannot locate note: Missing section info.');
+        return;
+      }
+
+      const targetCategoryId = sectionObj.categoryId as unknown as string;
+      const targetSectionId = sectionObj._id as string;
+      const targetPageId = task._id as string;
+
+      setSelectedCategoryId(targetCategoryId);
       setTimeout(() => {
-        setSelectedPageId(targetPageId);
+        setSelectedSectionId(targetSectionId);
+        setTimeout(() => {
+          setSelectedPageId(targetPageId);
+        }, 150);
       }, 150);
-    }, 150);
+    }
   }, []);
 
   // Category Operations
