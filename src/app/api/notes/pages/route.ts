@@ -30,28 +30,26 @@ export async function GET(request: Request) {
     if (search) {
       const searchRegex = { $regex: search, $options: 'i' };
 
-      // 1. Find Categories matching the name
-      const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id');
-      const matchedCategoryIds = matchedCategories.map(c => c._id);
-
-      // 2. Find Sections matching the name OR belonging to matched Categories
-      const matchedSections = await NoteSection.find({
-        $or: [{ name: searchRegex }, { categoryId: { $in: matchedCategoryIds } }],
-      }).select('_id');
-      const matchedSectionIds = matchedSections.map(s => s._id);
-
-      // 3. Construct Page Query
-      const orConditions: Record<string, unknown>[] = [
-        { title: searchRegex }, // Match Page Title
-        { sectionId: { $in: matchedSectionIds } }, // Match Hierarchy (Section or Category)
-      ];
-
       // 4. Optionally match content
       if (!searchTitlesOnly) {
-        orConditions.push({ content: searchRegex });
-      }
+        // Standard Search: Title OR Hierarchy OR Content
+        const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id');
+        const matchedCategoryIds = matchedCategories.map(c => c._id);
 
-      query.$or = orConditions;
+        const matchedSections = await NoteSection.find({
+          $or: [{ name: searchRegex }, { categoryId: { $in: matchedCategoryIds } }],
+        }).select('_id');
+        const matchedSectionIds = matchedSections.map(s => s._id);
+
+        query.$or = [
+          { title: searchRegex },
+          { sectionId: { $in: matchedSectionIds } },
+          { content: searchRegex }
+        ];
+      } else {
+        // Titles Only Search: Strict Page Title Match Only
+        query.$or = [{ title: searchRegex }];
+      }
     } else if (isFlagged) {
       query.isFlagged = true;
     } else if (isImportant) {
