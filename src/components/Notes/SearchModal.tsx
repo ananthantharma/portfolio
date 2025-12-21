@@ -5,7 +5,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { INotePage } from '@/models/NotePage';
 
 interface SearchModalProps {
-  fetchItems: (query: string, searchTitlesOnly: boolean) => Promise<INotePage[]>;
+  fetchItems: (query: string, searchPageTitlesOnly: boolean, searchSectionNamesOnly: boolean) => Promise<INotePage[]>;
   isOpen: boolean;
   onClose: () => void;
   onSelectTask: (task: INotePage) => void;
@@ -15,7 +15,8 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<INotePage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTitlesOnly, setSearchTitlesOnly] = useState(false);
+  const [searchPageTitlesOnly, setSearchPageTitlesOnly] = useState(false);
+  const [searchSectionNamesOnly, setSearchSectionNamesOnly] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -23,7 +24,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
       if (query.trim()) {
         setLoading(true);
         try {
-          const data = await fetchItems(query, searchTitlesOnly);
+          const data = await fetchItems(query, searchPageTitlesOnly, searchSectionNamesOnly);
           setItems(data);
         } catch (error) {
           console.error('Search failed', error);
@@ -36,14 +37,15 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, fetchItems, searchTitlesOnly]);
+  }, [query, fetchItems, searchPageTitlesOnly, searchSectionNamesOnly]);
 
   // Reset on open/close
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
       setItems([]);
-      setSearchTitlesOnly(false);
+      setSearchPageTitlesOnly(false);
+      setSearchSectionNamesOnly(false);
     }
   }, [isOpen]);
 
@@ -87,17 +89,31 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                       <XMarkIcon className="h-6 w-6" />
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 px-2">
-                    <input
-                      checked={searchTitlesOnly}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      id="searchTitlesOnly"
-                      onChange={e => setSearchTitlesOnly(e.target.checked)}
-                      type="checkbox"
-                    />
-                    <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchTitlesOnly">
-                      Search titles only (Notebooks, Sections, Pages)
-                    </label>
+                  <div className="flex gap-4 px-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        checked={searchPageTitlesOnly}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        id="searchPageTitlesOnly"
+                        onChange={e => setSearchPageTitlesOnly(e.target.checked)}
+                        type="checkbox"
+                      />
+                      <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchPageTitlesOnly">
+                        Search Page Titles Only
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        checked={searchSectionNamesOnly}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        id="searchSectionNamesOnly"
+                        onChange={e => setSearchSectionNamesOnly(e.target.checked)}
+                        type="checkbox"
+                      />
+                      <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchSectionNamesOnly">
+                        Search Section Names Only
+                      </label>
+                    </div>
                   </div>
                 </div>
 

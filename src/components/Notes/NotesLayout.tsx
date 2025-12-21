@@ -103,9 +103,9 @@ const NotesLayout: React.FC = React.memo(() => {
     return response.data.data;
   }, []);
 
-  const fetchSearchResults = useCallback(async (query: string, searchTitlesOnly: boolean) => {
+  const fetchSearchResults = useCallback(async (query: string, searchPageTitlesOnly: boolean, searchSectionNamesOnly: boolean) => {
     const response = await axios.get(
-      `/api/notes/pages?search=${encodeURIComponent(query)}&searchTitlesOnly=${searchTitlesOnly}&_t=${Date.now()}`
+      `/api/notes/pages?search=${encodeURIComponent(query)}&searchPageTitlesOnly=${searchPageTitlesOnly}&searchSectionNamesOnly=${searchSectionNamesOnly}&_t=${Date.now()}`
     );
     return response.data.data;
   }, []);

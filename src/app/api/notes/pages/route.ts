@@ -23,16 +23,36 @@ export async function GET(request: Request) {
   const isFlagged = searchParams.get('isFlagged') === 'true';
   const isImportant = searchParams.get('isImportant') === 'true';
   const search = searchParams.get('search');
-  const searchTitlesOnly = searchParams.get('searchTitlesOnly') === 'true';
+  const searchPageTitlesOnly = searchParams.get('searchPageTitlesOnly') === 'true';
+  const searchSectionNamesOnly = searchParams.get('searchSectionNamesOnly') === 'true';
 
   try {
     const query: Record<string, unknown> = {};
     if (search) {
       const searchRegex = { $regex: search, $options: 'i' };
+      const orConditions: Record<string, unknown>[] = [];
 
-      // 4. Optionally match content
-      if (!searchTitlesOnly) {
-        // Standard Search: Title OR Hierarchy OR Content
+      // Flag to track if we should do a restricted search
+      const specificSearch = searchPageTitlesOnly || searchSectionNamesOnly;
+
+      if (specificSearch) {
+        // Additive Logic: If either flag is present, stick to those fields ONLY (no content search)
+
+        if (searchPageTitlesOnly) {
+          orConditions.push({ title: searchRegex });
+        }
+
+        if (searchSectionNamesOnly) {
+          // Find Sections matching the name
+          const matchedSections = await NoteSection.find({ name: searchRegex }).select('_id');
+          const matchedSectionIds = matchedSections.map(s => s._id);
+
+          if (matchedSectionIds.length > 0) {
+            orConditions.push({ sectionId: { $in: matchedSectionIds } });
+          }
+        }
+      } else {
+        // Standard Search: Title OR Hierarchy (Category/Section) OR Content
         const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id');
         const matchedCategoryIds = matchedCategories.map(c => c._id);
 
@@ -41,15 +61,23 @@ export async function GET(request: Request) {
         }).select('_id');
         const matchedSectionIds = matchedSections.map(s => s._id);
 
-        query.$or = [
+        orConditions.push(
           { title: searchRegex },
           { sectionId: { $in: matchedSectionIds } },
           { content: searchRegex }
-        ];
-      } else {
-        // Titles Only Search: Strict Page Title Match Only
-        query.$or = [{ title: searchRegex }];
+        );
       }
+
+      // If specific search was requested but no criteria matched (e.g. checkbox checked but array empty), 
+      // we need to ensure we don't return everything. $or with empty array returns nothing usually, 
+      // but let's be safe.
+      if (orConditions.length > 0) {
+        query.$or = orConditions;
+      } else {
+        // Force no results if specific search yielded no sub-queries (e.g. section checked but no section found)
+        return NextResponse.json({ success: true, data: [] });
+      }
+
     } else if (isFlagged) {
       query.isFlagged = true;
     } else if (isImportant) {
