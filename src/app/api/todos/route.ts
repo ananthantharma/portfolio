@@ -26,7 +26,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, data: newToDo }, { status: 201 });
     } catch (error) {
         console.error('Error in POST /api/todos:', error);
-        return NextResponse.json({ success: false, error: 'Failed to create To Do' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
     }
 }
 
@@ -50,6 +51,7 @@ export async function GET(_req: Request) {
         return NextResponse.json({ success: true, data: todos });
     } catch (error) {
         console.error('Error fetching To Dos:', error);
-        return NextResponse.json({ success: false, error: 'Failed to fetch To Dos' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
     }
 }
