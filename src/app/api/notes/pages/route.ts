@@ -44,11 +44,27 @@ export async function GET(request: Request) {
 
         if (searchSectionNamesOnly) {
           // Find Sections matching the name
-          const matchedSections = await NoteSection.find({ name: searchRegex }).select('_id');
-          const matchedSectionIds = matchedSections.map(s => s._id);
+          console.log('DEBUG: Searching Sections/Categories with regex:', search);
 
-          if (matchedSectionIds.length > 0) {
-            orConditions.push({ sectionId: { $in: matchedSectionIds } });
+          // Search Sections
+          const matchedSections = await NoteSection.find({ name: searchRegex }).select('_id name');
+          console.log('DEBUG: Matched Sections:', matchedSections.map(s => s.name));
+
+          // Search Categories (Treating them as part of "Section" hierarchy for broadness)
+          const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id name');
+          console.log('DEBUG: Matched Categories:', matchedCategories.map(c => c.name));
+          const matchedCategoryIds = matchedCategories.map(c => c._id);
+
+          // Find Sections belonging to matched Categories
+          const sectionsInMatchedCategories = await NoteSection.find({ categoryId: { $in: matchedCategoryIds } }).select('_id');
+
+          const allSectionIds = [
+            ...matchedSections.map(s => s._id),
+            ...sectionsInMatchedCategories.map(s => s._id)
+          ];
+
+          if (allSectionIds.length > 0) {
+            orConditions.push({ sectionId: { $in: allSectionIds } });
           }
         }
       } else {
