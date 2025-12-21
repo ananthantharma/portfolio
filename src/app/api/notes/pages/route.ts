@@ -1,4 +1,5 @@
 /* eslint-disable simple-import-sort/imports */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -30,43 +31,55 @@ export async function GET(request: Request) {
     const query: Record<string, unknown> = {};
     if (search) {
       const searchRegex = { $regex: search, $options: 'i' };
-      const orConditions: Record<string, unknown>[] = [];
-
-      // Flag to track if we should do a restricted search
       const specificSearch = searchPageTitlesOnly || searchSectionNamesOnly;
 
       if (specificSearch) {
-        // Additive Logic: If either flag is present, stick to those fields ONLY (no content search)
+        let results: any[] = [];
 
         if (searchPageTitlesOnly) {
-          orConditions.push({ title: searchRegex });
+          const pages = await NotePage.find({ title: searchRegex }).sort({ order: 1 }).populate({
+            path: 'sectionId',
+            select: 'categoryId name',
+          });
+          results = [...results, ...pages.map(p => ({ ...p.toObject(), type: 'page' }))];
         }
 
         if (searchSectionNamesOnly) {
-          // Find Sections matching the name
           console.log('DEBUG: Searching Sections/Categories with regex:', search);
 
           // Search Sections
-          const matchedSections = await NoteSection.find({ name: searchRegex }).select('_id name');
-          console.log('DEBUG: Matched Sections:', matchedSections.map(s => s.name));
+          const sections = await NoteSection.find({ name: searchRegex }).populate('categoryId');
+          results = [...results, ...sections.map(s => ({
+            ...s.toObject(),
+            type: 'section',
+            title: `[Section] ${s.name}`, // Explicit label
+            sectionId: { name: s.name, categoryId: s.categoryId } // Mock sectionId for UI display
+          }))];
 
-          // Search Categories (Treating them as part of "Section" hierarchy for broadness)
-          const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id name');
-          console.log('DEBUG: Matched Categories:', matchedCategories.map(c => c.name));
-          const matchedCategoryIds = matchedCategories.map(c => c._id);
+          // Search Categories (Notebooks)
+          const categories = await NoteCategory.find({ name: searchRegex });
+          console.log('DEBUG: Matched Categories:', categories.map(c => c.name));
 
-          // Find Sections belonging to matched Categories
-          const sectionsInMatchedCategories = await NoteSection.find({ categoryId: { $in: matchedCategoryIds } }).select('_id');
-
-          const allSectionIds = [
-            ...matchedSections.map(s => s._id),
-            ...sectionsInMatchedCategories.map(s => s._id)
-          ];
-
-          if (allSectionIds.length > 0) {
-            orConditions.push({ sectionId: { $in: allSectionIds } });
-          }
+          // Return Categories as "Sections" for UI consistency
+          results = [...results, ...categories.map(c => ({
+            ...c.toObject(),
+            type: 'section',
+            title: `[Notebook] ${c.name}`, // Explicit label
+            sectionId: { name: 'Notebook', categoryId: c._id }
+          }))];
         }
+
+        // Remove duplicates by ID and sort
+        const seen = new Set();
+        const uniqueResults = results.filter(item => {
+          const id = item._id.toString();
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
+
+        return NextResponse.json({ success: true, data: uniqueResults });
+
       } else {
         // Standard Search: Title OR Hierarchy (Category/Section) OR Content
         const matchedCategories = await NoteCategory.find({ name: searchRegex }).select('_id');
@@ -77,23 +90,12 @@ export async function GET(request: Request) {
         }).select('_id');
         const matchedSectionIds = matchedSections.map(s => s._id);
 
-        orConditions.push(
+        query.$or = [
           { title: searchRegex },
           { sectionId: { $in: matchedSectionIds } },
           { content: searchRegex }
-        );
+        ];
       }
-
-      // If specific search was requested but no criteria matched (e.g. checkbox checked but array empty), 
-      // we need to ensure we don't return everything. $or with empty array returns nothing usually, 
-      // but let's be safe.
-      if (orConditions.length > 0) {
-        query.$or = orConditions;
-      } else {
-        // Force no results if specific search yielded no sub-queries (e.g. section checked but no section found)
-        return NextResponse.json({ success: true, data: [] });
-      }
-
     } else if (isFlagged) {
       query.isFlagged = true;
     } else if (isImportant) {
