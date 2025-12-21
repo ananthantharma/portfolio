@@ -1,10 +1,11 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import {Dialog, Transition} from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
+  ClipboardDocumentListIcon,
   ExclamationTriangleIcon,
   FlagIcon,
   SparklesIcon,
@@ -15,11 +16,12 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
+import ToDoModal from './ToDoModal';
 
 const REFINE_PROMPT = `I need you to rewrite the text I provide below. Please follow these strict style guidelines:
 
@@ -45,7 +47,7 @@ interface NoteEditorProps {
   page: INotePage | null;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag, page}) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
@@ -55,7 +57,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
+  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
 
   // Refs
   const contentRef = useRef(content);
@@ -178,7 +180,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-2.5-flash',
@@ -260,8 +262,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: text}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text }),
       });
       const data = await response.json();
       console.log('Gemini API Response:', data);
@@ -301,6 +303,45 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     setIsModalOpen(false);
   }, []);
 
+  // To Do Modal State
+  const [isToDoOpen, setIsToDoOpen] = useState(false);
+
+  const handleOpenToDo = useCallback(() => {
+    setIsToDoOpen(true);
+  }, []);
+
+  const handleCloseToDo = useCallback(() => {
+    setIsToDoOpen(false);
+  }, []);
+
+  const handleSaveToDo = useCallback(
+    async (toDoData: { title: string; priority: string; dueDate: Date; category: string }) => {
+      try {
+        if (!page) return;
+
+        const response = await fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...toDoData,
+            sourcePageId: page._id,
+          }),
+        });
+
+        if (response.ok) {
+          // Ideally show a success notification
+          alert('To Do created successfully!');
+        } else {
+          alert('Failed to create To Do.');
+        }
+      } catch (error) {
+        console.error('Error creating To Do:', error);
+        alert('Error creating To Do.');
+      }
+    },
+    [page],
+  );
+
   if (!page) {
     return (
       <div className="flex h-full items-center justify-center bg-white text-gray-400">
@@ -331,12 +372,22 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
             <SparklesIcon className="h-5 w-5" />
             Ask AI
           </button>
+
+          {/* To Do Button */}
           <button
-            className={`rounded-full p-2 transition-colors ${
-              isImportant
-                ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-            }`}
+            className="flex items-center gap-2 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+            onClick={handleOpenToDo}
+            title="Create To Do">
+            {/* Using ClipboardDocumentListIcon represented as generic SVG here if import fails, but I will import it properly */}
+            <ClipboardDocumentListIcon className="h-5 w-5" />
+            To Do
+          </button>
+
+          <button
+            className={`rounded-full p-2 transition-colors ${isImportant
+              ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+              }`}
             onClick={handleToggleImportant}
             title={isImportant ? 'Mark as not important' : 'Mark as important'}>
             {isImportant ? (
@@ -346,19 +397,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
             )}
           </button>
           <button
-            className={`rounded-full p-2 transition-colors ${
-              isFlagged
-                ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-            }`}
+            className={`rounded-full p-2 transition-colors ${isFlagged
+              ? 'text-red-500 bg-red-50 hover:bg-red-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+              }`}
             onClick={handleToggleFlagged}
             title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
           </button>
           <button
-            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${
-              isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
-            }`}
+            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
+              }`}
             disabled={!isDirty}
             onClick={handleSave}>
             Save
@@ -446,6 +495,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
           </div>
         </Dialog>
       </Transition>
+
+      <ToDoModal
+        initialTitle={page.title}
+        isOpen={isToDoOpen}
+        onClose={handleCloseToDo}
+        onSave={handleSaveToDo}
+      />
     </div>
   );
 });
