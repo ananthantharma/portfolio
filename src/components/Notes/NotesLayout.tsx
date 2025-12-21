@@ -441,6 +441,7 @@ const NotesLayout: React.FC = React.memo(() => {
       <ToDoListModal
         isOpen={isToDoListOpen}
         onClose={handleCloseToDoList}
+        onNavigate={handleJumpToTask}
       />
 
       <SearchModal
