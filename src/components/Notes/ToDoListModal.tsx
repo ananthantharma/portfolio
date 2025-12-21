@@ -66,6 +66,7 @@ FilterDropdown.displayName = 'FilterDropdown';
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClose, onNavigate }) => {
     const [todos, setTodos] = useState<IToDo[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [sortField, setSortField] = useState<SortField>('dueDate');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
     const [showCompleted, setShowCompleted] = useState(false);
@@ -86,14 +87,18 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
 
     const fetchTodos = async () => {
         setLoading(true);
+        setError(null);
         try {
             const response = await fetch('/api/todos');
             const data = await response.json();
             if (data.success) {
                 setTodos(data.data);
+            } else {
+                setError(data.error || 'Failed to fetch tasks');
             }
         } catch (error) {
             console.error('Error fetching todos:', error);
+            setError('Error connecting to server');
         } finally {
             setLoading(false);
         }
@@ -326,6 +331,16 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                     <div className="flex-1 overflow-y-auto space-y-1 pr-2">
                                         {loading ? (
                                             <div className="text-center py-10 text-gray-400">Loading tasks...</div>
+                                        ) : error ? (
+                                            <div className="text-center py-10 text-red-500 bg-red-50 rounded-lg border border-red-100 mx-4">
+                                                <p className="font-medium">Unable to load tasks</p>
+                                                <p className="text-sm mt-1 mb-3">{error}</p>
+                                                <button
+                                                    onClick={fetchTodos}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                    Try Again
+                                                </button>
+                                            </div>
                                         ) : sortedTodos.length === 0 ? (
                                             <div className="text-center py-10 text-gray-400">No {showCompleted ? 'completed' : 'active'} tasks found.</div>
                                         ) : (
