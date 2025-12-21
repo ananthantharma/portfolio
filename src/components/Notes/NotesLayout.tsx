@@ -1,6 +1,6 @@
 'use client';
 
-import { ClipboardDocumentListIcon, ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+import { ClipboardDocumentListIcon, ExclamationTriangleIcon, FlagIcon, MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -9,6 +9,7 @@ import { INotePage } from '@/models/NotePage';
 import { INoteSection } from '@/models/NoteSection';
 
 import CategoryList from './CategoryList';
+import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
@@ -321,6 +322,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenToDoList = useCallback(() => setIsToDoListOpen(true), []);
   const handleCloseToDoList = useCallback(() => setIsToDoListOpen(false), []);
 
+  // Contact List State
+  const [isContactListOpen, setIsContactListOpen] = useState(false);
+  const handleOpenContactList = useCallback(() => setIsContactListOpen(true), []);
+  const handleCloseContactList = useCallback(() => setIsContactListOpen(false), []);
+
 
   const handleToggleCategoryCollapse = useCallback(
     () => setIsCategoryCollapsed(!isCategoryCollapsed),
@@ -348,6 +354,12 @@ const NotesLayout: React.FC = React.memo(() => {
             onClick={handleOpenToDoList}>
             <ClipboardDocumentListIcon className="h-4 w-4" />
             To Do List
+          </button>
+          <button
+            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-indigo-600 shadow-sm hover:bg-gray-50 border border-indigo-200"
+            onClick={handleOpenContactList}>
+            <UsersIcon className="h-4 w-4" />
+            Contacts
           </button>
           <button
             className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
@@ -442,6 +454,11 @@ const NotesLayout: React.FC = React.memo(() => {
         isOpen={isToDoListOpen}
         onClose={handleCloseToDoList}
         onNavigate={handleJumpToTask}
+      />
+
+      <ContactListModal
+        isOpen={isContactListOpen}
+        onClose={handleCloseContactList}
       />
 
       <SearchModal
