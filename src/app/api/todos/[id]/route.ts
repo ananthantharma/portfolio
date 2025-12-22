@@ -1,16 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {NextResponse} from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
-import {deleteFileFromGridFS, uploadFileToGridFS} from '@/lib/gridfs';
 import ToDo from '@/models/ToDo';
 
-// PUT: Update a To Do item (e.g., mark as completed)
+// PUT: Update a To Do item
 export async function PUT(req: Request, {params}: {params: {id: string}}) {
   try {
     await dbConnect();
     const {id} = params;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any = {};
     const contentType = req.headers.get('content-type') || '';
 
@@ -36,45 +35,39 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
       // Handle attachments
       // 1. New files
       const files = formData.getAll('files') as File[];
-      const newAttachments = [];
-      for (const file of files) {
+      const newAttachments: any[] = [];
+
+      const bufferPromises = files.map(async file => {
         if (file.size > 0) {
-          const fileId = await uploadFileToGridFS(file, file.name, file.type);
-          newAttachments.push({
+          const arrayBuffer = await file.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const base64Data = `data:${file.type};base64,${buffer.toString('base64')}`;
+
+          return {
             name: file.name,
             type: file.type,
-            fileId: fileId,
+            data: base64Data, // Store directly
             size: file.size,
-          });
+          };
         }
-      }
+        return null;
+      });
+
+      const results = await Promise.all(bufferPromises);
+      results.forEach(res => {
+        if (res) newAttachments.push(res);
+      });
 
       // 2. Existing attachments (kept)
-      // The frontend should send back the existing attachments that are NOT deleted.
-      // If the frontend sends 'existingAttachments' as a JSON string
       const existingAttachmentsJson = formData.get('existingAttachments') as string;
       let keptAttachments = [];
       if (existingAttachmentsJson) {
         keptAttachments = JSON.parse(existingAttachmentsJson);
       }
 
-      // We need to identify which files were removed to delete them from GridFS
-      // But first, let's just construct the new array
-      // Optimization: Find the Current ToDo, check diff, delete removed files.
-      const currentToDo = await ToDo.findById(id);
-      if (currentToDo && currentToDo.attachments) {
-        const keptIds = new Set(keptAttachments.map((a: {fileId: string}) => a.fileId));
-        for (const att of currentToDo.attachments) {
-          if (!keptIds.has(att.fileId)) {
-            // This attachment is not in the kept list, delete it
-            await deleteFileFromGridFS(att.fileId).catch(console.error);
-          }
-        }
-      }
-
       data.attachments = [...keptAttachments, ...newAttachments];
     } else {
-      // JSON fallback (e.g. for simple status updates like isCompleted)
+      // JSON fallback
       const body = await req.json();
       data = body;
     }
@@ -98,14 +91,7 @@ export async function DELETE(_req: Request, {params}: {params: {id: string}}) {
     await dbConnect();
     const {id} = params;
 
-    // Find first to delete files
-    const todo = await ToDo.findById(id);
-    if (todo && todo.attachments) {
-      for (const att of todo.attachments) {
-        await deleteFileFromGridFS(att.fileId).catch(console.error);
-      }
-    }
-
+    // Direct delete (attachments are embedded, so no need to clean up external files)
     const deletedToDo = await ToDo.findByIdAndDelete(id);
 
     if (!deletedToDo) {
