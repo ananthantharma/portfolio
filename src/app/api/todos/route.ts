@@ -7,6 +7,8 @@ import dbConnect from '@/lib/dbConnect';
 import { uploadFileToGridFS } from '@/lib/gridfs';
 import ToDo from '@/models/ToDo';
 
+export const runtime = 'nodejs';
+
 // POST: Create a new To Do item
 export async function POST(req: Request) {
     try {

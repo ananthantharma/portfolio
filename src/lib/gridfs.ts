@@ -9,8 +9,14 @@ export async function getGridFSBucket() {
     if (bucket) return bucket;
 
     await dbConnect();
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (mongoose.connection.db as any);
+
+    if (!db) {
+        throw new Error('Database connection not established');
+    }
+
     bucket = new GridFSBucket(db, { bucketName: 'attachments' });
     return bucket;
 }

@@ -120,8 +120,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
 
     const processFiles = (files: FileList) => {
         Array.from(files).forEach(file => {
-            if (file.size > 4.5 * 1024 * 1024) { // 4.5MB Vercel Serverless Limit
-                alert(`File ${file.name} is too large. Vercel restricts uploads to 4.5MB.`);
+            if (file.size > 2 * 1024 * 1024) { // 2MB Safety Limit for Vercel
+                alert(`File ${file.name} is too large. Vercel restriction is strict (max 2MB safely).`);
                 return;
             }
 
@@ -333,7 +333,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
                                             />
                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                <p className="text-xs text-gray-500">Max 4.5MB per file (Server Limit)</p>
+                                                <p className="text-xs text-gray-500">Max 2MB per file (Server Limit)</p>
                                             </div>
                                         </div>
 
