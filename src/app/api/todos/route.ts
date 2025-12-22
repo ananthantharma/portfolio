@@ -1,9 +1,10 @@
+import '@/models/NotePage'; // Ensure NotePage is registered for population
+import '@/models/NoteSection'; // Ensure NoteSection is registered for population
+
 import { NextResponse } from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
 import { uploadFileToGridFS } from '@/lib/gridfs';
-import '@/models/NotePage'; // Ensure NotePage is registered for population
-import '@/models/NoteSection'; // Ensure NoteSection is registered for population
 import ToDo from '@/models/ToDo';
 
 // POST: Create a new To Do item
