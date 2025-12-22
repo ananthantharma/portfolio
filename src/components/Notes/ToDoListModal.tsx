@@ -11,6 +11,7 @@ import {
     PlusIcon,
     TrashIcon,
     XMarkIcon,
+    PaperClipIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
@@ -362,6 +363,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                                                     {todo.category && (
                                                                         <span className={`inline-block px-2 py-0.5 text-[10px] rounded-md ${getCategoryStyle(todo.category)}`}>
                                                                             {todo.category}
+                                                                        </span>
+                                                                    )}
+                                                                    {todo.attachments && todo.attachments.length > 0 && (
+                                                                        <span className="flex items-center gap-0.5 text-gray-400" title={`${todo.attachments.length} attachments`}>
+                                                                            <PaperClipIcon className="h-3.5 w-3.5" />
                                                                         </span>
                                                                     )}
                                                                 </div>

@@ -10,6 +10,11 @@ export interface IToDo extends Document {
     category?: string;
     notes?: string;
     isCompleted: boolean;
+    attachments?: {
+        name: string;
+        type: string;
+        data: string;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -27,6 +32,13 @@ const ToDoSchema = new Schema<IToDo>(
         category: { type: String },
         notes: { type: String },
         isCompleted: { type: Boolean, default: false },
+        attachments: [
+            {
+                name: { type: String, required: true },
+                type: { type: String, required: true },
+                data: { type: String, required: true },
+            }
+        ],
     },
     { timestamps: true },
 );

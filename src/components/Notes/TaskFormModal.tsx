@@ -17,6 +17,7 @@ export interface TaskFormData {
     dueDate: Date;
     category: string;
     notes: string;
+    attachments?: { name: string; type: string; data: string }[];
 }
 
 interface TaskFormModalProps {
@@ -50,6 +51,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
     const [dueDate, setDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<{ name: string; value: string; color: string } | null>(null);
+    const [attachments, setAttachments] = useState<{ name: string; type: string; data: string }[]>([]);
+    const [dragActive, setDragActive] = useState(false);
 
     // Reset state when opening or initialData changes
     useEffect(() => {
@@ -66,6 +69,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
             setSelectedCategory(initCategory);
 
             setNotes(initialData?.notes || '');
+            setAttachments(initialData?.attachments || []);
         }
     }, [isOpen, initialData]);
 
@@ -76,8 +80,59 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
             dueDate: new Date(dueDate),
             category: selectedCategory ? selectedCategory.value : '',
             notes,
+            attachments,
         });
         onClose();
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const processFiles = (files: FileList) => {
+        Array.from(files).forEach(file => {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alert(`File ${file.name} is too large (max 2MB)`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (e.target?.result) {
+                    setAttachments(prev => [...prev, {
+                        name: file.name,
+                        type: file.type,
+                        data: e.target!.result as string
+                    }]);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processFiles(e.dataTransfer.files);
+        }
+    };
+
+    const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            processFiles(e.target.files);
+        }
+    };
+
+    const removeAttachment = (index: number) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
     return (
@@ -238,6 +293,48 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
                                             value={notes}
                                             placeholder="Add details..."
                                         />
+                                    </div>
+
+                                    {/* Attachments - Drag and Drop */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
+                                        <div
+                                            className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-colors ${dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:bg-gray-50'
+                                                }`}
+                                            onDragEnter={handleDrag}
+                                            onDragLeave={handleDrag}
+                                            onDragOver={handleDrag}
+                                            onDrop={handleDrop}
+                                        >
+                                            <input
+                                                type="file"
+                                                multiple
+                                                onChange={handleChangeFile}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                <p className="text-xs text-gray-500">Max 2MB per file</p>
+                                            </div>
+                                        </div>
+
+                                        {/* File List */}
+                                        {attachments.length > 0 && (
+                                            <ul className="mt-2 text-xs text-gray-600 space-y-1">
+                                                {attachments.map((file, idx) => (
+                                                    <li key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200">
+                                                        <span className="truncate max-w-[80%]">{file.name}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeAttachment(idx)}
+                                                            className="text-red-500 hover:text-red-700"
+                                                        >
+                                                            <XMarkIcon className="h-4 w-4" />
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </div>
                                 </div>
 

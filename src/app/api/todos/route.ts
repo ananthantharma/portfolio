@@ -10,9 +10,9 @@ export async function POST(req: Request) {
     try {
         await dbConnect();
         const body = await req.json();
-        const { sourcePageId, title, priority, dueDate, category, notes } = body;
+        const { sourcePageId, title, priority, dueDate, category, notes, attachments } = body;
 
-        console.log('Creating To Do:', { title, priority, sourcePageId: sourcePageId || 'None' });
+        console.log('Creating To Do:', { title, priority, sourcePageId: sourcePageId || 'None', attachmentsCount: attachments?.length || 0 });
 
         const newToDo = await ToDo.create({
             sourcePageId: sourcePageId || undefined,
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
             dueDate,
             category,
             notes,
+            attachments,
         });
 
         console.log('To Do Created:', newToDo._id);
