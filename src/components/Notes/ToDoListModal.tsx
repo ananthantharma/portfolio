@@ -174,17 +174,25 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
 
             if (editingTask) {
                 // Update existing
-                await fetch(`/api/todos/${editingTask._id}`, {
+                const res = await fetch(`/api/todos/${editingTask._id}`, {
                     method: 'PUT',
                     // Content-Type header should NOT be set manually for FormData, browser does it with boundary
                     body: formData,
                 });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to update task');
+                }
             } else {
                 // Create new standalone
-                await fetch('/api/todos', {
+                const res = await fetch('/api/todos', {
                     method: 'POST',
                     body: formData,
                 });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to create task');
+                }
             }
             setIsTaskFormOpen(false);
             setEditingTask(null);
