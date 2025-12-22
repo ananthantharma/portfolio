@@ -13,7 +13,8 @@ export interface IToDo extends Document {
     attachments?: {
         name: string;
         type: string;
-        data: string;
+        fileId: string;
+        size: number;
     }[];
     createdAt: Date;
     updatedAt: Date;
@@ -36,7 +37,8 @@ const ToDoSchema = new Schema<IToDo>(
             {
                 name: { type: String, required: true },
                 type: { type: String, required: true },
-                data: { type: String, required: true },
+                fileId: { type: String, required: true },
+                size: { type: Number, required: true },
             }
         ],
     },

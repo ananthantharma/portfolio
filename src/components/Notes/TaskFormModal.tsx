@@ -17,7 +17,8 @@ export interface TaskFormData {
     dueDate: Date;
     category: string;
     notes: string;
-    attachments?: { name: string; type: string; data: string }[];
+    attachments?: { name: string; type: string; fileId?: string; size: number }[];
+    newFiles?: File[]; // For carrying new uploads to the parent
 }
 
 interface TaskFormModalProps {
@@ -51,7 +52,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
     const [dueDate, setDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<{ name: string; value: string; color: string } | null>(null);
-    const [attachments, setAttachments] = useState<{ name: string; type: string; data: string }[]>([]);
+    const [attachments, setAttachments] = useState<{ name: string; type: string; fileId?: string; size: number; file?: File }[]>([]);
     const [dragActive, setDragActive] = useState(false);
 
     // Reset state when opening or initialData changes
@@ -69,18 +70,30 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
             setSelectedCategory(initCategory);
 
             setNotes(initialData?.notes || '');
+            // @ts-ignore - casting for compatibility with new structure
             setAttachments(initialData?.attachments || []);
         }
     }, [isOpen, initialData]);
 
     const handleSave = () => {
+        // We need to return a special object that signals to the parent (ToDoListModal) 
+        // that this is a FormData submission, or handle the submission directly here?
+        // The parent `onSave` expects `TaskFormData`.
+        // We will modify `onSave` to accept `FormData` OR `TaskFormData` in the parent,
+        // OR we just construct the object here and let the parent convert to FormData if needed.
+        // BETTER: Modifying the parent `handleSaveTask` to handle the conversion is complex because it receives the object.
+        // EASIER: Pass a "submission" object which can be raw data or FormData.
+        // Actually, let's keep `TaskFormData` as the DTO but add a `files` array for *new* files.
+        // The parent will construct the FormData found in `onSave`.
+
         onSave({
             title,
             priority: priority.value as 'High' | 'Medium' | 'Low' | 'None',
             dueDate: new Date(dueDate),
             category: selectedCategory ? selectedCategory.value : '',
             notes,
-            attachments,
+            attachments: attachments.filter(a => !a.file), // Keep existing ones (no file obj)
+            newFiles: attachments.map(a => a.file).filter(f => f !== undefined) as File[]
         });
         onClose();
     };
@@ -97,22 +110,18 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
 
     const processFiles = (files: FileList) => {
         Array.from(files).forEach(file => {
-            if (file.size > 2 * 1024 * 1024) { // 2MB limit
-                alert(`File ${file.name} is too large (max 2MB)`);
+            if (file.size > 20 * 1024 * 1024) { // 20MB limit
+                alert(`File ${file.name} is too large (max 20MB)`);
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (e.target?.result) {
-                    setAttachments(prev => [...prev, {
-                        name: file.name,
-                        type: file.type,
-                        data: e.target!.result as string
-                    }]);
-                }
-            };
-            reader.readAsDataURL(file);
+            // For new files, we just store the File object.
+            setAttachments(prev => [...prev, {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                file: file
+            }]);
         });
     };
 

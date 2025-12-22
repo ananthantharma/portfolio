@@ -146,19 +146,44 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
 
     const handleSaveTask = async (data: TaskFormData) => {
         try {
+            const formData = new FormData();
+            formData.append('title', data.title);
+            formData.append('priority', data.priority);
+            formData.append('dueDate', data.dueDate.toISOString());
+            formData.append('category', data.category);
+            formData.append('notes', data.notes);
+
+            // sourcePageId might be needing handling if we want to support it from modal (currently it comes from context/props if at all)
+            // But let's check if we have it in data? No, it's not in TaskFormData, it's injected by parent of modal usually or via routing.
+            // For now, let's assume we don't change sourcePageId via this modal easily or relying on existing logic?
+            // Wait, existing create relied on body.sourcePageId. 
+            // The modal doesn't seem to set sourcePageId in `data`. It is likely passed when creating?
+            // Ah, `handleCreateStandalone` doesn't pass it.
+
+            // New Files
+            if (data.newFiles) {
+                data.newFiles.forEach(file => {
+                    formData.append('files', file);
+                });
+            }
+
+            // Existing Attachments (for PUT)
+            if (editingTask && data.attachments) {
+                formData.append('existingAttachments', JSON.stringify(data.attachments));
+            }
+
             if (editingTask) {
                 // Update existing
                 await fetch(`/api/todos/${editingTask._id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    // Content-Type header should NOT be set manually for FormData, browser does it with boundary
+                    body: formData,
                 });
             } else {
                 // Create new standalone
                 await fetch('/api/todos', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: formData,
                 });
             }
             setIsTaskFormOpen(false);
@@ -366,9 +391,21 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                                                         </span>
                                                                     )}
                                                                     {todo.attachments && todo.attachments.length > 0 && (
-                                                                        <span className="flex items-center gap-0.5 text-gray-400" title={`${todo.attachments.length} attachments`}>
-                                                                            <PaperClipIcon className="h-3.5 w-3.5" />
-                                                                        </span>
+                                                                        <div className="flex items-center gap-1">
+                                                                            {todo.attachments.map((att, idx) => (
+                                                                                <a
+                                                                                    key={idx}
+                                                                                    href={`/api/attachments/${att.fileId}`}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="flex items-center gap-0.5 text-gray-400 hover:text-indigo-600 transition-colors"
+                                                                                    title={`Download ${att.name} (${(att.size / 1024 / 1024).toFixed(2)} MB)`}
+                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                >
+                                                                                    <PaperClipIcon className="h-3.5 w-3.5" />
+                                                                                </a>
+                                                                            ))}
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-3 mt-1 text-xs">
