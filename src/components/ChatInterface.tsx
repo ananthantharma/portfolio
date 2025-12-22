@@ -1,8 +1,8 @@
-import {Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import {getChatResponse} from '../lib/gemini';
+import { getChatResponse } from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -43,7 +43,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
+export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -75,7 +75,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -151,7 +151,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, {role: 'user', parts: userMessage} as Message];
+      const newMessages = [...session.messages, { role: 'user', parts: userMessage } as Message];
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
         session.messages.length === 0 && session.title === 'New Chat'
@@ -176,7 +176,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, {role: 'model', parts: response}],
+        messages: [...s.messages, { role: 'model', parts: response }],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -221,11 +221,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
-                currentSessionId === session.id
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
+                ? 'bg-zinc-800 text-white'
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
               <div className="flex-shrink-0">
@@ -284,9 +283,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${
-                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-              }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+                }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -319,6 +317,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-4">
               <Bot className="w-12 h-12 opacity-20" />
               <p className="text-lg">Welcome Ananthan. What can I do for you today?</p>
+              <p className="text-sm text-gray-500">--------------------------</p>
+              <p className="text-3xl text-gray-600 font-medium">&lt;------I added chat log Marco</p>
+              <p className="text-2xl text-gray-500 font-medium">You can go on "https://platform.openai.com/settings/organization/api-keys" to get OpenAI API Key</p>
+              <p className="text-2xl text-gray-500 font-medium">then you can use the key in "Open" tab at the top. It uses OpenAI API Key to give you reseult from Open Ai instead of Google AI</p>
             </div>
           )}
 
@@ -326,9 +328,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                  }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                    }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -337,11 +338,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-tr-none'
-                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                  }`}>
+                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                    }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     <ReactMarkdown>{msg.parts}</ReactMarkdown>
                   </div>
