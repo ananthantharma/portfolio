@@ -1,8 +1,8 @@
-import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import {Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User} from 'lucide-react';
+import React, {useEffect, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { getChatResponse } from '../lib/gemini';
+import {getChatResponse} from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -43,16 +43,18 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
+export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   // Session State
-  const [sessions, setSessions] = useState<ChatSession[]>([{
-    id: Date.now().toString(),
-    title: 'New Chat',
-    messages: [],
-    systemInstruction: undefined,
-    activeGem: null,
-    createdAt: Date.now(),
-  }]);
+  const [sessions, setSessions] = useState<ChatSession[]>([
+    {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      messages: [],
+      systemInstruction: undefined,
+      activeGem: null,
+      createdAt: Date.now(),
+    },
+  ]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // UI State
@@ -73,7 +75,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       systemInstruction: undefined,
       activeGem: null,
       createdAt: Date.now(),
-      ...overrides
+      ...overrides,
     };
     setSessions(prev => [newSession, ...prev]);
     setCurrentSessionId(newSession.id);
@@ -105,7 +107,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
   const updateCurrentSession = (updater: (session: ChatSession) => ChatSession) => {
     if (!currentSessionId) return;
-    setSessions(prev => prev.map(s => s.id === currentSessionId ? updater(s) : s));
+    setSessions(prev => prev.map(s => (s.id === currentSessionId ? updater(s) : s)));
   };
 
   const handleNewChat = () => {
@@ -117,7 +119,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
     createNewSession({
       title: 'Email Refiner',
       systemInstruction: EMAIL_PROMPT,
-      activeGem: 'Email Refiner'
+      activeGem: 'Email Refiner',
     });
     setInput('');
     // Focus the textarea
@@ -149,16 +151,17 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, { role: 'user', parts: userMessage } as Message];
+      const newMessages = [...session.messages, {role: 'user', parts: userMessage} as Message];
       // Update title if it's the first message and still named "New Chat"
-      const newTitle = session.messages.length === 0 && session.title === 'New Chat'
-        ? userMessage.slice(0, 30) + (userMessage.length > 30 ? '...' : '')
-        : session.title;
+      const newTitle =
+        session.messages.length === 0 && session.title === 'New Chat'
+          ? userMessage.slice(0, 30) + (userMessage.length > 30 ? '...' : '')
+          : session.title;
 
       return {
         ...session,
         title: newTitle,
-        messages: newMessages
+        messages: newMessages,
       };
     });
 
@@ -173,7 +176,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, { role: 'model', parts: response }]
+        messages: [...s.messages, {role: 'model', parts: response}],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -186,7 +189,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             role: 'model',
             parts: `Error: ${errorMessage}. Please check your API key and try again.`,
           },
-        ]
+        ],
       }));
     } finally {
       setIsLoading(false);
@@ -209,8 +212,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         <div className="p-4 border-b border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
-            onClick={handleNewChat}
-          >
+            onClick={handleNewChat}>
             <PlusCircle className="w-4 h-4" />
             New Chat
           </button>
@@ -219,26 +221,23 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
+                currentSessionId === session.id
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              }`}
               key={session.id}
-              onClick={() => setCurrentSessionId(session.id)}
-            >
+              onClick={() => setCurrentSessionId(session.id)}>
               <div className="flex-shrink-0">
                 {/* Using generic icon for session list */}
                 <Bot className="w-4 h-4" />
               </div>
-              <span className="truncate flex-1 text-left">
-                {session.title}
-              </span>
+              <span className="truncate flex-1 text-left">{session.title}</span>
               {sessions.length > 1 && (
                 <button
                   className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-opacity"
-                  onClick={(e) => deleteSession(e, session.id)}
-                  title="Delete chat"
-                >
+                  onClick={e => deleteSession(e, session.id)}
+                  title="Delete chat">
                   <Trash2 className="w-3 h-3" />
                 </button>
               )}
@@ -249,8 +248,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         <div className="p-4 border-t border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-red-400 transition-colors text-sm"
-            onClick={onClearKey}
-          >
+            onClick={onClearKey}>
             <Trash2 className="w-4 h-4" />
             Clear API Key
           </button>
@@ -286,8 +284,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-                }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${
+                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -327,16 +326,22 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                    }`}>
-                  {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                  }`}>
+                  {msg.role === 'user' ? (
+                    <User className="w-5 h-5 text-white" />
+                  ) : (
+                    <Bot className="w-5 h-5 text-white" />
+                  )}
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                    }`}>
+                  className={`px-4 py-3 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     <ReactMarkdown>{msg.parts}</ReactMarkdown>
                   </div>

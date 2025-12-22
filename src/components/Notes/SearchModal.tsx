@@ -1,8 +1,8 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useState } from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {MagnifyingGlassIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, useEffect, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 interface SearchModalProps {
   fetchItems: (query: string, searchPageTitlesOnly: boolean, searchSectionNamesOnly: boolean) => Promise<INotePage[]>;
@@ -11,7 +11,7 @@ interface SearchModalProps {
   onSelectTask: (task: INotePage) => void;
 }
 
-const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen, onClose, onSelectTask }) => {
+const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen, onClose, onSelectTask}) => {
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<INotePage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -98,7 +98,9 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                         onChange={e => setSearchPageTitlesOnly(e.target.checked)}
                         type="checkbox"
                       />
-                      <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchPageTitlesOnly">
+                      <label
+                        className="text-sm text-gray-500 select-none cursor-pointer"
+                        htmlFor="searchPageTitlesOnly">
                         Search Page Titles Only
                       </label>
                     </div>
@@ -110,7 +112,9 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                         onChange={e => setSearchSectionNamesOnly(e.target.checked)}
                         type="checkbox"
                       />
-                      <label className="text-sm text-gray-500 select-none cursor-pointer" htmlFor="searchSectionNamesOnly">
+                      <label
+                        className="text-sm text-gray-500 select-none cursor-pointer"
+                        htmlFor="searchSectionNamesOnly">
                         Search Section Names Only
                       </label>
                     </div>
@@ -135,8 +139,8 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                             <div>
                               <p className="font-medium text-gray-900">{item.title}</p>
                               <p className="text-xs text-gray-500">
-                                {(item.sectionId as unknown as { name: string })?.name
-                                  ? `${(item.sectionId as unknown as { name: string }).name}`
+                                {(item.sectionId as unknown as {name: string})?.name
+                                  ? `${(item.sectionId as unknown as {name: string}).name}`
                                   : 'Unknown Section'}
                               </p>
                             </div>

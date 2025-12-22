@@ -1,9 +1,21 @@
-import { Bot, FilePenLine, Loader2, MessageSquare, Paperclip, Plus, PlusCircle, Send, Trash2, User, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import {
+  Bot,
+  FilePenLine,
+  Loader2,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  PlusCircle,
+  Send,
+  Trash2,
+  User,
+  X,
+} from 'lucide-react';
+import React, {useEffect, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { getOpenAIChatResponse, MessageContent } from '../lib/openai';
+import {getOpenAIChatResponse, MessageContent} from '../lib/openai';
 
 const plugins = [remarkGfm];
 
@@ -46,16 +58,18 @@ interface OpenAIChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceProps) {
+export function OpenAIChatInterface({apiKey, onClearKey}: OpenAIChatInterfaceProps) {
   // Session State
-  const [sessions, setSessions] = useState<ChatSession[]>([{
-    id: Date.now().toString(),
-    title: 'New Chat',
-    messages: [],
-    systemInstruction: undefined,
-    activeGem: null,
-    createdAt: Date.now(),
-  }]);
+  const [sessions, setSessions] = useState<ChatSession[]>([
+    {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      messages: [],
+      systemInstruction: undefined,
+      activeGem: null,
+      createdAt: Date.now(),
+    },
+  ]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // Initialize currentSessionId
@@ -78,7 +92,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
@@ -102,7 +116,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       systemInstruction: undefined,
       activeGem: null,
       createdAt: Date.now(),
-      ...overrides
+      ...overrides,
     };
     setSessions(prev => [newSession, ...prev]);
     setCurrentSessionId(newSession.id);
@@ -110,7 +124,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
   const updateCurrentSession = (updater: (session: ChatSession) => ChatSession) => {
     if (!currentSessionId) return;
-    setSessions(prev => prev.map(s => s.id === currentSessionId ? updater(s) : s));
+    setSessions(prev => prev.map(s => (s.id === currentSessionId ? updater(s) : s)));
   };
 
   const handleNewChat = () => {
@@ -123,7 +137,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     createNewSession({
       title: 'Email Refiner',
       systemInstruction: EMAIL_PROMPT,
-      activeGem: 'Email Refiner'
+      activeGem: 'Email Refiner',
     });
     setInput('');
     setSelectedImages([]);
@@ -198,23 +212,24 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     let uiContent: MessageContent = userMessageText;
     if (currentImages.length > 0) {
       uiContent = [
-        { type: 'text', text: userMessageText },
-        ...currentImages.map(img => ({ type: 'image_url' as const, image_url: { url: img } }))
+        {type: 'text', text: userMessageText},
+        ...currentImages.map(img => ({type: 'image_url' as const, image_url: {url: img}})),
       ];
     }
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, { role: 'user', content: uiContent } as Message];
+      const newMessages = [...session.messages, {role: 'user', content: uiContent} as Message];
       // Update title if it's the first message and still named "New Chat"
-      const newTitle = session.messages.length === 0 && session.title === 'New Chat'
-        ? (userMessageText.slice(0, 30) + (userMessageText.length > 30 ? '...' : '') || 'Image Chat')
-        : session.title;
+      const newTitle =
+        session.messages.length === 0 && session.title === 'New Chat'
+          ? userMessageText.slice(0, 30) + (userMessageText.length > 30 ? '...' : '') || 'Image Chat'
+          : session.title;
 
       return {
         ...session,
         title: newTitle,
-        messages: newMessages
+        messages: newMessages,
       };
     });
 
@@ -225,11 +240,18 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       const history = session ? session.messages : [];
       const systemInstruction = session?.systemInstruction;
 
-      const response = await getOpenAIChatResponse(apiKey, history, userMessageText, selectedModel, systemInstruction, currentImages);
+      const response = await getOpenAIChatResponse(
+        apiKey,
+        history,
+        userMessageText,
+        selectedModel,
+        systemInstruction,
+        currentImages,
+      );
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, { role: 'assistant', content: response }]
+        messages: [...s.messages, {role: 'assistant', content: response}],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -240,9 +262,9 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
           ...s.messages,
           {
             role: 'assistant',
-            content: `Error: ${errorMessage}. Please check your API key and try again.`
-          }
-        ]
+            content: `Error: ${errorMessage}. Please check your API key and try again.`,
+          },
+        ],
       }));
     } finally {
       setIsLoading(false);
@@ -274,7 +296,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
             );
           }
           if (part.type === 'text') {
-            return <ReactMarkdown key={index} remarkPlugins={plugins}>{part.text}</ReactMarkdown>;
+            return (
+              <ReactMarkdown key={index} remarkPlugins={plugins}>
+                {part.text}
+              </ReactMarkdown>
+            );
           }
           return null;
         })}
@@ -291,8 +317,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
         <div className="p-4 border-b border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
-            onClick={handleNewChat}
-          >
+            onClick={handleNewChat}>
             <Plus className="w-4 h-4" />
             New Chat
           </button>
@@ -301,23 +326,20 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
+                currentSessionId === session.id
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              }`}
               key={session.id}
-              onClick={() => setCurrentSessionId(session.id)}
-            >
+              onClick={() => setCurrentSessionId(session.id)}>
               <MessageSquare className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate flex-1 text-left">
-                {session.title}
-              </span>
+              <span className="truncate flex-1 text-left">{session.title}</span>
               {sessions.length > 1 && (
                 <button
                   className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-opacity"
-                  onClick={(e) => deleteSession(e, session.id)}
-                  title="Delete chat"
-                >
+                  onClick={e => deleteSession(e, session.id)}
+                  title="Delete chat">
                   <Trash2 className="w-3 h-3" />
                 </button>
               )}
@@ -328,8 +350,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
         <div className="p-4 border-t border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-red-400 transition-colors text-sm"
-            onClick={onClearKey}
-          >
+            onClick={onClearKey}>
             <Trash2 className="w-4 h-4" />
             Clear API Key
           </button>
@@ -362,8 +383,9 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-                }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${
+                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -394,16 +416,22 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
-                    }`}>
-                  {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
+                  }`}>
+                  {msg.role === 'user' ? (
+                    <User className="w-5 h-5 text-white" />
+                  ) : (
+                    <Bot className="w-5 h-5 text-white" />
+                  )}
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                    }`}>
+                  className={`px-4 py-3 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {renderMessageContent(msg.content)}
                   </div>
@@ -432,16 +460,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
               <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
                 {selectedImages.map((img, idx) => (
                   <div className="relative group flex-shrink-0" key={idx}>
-                    <img
-                      alt="Preview"
-                      className="h-16 w-16 object-cover rounded-lg border border-zinc-700"
-                      src={img}
-                    />
+                    <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
                     <button
                       className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => removeImage(idx)}
-                      type="button"
-                    >
+                      type="button">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -463,8 +486,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
                 className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
                 onClick={() => fileInputRef.current?.click()}
                 title="Upload Image"
-                type="button"
-              >
+                type="button">
                 <Paperclip className="w-5 h-5" />
               </button>
 
