@@ -10,6 +10,7 @@ import ToDo from '@/models/ToDo';
 // POST: Create a new To Do item
 export async function POST(req: Request) {
     try {
+        console.log('POST /api/todos hit');
         await dbConnect();
 
         let data;
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
 
         if (contentType.includes('multipart/form-data')) {
             const formData = await req.formData();
+            console.log('FormData received. Keys:', Array.from(formData.keys()));
             const title = formData.get('title') as string;
             const priority = formData.get('priority') as string;
             const dueDate = formData.get('dueDate') as string;
@@ -29,6 +31,7 @@ export async function POST(req: Request) {
             const attachments = [];
 
             for (const file of files) {
+                console.log(`Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`);
                 if (file.size > 0) {
                     const fileId = await uploadFileToGridFS(file, file.name, file.type);
                     attachments.push({

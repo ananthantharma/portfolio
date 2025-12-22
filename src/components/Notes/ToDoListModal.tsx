@@ -200,6 +200,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
             fetchTodos();
         } catch (error) {
             console.error('Error saving task:', error);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            alert(`Failed to save task: ${(error as any).message}`);
         }
     };
 
