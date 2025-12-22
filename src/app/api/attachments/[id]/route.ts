@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { getFileStream } from '@/lib/gridfs';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {

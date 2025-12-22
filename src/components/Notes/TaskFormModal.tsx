@@ -70,8 +70,18 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(({ isOpen, onClos
             setSelectedCategory(initCategory);
 
             setNotes(initialData?.notes || '');
-            // @ts-ignore - casting for compatibility with new structure
-            setAttachments(initialData?.attachments || []);
+            if (initialData?.attachments) {
+                // Ensure attachments are correctly typed when loaded
+                const loadedAttachments = initialData.attachments.map(att => ({
+                    ...att,
+                    // If initial data is missing fields (e.g. older tasks), provide defaults or handle gracefully
+                    fileId: att.fileId,
+                    size: att.size || 0
+                }));
+                setAttachments(loadedAttachments);
+            } else {
+                setAttachments([]);
+            }
         }
     }, [isOpen, initialData]);
 

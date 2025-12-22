@@ -10,6 +10,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         await dbConnect();
         const { id } = params;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any = {};
         const contentType = req.headers.get('content-type') || '';
 
@@ -62,7 +63,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             // Optimization: Find the Current ToDo, check diff, delete removed files.
             const currentToDo = await ToDo.findById(id);
             if (currentToDo && currentToDo.attachments) {
-                const keptIds = new Set(keptAttachments.map((a: any) => a.fileId));
+                const keptIds = new Set(keptAttachments.map((a: { fileId: string }) => a.fileId));
                 for (const att of currentToDo.attachments) {
                     if (!keptIds.has(att.fileId)) {
                         // This attachment is not in the kept list, delete it

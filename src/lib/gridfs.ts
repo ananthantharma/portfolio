@@ -1,5 +1,6 @@
-import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
+import mongoose from 'mongoose';
+
 import dbConnect from './dbConnect';
 
 let bucket: GridFSBucket;
