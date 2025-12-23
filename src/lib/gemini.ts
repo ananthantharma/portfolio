@@ -53,12 +53,18 @@ export const getAvailableModels = async (apiKey: string): Promise<GeminiModel[]>
 
     if (!data.models) return [];
 
+    interface GoogleModel {
+      name: string;
+      displayName: string;
+      supportedGenerationMethods?: string[];
+    }
+
     // Filter for models that support 'generateContent'
-    const chatModels = data.models.filter((model: any) =>
+    const chatModels = data.models.filter((model: GoogleModel) =>
       model.supportedGenerationMethods && model.supportedGenerationMethods.includes("generateContent")
     );
 
-    return chatModels.map((m: any) => ({
+    return chatModels.map((m: GoogleModel) => ({
       id: m.name.replace('models/', ''),
       displayName: m.displayName
     }));

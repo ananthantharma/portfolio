@@ -2,7 +2,7 @@ import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucid
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { getChatResponse, getAvailableModels, GeminiModel } from '../lib/gemini';
+import { getAvailableModels, getChatResponse } from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
