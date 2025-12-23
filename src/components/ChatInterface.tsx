@@ -2,7 +2,7 @@ import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucid
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import { getChatResponse } from '../lib/gemini';
+import { getChatResponse, getAvailableModels, GeminiModel } from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -43,6 +43,19 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
+const DEFAULT_MODELS = [
+  { id: 'gemini-3.0-pro-exp', label: 'Gemini 3.0 Pro' },
+  { id: 'gemini-3.0-flash-exp', label: 'Gemini 3.0 Flash' },
+  { id: 'gemini-2.5-pro-exp', label: 'Gemini 2.5 Pro' },
+  { id: 'gemini-2.5-flash-exp', label: 'Gemini 2.5 Flash' },
+  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+  { id: 'gemini-2.0-pro-exp', label: 'Gemini 2.0 Pro' },
+  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+  { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash-Lite' },
+  { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+];
+
 export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
@@ -60,10 +73,34 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // UI State
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-exp');
+  const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>(DEFAULT_MODELS);
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    async function fetchModels() {
+      if (apiKey) {
+        const models = await getAvailableModels(apiKey);
+        if (models.length > 0) {
+          // Merge dynamic models with default models, ensuring no duplicates by ID
+          const dynamicModels = models.map(m => ({ id: m.id, label: m.displayName }));
+          const allModels = [...DEFAULT_MODELS];
+
+          dynamicModels.forEach(dm => {
+            if (!allModels.find(m => m.id === dm.id)) {
+              allModels.push(dm);
+            }
+          });
+
+          setAvailableModels(allModels);
+        }
+      }
+    }
+    fetchModels();
+  }, [apiKey]);
 
   // Initialize currentSessionId
   useEffect(() => {
@@ -266,13 +303,11 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               className="bg-zinc-700 text-zinc-100 text-sm rounded-lg px-3 py-1.5 border border-zinc-600 focus:ring-2 focus:ring-blue-500 outline-none"
               onChange={e => setSelectedModel(e.target.value)}
               value={selectedModel}>
-              <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
-              <option value="gemini-3-pro-image-preview">Gemini 3 Pro Image Preview</option>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-              <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+              {availableModels.map(model => (
+                <option key={model.id} value={model.id}>
+                  {model.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-3">
@@ -318,9 +353,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               <Bot className="w-12 h-12 opacity-20" />
               <p className="text-lg">Welcome Ananthan. What can I do for you today?</p>
               <p className="text-sm text-gray-500">--------------------------</p>
-              <p className="text-3xl text-gray-600 font-medium">&lt;------I added chat log Marco</p>
-              <p className="text-2xl text-gray-500 font-medium">You can go on "https://platform.openai.com/settings/organization/api-keys" to get OpenAI API Key</p>
-              <p className="text-2xl text-gray-500 font-medium">then you can use the key in "Open" tab at the top. It uses OpenAI API Key to give you reseult from Open Ai instead of Google AI</p>
+
             </div>
           )}
 
