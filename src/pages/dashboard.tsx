@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import Header from '../components/Sections/Header';
+import PasswordModal from '../components/Vault/PasswordModal';
 import { VaultDashboard } from '../components/Vault/VaultDashboard';
 import { PasswordEntry } from '../data/dataDef';
 
@@ -11,8 +13,8 @@ const Dashboard = React.memo(() => {
   const router = useRouter();
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newPassword, setNewPassword] = useState({ title: '', site: '', username: '', password: '', notes: '' });
-  const [isAdding, setIsAdding] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<PasswordEntry | null>(null);
 
   const fetchPasswords = useCallback(async () => {
     try {
@@ -36,23 +38,37 @@ const Dashboard = React.memo(() => {
     }
   }, [status, router, fetchPasswords]);
 
-  const handleAddPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/passwords', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPassword),
-      });
-      if (res.ok) {
-        setNewPassword({ title: '', site: '', username: '', password: '', notes: '' });
-        setIsAdding(false);
-        fetchPasswords();
+  const handleSave = useCallback(
+    async (data: Omit<PasswordEntry, '_id'>) => {
+      try {
+        let res;
+        if (editingItem) {
+          // Update existing
+          res = await fetch(`/api/passwords/${editingItem._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+        } else {
+          // Create new
+          res = await fetch('/api/passwords', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+        }
+
+        if (res.ok) {
+          fetchPasswords();
+          setIsModalOpen(false);
+          setEditingItem(null);
+        }
+      } catch (error) {
+        console.error('Failed to save password', error);
       }
-    } catch (error) {
-      console.error('Failed to add password', error);
-    }
-  };
+    },
+    [editingItem, fetchPasswords],
+  );
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -71,30 +87,29 @@ const Dashboard = React.memo(() => {
     [fetchPasswords],
   );
 
-  const handleUpdate = useCallback(
-    async (id: string, data: Partial<PasswordEntry>) => {
-      try {
-        const res = await fetch(`/api/passwords/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        if (res.ok) {
-          fetchPasswords();
-        }
-      } catch (error) {
-        console.error('Failed to update password', error);
+  const handleEdit = useCallback(
+    (id: string) => {
+      const item = passwords.find(p => p._id === id);
+      if (item) {
+        setEditingItem(item);
+        setIsModalOpen(true);
       }
     },
-    [fetchPasswords],
+    [passwords],
   );
 
   const handleAddClick = useCallback(() => {
-    setIsAdding(true);
+    setEditingItem(null);
+    setIsModalOpen(true);
   }, []);
 
   const handleSignOut = useCallback(() => {
     signOut();
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setEditingItem(null);
   }, []);
 
   if (status === 'loading' || loading) {
@@ -110,96 +125,26 @@ const Dashboard = React.memo(() => {
       <Head>
         <title>Vault - Secure Password Manager</title>
       </Head>
-      <VaultDashboard
-        onAdd={handleAddClick}
-        onDelete={handleDelete}
-        onSignOut={handleSignOut}
-        onUpdate={handleUpdate}
-        passwords={passwords}
-        userEmail={session.user?.email}
+      <Header />
+      {/* Adjust container to account for fixed header (approx 64px - 80px) */}
+      <div className="pt-20 h-screen overflow-hidden bg-[#121212]">
+        <VaultDashboard
+          onAdd={handleAddClick}
+          onDelete={handleDelete}
+          onSignOut={handleSignOut}
+          onUpdate={handleEdit}
+          passwords={passwords}
+          userEmail={session.user?.email}
+        />
+      </div>
+
+      <PasswordModal
+        initialData={editingItem || {}}
+        isOpen={isModalOpen}
+        mode={editingItem ? 'edit' : 'add'}
+        onClose={handleCloseModal}
+        onSave={handleSave}
       />
-
-      {isAdding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <form
-            className="w-full max-w-2xl rounded-2xl bg-[#1E1E1E] p-8 shadow-2xl border border-zinc-800"
-            onSubmit={handleAddPassword}>
-            <h3 className="mb-6 text-2xl font-bold text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white text-lg">
-                +
-              </span>
-              Add New Item
-            </h3>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Title</label>
-                <input
-                  className="w-full rounded-xl bg-zinc-900/50 p-3 text-white border border-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                  onChange={e => setNewPassword({ ...newPassword, title: e.target.value })}
-                  placeholder="e.g. Netflix"
-                  required
-                  type="text"
-                  value={newPassword.title}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Website URL</label>
-                <input
-                  className="w-full rounded-xl bg-zinc-900/50 p-3 text-white border border-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                  onChange={e => setNewPassword({ ...newPassword, site: e.target.value })}
-                  placeholder="https://netflix.com"
-                  type="text"
-                  value={newPassword.site}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Username / Email</label>
-                <input
-                  className="w-full rounded-xl bg-zinc-900/50 p-3 text-white border border-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                  onChange={e => setNewPassword({ ...newPassword, username: e.target.value })}
-                  placeholder="user@example.com"
-                  type="text"
-                  value={newPassword.username}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Password</label>
-                <input
-                  className="w-full rounded-xl bg-zinc-900/50 p-3 text-white border border-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                  onChange={e => setNewPassword({ ...newPassword, password: e.target.value })}
-                  placeholder="********"
-                  type="text"
-                  value={newPassword.password}
-                />
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Notes</label>
-                <textarea
-                  className="w-full rounded-xl bg-zinc-900/50 p-3 text-white border border-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition-all"
-                  onChange={e => setNewPassword({ ...newPassword, notes: e.target.value })}
-                  placeholder="Additional notes..."
-                  rows={3}
-                  value={newPassword.notes}
-                />
-              </div>
-            </div>
-            <div className="mt-8 flex justify-end gap-3 border-t border-zinc-800 pt-6">
-              <button
-                className="rounded-lg px-5 py-2.5 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors font-medium"
-                onClick={() => setIsAdding(false)}
-                type="button">
-                Cancel
-              </button>
-              <button
-                className="rounded-lg bg-orange-500 px-6 py-2.5 font-bold text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all hover:scale-105"
-                type="submit">
-                Save Item
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </>
   );
 });
