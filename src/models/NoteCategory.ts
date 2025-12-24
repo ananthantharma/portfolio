@@ -1,9 +1,10 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteCategory extends Document {
   name: string;
   color?: string;
   icon?: string;
+  image?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,8 +21,12 @@ const NoteCategorySchema: Schema = new Schema(
       default: '#000000', // Default to black/transparent equivalent
     },
     icon: {
-      type: String,
+      type: String, // e.g. "Folder", "Work"
       default: 'Folder', // Default icon
+    },
+    image: {
+      type: String, // Brandfetch domain (e.g. "google.com")
+      default: null,
     },
     order: {
       type: Number,

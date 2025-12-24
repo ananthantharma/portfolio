@@ -136,7 +136,6 @@ import {
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-
 export const ICON_options = {
     Activity,
     AlertCircle,
@@ -247,7 +246,6 @@ export const ICON_options = {
     ThumbsDown,
     ThumbsUp,
     ToggleLeft,
-
     Trash,
     Trash2,
     TrendingUp,
@@ -276,13 +274,19 @@ export const ICON_options = {
 };
 
 interface IconPickerProps {
-    onSelectIcon: (iconName: string) => void;
+    onSelectIcon: (iconName: string, image?: string | null) => void;
     selectedIcon: string;
+    selectedImage?: string | null;
 }
 
-export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon, selectedIcon }) => {
+export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon, selectedIcon, selectedImage }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState<'icons' | 'brand'>('icons');
+
+    // Brandfetch State
+    const [brandDomain, setBrandDomain] = useState(selectedImage || '');
+    const [previewImage, setPreviewImage] = useState<string | null>(selectedImage || null);
 
     const filteredIcons = useMemo(() => {
         return Object.keys(ICON_options).filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -290,45 +294,131 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
 
     const SelectedIconComponent = ICON_options[selectedIcon as keyof typeof ICON_options] || Folder;
 
+    const handleBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const domain = e.target.value;
+        setBrandDomain(domain);
+        if (domain.includes('.')) {
+            setPreviewImage(domain);
+        } else {
+            setPreviewImage(null);
+        }
+    };
+
+    const handleSelectBrand = () => {
+        if (previewImage) {
+            onSelectIcon('Globe', previewImage); // 'Globe' as fallback icon
+            setIsOpen(false);
+        }
+    };
+
+    const clientId = process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID;
+
     return (
         <div className="relative">
             <button
                 className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                 onClick={() => setIsOpen(!isOpen)}
                 type="button">
-                <SelectedIconComponent className="h-4 w-4" />
-                <span>{selectedIcon}</span>
+                {selectedImage ? (
+                    <img
+                        src={`https://cdn.brandfetch.io/${selectedImage}?c=${clientId}`}
+                        alt="Brand Logo"
+                        className="h-4 w-4 object-contain"
+                        onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                        }}
+                    />
+                ) : (
+                    <SelectedIconComponent className="h-4 w-4" />
+                )}
+
+                <span>{selectedImage ? selectedImage : selectedIcon}</span>
             </button>
 
             {isOpen && (
-                <div className="animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 z-50 absolute left-0 top-full mt-2 w-64 rounded-xl border border-gray-200 bg-white p-3 shadow-xl duration-200">
-                    <input
-                        autoFocus
-                        className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                        onChange={e => setSearchTerm(e.target.value)}
-                        placeholder="Search icons..."
-                        type="text"
-                        value={searchTerm}
-                    />
-                    <div className="custom-scrollbar grid max-h-48 grid-cols-5 gap-2 overflow-y-auto">
-                        {filteredIcons.map(iconName => {
-                            const IconComponent = ICON_options[iconName as keyof typeof ICON_options];
-                            return (
-                                <button
-                                    className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${selectedIcon === iconName ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-gray-500'
-                                        }`}
-                                    key={iconName}
-                                    onClick={() => {
-                                        onSelectIcon(iconName);
-                                        setIsOpen(false);
-                                    }}
-                                    title={iconName}
-                                    type="button">
-                                    <IconComponent className="h-4 w-4" />
-                                </button>
-                            );
-                        })}
+                <div className="animate-in fade-in zoom-in-95 data-[side=bottom]:slide-in-from-top-2 z-50 absolute left-0 top-full mt-2 w-72 rounded-xl border border-gray-200 bg-white p-3 shadow-xl duration-200">
+                    {/* Tabs */}
+                    <div className="flex mb-3 border-b border-gray-100">
+                        <button
+                            className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'icons' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            onClick={() => setActiveTab('icons')}
+                        >
+                            Icons
+                        </button>
+                        <button
+                            className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'brand' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            onClick={() => setActiveTab('brand')}
+                        >
+                            Brand Logo
+                        </button>
                     </div>
+
+                    {activeTab === 'icons' ? (
+                        <>
+                            <input
+                                autoFocus
+                                className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                onChange={e => setSearchTerm(e.target.value)}
+                                placeholder="Search icons..."
+                                type="text"
+                                value={searchTerm}
+                            />
+                            <div className="custom-scrollbar grid max-h-48 grid-cols-5 gap-2 overflow-y-auto">
+                                {filteredIcons.map(iconName => {
+                                    const IconComponent = ICON_options[iconName as keyof typeof ICON_options];
+                                    return (
+                                        <button
+                                            className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${selectedIcon === iconName && !selectedImage ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200' : 'text-gray-500'
+                                                }`}
+                                            key={iconName}
+                                            onClick={() => {
+                                                onSelectIcon(iconName, null); // Clear image
+                                                setIsOpen(false);
+                                                setPreviewImage(null);
+                                                setBrandDomain('');
+                                            }}
+                                            title={iconName}
+                                            type="button">
+                                            <IconComponent className="h-4 w-4" />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            <div className="text-xs text-gray-500">
+                                Enter a domain name to fetch its official brand logo.
+                            </div>
+                            <input
+                                autoFocus
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                onChange={handleBrandChange}
+                                placeholder="e.g. google.com"
+                                type="text"
+                                value={brandDomain}
+                            />
+
+                            {previewImage && (
+                                <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center border border-gray-100">
+                                    <img
+                                        src={`https://cdn.brandfetch.io/${previewImage}?c=${clientId}`}
+                                        alt="Preview"
+                                        className="h-10 w-10 object-contain"
+                                    />
+                                </div>
+                            )}
+
+                            <button
+                                className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${previewImage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                onClick={handleSelectBrand}
+                                disabled={!previewImage}
+                            >
+                                Use Logo
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
