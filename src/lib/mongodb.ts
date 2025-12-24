@@ -11,10 +11,8 @@ if (!uri) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-// Replace the default database '/ADMIN' with '/qt_portfolio' to prevent
-// restricted access errors on Oracle Cloud's system database.
-// Uses a regex to be safe against case sensitivity and slash variations.
-const updatedUri = uri.replace(/\/ADMIN(\?|$)/i, '/qt_portfolio$1');
+// Use the URI exactly as provided (pointing to ADMIN for authentication)
+const updatedUri = uri;
 
 console.log('MongoDB Connection Init:', {
   originalUriPresent: !!uri,
