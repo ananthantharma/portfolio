@@ -6,13 +6,15 @@ import {
   FlagIcon,
   MagnifyingGlassIcon,
   UsersIcon,
-} from '@heroicons/react/24/outline'; // Add icon for Key Tasks button
+  ChevronRightIcon, // For breadcrumbs
+  HomeIcon,
+} from '@heroicons/react/24/outline';
 import axios from 'axios';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
-import {INotePage} from '@/models/NotePage';
-import {INoteSection} from '@/models/NoteSection';
+import { INoteCategory } from '@/models/NoteCategory';
+import { INotePage } from '@/models/NotePage';
+import { INoteSection } from '@/models/NoteSection';
 
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
@@ -38,6 +40,9 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
 
+  // Database Stats State
+  const [dbSize, setDbSize] = useState<string | null>(null);
+
   // Fetch categories on mount
   useEffect(() => {
     fetchCategories();
@@ -45,7 +50,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Fetch sections when category changes
   useEffect(() => {
-    // Reset downstream state immediately to avoid stale data
     setSections([]);
     setPages([]);
     setSelectedSectionId(null);
@@ -65,6 +69,29 @@ const NotesLayout: React.FC = React.memo(() => {
       fetchPages(selectedSectionId);
     }
   }, [selectedSectionId]);
+
+  useEffect(() => {
+    const fetchDbStats = async () => {
+      try {
+        const response = await axios.get('/api/database-stats');
+        if (response.data.success) {
+          setDbSize(formatBytes(response.data.data.totalSizeBytes));
+        }
+      } catch (error) {
+        console.error('Error fetching DB stats:', error);
+      }
+    };
+    fetchDbStats();
+  }, []);
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  };
 
   const fetchCategories = async () => {
     try {
@@ -126,43 +153,32 @@ const NotesLayout: React.FC = React.memo(() => {
     setIsImportantOpen(false);
     setIsSearchOpen(false);
 
-    // Cast to any to handle the 'type' property we injected in the API
+    // Casting to any to access potentially populated fields or special types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extendedTask = task as any;
 
     if (extendedTask.type === 'section') {
-      // Handle Section/Notebook Result
       const targetCategoryId = extendedTask.sectionId.categoryId;
-
       setSelectedCategoryId(targetCategoryId);
 
-      // If it's a specific Section (not just a Notebook/Category match)
-      // We identify this by checking if the ID isn't the same as the category ID,
-      // or strictly by the label we added. The API confirms sections have title '[Section] ...'
       if ((extendedTask.title as string).startsWith('[Section]')) {
         const targetSectionId = extendedTask._id;
         setTimeout(() => {
           setSelectedSectionId(targetSectionId);
-          // Ensure page is cleared so we see the list of pages in this section
           setSelectedPageId(null);
         }, 150);
       } else {
-        // It's a Notebook match - just open the Category
         setTimeout(() => {
           setSelectedSectionId(null);
           setSelectedPageId(null);
         }, 150);
       }
     } else {
-      // Handle Standard Page Result
-      // We cast sectionId to unknown then to INoteSection because it's populated but typed as string | INoteSection
       const sectionObj = task.sectionId as unknown as INoteSection;
-
       if (!sectionObj || !sectionObj.categoryId) {
         alert('Cannot locate note: Missing section info.');
         return;
       }
-
       const targetCategoryId = sectionObj.categoryId as unknown as string;
       const targetSectionId = sectionObj._id as string;
       const targetPageId = task._id as string;
@@ -178,18 +194,18 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   // Category Operations
-  const handleAddCategory = useCallback(async (name: string, color?: string) => {
+  const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string) => {
     try {
-      const response = await axios.post('/api/notes/categories', {name, color});
+      const response = await axios.post('/api/notes/categories', { name, color, icon });
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
     }
   }, []);
 
-  const handleRenameCategory = useCallback(async (id: string, name: string, color?: string) => {
+  const handleRenameCategory = useCallback(async (id: string, name: string, color?: string, icon?: string) => {
     try {
-      const response = await axios.put(`/api/notes/categories/${id}`, {name, color});
+      const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon });
       setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
     } catch (error) {
       console.error('Error renaming category:', error);
@@ -213,7 +229,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
+        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -223,12 +239,13 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Section Operations
   const handleAddSection = useCallback(
-    async (name: string, color?: string) => {
+    async (name: string, color?: string, icon?: string) => {
       if (!selectedCategoryId) return;
       try {
         const response = await axios.post('/api/notes/sections', {
           name,
           color,
+          icon,
           categoryId: selectedCategoryId,
         });
         setSections(prev => [...prev, response.data.data]);
@@ -240,9 +257,9 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedCategoryId],
   );
 
-  const handleRenameSection = useCallback(async (id: string, name: string, color?: string) => {
+  const handleRenameSection = useCallback(async (id: string, name: string, color?: string, icon?: string) => {
     try {
-      const response = await axios.put(`/api/notes/sections/${id}`, {name, color});
+      const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon });
       setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
     } catch (error) {
       console.error('Error renaming section:', error);
@@ -267,7 +284,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
+          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -298,7 +315,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleRenamePage = useCallback(async (id: string, title: string, color?: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {title, color});
+      const response = await axios.put(`/api/notes/pages/${id}`, { title, color });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error renaming page:', error);
@@ -320,7 +337,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleSavePageContent = useCallback(async (id: string, content: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {content});
+      const response = await axios.put(`/api/notes/pages/${id}`, { content });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -332,7 +349,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -344,7 +361,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {[field]: value});
+      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error toggling flag', error);
@@ -352,6 +369,8 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   const selectedPage = pages.find(p => p._id === selectedPageId) || null;
+  const currentCategory = categories.find(c => c._id === selectedCategoryId);
+  const currentSection = sections.find(s => s._id === selectedSectionId);
 
   const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
   const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
@@ -360,12 +379,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleCloseKeyTasks = useCallback(() => setIsKeyTasksOpen(false), []);
   const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
 
-  // To Do List State
   const [isToDoListOpen, setIsToDoListOpen] = useState(false);
   const handleOpenToDoList = useCallback(() => setIsToDoListOpen(true), []);
   const handleCloseToDoList = useCallback(() => setIsToDoListOpen(false), []);
 
-  // Contact List State
   const [isContactListOpen, setIsContactListOpen] = useState(false);
   const handleOpenContactList = useCallback(() => setIsContactListOpen(true), []);
   const handleCloseContactList = useCallback(() => setIsContactListOpen(false), []);
@@ -379,83 +396,86 @@ const NotesLayout: React.FC = React.memo(() => {
     [isSectionCollapsed],
   );
 
-  // Database Stats State
-  const [dbSize, setDbSize] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchDbStats = async () => {
-      try {
-        const response = await axios.get('/api/database-stats');
-        if (response.data.success) {
-          setDbSize(formatBytes(response.data.data.totalSizeBytes));
-        }
-      } catch (error) {
-        console.error('Error fetching DB stats:', error);
-      }
-    };
-    fetchDbStats();
-  }, []);
-
-  const formatBytes = (bytes: number, decimals = 2) => {
-    if (!+bytes) return '0 Bytes';
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-  };
-
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-white shadow-xl">
-      {/* Top Toolbar for Key Tasks - Added this wrapper div for the main layout to include header */}
-      <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-gray-500">Workspace</span>
-          {dbSize && <span className="text-xs text-gray-400">({dbSize})</span>}
+    <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
+      {/* Top Navigation / Breadcrumbs Bar */}
+      <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-30">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <HomeIcon className="h-4 w-4 text-gray-400" />
+          <span className="font-medium">Workspace</span>
+          {currentCategory && (
+            <>
+              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+              <span className="font-medium text-gray-700 flex items-center gap-2">
+                {currentCategory.icon && (
+                  <span className="text-gray-400">
+                    {/* Simple text fallback if icon component lookup is complex here, or just name */}
+                  </span>
+                )}
+                {currentCategory.name}
+              </span>
+            </>
+          )}
+          {currentSection && (
+            <>
+              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+              <span className="font-medium text-gray-700">{currentSection.name}</span>
+            </>
+          )}
+          {selectedPage && (
+            <>
+              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+              <span className="font-medium text-gray-900">{selectedPage.title || 'Untitled'}</span>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-3">
+          {dbSize && <span className="text-xs text-gray-400 mr-2 font-mono">{dbSize}</span>}
+          <div className="h-4 w-px bg-gray-200"></div>
+
           <button
-            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 border border-gray-200"
+            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-blue-600 transition-all"
             onClick={handleOpenSearch}>
-            <MagnifyingGlassIcon className="h-4 w-4" />
+            <MagnifyingGlassIcon className="h-3.5 w-3.5" />
             Search
           </button>
           <button
-            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-teal-600 shadow-sm hover:bg-gray-50 border border-teal-200"
+            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all"
             onClick={handleOpenToDoList}>
-            <ClipboardDocumentListIcon className="h-4 w-4" />
-            To Do List
+            <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+            Tasks
           </button>
           <button
-            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-indigo-600 shadow-sm hover:bg-gray-50 border border-indigo-200"
+            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
             onClick={handleOpenContactList}>
-            <UsersIcon className="h-4 w-4" />
+            <UsersIcon className="h-3.5 w-3.5" />
             Contacts
           </button>
+          <div className="h-4 w-px bg-gray-200"></div>
           <button
-            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-orange-600 shadow-sm hover:bg-gray-50 border border-orange-200"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+            title="Important"
             onClick={handleOpenImportant}>
             <ExclamationTriangleIcon className="h-4 w-4" />
-            Important
           </button>
           <button
-            className="flex items-center gap-2 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-gray-50 border border-red-200"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+            title="Key Tasks"
             onClick={handleOpenKeyTasks}>
             <FlagIcon className="h-4 w-4" />
-            Key Tasks
           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Main Content Area with Glassmorphism Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
+
         {/* Column 1: Categories */}
         <div
-          className={`${
-            isCategoryCollapsed ? 'w-16' : 'w-64'
-          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+          className={`${isCategoryCollapsed ? 'w-14' : 'w-64'
+            } flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-20`}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -471,9 +491,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* Column 2: Sections */}
         <div
-          className={`${
-            isSectionCollapsed ? 'w-16' : 'w-64'
-          } flex-shrink-0 border-r border-gray-200 transition-all duration-300`}>
+          className={`${isSectionCollapsed ? 'w-14' : 'w-64'
+            } flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-10`}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -489,7 +508,7 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         {/* Column 3: Pages */}
-        <div className="w-64 flex-shrink-0 border-r border-gray-200">
+        <div className="w-64 flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl z-0">
           <PageList
             loading={loadingPages}
             onAddPage={handleAddPage}
@@ -503,7 +522,7 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         {/* Column 4: Editor */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden bg-white shadow-xl z-30 m-4 rounded-xl border border-gray-100">
           <NoteEditor onSave={handleSavePageContent} onToggleFlag={handleToggleFlag} page={selectedPage} />
         </div>
       </div>
@@ -527,9 +546,7 @@ const NotesLayout: React.FC = React.memo(() => {
       />
 
       <ToDoListModal isOpen={isToDoListOpen} onClose={handleCloseToDoList} onNavigate={handleJumpToTask} />
-
       <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
-
       <SearchModal
         fetchItems={fetchSearchResults}
         isOpen={isSearchOpen}

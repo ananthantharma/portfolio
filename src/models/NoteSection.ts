@@ -1,8 +1,9 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteSection extends Document {
   name: string;
   color?: string;
+  icon?: string;
   categoryId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -18,6 +19,10 @@ const NoteSectionSchema: Schema = new Schema(
     color: {
       type: String,
       default: '#000000',
+    },
+    icon: {
+      type: String,
+      default: 'Bookmark',
     },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
