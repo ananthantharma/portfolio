@@ -1,0 +1,19 @@
+
+--- Fetching JSON: https://api.brandfetch.io/v2/search/tesla.com ---
+Status: 200
+Success.
+Found match for tesla.com
+Icon URL: https://cdn.brandfetch.io/id2S-kXbuK/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1766695016856bfumLaCV7mmpDj-_5u
+
+--- HEAD: https://cdn.brandfetch.io/id2S-kXbuK/w/128/h/128/fallback/lettermark/icon.webp?c=1ax1766695016856bfumLaCV7mmpDj-_5u ---
+Status: 404
+Location: none
+
+--- Fetching JSON: https://api.brandfetch.io/v2/brands/tesla.com ---
+Status: 403
+Success.
+Brands API returned data.
+
+--- HEAD: https://cdn.brandfetch.io/tesla.com?c=1id_bWVK4BWoMNklm2Y ---
+Status: 302
+Location: https://docs.brandfetch.com/docs/logo-link/guidelines#2-hotlinking

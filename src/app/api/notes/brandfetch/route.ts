@@ -24,8 +24,6 @@ export async function GET(request: Request) {
 
   try {
     // STAGE 1: Search for the brand to get the correct Asset URL
-    // We use the Search API because direct CDN access via Client ID is often blocked by hotlinking protection
-    // unless the domain is whitelisted. The Search API (v2) seems to accept the key and returns a valid asset URL.
     const searchUrl = `https://api.brandfetch.io/v2/search/${encodeURIComponent(domain)}`;
     const searchResponse = await fetch(searchUrl, {
       headers: {
@@ -41,22 +39,36 @@ export async function GET(request: Request) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const match = Array.isArray(searchData) ? searchData.find((item: any) => item.domain === domain) : null;
       if (match && match.icon) {
-        assetUrl = match.icon;
+        // Verify if the Brandfetch URL is actually accessible (HEAD check)
+        // because sometimes it returns 404 or requires strict hotlinking which fails even on redirect
+        try {
+          const headCheck = await fetch(match.icon, { method: 'HEAD' });
+          if (headCheck.ok) {
+            assetUrl = match.icon;
+          } else {
+            console.warn(`Brandfetch icon found but not accessible (${headCheck.status}): ${match.icon}`);
+          }
+        } catch (e) {
+          console.warn('Brandfetch HEAD check failed', e);
+        }
       }
     }
 
-    // Fallback to CDN if search fails or no icon found (though CDN likely fails too)
-    if (!assetUrl) {
-      assetUrl = `https://cdn.brandfetch.io/${domain}?c=${apiKey}`;
+    if (assetUrl) {
+      // STAGE 2a: Redirect to valid Brandfetch Asset
+      return NextResponse.redirect(assetUrl);
+    } else {
+      // STAGE 2b: Fallback to Google Favicon
+      // Google Favicons are reliable, free, and support redirection
+      console.log(`Falling back to Google Favicon for ${domain}`);
+      const googleUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+      return NextResponse.redirect(googleUrl);
     }
 
-    // STAGE 2: Redirect to the Asset
-    // Instead of proxying the stream (which looks like server-side hotlinking and gets blocked),
-    // we redirect the browser to the signed asset URL. The browser will send the user's Referer,
-    // which should be allowed if the domain is whitelisted.
-    return NextResponse.redirect(assetUrl);
   } catch (error) {
     console.error('Error fetching from Brandfetch:', error);
-    return NextResponse.json({ error: 'Failed to fetch logo' }, { status: 502 });
+    // Ultimate fallback even on crash
+    const googleUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+    return NextResponse.redirect(googleUrl);
   }
 }
