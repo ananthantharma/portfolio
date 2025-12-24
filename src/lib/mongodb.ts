@@ -12,13 +12,26 @@ if (!uri) {
 }
 
 // Use the URI exactly as provided (pointing to ADMIN for authentication)
-const updatedUri = uri;
+// BUT forcefully remove loadBalanced=true as it causes issues with some drivers/topologies
+// and seemingly triggers Invalid Credential on Vercel (likely due to topology mismatch).
+let updatedUri = uri.replace(/[&?]loadBalanced=true/g, '');
 
+// Debug Password Parsing (Masked)
+const passwordMatch = uri.match(/:([^:@]+)@/);
 console.log('MongoDB Connection Init:', {
   originalUriPresent: !!uri,
-  updatedUriMatches: updatedUri !== uri,
-  debug_authSource: '$external',
-  debug_authMech: 'PLAIN'
+  sanitizedUri: updatedUri.replace(/:([^:@]+)@/, ':***@'), // Log the sanitized URI masked
+  passwordDebug: passwordMatch ? {
+    length: passwordMatch[1].length,
+    isEncoded: passwordMatch[1].includes('%'),
+    firstChar: passwordMatch[1][0],
+    lastChar: passwordMatch[1].slice(-1)
+  } : 'Not Found',
+  options: {
+    authMechanism: 'PLAIN',
+    authSource: '$external',
+    tls: true
+  }
 });
 
 const clientOptions: MongoClientOptions = {
