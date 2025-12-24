@@ -1,15 +1,27 @@
-import {DocumentTextIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
+'use client';
+
+import { DocumentTextIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import {redirect} from 'next/navigation';
-import {getServerSession} from 'next-auth';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-import {authOptions} from '@/pages/api/auth/[...nextauth]';
+export default function NotesLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
+  const router = useRouter();
 
-export default async function NotesLayout({children}: {children: React.ReactNode}) {
-  const session = await getServerSession(authOptions);
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
 
-  if (!session) {
-    redirect('/login');
+  if (status === 'loading') {
+    return <div className="flex h-screen items-center justify-center bg-gray-900 text-white">Loading...</div>;
+  }
+
+  if (status === 'unauthenticated') {
+    return null;
   }
 
   return (
