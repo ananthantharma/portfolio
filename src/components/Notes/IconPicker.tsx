@@ -134,7 +134,7 @@ import {
     ZoomIn,
     ZoomOut,
 } from 'lucide-react';
-import React, { useEffect,useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 export const ICON_options = {
     Activity,
@@ -288,9 +288,41 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
     // Brandfetch State
-    const [brandDomain, setBrandDomain] = useState(selectedImage || '');
+    const [brandSearchTerm, setBrandSearchTerm] = useState(selectedImage || '');
     const [previewImage, setPreviewImage] = useState<string | null>(selectedImage || null);
     const [previewError, setPreviewError] = useState(false);
+    const [isLoadingBrands, setIsLoadingBrands] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [brandResults, setBrandResults] = useState<any[]>([]);
+    const [showBrandResults, setShowBrandResults] = useState(false);
+
+    // Debounce search
+    useEffect(() => {
+        const searchBrands = async () => {
+            if (!brandSearchTerm || brandSearchTerm.includes('.') || brandSearchTerm.length < 2) {
+                setBrandResults([]);
+                setShowBrandResults(false);
+                return;
+            }
+
+            setIsLoadingBrands(true);
+            try {
+                const res = await fetch(`/api/notes/brandfetch/search?q=${encodeURIComponent(brandSearchTerm)}`);
+                const data = await res.json();
+                if (data.success && Array.isArray(data.data)) {
+                    setBrandResults(data.data);
+                    setShowBrandResults(true);
+                }
+            } catch (error) {
+                console.error('Brand search failed', error);
+            } finally {
+                setIsLoadingBrands(false);
+            }
+        };
+
+        const timeoutId = setTimeout(searchBrands, 500);
+        return () => clearTimeout(timeoutId);
+    }, [brandSearchTerm]);
 
     const filteredIcons = useMemo(() => {
         return Object.keys(ICON_options).filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -339,15 +371,25 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
         }
     }, [isOpen]);
 
-    const handleBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const domain = e.target.value;
-        setBrandDomain(domain);
+    const handleBrandInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setBrandSearchTerm(value);
         setPreviewError(false);
-        if (domain.includes('.')) {
-            setPreviewImage(domain);
+
+        // If user types a domain directly
+        if (value.includes('.')) {
+            setPreviewImage(value);
+            setShowBrandResults(false);
         } else {
             setPreviewImage(null);
         }
+    };
+
+    const handleSelectBrandResult = (domain: string, name: string) => {
+        setBrandSearchTerm(name);
+        setPreviewImage(domain);
+        setShowBrandResults(false);
+        setPreviewError(false);
     };
 
     const handleSelectBrand = () => {
@@ -423,15 +465,15 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                                     return (
                                         <button
                                             className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${selectedIcon === iconName && !selectedImage
-                                                    ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
-                                                    : 'text-gray-500'
+                                                ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                                                : 'text-gray-500'
                                                 }`}
                                             key={iconName}
                                             onClick={() => {
                                                 onSelectIcon(iconName, null); // Clear image
                                                 setIsOpen(false);
                                                 setPreviewImage(null);
-                                                setBrandDomain('');
+                                                setBrandSearchTerm('');
                                             }}
                                             title={iconName}
                                             type="button">
@@ -442,16 +484,45 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                             </div>
                         </>
                     ) : (
-                        <div className="flex flex-col gap-3">
-                            <div className="text-xs text-gray-500">Enter a domain name to fetch its official brand logo.</div>
-                            <input
-                                autoFocus
-                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder-gray-400"
-                                onChange={handleBrandChange}
-                                placeholder="e.g. google.com"
-                                type="text"
-                                value={brandDomain}
-                            />
+                        <div className="flex flex-col gap-3 relative">
+                            <div className="text-xs text-gray-500">Search for a company or enter a domain.</div>
+                            <div className="relative">
+                                <input
+                                    autoFocus
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder-gray-400"
+                                    onChange={handleBrandInputChange}
+                                    placeholder="e.g. Tesla or google.com"
+                                    type="text"
+                                    value={brandSearchTerm}
+                                />
+                                {isLoadingBrands && (
+                                    <div className="absolute right-3 top-2.5">
+                                        <Loader className="h-4 w-4 animate-spin text-gray-400" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Search Results Dropdown */}
+                            {showBrandResults && brandResults.length > 0 && (
+                                <div className="absolute top-[60px] left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+                                    {brandResults.map((result) => (
+                                        <button
+                                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+                                            key={result.brandId}
+                                            onClick={() => handleSelectBrandResult(result.domain, result.name)}
+                                            type="button"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                {result.icon && (
+                                                    <img alt="" className="w-5 h-5 object-contain" src={result.icon} />
+                                                )}
+                                                <span className="font-medium text-gray-900">{result.name}</span>
+                                            </div>
+                                            <span className="text-xs text-gray-400">{result.domain}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
 
                             {previewImage && (
                                 <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center border border-gray-100 min-h-[80px]">
@@ -473,8 +544,8 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
 
                             <button
                                 className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${previewImage && !previewError
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                     }`}
                                 disabled={!previewImage || previewError}
                                 onClick={handleSelectBrand}>
