@@ -311,7 +311,6 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
         }
     };
 
-    const clientId = process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID;
 
     return (
         <div className="relative">
@@ -321,7 +320,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                 type="button">
                 {selectedImage ? (
                     <img
-                        src={`https://cdn.brandfetch.io/${selectedImage}?c=${clientId}`}
+                        src={`/api/notes/brandfetch?domain=${selectedImage}`}
                         alt="Brand Logo"
                         className="h-4 w-4 object-contain"
                         onError={(e) => {
@@ -402,7 +401,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                             {previewImage && (
                                 <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center border border-gray-100">
                                     <img
-                                        src={`https://cdn.brandfetch.io/${previewImage}?c=${clientId}`}
+                                        src={`/api/notes/brandfetch?domain=${previewImage}`}
                                         alt="Preview"
                                         className="h-10 w-10 object-contain"
                                     />

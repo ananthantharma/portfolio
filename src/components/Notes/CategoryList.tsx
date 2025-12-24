@@ -123,7 +123,6 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
       }
     };
 
-    const clientId = process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID;
 
     if (loading) {
       return (
@@ -265,8 +264,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                         <SortableItem id={category._id as string} key={category._id as string}>
                           <div
                             className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${selectedCategoryId === category._id
-                                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-                                : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+                              ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
                               }`}
                             onClick={() => onSelectCategory(category._id as string)}>
                             {/* Accent Bar */}
@@ -277,7 +276,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                             <div className="flex items-center gap-3 overflow-hidden">
                               {category.image ? (
                                 <img
-                                  src={`https://cdn.brandfetch.io/${category.image}?c=${clientId}`}
+                                  src={`/api/notes/brandfetch?domain=${category.image}`}
                                   alt={category.name}
                                   className="h-4 w-4 object-contain"
                                   onError={e => {
@@ -340,7 +339,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                   title={category.name}>
                   {category.image ? (
                     <img
-                      src={`https://cdn.brandfetch.io/${category.image}?c=${clientId}`}
+                      src={`/api/notes/brandfetch?domain=${category.image}`}
                       alt={category.name}
                       className="h-5 w-5 object-contain"
                       onError={e => {

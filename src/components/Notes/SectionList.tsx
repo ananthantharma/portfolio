@@ -123,7 +123,6 @@ const SectionList: React.FC<SectionListProps> = React.memo(
       }
     };
 
-    const clientId = process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID;
 
     if (loading) {
       return (
@@ -262,8 +261,8 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                         <SortableItem id={section._id as string} key={section._id as string}>
                           <div
                             className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${selectedSectionId === section._id
-                                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-                                : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+                              ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
                               }`}
                             onClick={() => onSelectSection(section._id as string)}>
                             {/* Accent Bar */}
@@ -274,7 +273,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             <div className="flex items-center gap-3 truncate pl-2">
                               {section.image ? (
                                 <img
-                                  src={`https://cdn.brandfetch.io/${section.image}?c=${clientId}`}
+                                  src={`/api/notes/brandfetch?domain=${section.image}`}
                                   alt={section.name}
                                   className="h-4 w-4 object-contain"
                                   onError={e => {
@@ -336,7 +335,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                   title={section.name}>
                   {section.image ? (
                     <img
-                      src={`https://cdn.brandfetch.io/${section.image}?c=${clientId}`}
+                      src={`/api/notes/brandfetch?domain=${section.image}`}
                       alt={section.name}
                       className="h-5 w-5 object-contain"
                       onError={e => {

@@ -143,7 +143,6 @@ const PageList: React.FC<PageListProps> = React.memo(
       }
     };
 
-    const clientId = process.env.NEXT_PUBLIC_BRANDFETCH_CLIENT_ID;
 
     if (loading) {
       return (
@@ -288,7 +287,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                           <div className="flex items-center justify-center flex-shrink-0 relative">
                             {page.image ? (
                               <img
-                                src={`https://cdn.brandfetch.io/${page.image}?c=${clientId}`}
+                                src={`/api/notes/brandfetch?domain=${page.image}`}
                                 alt={page.title}
                                 className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} object-contain`}
                                 onError={e => {
