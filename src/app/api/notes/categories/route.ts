@@ -19,9 +19,10 @@ export async function GET() {
   try {
     const categories = await NoteCategory.find({}).sort({ order: 1 });
     return NextResponse.json({ success: true, data: categories });
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ success: false, error: error.message || error }, { status: 400 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
 
