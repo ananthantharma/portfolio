@@ -29,6 +29,7 @@ async function dbConnect() {
       bufferCommands: false,
       dbName: 'qt_portfolio',
       // FORCE parameters required for Oracle Cloud
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       authMechanism: 'PLAIN' as any,
       authSource: '$external',
       tls: true,
