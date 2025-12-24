@@ -43,10 +43,12 @@ export async function GET(request: Request) {
         // because sometimes it returns 404 or requires strict hotlinking which fails even on redirect
         try {
           const headCheck = await fetch(match.icon, { method: 'HEAD' });
-          if (headCheck.ok) {
+          const contentType = headCheck.headers.get('content-type');
+
+          if (headCheck.ok && contentType && contentType.startsWith('image/')) {
             assetUrl = match.icon;
           } else {
-            console.warn(`Brandfetch icon found but not accessible (${headCheck.status}): ${match.icon}`);
+            console.warn(`Brandfetch icon invalid (Status: ${headCheck.status}, Type: ${contentType}): ${match.icon}`);
           }
         } catch (e) {
           console.warn('Brandfetch HEAD check failed', e);
