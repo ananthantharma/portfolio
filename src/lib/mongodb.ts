@@ -12,9 +12,8 @@ if (!uri) {
 }
 
 // Use the URI exactly as provided (pointing to ADMIN for authentication)
-// BUT forcefully remove loadBalanced=true as it causes issues with some drivers/topologies
-// and seemingly triggers Invalid Credential on Vercel (likely due to topology mismatch).
-const updatedUri = uri.replace(/[&?]loadBalanced=true/g, '');
+// The Oracle endpoint explicitly REQUIRES loadBalanced=true.
+const updatedUri = uri;
 
 // Debug Password Parsing (Masked)
 const passwordMatch = uri.match(/:([^:@]+)@/);
