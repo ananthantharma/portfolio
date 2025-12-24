@@ -11,33 +11,51 @@ if (!uri) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-// Use the URI exactly as provided (pointing to ADMIN for authentication)
-// The Oracle endpoint explicitly REQUIRES loadBalanced=true.
-const updatedUri = uri;
+// 1. Manually parse credentials to ensure correct decoding (fixes %40 vs @ issues)
+let connectionUri = uri;
+let authOptions: any = {};
 
-// Debug Password Parsing (Masked)
-const passwordMatch = uri.match(/:([^:@]+)@/);
-console.log('MongoDB Connection Init:', {
-  originalUriPresent: !!uri,
-  sanitizedUri: updatedUri.replace(/:([^:@]+)@/, ':***@'), // Log the sanitized URI masked
-  passwordDebug: passwordMatch ? {
-    length: passwordMatch[1].length,
-    isEncoded: passwordMatch[1].includes('%'),
-    firstChar: passwordMatch[1][0],
-    lastChar: passwordMatch[1].slice(-1)
-  } : 'Not Found',
-  options: {
-    authMechanism: 'PLAIN',
-    authSource: '$external',
-    tls: true
+try {
+  const match = uri.match(/mongodb:\/\/([^:]+):([^@]+)@/);
+  if (match) {
+    const rawUser = match[1];
+    const rawPass = match[2];
+
+    // Pass decoded credentials explicitly. 
+    // This bypasses driver's internal URI parsing which might be buggy with special chars + loadBalanced.
+    authOptions.auth = {
+      username: decodeURIComponent(rawUser),
+      password: decodeURIComponent(rawPass)
+    };
+
+    // Remove credentials from the URI string passed to MongoClient
+    // so the driver relies ONLY on our explicit 'auth' object.
+    connectionUri = uri.replace(`${rawUser}:${rawPass}@`, '');
   }
+} catch (e) {
+  console.error('Failed to parse URI for explicit auth, falling back to original', e);
+}
+
+// 2. Ensure loadBalanced=true is present (Oracle requirement)
+// If we stripped creds, we might have stripped query params if they were attached weirdly, 
+// but usually params are at the end. We double check just in case.
+if (!connectionUri.includes('loadBalanced=true')) {
+  const separator = connectionUri.includes('?') ? '&' : '?';
+  connectionUri += `${separator}loadBalanced=true`;
+}
+
+console.log('MongoDB Connection Init:', {
+  mode: 'Explicit Auth Object',
+  hasAuth: !!authOptions.auth,
+  sanitizedUri: connectionUri.replace(/\?.*/, '?[params hidden]'),
 });
 
 const clientOptions: MongoClientOptions = {
   ...options,
-  authMechanism: 'PLAIN', // Force PLAIN auth for Oracle
-  authSource: '$external', // Force $external source
-  tls: true, // Force TLS
+  ...authOptions, // Admin/Password passed here
+  authMechanism: 'PLAIN',
+  authSource: '$external',
+  tls: true,
 };
 
 if (process.env.NODE_ENV === 'development') {
@@ -48,13 +66,13 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(updatedUri, clientOptions);
+    client = new MongoClient(connectionUri, clientOptions);
     globalWithMongo._mongoClientPromise = client.connect();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(updatedUri, clientOptions);
+  client = new MongoClient(connectionUri, clientOptions);
   clientPromise = client.connect();
 }
 
