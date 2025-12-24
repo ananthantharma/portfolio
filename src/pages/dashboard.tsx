@@ -1,15 +1,15 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { signOut, useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import {useRouter} from 'next/router';
+import {signOut, useSession} from 'next-auth/react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 import Header from '../components/Sections/Header';
 import PasswordModal from '../components/Vault/PasswordModal';
-import { VaultDashboard } from '../components/Vault/VaultDashboard';
-import { PasswordEntry } from '../data/dataDef';
+import {VaultDashboard} from '../components/Vault/VaultDashboard';
+import {PasswordEntry} from '../data/dataDef';
 
 const Dashboard = React.memo(() => {
-  const { data: session, status } = useSession();
+  const {data: session, status} = useSession();
   const router = useRouter();
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,14 +46,14 @@ const Dashboard = React.memo(() => {
           // Update existing
           res = await fetch(`/api/passwords/${editingItem._id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
           });
         } else {
           // Create new
           res = await fetch('/api/passwords', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
           });
         }

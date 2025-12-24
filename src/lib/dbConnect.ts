@@ -16,7 +16,7 @@ let cached = (global as any).mongoose;
 
 if (!cached) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = {conn: null, promise: null};
 }
 
 async function dbConnect() {

@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {
   CalendarIcon,
   CheckIcon,
@@ -18,13 +18,13 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { FileText } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import {FileText} from 'lucide-react';
+import React, {useCallback, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface PageListProps {
   pages: INotePage[];
@@ -75,7 +75,7 @@ const PageList: React.FC<PageListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = pages.findIndex(p => p._id === active.id);
@@ -101,7 +101,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     };
 
     const handleAddToday = () => {
-      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
       onAddPage(today, '#000000', 'Calendar');
     };
 
@@ -262,20 +262,29 @@ const PageList: React.FC<PageListProps> = React.memo(
                   return (
                     <SortableItem id={page._id as string} key={page._id as string}>
                       <div
-                        className={`group flex cursor-pointer items-center rounded-md transition-colors ${isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
-                          } ${selectedPageId === page._id
+                        className={`group flex cursor-pointer items-center rounded-md transition-colors ${
+                          isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
+                        } ${
+                          selectedPageId === page._id
                             ? 'bg-blue-50 text-blue-700 font-medium'
                             : 'text-gray-600 hover:bg-gray-50'
-                          }`}
+                        }`}
                         onClick={() => onSelectPage(page._id as string)}
                         title={page.title}>
-                        <div className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-                          <div className={`flex items-center justify-center flex-shrink-0 relative`}>
-                            <PageIcon className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${selectedPageId === page._id ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                        <div
+                          className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+                          <div className="flex items-center justify-center flex-shrink-0 relative">
+                            <PageIcon
+                              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${
+                                selectedPageId === page._id
+                                  ? 'text-blue-600'
+                                  : 'text-gray-400 group-hover:text-gray-600'
+                              }`}
+                            />
                             {page.color && page.color !== '#000000' && (
                               <span
                                 className="absolute -bottom-1 -right-1 block h-2 w-2 rounded-full ring-1 ring-white"
-                                style={{ backgroundColor: page.color }}
+                                style={{backgroundColor: page.color}}
                               />
                             )}
                           </div>

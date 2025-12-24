@@ -7,21 +7,15 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PencilIcon,
-  PlusIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
+import {INoteCategory} from '@/models/NoteCategory';
 
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface CategoryListProps {
   categories: INoteCategory[];
@@ -70,7 +64,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = categories.findIndex(cat => cat._id === active.id);
@@ -115,8 +109,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     return (
       <div className="flex h-full flex-col border-r border-gray-200/50 bg-gray-50/50 backdrop-blur-sm">
         <div
-          className={`flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
-            } border-b border-gray-200/50 p-4 transition-all`}>
+          className={`flex items-center ${
+            isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+          } border-b border-gray-200/50 p-4 transition-all`}>
           <h2 className={`font-semibold text-gray-700 ${isCollapsed ? 'text-xs' : 'text-sm uppercase tracking-wider'}`}>
             {isCollapsed ? 'Books' : 'Notebooks'}
           </h2>
@@ -200,10 +195,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                             />
                           </div>
                           <div className="flex items-center justify-between gap-2 mb-3">
-                            <IconPicker
-                              onSelectIcon={setEditIcon}
-                              selectedIcon={editIcon}
-                            />
+                            <IconPicker onSelectIcon={setEditIcon} selectedIcon={editIcon} />
                           </div>
                           <div className="mb-3">
                             <ColorPicker onSelectColor={setEditColor} selectedColor={editColor} />
@@ -223,10 +215,11 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                         </div>
                       ) : (
                         <div
-                          className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${selectedCategoryId === category._id
-                            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
-                            }`}
+                          className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+                            selectedCategoryId === category._id
+                              ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+                          }`}
                           onClick={() => onSelectCategory(category._id as string)}>
                           {/* Accent Bar */}
                           {selectedCategoryId === category._id && (
@@ -235,7 +228,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
                           <div className="flex items-center gap-3 truncate pl-2">
                             {(() => {
-                              const IconComp = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options['Folder'];
+                              const IconComp =
+                                ICON_options[category.icon as keyof typeof ICON_options] || ICON_options['Folder'];
                               return <IconComp className="h-4 w-4 opacity-70" color={category.color} />;
                             })()}
 
@@ -277,15 +271,18 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               const isSelected = selectedCategoryId === category._id;
               return (
                 <button
-                  className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
-                    }`}
+                  className={`p-2 rounded-lg transition-all ${
+                    isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+                  }`}
                   key={category._id as string}
                   onClick={() => onSelectCategory(category._id as string)}
-                  title={category.name}
-                >
-                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} color={isSelected ? undefined : category.color} />
+                  title={category.name}>
+                  <IconComp
+                    className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
+                    color={isSelected ? undefined : category.color}
+                  />
                 </button>
-              )
+              );
             })}
           </div>
         )}

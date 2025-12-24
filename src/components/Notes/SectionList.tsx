@@ -7,21 +7,15 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PencilIcon,
-  PlusIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useState} from 'react';
 
-import { INoteSection } from '@/models/NoteSection';
+import {INoteSection} from '@/models/NoteSection';
 
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface SectionListProps {
   isCollapsed: boolean;
@@ -72,7 +66,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = sections.findIndex(sec => sec._id === active.id);
@@ -116,17 +110,16 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
     if (loading && !isCollapsed) {
       return (
-        <div className="flex h-full items-center justify-center text-gray-400 text-sm italic">
-          Loading sections...
-        </div>
+        <div className="flex h-full items-center justify-center text-gray-400 text-sm italic">Loading sections...</div>
       );
     }
 
     return (
       <div className="flex h-full flex-col border-r border-gray-200/50 bg-gray-50/30 backdrop-blur-sm">
         <div
-          className={`flex items-center ${isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
-            } border-b border-gray-200/50 p-4 transition-all`}>
+          className={`flex items-center ${
+            isCollapsed ? 'justify-center flex-col gap-2' : 'justify-between'
+          } border-b border-gray-200/50 p-4 transition-all`}>
           <h2 className={`font-semibold text-gray-700 ${isCollapsed ? 'text-xs' : 'text-sm uppercase tracking-wider'}`}>
             {isCollapsed ? 'Secs' : 'Sections'}
           </h2>
@@ -209,10 +202,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                             />
                           </div>
                           <div className="flex items-center justify-between gap-2 mb-3">
-                            <IconPicker
-                              onSelectIcon={setEditIcon}
-                              selectedIcon={editIcon}
-                            />
+                            <IconPicker onSelectIcon={setEditIcon} selectedIcon={editIcon} />
                           </div>
                           <div className="mb-3">
                             <ColorPicker onSelectColor={setEditColor} selectedColor={editColor} />
@@ -232,10 +222,11 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                         </div>
                       ) : (
                         <div
-                          className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${selectedSectionId === section._id
-                            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
-                            }`}
+                          className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+                            selectedSectionId === section._id
+                              ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+                          }`}
                           onClick={() => onSelectSection(section._id as string)}>
                           {/* Accent Bar */}
                           {selectedSectionId === section._id && (
@@ -244,7 +235,8 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
                           <div className="flex items-center gap-3 truncate pl-2">
                             {(() => {
-                              const IconComp = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options['Bookmark'];
+                              const IconComp =
+                                ICON_options[section.icon as keyof typeof ICON_options] || ICON_options['Bookmark'];
                               return <IconComp className="h-4 w-4 opacity-70" color={section.color} />;
                             })()}
                             <span className="truncate">{section.name}</span>
@@ -285,15 +277,18 @@ const SectionList: React.FC<SectionListProps> = React.memo(
               const isSelected = selectedSectionId === section._id;
               return (
                 <button
-                  className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
-                    }`}
+                  className={`p-2 rounded-lg transition-all ${
+                    isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+                  }`}
                   key={section._id as string}
                   onClick={() => onSelectSection(section._id as string)}
-                  title={section.name}
-                >
-                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} color={isSelected ? undefined : section.color} />
+                  title={section.name}>
+                  <IconComp
+                    className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
+                    color={isSelected ? undefined : section.color}
+                  />
                 </button>
-              )
+              );
             })}
           </div>
         )}

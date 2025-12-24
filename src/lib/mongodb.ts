@@ -1,4 +1,4 @@
-import { MongoClient, MongoClientOptions } from 'mongodb';
+import {MongoClient, MongoClientOptions} from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -22,16 +22,18 @@ const connectionUri = uri;
 const passwordMatch = uri.match(/:([^:@]+)@/);
 console.log('MongoDB Connection Init:', {
   length: uri.length,
-  passwordDebug: passwordMatch ? {
-    length: passwordMatch[1].length,
-    startsWith: passwordMatch[1].substring(0, 2),
-    endsWith: passwordMatch[1].slice(-2),
-    isEncoded: passwordMatch[1].includes('%')
-  } : 'Not Found',
+  passwordDebug: passwordMatch
+    ? {
+        length: passwordMatch[1].length,
+        startsWith: passwordMatch[1].substring(0, 2),
+        endsWith: passwordMatch[1].slice(-2),
+        isEncoded: passwordMatch[1].includes('%'),
+      }
+    : 'Not Found',
   options: {
     tls: true,
-    tlsAllowInvalidCertificates: true
-  }
+    tlsAllowInvalidCertificates: true,
+  },
 });
 
 const clientOptions: MongoClientOptions = {
