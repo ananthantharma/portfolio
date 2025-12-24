@@ -56,16 +56,6 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         setIsDragging(false);
     }, []);
 
-    const onDrop = useCallback(async (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragging(false);
-
-        if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
-
-        const file = e.dataTransfer.files[0];
-        await processUpload(file);
-    }, [processUpload]);
-
     const processUpload = useCallback(async (file: File) => {
         if (file.size > 15 * 1024 * 1024) {
             setError('File is too large (max 15MB)');
@@ -98,6 +88,16 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
             setIsUploading(false);
         }
     }, [pageId]);
+
+    const onDrop = useCallback(async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+
+        const file = e.dataTransfer.files[0];
+        await processUpload(file);
+    }, [processUpload]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
