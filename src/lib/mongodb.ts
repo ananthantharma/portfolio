@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -21,7 +21,7 @@ console.log('MongoDB Connection Init:', {
   debug_authMech: 'PLAIN'
 });
 
-const clientOptions: any = {
+const clientOptions: MongoClientOptions = {
   ...options,
   authMechanism: 'PLAIN', // Force PLAIN auth for Oracle
   authSource: '$external', // Force $external source
