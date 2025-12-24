@@ -1,5 +1,5 @@
-import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
-import NextAuth from 'next-auth';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+import NextAuth, { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from '../../../lib/mongodb';
@@ -14,8 +14,11 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async session({session}: any) {
+    async signIn({ user, account }: { user: User; account: Account | null }) {
+      console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
+      return true;
+    },
+    async session({ session }: { session: Session }) {
       // Send properties to the client, like an access_token from a provider.
       return session;
     },
