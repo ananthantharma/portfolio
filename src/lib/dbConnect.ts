@@ -34,6 +34,8 @@ async function dbConnect() {
       authSource: '$external',
       tls: true,
       tlsAllowInvalidCertificates: true,
+      maxPoolSize: 1, // Restrict to 1 connection per lambda to avoid Oracle limits
+      maxIdleTimeMS: 5000, // Close idle connections quickly
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then(mongoose => {
