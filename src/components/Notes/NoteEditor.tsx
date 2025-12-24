@@ -21,7 +21,7 @@ import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react
 import { INotePage } from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
-import RichTextEditor from './RichTextEditor';
+
 import ToDoModal from './ToDoModal';
 import { AttachmentManager } from './AttachmentManager';
 
