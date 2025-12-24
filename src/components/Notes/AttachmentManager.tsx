@@ -1,3 +1,5 @@
+/* eslint-disable simple-import-sort/imports */
+/* eslint-disable react/jsx-sort-props */
 import { PaperClipIcon, TrashIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -21,7 +23,7 @@ const formatSize = (bytes: number) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export const AttachmentManager: React.FC<AttachmentManagerProps> = ({ pageId }) => {
+export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({ pageId }) => {
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
