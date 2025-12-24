@@ -64,9 +64,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
         const file = e.dataTransfer.files[0];
         await processUpload(file);
-    }, [pageId]);
+    }, [processUpload]);
 
-    const processUpload = async (file: File) => {
+    const processUpload = useCallback(async (file: File) => {
         if (file.size > 15 * 1024 * 1024) {
             setError('File is too large (max 15MB)');
             return;
@@ -97,7 +97,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         } finally {
             setIsUploading(false);
         }
-    };
+    }, [pageId]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
