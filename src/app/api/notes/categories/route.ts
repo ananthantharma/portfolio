@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 
@@ -14,19 +14,8 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Ensure mongoose is connected
-  if (mongoose.connection.readyState === 0) {
-    if (process.env.MONGODB_URI) {
-      await mongoose.connect(process.env.MONGODB_URI);
-    } else {
-      await dbConnect();
-    }
-  } else {
-    // If connected state is weird, ensure dbConnect is called or just proceed
-    if (!mongoose.connections[0].readyState) {
-      await dbConnect();
-    }
-  }
+  // Ensure mongoose is connected via centralized helper
+  await dbConnect();
   try {
     const categories = await NoteCategory.find({}).sort({ order: 1 });
     return NextResponse.json({ success: true, data: categories });

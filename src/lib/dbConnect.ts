@@ -28,6 +28,11 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
       dbName: 'qt_portfolio',
+      // FORCE parameters required for Oracle Cloud
+      authMechanism: 'PLAIN' as any,
+      authSource: '$external',
+      tls: true,
+      tlsAllowInvalidCertificates: true,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then(mongoose => {
