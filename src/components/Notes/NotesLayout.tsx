@@ -96,9 +96,15 @@ const NotesLayout: React.FC = React.memo(() => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get('/api/notes/categories');
-      setCategories(response.data.data);
+      if (response.data && Array.isArray(response.data.data)) {
+        setCategories(response.data.data);
+      } else {
+        console.error('Invalid categories data received:', response.data);
+        setCategories([]);
+      }
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setCategories([]);
     }
   };
 
