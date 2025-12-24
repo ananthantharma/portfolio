@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 
@@ -14,18 +14,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Ensure mongoose is connected
-  if (mongoose.connection.readyState === 0) {
-    if (process.env.MONGODB_URI) {
-      await mongoose.connect(process.env.MONGODB_URI);
-    } else {
-      await dbConnect();
-    }
-  } else {
-    if (!mongoose.connections[0].readyState) {
-      await dbConnect();
-    }
-  }
+  // Ensure mongoose is connected via centralized helper
+  await dbConnect();
 
   const { searchParams } = new URL(request.url);
   const categoryId = searchParams.get('categoryId');
@@ -51,6 +41,8 @@ export async function POST(request: Request) {
     const section = await NoteSection.create({ ...body, order: count });
     return NextResponse.json({ success: true, data: section }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error }, { status: 400 });
+    console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
