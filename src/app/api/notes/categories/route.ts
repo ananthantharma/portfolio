@@ -37,8 +37,9 @@ export async function POST(request: Request) {
     const count = await NoteCategory.countDocuments();
     const category = await NoteCategory.create({ ...body, order: count });
     return NextResponse.json({ success: true, data: category }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ success: false, error: error.message || error }, { status: 400 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
