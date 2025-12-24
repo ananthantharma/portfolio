@@ -17,11 +17,15 @@ const updatedUri = uri;
 console.log('MongoDB Connection Init:', {
   originalUriPresent: !!uri,
   updatedUriMatches: updatedUri !== uri,
-  targetDb: 'qt_portfolio'
+  debug_authSource: '$external',
+  debug_authMech: 'PLAIN'
 });
 
-const clientOptions = {
-  ...options
+const clientOptions: any = {
+  ...options,
+  authMechanism: 'PLAIN', // Force PLAIN auth for Oracle
+  authSource: '$external', // Force $external source
+  tls: true, // Force TLS
 };
 
 if (process.env.NODE_ENV === 'development') {
