@@ -11,9 +11,20 @@ if (!uri) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-// Replace the default database '/ADMIN?' with '/qt_portfolio?' to prevent
+// Replace the default database '/ADMIN' with '/qt_portfolio' to prevent
 // restricted access errors on Oracle Cloud's system database.
-const updatedUri = uri.replace('/ADMIN?', '/qt_portfolio?');
+// Uses a regex to be safe against case sensitivity and slash variations.
+const updatedUri = uri.replace(/\/ADMIN(\?|$)/i, '/qt_portfolio$1');
+
+console.log('MongoDB Connection Init:', {
+  originalUriPresent: !!uri,
+  updatedUriMatches: updatedUri !== uri,
+  targetDb: 'qt_portfolio'
+});
+
+const clientOptions = {
+  ...options
+};
 
 if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
@@ -23,13 +34,13 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(updatedUri, options);
+    client = new MongoClient(updatedUri, clientOptions);
     globalWithMongo._mongoClientPromise = client.connect();
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production mode, it's best to not use a global variable.
-  client = new MongoClient(updatedUri, options);
+  client = new MongoClient(updatedUri, clientOptions);
   clientPromise = client.connect();
 }
 
