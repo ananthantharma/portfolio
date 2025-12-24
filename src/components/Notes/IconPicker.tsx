@@ -108,7 +108,7 @@ import {
     ThumbsDown,
     ThumbsUp,
     ToggleLeft,
-    Tool,
+
     Trash,
     Trash2,
     TrendingUp,
@@ -247,7 +247,7 @@ export const ICON_options = {
     ThumbsDown,
     ThumbsUp,
     ToggleLeft,
-    Tool,
+
     Trash,
     Trash2,
     TrendingUp,
