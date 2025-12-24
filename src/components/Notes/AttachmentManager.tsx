@@ -170,4 +170,4 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
             )}
         </div>
     );
-};
+});
