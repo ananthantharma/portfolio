@@ -44,10 +44,29 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         fetchAttachments();
     }, [fetchAttachments]);
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
+    const [isDragging, setIsDragging] = useState(false);
 
-        const file = e.target.files[0];
+    const onDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const onDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    }, []);
+
+    const onDrop = useCallback(async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+
+        const file = e.dataTransfer.files[0];
+        await processUpload(file);
+    }, [pageId]);
+
+    const processUpload = async (file: File) => {
         if (file.size > 15 * 1024 * 1024) {
             setError('File is too large (max 15MB)');
             return;
@@ -69,8 +88,6 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
             if (res.ok) {
                 setAttachments((prev) => [data.data, ...prev]);
-                // Reset input
-                e.target.value = '';
             } else {
                 setError(data.error || 'Upload failed');
             }
@@ -80,6 +97,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        await processUpload(e.target.files[0]);
+        e.target.value = '';
     };
 
     const handleDelete = async (id: string) => {
@@ -97,7 +120,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
     };
 
     return (
-        <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <div
+            className={`border-t border-gray-200 p-4 transition-colors ${isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'}`}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+        >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <PaperClipIcon className="h-4 w-4" />
@@ -115,6 +143,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
                     </label>
                 </div>
             </div>
+
+            {isDragging && (
+                <div className="mb-4 p-4 border-2 border-dashed border-indigo-400 rounded-lg bg-indigo-50 text-center text-indigo-600 animate-pulse">
+                    Drop files here to upload
+                </div>
+            )}
 
             {error && (
                 <div className="mb-3 px-3 py-2 text-xs text-red-600 bg-red-50 rounded border border-red-100">
