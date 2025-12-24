@@ -11,51 +11,35 @@ if (!uri) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-// 1. Manually parse credentials to ensure correct decoding (fixes %40 vs @ issues)
-let connectionUri = uri;
-const authOptions: Partial<MongoClientOptions> = {};
+// SIMPLIFIED DEBUGGING STRATEGY:
+// 1. Use the URI exactly as provided by the user (preserving all params like loadBalanced=true)
+// 2. Relax TLS/SSL validation to ensure certificate chain issues don't mask as auth failures.
+// 3. Log diagnostic info about the password format.
 
-try {
-  const match = uri.match(/mongodb:\/\/([^:]+):([^@]+)@/);
-  if (match) {
-    const rawUser = match[1];
-    const rawPass = match[2];
+const connectionUri = uri;
 
-    // Pass decoded credentials explicitly. 
-    // This bypasses driver's internal URI parsing which might be buggy with special chars + loadBalanced.
-    authOptions.auth = {
-      username: decodeURIComponent(rawUser),
-      password: decodeURIComponent(rawPass)
-    };
-
-    // Remove credentials from the URI string passed to MongoClient
-    // so the driver relies ONLY on our explicit 'auth' object.
-    connectionUri = uri.replace(`${rawUser}:${rawPass}@`, '');
-  }
-} catch (e) {
-  console.error('Failed to parse URI for explicit auth, falling back to original', e);
-}
-
-// 2. Ensure loadBalanced=true is present (Oracle requirement)
-// If we stripped creds, we might have stripped query params if they were attached weirdly, 
-// but usually params are at the end. We double check just in case.
-if (!connectionUri.includes('loadBalanced=true')) {
-  const separator = connectionUri.includes('?') ? '&' : '?';
-  connectionUri += `${separator}loadBalanced=true`;
-}
-
+// Debug Password Parsing (Masked) - Helps user verify if Env Var is correct
+const passwordMatch = uri.match(/:([^:@]+)@/);
 console.log('MongoDB Connection Init:', {
-  mode: 'Explicit Auth Object',
-  hasAuth: !!authOptions.auth,
-  sanitizedUri: connectionUri.replace(/\?.*/, '?[params hidden]'),
+  length: uri.length,
+  passwordDebug: passwordMatch ? {
+    length: passwordMatch[1].length,
+    startsWith: passwordMatch[1].substring(0, 2),
+    endsWith: passwordMatch[1].slice(-2),
+    isEncoded: passwordMatch[1].includes('%')
+  } : 'Not Found',
+  options: {
+    tls: true,
+    tlsAllowInvalidCertificates: true
+  }
 });
 
 const clientOptions: MongoClientOptions = {
   ...options,
-  ...authOptions, // Admin/Password passed here
-  authMechanism: 'PLAIN',
-  authSource: '$external',
+  // We rely on the URI for authMechanism and authSource, 
+  // but we enforce TLS settings here.
   tls: true,
+  tlsAllowInvalidCertificates: true, // Bypass potential chain validation errors on Oracle
 };
 
 if (process.env.NODE_ENV === 'development') {
