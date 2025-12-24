@@ -135,6 +135,7 @@ import {
     ZoomOut,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export const ICON_options = {
     Activity,
@@ -286,6 +287,11 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
     const buttonRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Brandfetch State
     const [brandSearchTerm, setBrandSearchTerm] = useState(selectedImage || '');
@@ -422,7 +428,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                 <span className="truncate max-w-[100px]">{selectedImage ? selectedImage : selectedIcon}</span>
             </button>
 
-            {isOpen && (
+            {mounted && isOpen && (createPortal(
                 <div
                     className="animate-in fade-in zoom-in-95 w-72 rounded-xl border border-gray-200 bg-white p-3 shadow-xl duration-200"
                     ref={dropdownRef}
@@ -553,8 +559,9 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                             </button>
                         </div>
                     )}
-                </div>
-            )}
+                </div>,
+                document.body
+            ) as React.ReactNode)}
         </div>
     );
 });
