@@ -19,8 +19,9 @@ export async function GET() {
   try {
     const categories = await NoteCategory.find({}).sort({ order: 1 });
     return NextResponse.json({ success: true, data: categories });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error }, { status: 400 });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    return NextResponse.json({ success: false, error: error.message || error }, { status: 400 });
   }
 }
 
@@ -35,7 +36,8 @@ export async function POST(request: Request) {
     const count = await NoteCategory.countDocuments();
     const category = await NoteCategory.create({ ...body, order: count });
     return NextResponse.json({ success: true, data: category }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error }, { status: 400 });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    return NextResponse.json({ success: false, error: error.message || error }, { status: 400 });
   }
 }
