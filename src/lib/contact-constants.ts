@@ -49,6 +49,7 @@ export interface IContactBase {
   position?: string;
   department?: string;
   type?: 'Internal' | 'External';
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }
