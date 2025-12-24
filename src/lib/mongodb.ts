@@ -13,7 +13,7 @@ if (!uri) {
 
 // 1. Manually parse credentials to ensure correct decoding (fixes %40 vs @ issues)
 let connectionUri = uri;
-let authOptions: any = {};
+const authOptions: Partial<MongoClientOptions> = {};
 
 try {
   const match = uri.match(/mongodb:\/\/([^:]+):([^@]+)@/);
