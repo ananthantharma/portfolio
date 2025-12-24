@@ -455,14 +455,14 @@ const NotesLayout: React.FC = React.memo(() => {
           <div className="h-4 w-px bg-gray-200"></div>
           <button
             className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-            title="Important"
-            onClick={handleOpenImportant}>
+            onClick={handleOpenImportant}
+            title="Important">
             <ExclamationTriangleIcon className="h-4 w-4" />
           </button>
           <button
             className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-            title="Key Tasks"
-            onClick={handleOpenKeyTasks}>
+            onClick={handleOpenKeyTasks}
+            title="Key Tasks">
             <FlagIcon className="h-4 w-4" />
           </button>
         </div>
