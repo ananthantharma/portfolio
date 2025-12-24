@@ -36,8 +36,9 @@ console.log('MongoDB Connection Init:', {
 
 const clientOptions: MongoClientOptions = {
   ...options,
-  // We rely on the URI for authMechanism and authSource, 
-  // but we enforce TLS settings here.
+  // FORCE parameters required for Oracle Cloud
+  authMechanism: 'PLAIN',
+  authSource: '$external',
   tls: true,
   tlsAllowInvalidCertificates: true, // Bypass potential chain validation errors on Oracle
 };
