@@ -39,6 +39,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
+  const [isPageCollapsed, setIsPageCollapsed] = useState(false);
 
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
@@ -302,12 +303,13 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Page Operations
   const handleAddPage = useCallback(
-    async (title: string, color?: string) => {
+    async (title: string, color?: string, icon?: string) => {
       if (!selectedSectionId) return;
       try {
         const response = await axios.post('/api/notes/pages', {
           title,
           color,
+          icon,
           sectionId: selectedSectionId,
         });
         setPages(prev => [response.data.data, ...prev]);
@@ -319,9 +321,9 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
-  const handleRenamePage = useCallback(async (id: string, title: string, color?: string) => {
+  const handleRenamePage = useCallback(async (id: string, title: string, color?: string, icon?: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { title, color });
+      const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error renaming page:', error);
@@ -400,6 +402,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleToggleSectionCollapse = useCallback(
     () => setIsSectionCollapsed(!isSectionCollapsed),
     [isSectionCollapsed],
+  );
+  const handleTogglePageCollapse = useCallback(
+    () => setIsPageCollapsed(!isPageCollapsed),
+    [isPageCollapsed],
   );
 
   return (
@@ -514,14 +520,17 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         {/* Column 3: Pages */}
-        <div className="w-64 flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl z-0">
+        <div
+          className={`${isPageCollapsed ? 'w-14' : 'w-64'} flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-0`}>
           <PageList
+            isCollapsed={isPageCollapsed}
             loading={loadingPages}
             onAddPage={handleAddPage}
             onDeletePage={handleDeletePage}
             onRenamePage={handleRenamePage}
             onReorderPages={handleReorderPages}
             onSelectPage={setSelectedPageId}
+            onToggleCollapse={handleTogglePageCollapse}
             pages={pages}
             selectedPageId={selectedPageId}
           />

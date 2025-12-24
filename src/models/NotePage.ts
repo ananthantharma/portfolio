@@ -1,9 +1,10 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INotePage extends Document {
   title: string;
   content: string;
   color?: string;
+  icon?: string;
   sectionId: mongoose.Types.ObjectId;
   isFlagged: boolean;
   isImportant: boolean;
@@ -25,6 +26,10 @@ const NotePageSchema: Schema = new Schema(
     color: {
       type: String,
       default: '#000000',
+    },
+    icon: {
+      type: String,
+      default: 'FileText',
     },
     sectionId: {
       type: mongoose.Schema.Types.ObjectId,
