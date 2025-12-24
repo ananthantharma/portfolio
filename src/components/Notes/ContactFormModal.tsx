@@ -66,6 +66,10 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
       }
     }, [isOpen, initialData]);
 
+    const handleIconSelect = React.useCallback((_icon: string, img?: string | null) => {
+      setImage(img || undefined);
+    }, []);
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       onSave({
@@ -122,7 +126,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                         <IconPicker
                           selectedIcon="User"
                           selectedImage={image}
-                          onSelectIcon={(_icon, img) => setImage(img || undefined)}
+                          onSelectIcon={handleIconSelect}
                         />
                       </div>
                     </div>
