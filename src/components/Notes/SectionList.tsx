@@ -245,7 +245,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                           <div className="flex items-center gap-3 truncate pl-2">
                             {(() => {
                               const IconComp = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options['Bookmark'];
-                              return <IconComp className="h-4 w-4 opacity-70" style={{ color: section.color }} />;
+                              return <IconComp className="h-4 w-4 opacity-70" color={section.color} />;
                             })()}
                             <span className="truncate">{section.name}</span>
                           </div>
@@ -285,13 +285,13 @@ const SectionList: React.FC<SectionListProps> = React.memo(
               const isSelected = selectedSectionId === section._id;
               return (
                 <button
-                  key={section._id as string}
                   className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
                     }`}
+                  key={section._id as string}
                   onClick={() => onSelectSection(section._id as string)}
                   title={section.name}
                 >
-                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} style={{ color: isSelected ? undefined : section.color }} />
+                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} color={isSelected ? undefined : section.color} />
                 </button>
               )
             })}

@@ -236,7 +236,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                           <div className="flex items-center gap-3 truncate pl-2">
                             {(() => {
                               const IconComp = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options['Folder'];
-                              return <IconComp className="h-4 w-4 opacity-70" style={{ color: category.color }} />;
+                              return <IconComp className="h-4 w-4 opacity-70" color={category.color} />;
                             })()}
 
                             <span className="truncate">{category.name}</span>
@@ -277,13 +277,13 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               const isSelected = selectedCategoryId === category._id;
               return (
                 <button
-                  key={category._id as string}
                   className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
                     }`}
+                  key={category._id as string}
                   onClick={() => onSelectCategory(category._id as string)}
                   title={category.name}
                 >
-                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} style={{ color: isSelected ? undefined : category.color }} />
+                  <IconComp className={`h-5 w-5 ${isSelected ? 'text-gray-800' : 'text-gray-500'}`} color={isSelected ? undefined : category.color} />
                 </button>
               )
             })}

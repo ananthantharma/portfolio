@@ -44,7 +44,6 @@ import {
     Sun,
     Tag,
     ThumbsUp,
-
     Trash,
     Truck,
     User,
@@ -56,67 +55,66 @@ import {
 import React, { useMemo, useState } from 'react';
 
 export const ICON_options = {
-    Folder,
+    Archive,
     Book,
-    Layers,
-    Tag,
-    Star,
-    Heart,
-    Flag,
     Bookmark,
     Briefcase,
-    Home,
-    User,
-    Users,
-    Settings,
-    FileText,
-    Image,
-    Video,
-    Music,
-    Code,
-    Database,
-    Cloud,
-    Link,
-    Lock,
-    Search,
-    CheckCircle,
-    Clipboard,
-    Layout,
-    Monitor,
-    Smartphone,
     Calculator,
     Calendar,
     Camera,
+    CheckCircle,
+    Clipboard,
+    Cloud,
+    Code,
     CreditCard,
+    Database,
+    FileText,
+    Flag,
+    Folder,
     Globe,
+    Heart,
+    Home,
+    Image,
+    Layers,
+    Layout,
     Lightbulb,
+    Link,
+    Lock,
     Mail,
     Map,
     MessageSquare,
+    Monitor,
+    Music,
     Package,
     PenTool,
     Phone,
     PieChart,
     Play,
     Printer,
+    Search,
+    Settings,
     ShoppingBag,
+    Smartphone,
     Smile,
+    Star,
     Sun,
+    Tag,
     ThumbsUp,
-
     Trash,
     Truck,
+    User,
+    Users,
+    Video,
     Wifi,
     Zap,
-    Archive,
 };
 
 interface IconPickerProps {
+    onSelectIcon: (iconName: string) => void;
     selectedIcon: string;
-    onSelectIcon: (icon: string) => void;
 }
 
-export const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onSelectIcon }) => {
+export const IconPicker: React.FC<IconPickerProps> = React.memo(({ selectedIcon, onSelectIcon }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -169,4 +167,6 @@ export const IconPicker: React.FC<IconPickerProps> = ({ selectedIcon, onSelectIc
             )}
         </div>
     );
-};
+});
+
+IconPicker.displayName = 'IconPicker';
