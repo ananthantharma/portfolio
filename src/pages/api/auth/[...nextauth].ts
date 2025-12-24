@@ -5,7 +5,9 @@ import GoogleProvider from 'next-auth/providers/google';
 import clientPromise from '../../../lib/mongodb';
 
 export const authOptions = {
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: 'qt_portfolio',
+  }),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
