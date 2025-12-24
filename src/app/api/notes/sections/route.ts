@@ -6,6 +6,8 @@ import dbConnect from '@/lib/dbConnect';
 import NoteSection from '@/models/NoteSection';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
