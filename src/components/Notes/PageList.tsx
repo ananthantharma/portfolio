@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {
   CalendarIcon,
   CheckIcon,
@@ -18,14 +18,14 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { FileText } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import {FileText} from 'lucide-react';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface PageListProps {
   pages: INotePage[];
@@ -39,6 +39,95 @@ interface PageListProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
+
+const PageItem = React.memo<{
+  page: INotePage;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onEdit: (page: INotePage) => void;
+  onDelete: (id: string) => void;
+  isCollapsed: boolean;
+}>(({page, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
+  const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || FileText;
+
+  const style = useMemo(
+    () => ({
+      backgroundColor: page.color,
+    }),
+    [page.color],
+  );
+
+  return (
+    <SortableItem id={page._id as string}>
+      <div
+        className={`group flex cursor-pointer items-center rounded-md transition-colors ${
+          isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
+        } ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+        onClick={() => onSelect(page._id as string)}
+        title={page.title}>
+        <div className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+          <div className="flex items-center justify-center flex-shrink-0 relative">
+            {page.image ? (
+              <img
+                alt={page.title}
+                className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} object-contain`}
+                onError={e => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+                src={`/api/notes/brandfetch?domain=${page.image}`}
+              />
+            ) : null}
+            <PageIcon
+              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${page.image ? 'hidden' : ''} ${
+                isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+              }`}
+            />
+            {page.color && page.color !== '#000000' && (
+              <span
+                className="absolute -bottom-1 -right-1 block h-2 w-2 rounded-full ring-1 ring-white"
+                style={style}
+              />
+            )}
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="truncate">{page.title}</span>
+              <span className="truncate text-[10px] text-gray-400 font-normal">
+                {new Date(page.updatedAt).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {!isCollapsed && (
+          <div className="hidden space-x-1 group-hover:flex">
+            <button
+              className="text-gray-400 hover:text-blue-600 p-1"
+              onClick={e => {
+                e.stopPropagation();
+                onEdit(page);
+              }}>
+              <PencilIcon className="h-3.5 w-3.5" />
+            </button>
+            <button
+              className="text-gray-400 hover:text-red-600 p-1"
+              onClick={e => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this page?')) {
+                  onDelete(page._id as string);
+                }
+              }}>
+              <TrashIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </SortableItem>
+  );
+});
+
+PageItem.displayName = 'PageItem';
 
 const PageList: React.FC<PageListProps> = React.memo(
   ({
@@ -78,7 +167,7 @@ const PageList: React.FC<PageListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = pages.findIndex(p => p._id === active.id);
@@ -93,7 +182,7 @@ const PageList: React.FC<PageListProps> = React.memo(
       [pages, onReorderPages],
     );
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
       if (newPageTitle.trim()) {
         onAddPage(newPageTitle, newPageColor, newPageIcon, newPageImage);
         setNewPageTitle('');
@@ -102,22 +191,22 @@ const PageList: React.FC<PageListProps> = React.memo(
         setNewPageImage(null);
         setIsAdding(false);
       }
-    };
+    }, [newPageTitle, newPageColor, newPageIcon, newPageImage, onAddPage]);
 
-    const handleAddToday = () => {
-      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const handleAddToday = useCallback(() => {
+      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
       onAddPage(today, '#000000', 'Calendar', null);
-    };
+    }, [onAddPage]);
 
-    const startEditing = (page: INotePage) => {
+    const startEditing = useCallback((page: INotePage) => {
       setEditingId(page._id as string);
       setEditTitle(page.title);
       setEditColor(page.color || '#000000');
       setEditIcon(page.icon || 'FileText');
       setEditImage(page.image || null);
-    };
+    }, []);
 
-    const handleRename = () => {
+    const handleRename = useCallback(() => {
       if (editingId && editTitle.trim()) {
         onRenamePage(editingId, editTitle, editColor, editIcon, editImage);
         setEditingId(null);
@@ -126,23 +215,25 @@ const PageList: React.FC<PageListProps> = React.memo(
         setEditIcon('FileText');
         setEditImage(null);
       }
-    };
+    }, [editingId, editTitle, editColor, editIcon, editImage, onRenamePage]);
 
-    const handleAddClick = () => {
+    const handleAddClick = useCallback(() => {
       if (isCollapsed) onToggleCollapse();
       setIsAdding(true);
-    };
+    }, [isCollapsed, onToggleCollapse]);
 
-    const handleIconSelect = (icon: string, image?: string | null) => {
-      if (editingId) {
-        setEditIcon(icon);
-        setEditImage(image || null);
-      } else {
-        setNewPageIcon(icon);
-        setNewPageImage(image || null);
-      }
-    };
-
+    const handleIconSelect = useCallback(
+      (icon: string, image?: string | null) => {
+        if (editingId) {
+          setEditIcon(icon);
+          setEditImage(image || null);
+        } else {
+          setNewPageIcon(icon);
+          setNewPageImage(image || null);
+        }
+      },
+      [editingId],
+    );
 
     if (loading) {
       return (
@@ -197,12 +288,8 @@ const PageList: React.FC<PageListProps> = React.memo(
             <div className="p-2">
               <div className="flex flex-col gap-2 rounded-md border border-gray-200 bg-gray-50 p-3 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <IconPicker
-                    onSelectIcon={handleIconSelect}
-                    selectedIcon={newPageIcon}
-                    selectedImage={newPageImage}
-                  />
-                  <ColorPicker selectedColor={newPageColor} onSelectColor={setNewPageColor} />
+                  <IconPicker onSelectIcon={handleIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
+                  <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
                 </div>
                 <input
                   autoFocus
@@ -232,8 +319,6 @@ const PageList: React.FC<PageListProps> = React.memo(
             <SortableContext items={pages.map(p => p._id as string)} strategy={verticalListSortingStrategy}>
               <ul className={`space-y-1 ${isCollapsed ? 'px-1 py-2' : 'p-2'}`}>
                 {pages.map(page => {
-                  const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || FileText;
-
                   if (editingId === page._id && !isCollapsed) {
                     return (
                       <div className="p-2" key={page._id as string}>
@@ -244,7 +329,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                               selectedIcon={editIcon}
                               selectedImage={editImage}
                             />
-                            <ColorPicker selectedColor={editColor} onSelectColor={setEditColor} />
+                            <ColorPicker onSelectColor={setEditColor} selectedColor={editColor} />
                           </div>
                           <input
                             autoFocus
@@ -273,76 +358,15 @@ const PageList: React.FC<PageListProps> = React.memo(
                   }
 
                   return (
-                    <SortableItem id={page._id as string} key={page._id as string}>
-                      <div
-                        className={`group flex cursor-pointer items-center rounded-md transition-colors ${isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
-                          } ${selectedPageId === page._id
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-50'
-                          }`}
-                        onClick={() => onSelectPage(page._id as string)}
-                        title={page.title}>
-                        <div
-                          className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-                          <div className="flex items-center justify-center flex-shrink-0 relative">
-                            {page.image ? (
-                              <img
-                                src={`/api/notes/brandfetch?domain=${page.image}`}
-                                alt={page.title}
-                                className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} object-contain`}
-                                onError={e => {
-                                  e.currentTarget.style.display = 'none';
-                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : null}
-                            <PageIcon
-                              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${page.image ? 'hidden' : ''} ${selectedPageId === page._id
-                                ? 'text-blue-600'
-                                : 'text-gray-400 group-hover:text-gray-600'
-                                }`}
-                            />
-                            {page.color && page.color !== '#000000' && (
-                              <span
-                                className="absolute -bottom-1 -right-1 block h-2 w-2 rounded-full ring-1 ring-white"
-                                style={{ backgroundColor: page.color }}
-                              />
-                            )}
-                          </div>
-                          {!isCollapsed && (
-                            <div className="flex flex-col overflow-hidden">
-                              <span className="truncate">{page.title}</span>
-                              <span className="truncate text-[10px] text-gray-400 font-normal">
-                                {new Date(page.updatedAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {!isCollapsed && (
-                          <div className="hidden space-x-1 group-hover:flex">
-                            <button
-                              className="text-gray-400 hover:text-blue-600 p-1"
-                              onClick={e => {
-                                e.stopPropagation();
-                                startEditing(page);
-                              }}>
-                              <PencilIcon className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              className="text-gray-400 hover:text-red-600 p-1"
-                              onClick={e => {
-                                e.stopPropagation();
-                                if (confirm('Are you sure you want to delete this page?')) {
-                                  onDeletePage(page._id as string);
-                                }
-                              }}>
-                              <TrashIcon className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </SortableItem>
+                    <PageItem
+                      isCollapsed={isCollapsed}
+                      isSelected={selectedPageId === page._id}
+                      key={page._id as string}
+                      onDelete={onDeletePage}
+                      onEdit={startEditing}
+                      onSelect={onSelectPage}
+                      page={page}
+                    />
                   );
                 })}
               </ul>

@@ -7,15 +7,15 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INoteSection } from '@/models/NoteSection';
+import {INoteSection} from '@/models/NoteSection';
 
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface SectionListProps {
   sections: INoteSection[];
@@ -29,6 +29,118 @@ interface SectionListProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
 }
+
+const SectionItem = React.memo<{
+  section: INoteSection;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onEdit: (section: INoteSection) => void;
+  onDelete: (id: string) => void;
+  isCollapsed: boolean;
+}>(({section, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
+  const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+
+  const style = useMemo(
+    () => ({
+      color: section.color && section.color !== '#000000' ? section.color : undefined,
+    }),
+    [section.color],
+  );
+
+  const collapsedStyle = useMemo(
+    () => ({
+      color: isSelected ? undefined : section.color,
+    }),
+    [isSelected, section.color],
+  );
+
+  if (isCollapsed) {
+    return (
+      <button
+        className={`p-2 rounded-lg transition-all ${
+          isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+        }`}
+        onClick={() => onSelect(section._id as string)}
+        title={section.name}>
+        {section.image ? (
+          <img
+            alt={section.name}
+            className="h-5 w-5 object-contain"
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+            src={`/api/notes/brandfetch?domain=${section.image}`}
+          />
+        ) : null}
+        <SectionIcon
+          className={`h-5 w-5 ${section.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
+          style={collapsedStyle}
+        />
+      </button>
+    );
+  }
+
+  return (
+    <SortableItem id={section._id as string}>
+      <div
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+          isSelected
+            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+            : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+        }`}
+        onClick={() => onSelect(section._id as string)}>
+        {/* Accent Bar */}
+        {isSelected && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-md bg-blue-500"></div>
+        )}
+
+        <div className="flex items-center gap-3 truncate pl-2">
+          {section.image ? (
+            <img
+              alt={section.name}
+              className="h-4 w-4 object-contain"
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              }}
+              src={`/api/notes/brandfetch?domain=${section.image}`}
+            />
+          ) : null}
+          <SectionIcon
+            className={`h-4 w-4 shrink-0 transition-colors ${section.image ? 'hidden' : ''} ${
+              isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+            }`}
+            style={style}
+          />
+          <span className="truncate">{section.name}</span>
+        </div>
+        <div className="hidden space-x-1 group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-blue-600"
+            onClick={e => {
+              e.stopPropagation();
+              onEdit(section);
+            }}>
+            <PencilIcon className="h-3.5 w-3.5" />
+          </button>
+          <button
+            className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-600"
+            onClick={e => {
+              e.stopPropagation();
+              if (confirm('Are you sure you want to delete this section and all its pages?')) {
+                onDelete(section._id as string);
+              }
+            }}>
+            <TrashIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </SortableItem>
+  );
+});
+
+SectionItem.displayName = 'SectionItem';
 
 const SectionList: React.FC<SectionListProps> = React.memo(
   ({
@@ -68,7 +180,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = sections.findIndex(s => s._id === active.id);
@@ -83,7 +195,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
       [sections, onReorderSections],
     );
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
       if (newSectionName.trim()) {
         onAddSection(newSectionName, newSectionColor, newSectionIcon, newSectionImage);
         setNewSectionName('');
@@ -92,17 +204,17 @@ const SectionList: React.FC<SectionListProps> = React.memo(
         setNewSectionImage(null);
         setIsAdding(false);
       }
-    };
+    }, [newSectionName, newSectionColor, newSectionIcon, newSectionImage, onAddSection]);
 
-    const startEditing = (section: INoteSection) => {
+    const startEditing = useCallback((section: INoteSection) => {
       setEditingId(section._id as string);
       setEditName(section.name);
       setEditColor(section.color || '#000000');
       setEditIcon(section.icon || 'Folder');
       setEditImage(section.image || null);
-    };
+    }, []);
 
-    const handleRename = () => {
+    const handleRename = useCallback(() => {
       if (editingId && editName.trim()) {
         onRenameSection(editingId, editName, editColor, editIcon, editImage);
         setEditingId(null);
@@ -111,18 +223,20 @@ const SectionList: React.FC<SectionListProps> = React.memo(
         setEditIcon('Folder');
         setEditImage(null);
       }
-    };
+    }, [editingId, editName, editColor, editIcon, editImage, onRenameSection]);
 
-    const handleIconSelect = (icon: string, image?: string | null) => {
-      if (editingId) {
-        setEditIcon(icon);
-        setEditImage(image || null);
-      } else {
-        setNewSectionIcon(icon);
-        setNewSectionImage(image || null);
-      }
-    };
-
+    const handleIconSelect = useCallback(
+      (icon: string, image?: string | null) => {
+        if (editingId) {
+          setEditIcon(icon);
+          setEditImage(image || null);
+        } else {
+          setNewSectionIcon(icon);
+          setNewSectionImage(image || null);
+        }
+      },
+      [editingId],
+    );
 
     if (loading) {
       return (
@@ -203,15 +317,12 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
             <div
               className="flex-1 overflow-y-auto"
-              onClick={e => e.stopPropagation()} // Prevent bubble up
-              onPointerDown={e => e.stopPropagation()} // Prevent drag initiation
-            >
+              onClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}>
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
                 <SortableContext items={sections.map(s => s._id as string)} strategy={verticalListSortingStrategy}>
                   <ul className="space-y-1">
                     {sections.map(section => {
-                      const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
-
                       if (editingId === section._id) {
                         return (
                           <div
@@ -258,61 +369,15 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                       }
 
                       return (
-                        <SortableItem id={section._id as string} key={section._id as string}>
-                          <div
-                            className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${selectedSectionId === section._id
-                              ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-                              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
-                              }`}
-                            onClick={() => onSelectSection(section._id as string)}>
-                            {/* Accent Bar */}
-                            {selectedSectionId === section._id && (
-                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-md bg-blue-500"></div>
-                            )}
-
-                            <div className="flex items-center gap-3 truncate pl-2">
-                              {section.image ? (
-                                <img
-                                  src={`/api/notes/brandfetch?domain=${section.image}`}
-                                  alt={section.name}
-                                  className="h-4 w-4 object-contain"
-                                  onError={e => {
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                  }}
-                                />
-                              ) : null}
-                              <SectionIcon
-                                className={`h-4 w-4 shrink-0 transition-colors ${section.image ? 'hidden' : ''
-                                  } ${selectedSectionId === section._id ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'}`}
-                                style={{
-                                  color: section.color && section.color !== '#000000' ? section.color : undefined,
-                                }}
-                              />
-                              <span className="truncate">{section.name}</span>
-                            </div>
-                            <div className="hidden space-x-1 group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-blue-600"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  startEditing(section);
-                                }}>
-                                <PencilIcon className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-600"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  if (confirm('Are you sure you want to delete this section and all its pages?')) {
-                                    onDeleteSection(section._id as string);
-                                  }
-                                }}>
-                                <TrashIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </SortableItem>
+                        <SectionItem
+                          isCollapsed={false}
+                          isSelected={selectedSectionId === section._id}
+                          key={section._id as string}
+                          onDelete={onDeleteSection}
+                          onEdit={startEditing}
+                          onSelect={onSelectSection}
+                          section={section}
+                        />
                       );
                     })}
                   </ul>
@@ -321,36 +386,18 @@ const SectionList: React.FC<SectionListProps> = React.memo(
             </div>
           </div>
         ) : (
-          // Collapsed State
           <div className="flex flex-col items-center gap-2 pt-4">
-            {sections.map(section => {
-              const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
-              const isSelected = selectedSectionId === section._id;
-              return (
-                <button
-                  className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
-                    }`}
-                  key={section._id as string}
-                  onClick={() => onSelectSection(section._id as string)}
-                  title={section.name}>
-                  {section.image ? (
-                    <img
-                      src={`/api/notes/brandfetch?domain=${section.image}`}
-                      alt={section.name}
-                      className="h-5 w-5 object-contain"
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <SectionIcon
-                    className={`h-5 w-5 ${section.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
-                    style={{ color: isSelected ? undefined : section.color }}
-                  />
-                </button>
-              );
-            })}
+            {sections.map(section => (
+              <SectionItem
+                isCollapsed={true}
+                isSelected={selectedSectionId === section._id}
+                key={section._id as string}
+                onDelete={onDeleteSection}
+                onEdit={startEditing}
+                onSelect={onSelectSection}
+                section={section}
+              />
+            ))}
           </div>
         )}
       </div>
