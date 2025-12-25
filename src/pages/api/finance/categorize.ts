@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const prompt = `
       You are a helpful financial assistant.
       I have a list of transactions with descriptions.
-      Please categorize each transaction into EXACTLY one of the following categories, AND determine if it is "Income" or "Expense".
+      Please categorize each transaction into EXACTLY one of the following categories, AND determine if it is "Income", "Expense", or "Transfer".
 
       Categories:
       ${JSON.stringify(TRANSACTION_CATEGORIES)}
@@ -42,9 +42,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       Income Categories (Use positive sentiment or payroll clues):
       "Salary", "Bonuses", "Commission", "Overtime", "Rental Income", "Investment Income", "Dividends", "Capital Gains", "Side Hustle", "Child Benefits (CCB)", "Tax Refunds", "Other"
 
+      **CRITICAL RULES & EDGE CASES (Follow strictly):**
+
+      1. **Rental Income**:
+         - IF description contains "Internet Banking E-TRANSFER", classify as **"Rental Income"** and type **"Income"**.
+
+      2. **Insurance Split ("SECURITY NATIONAL INSU")**:
+         - If multiple entries exist, the **HIGHER** amount is **"Car Insurance"**.
+         - The **LOWER** amount is **"House Insurance"**.
+         - If only one exists, make your best guess or default to "Car Insurance".
+         - Type is **"Expense"**.
+
+      3. **Mortgage**:
+         - IF description contains "Electronic Funds Transfer MORTGAG" (or similar mortgage keywords), classify as **"Mortgage/Rent"** and type **"Expense"**.
+         - Do NOT classify this as a "Transfer".
+
+      4. **Transfers (Excluded from Spend)**:
+         - Payments to Credit Cards (e.g., "Payment to VISA", "MBNA Payment").
+         - Loan Repayments (Student loan, Line of credit).
+         - Transfers between your own accounts.
+         - Classify these as **"Transfer"** (Category can be "Transfer" or "Credit Card Payment").
+         - Type MUST be **"Transfer"**.
+
       Input Format:
       [
-        { "id": "1", "description": "WALMART STORE #123", "amount": 50.00 },
+        { "id": "1", "description": "WALMART STORE #123", "amount": -50.00 },
         ...
       ]
 
@@ -53,14 +75,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       Example:
       {
         "1": { "category": "Groceries", "type": "Expense" },
-        "2": { "category": "Salary", "type": "Income" }
+        "2": { "category": "Salary", "type": "Income" },
+        "3": { "category": "Transfer", "type": "Transfer" }
       }
 
       Rules:
-      1. Only use the provided categories.
+      1. Only use the provided categories (or "Transfer" if applicable).
       2. If uncertain, map to "Miscellaneous".
-      3. Return ONLY the JSON object, no markdown code blocks.
-      4. "type" MUST be either "Income" or "Expense".
+      3. Return ONLY the JSON object.
+      4. "type" MUST be "Income", "Expense", or "Transfer".
 
       Transactions to categorize:
       ${JSON.stringify(batch.map(t => ({ id: t._id, description: t.description, amount: t.amount })))}

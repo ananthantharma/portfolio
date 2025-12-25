@@ -1,13 +1,13 @@
-import mongoose, {model, models, Schema} from 'mongoose';
+import mongoose, { model, models, Schema } from 'mongoose';
 
 export interface ITransaction {
   _id: string;
   date: Date | string;
   description: string;
   amount: number;
-  type: 'Income' | 'Expense';
+  type: 'Income' | 'Expense' | 'Transfer';
   category: string;
-  property?: mongoose.Types.ObjectId | {_id: string; name: string; type: string};
+  property?: mongoose.Types.ObjectId | { _id: string; name: string; type: string };
   isRecurring: boolean;
   cardLast4?: string;
 }
@@ -28,7 +28,7 @@ const TransactionSchema = new Schema<ITransaction>(
     },
     type: {
       type: String,
-      enum: ['Income', 'Expense'],
+      enum: ['Income', 'Expense', 'Transfer'],
       required: true,
     },
     category: {
@@ -49,7 +49,7 @@ const TransactionSchema = new Schema<ITransaction>(
       required: false,
     },
   },
-  {timestamps: true},
+  { timestamps: true },
 );
 
 const Transaction = models.Transaction || model<ITransaction>('Transaction', TransactionSchema);

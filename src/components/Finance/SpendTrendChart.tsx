@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 interface Transaction {
     amount: number;
     date: string | Date;
-    type: 'Income' | 'Expense';
+    type: 'Income' | 'Expense' | 'Transfer';
 }
 
 interface SpendTrendChartProps {

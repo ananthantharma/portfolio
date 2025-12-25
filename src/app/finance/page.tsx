@@ -32,7 +32,7 @@ interface Transaction {
   category: string;
   date: string | Date;
   description: string;
-  type: 'Income' | 'Expense';
+  type: 'Income' | 'Expense' | 'Transfer';
 }
 
 export default function FinanceDashboard() {
@@ -203,7 +203,7 @@ export default function FinanceDashboard() {
     }
   }, [fetchData]);
 
-  const handleBulkCategoryChange = useCallback(async (updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' } }) => {
+  const handleBulkCategoryChange = useCallback(async (updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' | 'Transfer' } }) => {
     // Optimistic Update
     setTransactions(prev => prev.map(t => {
       const update = updates[t._id];

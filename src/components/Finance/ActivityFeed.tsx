@@ -11,7 +11,7 @@ interface Transaction {
     category: string;
     date: string | Date;
     description: string;
-    type: 'Income' | 'Expense';
+    type: 'Income' | 'Expense' | 'Transfer';
 }
 
 interface ActivityItemProps {
@@ -134,7 +134,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onBulkCategoryCh
     const [maxAmount, setMaxAmount] = useState<string>('');
     const [sortBy, setSortBy] = useState<'date' | 'amount_asc' | 'amount_desc'>('date');
     const [filterCategory, setFilterCategory] = useState<string>('');
-    const [filterType, setFilterType] = useState<'All' | 'Income' | 'Expense'>('All');
+    const [filterType, setFilterType] = useState<'All' | 'Income' | 'Expense' | 'Transfer'>('All');
 
     // Reset success status after 3 seconds
     useEffect(() => {
@@ -199,7 +199,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onBulkCategoryCh
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const resObj = (typeof result === 'string') ? { category: result } : (result as any);
                     const newCategory = resObj.category;
-                    const newType = resObj.type as 'Income' | 'Expense' | undefined;
+                    const newType = resObj.type as 'Income' | 'Expense' | 'Transfer' | undefined;
 
                     updates[id] = { category: newCategory };
 
@@ -274,7 +274,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onBulkCategoryCh
                     <div className="flex items-center justify-between gap-2">
                         {/* Type Filter */}
                         <div className="flex bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm">
-                            {(['All', 'Income', 'Expense'] as const).map((type) => (
+                            {(['All', 'Income', 'Expense', 'Transfer'] as const).map((type) => (
                                 <button
                                     className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${filterType === type ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-700'}`}
                                     key={type}
