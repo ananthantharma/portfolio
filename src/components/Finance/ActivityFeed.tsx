@@ -1,4 +1,4 @@
-import { FunnelIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { FunnelIcon, PencilSquareIcon, SparklesIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React, { useMemo, useState } from 'react';
 
 import { getCategoryEmoji } from '@/lib/categories';
@@ -19,6 +19,15 @@ interface ActivityItemProps {
     onCategoryChange: (id: string, category: string) => void;
     onDelete: (id: string) => void;
     onEdit: (t: Transaction) => void;
+}
+
+interface ActivityFeedProps {
+    onCategoryChange: (id: string, category: string) => void;
+    onBulkCategoryChange: (updates: { [id: string]: string }) => void;
+    onClearAll: () => void;
+    onDelete: (id: string) => void;
+    onEdit: (t: Transaction) => void;
+    transactions: Transaction[];
 }
 
 const ActivityItem = React.memo(({ t, onCategoryChange, onDelete, onEdit }: ActivityItemProps) => {
@@ -124,7 +133,8 @@ interface ActivityFeedProps {
     transactions: Transaction[];
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onBulkCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
+    const [isCategorizing, setIsCategorizing] = useState(false);
     const [minAmount, setMinAmount] = useState<string>('');
     const [maxAmount, setMaxAmount] = useState<string>('');
     const [sortBy, setSortBy] = useState<'date' | 'amount_asc' | 'amount_desc'>('date');
@@ -159,19 +169,53 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
         return filtered;
     }, [transactions, minAmount, maxAmount, sortBy, filterCategory]);
 
+    const handleAutoCategorize = async () => {
+        if (filteredTransactions.length === 0) return;
+        if (!confirm(`Auto-categorize ${filteredTransactions.length} transactions with Gemini AI?`)) return;
+
+        try {
+            setIsCategorizing(true);
+            const res = await fetch('/api/finance/categorize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transactions: filteredTransactions })
+            });
+
+            const data = await res.json();
+            if (data.categorizations) {
+                onBulkCategoryChange(data.categorizations);
+            }
+        } catch (error) {
+            console.error("Auto categorization failed", error);
+            alert("Failed to categorize transactions. Please check API configuration.");
+        } finally {
+            setIsCategorizing(false);
+        }
+    };
+
     return (
         <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-100 h-full flex flex-col">
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-slate-800">Recent Activity</h3>
-                    {filteredTransactions.length > 0 && (
+                    <div className="flex items-center gap-2">
                         <button
-                            className="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors"
-                            onClick={onClearAll}
+                            className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-colors border ${isCategorizing ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200'}`}
+                            disabled={isCategorizing || filteredTransactions.length === 0}
+                            onClick={handleAutoCategorize}
                         >
-                            Clear All
+                            <SparklesIcon className={`h-3 w-3 ${isCategorizing ? 'animate-pulse' : ''}`} />
+                            {isCategorizing ? 'Thinking...' : 'AI Categorize'}
                         </button>
-                    )}
+                        {filteredTransactions.length > 0 && (
+                            <button
+                                className="text-xs font-semibold text-rose-500 hover:text-rose-600 transition-colors"
+                                onClick={onClearAll}
+                            >
+                                Clear All
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Filters Row */}

@@ -1,0 +1,82 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+
+import { TRANSACTION_CATEGORIES } from '@/lib/categories';
+import { getChatResponse } from '@/lib/gemini';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    try {
+        const { transactions } = req.body;
+
+        if (!Array.isArray(transactions) || transactions.length === 0) {
+            return res.status(400).json({ error: 'Explore transactions to categorize' });
+        }
+
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Gemini API key not configured' });
+        }
+
+        // Limit batch size to 50 to avoid token limits or timeouts
+        const batch = transactions.slice(0, 50);
+
+        const prompt = `
+      You are a helpful financial assistant.
+      I have a list of transactions with descriptions.
+      Please categorize each transaction into EXACTLY one of the following categories:
+      ${JSON.stringify(TRANSACTION_CATEGORIES)}
+
+      Income Categories (Use positive sentiment or payroll clues):
+      "Salary", "Bonuses", "Commission", "Overtime", "Rental Income", "Investment Income", "Dividends", "Capital Gains", "Side Hustle", "Child Benefits (CCB)", "Tax Refunds", "Other"
+
+      Input Format:
+      [
+        { "id": "1", "description": "WALMART STORE #123", "amount": 50.00 },
+        ...
+      ]
+
+      Output Format:
+      A Valid JSON object mapping ID to Category Name.
+      Example:
+      {
+        "1": "Groceries",
+        "2": "Gas"
+      }
+
+      Rules:
+      1. Only use the provided categories.
+      2. If uncertain, map to "Miscellaneous".
+      3. Return ONLY the JSON object, no markdown code blocks.
+
+      Transactions to categorize:
+      ${JSON.stringify(batch.map(t => ({ id: t._id, description: t.description, amount: t.amount })))}
+    `;
+
+        const responseText = await getChatResponse(
+            apiKey,
+            [],
+            prompt,
+            'gemini-2.0-flash-lite-preview-02-05' // User requested Flash-Lite Latest
+        );
+
+        // Clean response of markdown if present
+        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        let categorizationMap;
+        try {
+            categorizationMap = JSON.parse(cleanJson);
+        } catch (e) {
+            console.error("Failed to parse Gemini response", responseText);
+            return res.status(500).json({ error: 'Failed to parse AI response' });
+        }
+
+        res.status(200).json({ categorizations: categorizationMap });
+
+    } catch (error) {
+        console.error('Categorization error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}

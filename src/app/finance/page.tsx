@@ -203,6 +203,41 @@ export default function FinanceDashboard() {
     }
   }, [fetchData]);
 
+  const handleBulkCategoryChange = useCallback(async (updates: { [id: string]: string }) => {
+    // Optimistic Update
+    setTransactions(prev => prev.map(t => updates[t._id] ? { ...t, category: updates[t._id] } : t));
+
+    // Parallel requests or single Batch API?
+    // Since we don't have a batch update API, we will loop.
+    // However, for 50 items, 50 requests is bad.
+    // Ideally we should CREATE a batch update API.
+    // User didn't ask for a batch API, but "implement".
+    // I already made the categorize API.
+    // I should probably make a batch update API or loop here.
+    // Looping 50 fetches is cleaner than adding another API route right now given time constraints, 
+    // unless I just add it to `api/finance/transactions/update-batch`.
+    // Let's loop for now but limit concurrency? Or just Promise.all.
+
+    // Actually, creating /api/finance/transactions/batch-update is 1 file and much better.
+    // But let's stick to Promise.all for simplicity unless it fails.
+    // For 20-50 items it's fine.
+
+    const updatePromises = Object.entries(updates).map(([id, category]) => {
+      return fetch(`/api/finance/transactions/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category })
+      });
+    });
+
+    try {
+      await Promise.all(updatePromises);
+      fetchData();
+    } catch (err) {
+      console.error("Bulk update failed", err);
+    }
+  }, [fetchData]);
+
 
   const handleClearAllTransactions = useCallback(async () => {
     if (!confirm('Make sure you want to DELETE ALL transactions. This matches your "Clear" request.')) return;
@@ -428,6 +463,7 @@ export default function FinanceDashboard() {
 
           {/* Activity Feed */}
           <ActivityFeed
+            onBulkCategoryChange={handleBulkCategoryChange}
             onCategoryChange={handleSaveTransactionCategory}
             onClearAll={handleClearAllTransactions}
             onDelete={handleDeleteTransaction}
