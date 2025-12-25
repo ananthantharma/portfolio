@@ -16,7 +16,7 @@ import BudgetListModal from '@/components/Finance/BudgetListModal';
 import BudgetOverview from '@/components/Finance/BudgetOverview';
 import CategoryDetailModal from '@/components/Finance/CategoryDetailModal';
 import CSVUploader from '@/components/Finance/CSVUploader';
-import InvestmentManager from '@/components/Finance/InvestmentManager';
+import InvestmentManager, { Investment } from '@/components/Finance/InvestmentManager';
 import MetricCard from '@/components/Finance/MetricCard';
 import MonthSelector from '@/components/Finance/MonthSelector';
 import SpendTrendChart from '@/components/Finance/SpendTrendChart';
@@ -41,6 +41,11 @@ export default function FinanceDashboard() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // Investment State
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investmentPrices, setInvestmentPrices] = useState<{ [ticker: string]: number }>({});
+  const [refreshingPrices, setRefreshingPrices] = useState(false);
+
   // Modal States
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -55,28 +60,55 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
 
   // --- Fetching Data ---
+  const fetchInvestmentPrices = useCallback(async (invs: Investment[]) => {
+    setRefreshingPrices(true);
+    const uniqueTickers = Array.from(new Set(invs.map(i => i.ticker)));
+    const newPrices: { [ticker: string]: number } = {};
+
+    await Promise.all(uniqueTickers.map(async (ticker) => {
+      try {
+        const res = await fetch(`/api/finance/stock-price?ticker=${ticker}`);
+        const data = await res.json();
+        if (data.price) {
+          newPrices[ticker] = data.price;
+        }
+      } catch (err) {
+        console.error(`Failed to fetch price for ${ticker}`, err);
+      }
+    }));
+
+    setInvestmentPrices(prev => ({ ...prev, ...newPrices }));
+    setRefreshingPrices(false);
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [budgetRes, transRes] = await Promise.all([
+      const [budgetRes, transRes, invRes] = await Promise.all([
         fetch('/api/finance/budget'),
         fetch('/api/finance/transactions'),
+        fetch('/api/finance/investments')
       ]);
 
       const budgetData = await budgetRes.json();
       const transData = await transRes.json();
+      const invData = await invRes.json();
 
       if (Array.isArray(budgetData)) setBudgetItems(budgetData);
       if (transData.success) {
         setTransactions(transData.data);
         setLastUpdated(transData.lastUpdated);
       }
+      if (Array.isArray(invData)) {
+        setInvestments(invData);
+        if (invData.length > 0) fetchInvestmentPrices(invData);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchInvestmentPrices]);
 
   useEffect(() => {
     fetchData();
@@ -101,6 +133,24 @@ export default function FinanceDashboard() {
       console.error('Save failed', error);
     }
   }, [editingItem, fetchData]);
+
+
+
+  const handleInvestmentDataChange = useCallback(async () => {
+    // Just refetch investments, prices will auto-fetch if needed?
+    // Actually fetchData fetches all, which might be overkill but ensures consistency?
+    // Or just fetch investments separately.
+    const res = await fetch('/api/finance/investments');
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      setInvestments(data);
+      if (data.length > 0) fetchInvestmentPrices(data);
+    }
+  }, [fetchInvestmentPrices, setInvestments]);
+
+  const handleRefreshPrices = useCallback(() => {
+    fetchInvestmentPrices(investments);
+  }, [fetchInvestmentPrices, investments]);
 
   const handleDeleteBudgetItem = useCallback(async (id: string) => {
     if (!confirm('Delete this budget item?')) return;
@@ -205,6 +255,14 @@ export default function FinanceDashboard() {
     , [budgetItems]);
 
   const netCashFlow = plannedIncome - plannedExpenses;
+
+  const totalPortfolioValue = useMemo(() => {
+    return investments.reduce((sum, inv) => {
+      // Use current price if available, else fallback to book price
+      const price = investmentPrices[inv.ticker] || inv.bookPrice;
+      return sum + (inv.quantity * price);
+    }, 0);
+  }, [investments, investmentPrices]);
 
   // --- Actuals Calculation (Filtered) ---
   // const actualIncome = filteredTransactions
@@ -350,7 +408,7 @@ export default function FinanceDashboard() {
           title="Total Expenses"
         />
         <MetricCard
-          amount={plannedIncome * 0.2} // Dummy 20% savings
+          amount={totalPortfolioValue}
           icon={ArrowTrendingUpIcon}
           iconColorClass="bg-violet-500"
           onClick={handleManageInvestments}
@@ -383,7 +441,14 @@ export default function FinanceDashboard() {
 
           {/* Investment Portfolio */}
           <div className="mb-8">
-            <InvestmentManager />
+            <InvestmentManager
+              investments={investments}
+              loading={loading}
+              onDataChange={handleInvestmentDataChange}
+              onRefreshPrices={handleRefreshPrices}
+              prices={investmentPrices}
+              refreshing={refreshingPrices}
+            />
           </div>
 
           {/* Quick Actions */}

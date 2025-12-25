@@ -1,11 +1,11 @@
 import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import InvestmentHistoryModal from './InvestmentHistoryModal';
 import InvestmentModal from './InvestmentModal';
 import SellInvestmentModal from './SellInvestmentModal';
 
-interface Investment {
+export interface Investment {
     _id: string;
     ticker: string;
     quantity: number;
@@ -27,12 +27,23 @@ interface GroupedInvestment {
     lots: Investment[];
 }
 
-export default function InvestmentManager() {
-    const [investments, setInvestments] = useState<Investment[]>([]);
-    const [prices, setPrices] = useState<{ [ticker: string]: number }>({});
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+interface InvestmentManagerProps {
+    investments: Investment[];
+    prices: { [ticker: string]: number };
+    loading: boolean;
+    refreshing: boolean;
+    onRefreshPrices: () => void;
+    onDataChange: () => Promise<void>;
+}
 
+export default function InvestmentManager({
+    investments,
+    prices,
+    loading,
+    refreshing,
+    onRefreshPrices,
+    onDataChange
+}: InvestmentManagerProps) {
     // Modals
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -46,51 +57,7 @@ export default function InvestmentManager() {
 
     const [editingInv, setEditingInv] = useState<Investment | null>(null); // For Add/Edit single lot
 
-    const fetchInvestments = useCallback(async () => {
-        try {
-            const res = await fetch('/api/finance/investments');
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                setInvestments(data);
-                return data;
-            }
-            return [];
-        } catch (error) {
-            console.error('Failed to fetch investments', error);
-            return [];
-        } finally {
-            setLoading(false);
-        }
-    }, []);
 
-    const fetchPrices = useCallback(async (invs: Investment[]) => {
-        setRefreshing(true);
-        const uniqueTickers = Array.from(new Set(invs.map(i => i.ticker)));
-        const newPrices: { [ticker: string]: number } = {};
-
-        await Promise.all(uniqueTickers.map(async (ticker) => {
-            try {
-                const res = await fetch(`/api/finance/stock-price?ticker=${ticker}`);
-                const data = await res.json();
-                if (data.price) {
-                    newPrices[ticker] = data.price;
-                }
-            } catch (err) {
-                console.error(`Failed to fetch price for ${ticker}`, err);
-            }
-        }));
-
-        setPrices(prev => ({ ...prev, ...newPrices }));
-        setRefreshing(false);
-    }, []);
-
-    useEffect(() => {
-        fetchInvestments().then((data) => {
-            if (data.length > 0) {
-                fetchPrices(data);
-            }
-        });
-    }, [fetchInvestments, fetchPrices]);
 
     const handleSave = useCallback(async (inv: Partial<Investment>) => {
         const method = inv._id ? 'PUT' : 'POST';
@@ -103,10 +70,9 @@ export default function InvestmentManager() {
         });
 
         if (res.ok) {
-            const updatedList = await fetchInvestments();
-            if (updatedList.length > 0) fetchPrices(updatedList);
+            await onDataChange();
         }
-    }, [fetchInvestments, fetchPrices]);
+    }, [onDataChange]);
 
     const handleCloseAddModal = useCallback(() => {
         setIsAddModalOpen(false);
@@ -115,9 +81,9 @@ export default function InvestmentManager() {
     const handleDelete = useCallback(async (id: string) => {
         if (!confirm('Delete this investment lot?')) return;
         await fetch(`/api/finance/investments/${id}`, { method: 'DELETE' });
-        await fetchInvestments();
+        await onDataChange();
         setIsHistoryModalOpen(false);
-    }, [fetchInvestments]);
+    }, [onDataChange]);
 
     const handleSell = useCallback(async (quantity: number) => {
         if (!sellTicker) return;
@@ -132,10 +98,10 @@ export default function InvestmentManager() {
             })
         });
 
-        await fetchInvestments();
+        await onDataChange();
         setIsSellModalOpen(false);
         setIsHistoryModalOpen(false); // Close history too as state changed
-    }, [sellTicker, fetchInvestments]);
+    }, [sellTicker, onDataChange]);
 
     const handleEditFromHistory = useCallback((inv: Investment) => {
         setIsHistoryModalOpen(false);
@@ -228,7 +194,7 @@ export default function InvestmentManager() {
                     <button
                         className={`p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-all ${refreshing ? 'animate-spin' : ''}`}
                         disabled={refreshing}
-                        onClick={() => fetchPrices(investments)}
+                        onClick={onRefreshPrices}
                         title="Refresh Prices"
                     >
                         <ArrowPathIcon className="h-5 w-5" />
