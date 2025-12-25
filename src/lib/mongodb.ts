@@ -77,6 +77,8 @@ const clientOptions: MongoClientOptions = {
   authSource: '$external',
   tls: true,
   tlsAllowInvalidCertificates: true, // Bypass potential chain validation errors on Oracle
+  maxPoolSize: 1, // Restrict to 1 connection per lambda to avoid Oracle limits
+  maxIdleTimeMS: 5000, // Close idle connections quickly
 };
 
 if (process.env.NODE_ENV === 'development') {
