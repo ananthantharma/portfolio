@@ -2,6 +2,8 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import React, { Fragment, useEffect, useState } from 'react';
 
+import { getCategoryEmoji } from '@/lib/categories';
+
 const CATEGORIES = [
     'Housing',
     'Utilities',
@@ -103,17 +105,30 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ 
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Start typing or select a category
                                     </label>
-                                    <select
-                                        className="w-full rounded-lg border-slate-200 bg-slate-50 py-2.5 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        onChange={(e) => setSelectedCategory(e.target.value)}
-                                        value={selectedCategory}
-                                    >
-                                        {CATEGORIES.map((cat) => (
-                                            <option key={cat} value={cat}>
-                                                {cat}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 max-h-[300px] overflow-y-auto pr-2">
+                                        {CATEGORIES.map((cat) => {
+                                            const isSelected = selectedCategory === cat;
+                                            return (
+                                                <button
+                                                    className={`flex flex-col items-center justify-center rounded-xl border p-3 transition-all ${isSelected
+                                                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm ring-2 ring-indigo-200'
+                                                        : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
+                                                        }`}
+                                                    key={cat}
+                                                    onClick={() => setSelectedCategory(cat)}
+                                                    type="button"
+                                                >
+                                                    <div className={`mb-2 flex h-10 w-10 items-center justify-center rounded-full text-2xl ${isSelected ? 'bg-white shadow-sm' : 'bg-slate-50 grayscale'
+                                                        }`}>
+                                                        {getCategoryEmoji(cat)}
+                                                    </div>
+                                                    <span className="text-xs font-bold text-center leading-tight">
+                                                        {cat}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
                                 <div className="mt-4 flex justify-end gap-3">
