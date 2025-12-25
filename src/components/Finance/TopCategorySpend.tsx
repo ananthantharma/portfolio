@@ -5,7 +5,7 @@ import { getCategoryEmoji } from '@/lib/categories';
 interface Transaction {
     amount: number;
     category: string;
-    type: 'Income' | 'Expense';
+    type: 'Income' | 'Expense' | 'Transfer';
 }
 
 interface TopCategorySpendProps {
