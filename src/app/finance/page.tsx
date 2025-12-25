@@ -16,24 +16,25 @@ import BudgetOverview from '@/components/Finance/BudgetOverview';
 import CategoryDetailModal from '@/components/Finance/CategoryDetailModal';
 import CSVUploader from '@/components/Finance/CSVUploader';
 import MetricCard from '@/components/Finance/MetricCard';
+import MonthSelector from '@/components/Finance/MonthSelector';
+import SpendTrendChart from '@/components/Finance/SpendTrendChart';
 import StatCard from '@/components/Finance/StatCard';
 import { IBudgetItem, IBudgetItemData } from '@/models/BudgetItem';
 
 interface Transaction {
   _id: string;
+  amount: number;
+  category: string;
   date: string | Date;
   description: string;
-  amount: number;
   type: 'Income' | 'Expense';
-  category: string;
-  property?: { name: string } | string | null;
-  cardLast4?: string;
 }
 
 export default function FinanceDashboard() {
   const [budgetItems, setBudgetItems] = useState<IBudgetItem[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -42,12 +43,12 @@ export default function FinanceDashboard() {
   const [loading, setLoading] = useState(true);
 
   // --- Fetching Data ---
-  const fetchData = React.useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [budgetRes, transRes] = await Promise.all([
         fetch('/api/finance/budget'),
-        fetch('/api/finance/transactions')
+        fetch('/api/finance/transactions'),
       ]);
 
       const budgetData = await budgetRes.json();
@@ -93,7 +94,7 @@ export default function FinanceDashboard() {
     if (!confirm('Delete transaction?')) return;
     try {
       await fetch(`/api/finance/transactions/${id}`, { method: 'DELETE' });
-      setTransactions(prev => prev.filter(t => t._id !== id));
+      setTransactions((prev) => prev.filter((t) => t._id !== id));
     } catch (error) {
       console.error(error);
     }
@@ -124,52 +125,98 @@ export default function FinanceDashboard() {
     setIsDetailModalOpen(false);
   }, []);
 
-  // --- Calculations ---
-  // 1. Budget Summary (Planned vs Actual per Category)
+  // --- Filter Logic ---
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const tDate = new Date(t.date);
+      return (
+        tDate.getMonth() === selectedDate.getMonth() &&
+        tDate.getFullYear() === selectedDate.getFullYear()
+      );
+    });
+  }, [transactions, selectedDate]);
+
+  // --- Metrics (Input / Budget Based) ---
+  const plannedIncome = useMemo(() =>
+    budgetItems.filter((i) => i.type === 'Income').reduce((s, i) => s + i.amount, 0)
+    , [budgetItems]);
+
+  const plannedExpenses = useMemo(() =>
+    budgetItems.filter((i) => i.type === 'Expense').reduce((s, i) => s + i.amount, 0)
+    , [budgetItems]);
+
+  const netCashFlow = plannedIncome - plannedExpenses;
+
+  // --- Actuals Calculation (Filtered) ---
+  // const actualIncome = filteredTransactions
+  //   .filter((t) => t.type === 'Income')
+  //   .reduce((s, t) => s + t.amount, 0);
+
+  // --- Budget Overview Data (Planned vs Actual Filtered) ---
   const categoryData = useMemo(() => {
     const categories = new Set([
-      ...budgetItems.filter(i => i.type === 'Expense').map(i => i.category),
-      ...transactions.filter(t => t.type === 'Expense').map(t => t.category)
+      ...budgetItems.filter((i) => i.type === 'Expense').map((i) => i.category),
+      ...filteredTransactions.filter((t) => t.type === 'Expense').map((t) => t.category),
     ]);
 
-    return Array.from(categories).map(cat => {
-      const budgeted = budgetItems.filter(i => i.category === cat && i.type === 'Expense').reduce((s, i) => s + i.amount, 0);
-      const spent = transactions.filter(t => t.category === cat && t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
-      return { name: cat, budgeted, spent };
-    }).sort((a, b) => b.budgeted - a.budgeted); // Sort by highest budget
-  }, [budgetItems, transactions]);
+    return Array.from(categories)
+      .map((cat) => {
+        const budgeted = budgetItems
+          .filter((i) => i.category === cat && i.type === 'Expense')
+          .reduce((s, i) => s + i.amount, 0);
+        const spent = filteredTransactions
+          .filter((t) => t.category === cat && t.type === 'Expense')
+          .reduce((s, t) => s + t.amount, 0);
+        return { name: cat, budgeted, spent };
+      })
+      .sort((a, b) => b.budgeted - a.budgeted);
+  }, [budgetItems, filteredTransactions]);
 
-  // 2. Top Metrics (Actuals from Transactions default, fallback to Budget if 0?)
-  // User wants "Finance Portfolio". Usually means "Real Money". Let's use Transactions for Income/Exp.
-  const actualIncome = transactions.filter(t => t.type === 'Income').reduce((s, t) => s + t.amount, 0);
-  const actualExpenses = transactions.filter(t => t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
-  // If no transactions, show Budget stats?
-  const useBudgetStats = transactions.length === 0;
+  // --- Trend Data (Historical) ---
+  const trendData = useMemo(() => {
+    // Group transactions by "MMM YYYY"
+    const groups: { [key: string]: number } = {};
+    const sortedTrans = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const displayIncome = useBudgetStats
-    ? budgetItems.filter(i => i.type === 'Income').reduce((s, i) => s + i.amount, 0)
-    : actualIncome;
+    sortedTrans.forEach(t => {
+      // Only track expenses for trend? Or Net? User said "spend month over month".
+      if (t.type === 'Expense') {
+        const d = new Date(t.date);
+        const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); // e.g., "Dec 24"
+        groups[key] = (groups[key] || 0) + t.amount;
+      }
+    });
 
-  const displayExpenses = useBudgetStats
-    ? budgetItems.filter(i => i.type === 'Expense').reduce((s, i) => s + i.amount, 0)
-    : actualExpenses;
+    // Take last 6 months or all? Let's show all available but maybe limit visual if too many.
+    // Recharts handles scroll/fit reasonably well, or we slice.
+    return Object.entries(groups).map(([month, amount]) => ({ month, amount }));
+  }, [transactions]);
 
-  const netCashFlow = displayIncome - displayExpenses;
 
-  // Rental (Specific Logic)
-  const rentalIncome = budgetItems.filter(i => i.type === 'Income' && i.category === 'Rental Income').reduce((s, i) => s + i.amount, 0);
-  const rentalExpenses = budgetItems.filter(i => i.type === 'Expense' && i.propertyTag !== 'General').reduce((s, i) => s + i.amount, 0);
+  // --- Rental Performance (Using Budget or Actuals? Usually KPIs differ) ---
+  // User asked for "Finance Portfolio". If we strictly use Budget for Top Cards, 
+  // let's stick to Budget for sidebar Stats unless requested otherwise or if it makes no sense.
+  // "Rental Performance" implies Profit. Let's use Budgeted Rental Profit for consistency with Top Cards.
+  const rentalIncome = budgetItems
+    .filter((i) => i.type === 'Income' && i.category === 'Rental Income')
+    .reduce((s, i) => s + i.amount, 0);
+  const rentalExpenses = budgetItems
+    .filter((i) => i.type === 'Expense' && i.propertyTag !== 'General')
+    .reduce((s, i) => s + i.amount, 0);
   const rentalPerformance = rentalIncome - rentalExpenses;
 
   if (loading && budgetItems.length === 0) {
-    return <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400">Loading Dashboard...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400">
+        Loading Dashboard...
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-800">
-
+    <div className="min-h-screen w-full bg-slate-50 p-6 font-sans text-slate-800">
       {/* Header */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-3xl font-extrabold text-transparent">
             Financial Portfolio
@@ -178,90 +225,93 @@ export default function FinanceDashboard() {
             Hi Ananthan, here's your financial health overview.
           </p>
         </div>
-        <div className="mt-4 md:mt-0 flex gap-3">
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <MonthSelector currentDate={selectedDate} onMonthChange={setSelectedDate} />
+
           <button
-            className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:shadow-emerald-300"
-            onClick={() => { setEditingItem(null); setIsBudgetModalOpen(true); }}
+            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:shadow-emerald-300"
+            onClick={() => {
+              setEditingItem(null);
+              setIsBudgetModalOpen(true);
+            }}
           >
             <PlusIcon className="mr-2 h-4 w-4" /> Add Item
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
-
+      <div className="grid grid-cols-12 gap-6 w-full">
         {/* Left Column: Dynamic Data (8 cols) */}
-        <div className="col-span-12 lg:col-span-8 space-y-6">
-
-          {/* Metric Cards Row */}
+        <div className="col-span-12 space-y-6 lg:col-span-8">
+          {/* Metric Cards Row (Budgeted Numbers) */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
             <MetricCard
               amount={netCashFlow}
               gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
               icon={WalletIcon}
-              title="Net Cash Flow"
+              title="Net Cash Flow (Est)"
               trend={netCashFlow >= 0 ? 'up' : 'down'}
-              trendValue="vs prev"
+              trendValue="Plan"
             />
             <MetricCard
-              amount={displayIncome}
+              amount={plannedIncome}
               gradient="bg-gradient-to-br from-emerald-500 to-teal-500"
               icon={BanknotesIcon}
-              title="Total Income"
+              title="Total Income (Est)"
               trend="up"
-              trendValue="+12%"
+              trendValue="Budget"
             />
             <MetricCard
-              amount={displayExpenses}
+              amount={plannedExpenses}
               gradient="bg-gradient-to-br from-rose-500 to-pink-500"
               icon={CreditCardIcon}
-              title="Total Expenses"
+              title="Total Expenses (Est)"
               trend="down"
-              trendValue="--%"
+              trendValue="Budget"
             />
           </div>
 
-          {/* Budget Overview (Progress) */}
-          <BudgetOverview
-            categories={categoryData}
-            onCategoryClick={handleCategoryClick}
-          />
+          {/* Spend Trend Chart */}
+          <SpendTrendChart data={trendData} />
 
-          {/* Activity Feed */}
+          {/* Budget Overview (Progress - Actual vs Budget for selected month) */}
+          <BudgetOverview categories={categoryData} onCategoryClick={handleCategoryClick} />
+
+          {/* Activity Feed (Filtered) */}
           <ActivityFeed
             onClearAll={handleClearAllTransactions}
             onDelete={handleDeleteTransaction}
-            transactions={transactions.slice(0, 10)} // Show recently 10
+            transactions={filteredTransactions.slice(0, 10)}
           />
-
         </div>
 
         {/* Right Sidebar: KPIs & Actions (4 cols) */}
-        <div className="col-span-12 lg:col-span-4 space-y-6">
-
+        <div className="col-span-12 space-y-6 lg:col-span-4">
           {/* Stat Cards */}
           <StatCard
             amount={rentalPerformance}
             colorClass="text-indigo-600"
             icon={ChartBarIcon}
-            title="Rental Performance"
+            title="Rental Performance (Est)"
           />
           <StatCard
-            amount={displayIncome > 0 ? (netCashFlow / displayIncome) * 100 : 0}
+            amount={plannedIncome > 0 ? (netCashFlow / plannedIncome) * 100 : 0}
             colorClass="text-violet-600"
             icon={ArrowTrendingUpIcon}
-            title="Savings Rate"
+            title="Savings Rate (Est)"
           />
 
           {/* Quick Actions / Upload */}
-          <div className="rounded-3xl bg-white p-6 shadow-sm border border-slate-100">
-            <h4 className="mb-4 text-sm font-bold text-slate-800 uppercase tracking-wide">Quick Actions</h4>
+          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-800">
+              Quick Actions
+            </h4>
 
             <div className="space-y-4">
               <CSVUploader lastUpdated={lastUpdated} onUploadSuccess={fetchData} />
             </div>
           </div>
-
         </div>
       </div>
 
@@ -274,13 +324,12 @@ export default function FinanceDashboard() {
       />
 
       <CategoryDetailModal
-        budgetItems={budgetItems.filter(i => i.category === selectedCategory)}
+        budgetItems={budgetItems.filter((i) => i.category === selectedCategory)}
         category={selectedCategory}
         isOpen={isDetailModalOpen}
         onClose={handleCloseDetailModal}
-        transactions={transactions.filter(t => t.category === selectedCategory)}
+        transactions={filteredTransactions.filter((t) => t.category === selectedCategory)}
       />
-
     </div>
   );
 }
