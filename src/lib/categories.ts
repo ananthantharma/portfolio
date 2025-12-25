@@ -131,44 +131,36 @@ export const getCategoryEmoji = (cat: string): string => {
   const map: { [key: string]: string } = {
     'Housing': '🏠',
     'Utilities': '💡',
-    'Groceries': '🛒',
-    'Dining Out': '🍔',
     'Transportation': '🚗',
+    'Food & Groceries': '🛒',
+    'Healthcare & Medical': '💊',
     'Insurance': '🛡️',
-    'Healthcare': '💊',
-    'Childcare & Education': '🎓',
-    'Personal & Household': '🧼',
+    'Personal Spending': '🛍️',
     'Recreation & Entertainment': '🎬',
-    'Subscriptions & Memberships': '🔄',
-    'Travel & Vacations': '✈️',
-    'Technology & Communications': '📱',
-    'Debt & Financial Obligations': '💳',
-    'Savings & Investments': '💰',
-    'Gifts & Celebrations': '🎁',
+    'Child & Family': '🧸',
+    'Savings & Debt': '🏦',
+    'Giving': '🎁',
+    'Business/Work': '💼',
     'Pets': '🐾',
-    'Taxes & Government Fees': '🏛️',
-    'Miscellaneous / Other': '📦'
+    'Miscellaneous': '📦',
+    // Income Categories
+    'Salary': '💵',
+    'Bonuses': '🎊',
+    'Commission': '🤝',
+    'Overtime': '⏱️',
+    'Rental Income': '🏠',
+    'Investment Income': '📈',
+    'Dividends': '📊',
+    'Capital Gains': '🚀',
+    'Side Hustle': '🔨',
+    'Child Benefits (CCB)': '👶',
+    'Tax Refunds': '📄',
+    'Other': '🏷️'
   };
   return map[cat] || '🏷️';
 };
+
 export const TRANSACTION_CATEGORIES = [
-  'Housing',
-  'Utilities',
-  'Groceries',
-  'Dining Out',
-  'Transportation',
-  'Insurance',
-  'Healthcare',
-  'Childcare & Education',
-  'Personal & Household',
-  'Recreation & Entertainment',
-  'Subscriptions & Memberships',
-  'Travel & Vacations',
-  'Technology & Communications',
-  'Debt & Financial Obligations',
-  'Savings & Investments',
-  'Gifts & Celebrations',
-  'Pets',
-  'Taxes & Government Fees',
-  'Miscellaneous / Other'
+  ...Object.keys(BUDGET_CATEGORIES),
+  ...INCOME_CATEGORIES
 ];

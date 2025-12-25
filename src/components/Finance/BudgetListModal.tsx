@@ -23,7 +23,7 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(({ isOpen, it
     // 'Investment' usually means 'Savings & Investments' category in Expenses.
 
     const displayItems = type === 'Investment'
-        ? items.filter(i => i.category === 'Savings & Investments')
+        ? items.filter(i => i.category === 'Savings & Debt')
         : items.filter(i => i.type === type);
 
     const formatCurrency = (val: number) =>
