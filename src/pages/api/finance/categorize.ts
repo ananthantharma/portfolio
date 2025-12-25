@@ -82,7 +82,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(200).json({ categorizations: categorizationMap });
 
     } catch (error) {
-        console.error('Categorization error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : 'No stack';
+        console.error('Categorization error details:', { message: errorMsg, stack: errorStack });
+
+        // Return detailed error in dev mode only
+        res.status(500).json({
+            error: 'Internal Server Error',
+            details: process.env.NODE_ENV === 'development' ? errorMsg : undefined
+        });
     }
 }

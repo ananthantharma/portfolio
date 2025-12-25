@@ -193,7 +193,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
                 body: JSON.stringify({ transactions: filteredTransactions })
             });
 
-            if (!res.ok) throw new Error(res.statusText);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.details || errData.error || res.statusText);
+            }
 
             const data = await res.json();
             if (data.categorizations) {
@@ -207,7 +210,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
         } catch (error) {
             console.error("Auto categorization failed", error);
             setStatus('error');
-            alert("Failed to categorize transactions. Please check API configuration.");
+            const msg = error instanceof Error ? error.message : "Unknown error";
+            alert(`Failed: ${msg}`);
         }
     };
 
