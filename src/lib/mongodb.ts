@@ -1,4 +1,4 @@
-import {MongoClient, MongoClientOptions} from 'mongodb';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -16,7 +16,41 @@ if (!uri) {
 // 2. Relax TLS/SSL validation to ensure certificate chain issues don't mask as auth failures.
 // 3. Log diagnostic info about the password format.
 
-const connectionUri = uri;
+// Sanitize URI: Remove empty query parameters which cause "URI cannot contain options with no value"
+let connectionUri = uri;
+try {
+  // Hack to parse mongodb URI with URL interface if protocol is supported or generic
+  // If it fails, fallback to original.
+  const urlParams = new URL(uri);
+  const params = Array.from(urlParams.searchParams.entries());
+  let changed = false;
+  params.forEach(([key, value]) => {
+    if (value === '') {
+      urlParams.searchParams.delete(key);
+      changed = true;
+    }
+  });
+  if (changed) {
+    connectionUri = urlParams.toString();
+    // URL.toString() might encode characters differently, check if mongodb protocol remains
+    // Usually fine.
+    // But 'mongodb+srv' might not be recognized by URL class in all envs.
+    // If it fails, we catch.
+  }
+  // Remove "test" logic or specific overrides if needed.
+} catch (e) {
+  // Parsing failed (maybe custom schemes?), attempt manual cleanup of empty params
+  connectionUri = uri.replace(/[?&][^=&]+=(?:&|$)/g, (match) => {
+    // e.g. "?foo=&" -> "?"
+    // e.g. "&foo=&" -> "&"
+    // e.g. "&foo=" -> ""
+    return match.startsWith('&') ? '' : match.charAt(0);
+  });
+  console.warn("Manual URI cleanup applied due to URL parse error", e);
+}
+
+// Remove trailing ? or & if any (regex might leave them)
+connectionUri = connectionUri.replace(/[?&]$/, '');
 
 // Debug Password Parsing (Masked) - Helps user verify if Env Var is correct
 const passwordMatch = uri.match(/:([^:@]+)@/);
@@ -24,11 +58,11 @@ console.log('MongoDB Connection Init:', {
   length: uri.length,
   passwordDebug: passwordMatch
     ? {
-        length: passwordMatch[1].length,
-        startsWith: passwordMatch[1].substring(0, 2),
-        endsWith: passwordMatch[1].slice(-2),
-        isEncoded: passwordMatch[1].includes('%'),
-      }
+      length: passwordMatch[1].length,
+      startsWith: passwordMatch[1].substring(0, 2),
+      endsWith: passwordMatch[1].slice(-2),
+      isEncoded: passwordMatch[1].includes('%'),
+    }
     : 'Not Found',
   options: {
     tls: true,
