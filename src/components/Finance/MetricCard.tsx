@@ -7,9 +7,10 @@ interface MetricCardProps {
     icon: React.ElementType;
     iconColorClass: string; // e.g. "bg-emerald-500"
     title: string;
+    onClick?: () => void;
 }
 
-const MetricCard: React.FC<MetricCardProps> = React.memo(({ amount, data, icon: Icon, iconColorClass, title }) => {
+const MetricCard: React.FC<MetricCardProps> = React.memo(({ amount, data, icon: Icon, iconColorClass, title, onClick }) => {
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(val);
 
@@ -19,7 +20,10 @@ const MetricCard: React.FC<MetricCardProps> = React.memo(({ amount, data, icon: 
     const strokeColor = isUp ? '#10b981' : '#f43f5e'; // Emerald or Rose
 
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg shadow-slate-200/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-slate-50">
+        <div
+            className={`relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg shadow-slate-200/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-slate-50 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
 
             <div className="flex items-start justify-between mb-4">
                 <div>

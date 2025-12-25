@@ -12,6 +12,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import ActivityFeed from '@/components/Finance/ActivityFeed';
 import BudgetItemModal from '@/components/Finance/BudgetItemModal';
+import BudgetListModal from '@/components/Finance/BudgetListModal';
 import BudgetOverview from '@/components/Finance/BudgetOverview';
 import CategoryDetailModal from '@/components/Finance/CategoryDetailModal';
 import CSVUploader from '@/components/Finance/CSVUploader';
@@ -19,9 +20,10 @@ import MetricCard from '@/components/Finance/MetricCard';
 import MonthSelector from '@/components/Finance/MonthSelector';
 import SpendTrendChart from '@/components/Finance/SpendTrendChart';
 import StatCard from '@/components/Finance/StatCard';
+import TopCategorySpend from '@/components/Finance/TopCategorySpend';
 import TransactionEditModal from '@/components/Finance/TransactionEditModal';
 import UpcomingExpenses from '@/components/Finance/UpcomingExpenses';
-import { IBudgetItem, IBudgetItemData } from '@/models/BudgetItem';
+import { IBudgetItemData } from '@/models/BudgetItem';
 
 interface Transaction {
   _id: string;
@@ -33,7 +35,7 @@ interface Transaction {
 }
 
 export default function FinanceDashboard() {
-  const [budgetItems, setBudgetItems] = useState<IBudgetItem[]>([]);
+  const [budgetItems, setBudgetItems] = useState<(IBudgetItemData & { _id: string })[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -42,10 +44,11 @@ export default function FinanceDashboard() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditTransactionModalOpen, setIsEditTransactionModalOpen] = useState(false);
+  const [budgetListType, setBudgetListType] = useState<'Income' | 'Expense' | 'Investment' | null>(null);
 
   // Selection States
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [editingItem, setEditingItem] = useState<IBudgetItem | null>(null); // For Budget Items
+  const [editingItem, setEditingItem] = useState<(IBudgetItemData & { _id: string }) | null>(null); // For Budget Items
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null); // For Transactions
 
   const [loading, setLoading] = useState(true);
@@ -97,6 +100,16 @@ export default function FinanceDashboard() {
       console.error('Save failed', error);
     }
   }, [editingItem, fetchData]);
+
+  const handleDeleteBudgetItem = useCallback(async (id: string) => {
+    if (!confirm('Delete this budget item?')) return;
+    try {
+      await fetch(`/api/finance/budget/${id}`, { method: 'DELETE' });
+      fetchData();
+    } catch (error) {
+      console.error(error);
+    }
+  }, [fetchData]);
 
   const handleDeleteTransaction = useCallback(async (id: string) => {
     if (!confirm('Delete transaction?')) return;
@@ -252,6 +265,26 @@ export default function FinanceDashboard() {
     setIsEditTransactionModalOpen(false);
   }, []);
 
+  const handleManageBudget = useCallback((type: 'Income' | 'Expense' | 'Investment') => {
+    setBudgetListType(type);
+  }, []);
+
+  const handleManageIncome = useCallback(() => handleManageBudget('Income'), [handleManageBudget]);
+  const handleManageExpenses = useCallback(() => handleManageBudget('Expense'), [handleManageBudget]);
+  const handleManageInvestments = useCallback(() => handleManageBudget('Investment'), [handleManageBudget]);
+
+  const handleAddNewBudgetItem = useCallback(() => {
+    setIsBudgetModalOpen(true);
+    setEditingItem(null);
+  }, []);
+
+  const handleCloseBudgetList = useCallback(() => setBudgetListType(null), []);
+
+  const handleEditBudgetItem = useCallback((item: IBudgetItemData & { _id: string }) => {
+    setEditingItem(item);
+    setIsBudgetModalOpen(true);
+  }, []);
+
   if (loading && budgetItems.length === 0) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400">
@@ -301,19 +334,21 @@ export default function FinanceDashboard() {
           amount={plannedIncome}
           icon={BanknotesIcon}
           iconColorClass="bg-emerald-500"
+          onClick={handleManageIncome}
           title="Total Income"
         />
         <MetricCard
           amount={plannedExpenses}
           icon={CreditCardIcon}
           iconColorClass="bg-rose-500"
+          onClick={handleManageExpenses}
           title="Total Expenses"
         />
-        {/* Placeholder for Investments or Savings until we have real data */}
         <MetricCard
           amount={plannedIncome * 0.2} // Dummy 20% savings
           icon={ArrowTrendingUpIcon}
           iconColorClass="bg-violet-500"
+          onClick={handleManageInvestments}
           title="Investments (Est)"
         />
       </div>
@@ -367,22 +402,28 @@ export default function FinanceDashboard() {
             </div>
           </div>
 
+          {/* Top Category Spend */}
+          <TopCategorySpend transactions={filteredTransactions} />
+
           {/* Upcoming Expenses */}
-          <UpcomingExpenses expenses={budgetItems} />
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <UpcomingExpenses expenses={budgetItems as any} />
 
         </div>
       </div>
 
       {/* Modals */}
       <BudgetItemModal
-        initialData={editingItem}
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        initialData={editingItem as any}
         isOpen={isBudgetModalOpen}
         onClose={handleCloseBudgetModal}
         onSave={handleSaveBudgetItem}
       />
 
       <CategoryDetailModal
-        budgetItems={budgetItems.filter((i) => i.category === selectedCategory)}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        budgetItems={budgetItems.filter((i) => i.category === selectedCategory) as any}
         category={selectedCategory}
         isOpen={isDetailModalOpen}
         onClose={handleCloseDetailModal}
@@ -395,6 +436,18 @@ export default function FinanceDashboard() {
         onSave={handleSaveTransactionCategory}
         transaction={editingTransaction}
       />
+
+      {budgetListType && (
+        <BudgetListModal
+          isOpen={!!budgetListType}
+          items={budgetItems as (IBudgetItemData & { _id: string })[]}
+          onAdd={handleAddNewBudgetItem}
+          onClose={handleCloseBudgetList}
+          onDelete={handleDeleteBudgetItem}
+          onEdit={handleEditBudgetItem}
+          type={budgetListType}
+        />
+      )}
 
     </div>
   );
