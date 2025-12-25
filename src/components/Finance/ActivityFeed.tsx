@@ -1,22 +1,23 @@
-import { ArrowDownIcon, ArrowUpIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { ArrowDownIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
 interface Transaction {
     _id: string;
+    amount: number;
+    category: string;
     date: string | Date;
     description: string;
-    amount: number;
     type: 'Income' | 'Expense';
-    category: string;
 }
 
 interface ActivityFeedProps {
     onClearAll: () => void;
     onDelete: (id: string) => void;
+    onEdit: (t: Transaction) => void;
     transactions: Transaction[];
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDelete, transactions }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDelete, onEdit, transactions }) => {
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(val);
 
@@ -38,35 +39,49 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDe
                 )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {transactions.length === 0 ? (
                     <p className="text-center text-sm text-slate-400 py-4">No recent activity</p>
                 ) : (
                     transactions.map(t => (
-                        <div className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-slate-50" key={t._id}>
+                        <div className="group flex items-center justify-between rounded-xl bg-slate-50/50 p-3 transition-colors hover:bg-slate-100 border border-transparent hover:border-slate-200" key={t._id}>
                             <div className="flex items-center gap-4">
                                 <div className={`flex h-10 w-10 items-center justify-center rounded-full ${t.type === 'Income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
                                     }`}>
                                     {t.type === 'Income' ? <ArrowUpIcon className="h-5 w-5" /> : <ArrowDownIcon className="h-5 w-5" />}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-slate-700">{t.description}</p>
-                                    <p className="text-xs text-slate-500">{t.category} • {formatDate(t.date)}</p>
+                                    <p className="text-sm font-bold text-slate-700 truncate max-w-[150px] sm:max-w-[200px]">{t.description}</p>
+                                    <p className="text-xs text-slate-500 font-medium">{t.category} • {formatDate(t.date)}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className={`text-sm font-bold ${t.type === 'Income' ? 'text-emerald-600' : 'text-rose-600'
-                                    }`}>
-                                    {t.type === 'Income' ? '+' : '-'}{formatCurrency(t.amount)}
-                                </p>
-                                <button
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-500 mt-1"
-                                    onClick={() => onDelete(t._id)}
-                                    title="Delete"
-                                >
-                                    <TrashIcon className="h-4 w-4" />
-                                </button>
+
+                            <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                    <p className={`text-sm font-extrabold ${t.type === 'Income' ? 'text-emerald-600' : 'text-slate-800'
+                                        }`}>
+                                        {t.type === 'Income' ? '+' : ''}{formatCurrency(t.amount)}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        className="rounded-full p-1.5 text-slate-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                                        onClick={() => onEdit(t)}
+                                        title="Edit Category"
+                                    >
+                                        <PencilSquareIcon className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        className="rounded-full p-1.5 text-slate-400 hover:bg-white hover:text-rose-500 hover:shadow-sm transition-all"
+                                        onClick={() => onDelete(t._id)}
+                                        title="Delete"
+                                    >
+                                        <TrashIcon className="h-4 w-4" />
+                                    </button>
+                                </div>
                             </div>
+
                         </div>
                     ))
                 )}

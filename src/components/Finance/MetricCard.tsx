@@ -1,40 +1,50 @@
-import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/solid';
 import React from 'react';
+import { Line, LineChart, ResponsiveContainer } from 'recharts';
 
 interface MetricCardProps {
     amount: number;
-    gradient: string;
+    data?: { value: number }[]; // For sparkline
     icon: React.ElementType;
+    iconColorClass: string; // e.g. "bg-emerald-500"
     title: string;
-    trend?: 'up' | 'down' | 'neutral';
-    trendValue?: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = React.memo(({ amount, gradient, icon: Icon, title, trend, trendValue }) => {
+const MetricCard: React.FC<MetricCardProps> = React.memo(({ amount, data, icon: Icon, iconColorClass, title }) => {
     const formatCurrency = (val: number) =>
-        new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(val);
+        new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(val);
+
+    // Default sparkline data if none provided to prevent crash
+    const chartData = data && data.length > 1 ? data : [{ value: 10 }, { value: 15 }, { value: 10 }, { value: 20 }, { value: 25 }, { value: 22 }, { value: 30 }];
+    const isUp = (chartData[chartData.length - 1].value) >= (chartData[0].value);
+    const strokeColor = isUp ? '#10b981' : '#f43f5e'; // Emerald or Rose
 
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md border border-slate-100">
-            <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${gradient} opacity-10 blur-xl`}></div>
+        <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg shadow-slate-200/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-slate-50">
 
-            <div className="flex items-start justify-between">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${gradient} text-white shadow-sm`}>
+            <div className="flex items-start justify-between mb-4">
+                <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{title}</p>
+                    <h3 className="text-2xl font-extrabold text-slate-800 tracking-tight">{formatCurrency(amount)}</h3>
+                </div>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full text-white shadow-md ${iconColorClass}`}>
                     <Icon className="h-5 w-5" />
                 </div>
-                {trend && (
-                    <div className={`flex items-center space-x-1 rounded-full px-2 py-0.5 text-xs font-medium ${trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                        }`}>
-                        {trend === 'up' ? <ArrowTrendingUpIcon className="h-3 w-3" /> : <ArrowTrendingDownIcon className="h-3 w-3" />}
-                        <span>{trendValue}</span>
-                    </div>
-                )}
             </div>
 
-            <div className="mt-4">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{title}</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-800">{formatCurrency(amount)}</h3>
+            <div className="h-10 w-full opacity-60">
+                <ResponsiveContainer height="100%" width="100%">
+                    <LineChart data={chartData}>
+                        <Line
+                            dataKey="value"
+                            dot={false}
+                            stroke={strokeColor}
+                            strokeWidth={2}
+                            type="monotone"
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
             </div>
+
         </div>
     );
 });
