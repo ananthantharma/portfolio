@@ -151,3 +151,24 @@ export const getCategoryEmoji = (cat: string): string => {
   };
   return map[cat] || '🏷️';
 };
+export const TRANSACTION_CATEGORIES = [
+  'Housing',
+  'Utilities',
+  'Groceries',
+  'Dining Out',
+  'Transportation',
+  'Insurance',
+  'Healthcare',
+  'Childcare & Education',
+  'Personal & Household',
+  'Recreation & Entertainment',
+  'Subscriptions & Memberships',
+  'Travel & Vacations',
+  'Technology & Communications',
+  'Debt & Financial Obligations',
+  'Savings & Investments',
+  'Gifts & Celebrations',
+  'Pets',
+  'Taxes & Government Fees',
+  'Miscellaneous / Other'
+];

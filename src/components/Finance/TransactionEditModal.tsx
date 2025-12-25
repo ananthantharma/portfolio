@@ -2,29 +2,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import React, { Fragment, useEffect, useState } from 'react';
 
-import { getCategoryEmoji } from '@/lib/categories';
-
-const CATEGORIES = [
-    'Housing',
-    'Utilities',
-    'Groceries',
-    'Dining Out',
-    'Transportation',
-    'Insurance',
-    'Healthcare',
-    'Childcare & Education',
-    'Personal & Household',
-    'Recreation & Entertainment',
-    'Subscriptions & Memberships',
-    'Travel & Vacations',
-    'Technology & Communications',
-    'Debt & Financial Obligations',
-    'Savings & Investments',
-    'Gifts & Celebrations',
-    'Pets',
-    'Taxes & Government Fees',
-    'Miscellaneous / Other'
-];
+import { getCategoryEmoji, TRANSACTION_CATEGORIES } from '@/lib/categories';
 
 interface Transaction {
     _id: string;
@@ -41,7 +19,7 @@ interface TransactionEditModalProps {
 }
 
 const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ isOpen, onClose, onSave, transaction }) => {
-    const [selectedCategory, setSelectedCategory] = useState(transaction?.category || CATEGORIES[0]);
+    const [selectedCategory, setSelectedCategory] = useState(transaction?.category || TRANSACTION_CATEGORIES[0]);
 
     useEffect(() => {
         if (transaction) {
@@ -106,7 +84,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ 
                                         Start typing or select a category
                                     </label>
                                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 max-h-[300px] overflow-y-auto pr-2">
-                                        {CATEGORIES.map((cat) => {
+                                        {TRANSACTION_CATEGORIES.map((cat) => {
                                             const isSelected = selectedCategory === cat;
                                             return (
                                                 <button

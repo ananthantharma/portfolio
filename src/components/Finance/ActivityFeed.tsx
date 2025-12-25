@@ -1,7 +1,7 @@
 import { ArrowDownIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
-import { getCategoryEmoji } from '@/lib/categories';
+import { getCategoryEmoji, TRANSACTION_CATEGORIES } from '@/lib/categories';
 
 interface Transaction {
     _id: string;
@@ -13,13 +13,14 @@ interface Transaction {
 }
 
 interface ActivityFeedProps {
+    onCategoryChange: (id: string, category: string) => void;
     onClearAll: () => void;
     onDelete: (id: string) => void;
     onEdit: (t: Transaction) => void;
     transactions: Transaction[];
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDelete, onEdit, transactions }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(val);
 
@@ -62,12 +63,23 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDe
                             </div>
 
                             {/* Center Category Icon */}
-                            <div
-                                className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-slate-100 text-2xl transition-all hover:scale-110 hover:bg-indigo-100 hover:shadow-md"
-                                onClick={() => onEdit(t)}
-                                title={`Edit Category: ${t.category}`}
-                            >
-                                {getCategoryEmoji(t.category)}
+                            <div className="flex flex-wrap gap-1.5 justify-center max-w-2xl mx-auto my-2">
+                                {TRANSACTION_CATEGORIES.map(cat => (
+                                    <button
+                                        className={`flex h-8 w-8 items-center justify-center rounded-full text-lg transition-all ${t.category === cat
+                                            ? 'bg-indigo-100 scale-110 shadow-sm opacity-100 ring-2 ring-indigo-300'
+                                            : 'bg-slate-50 opacity-40 hover:opacity-100 hover:bg-white hover:scale-110 grayscale hover:grayscale-0'
+                                            }`}
+                                        key={cat}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onCategoryChange(t._id, cat);
+                                        }}
+                                        title={cat}
+                                    >
+                                        {getCategoryEmoji(cat)}
+                                    </button>
+                                ))}
                             </div>
 
                             <div className="flex items-center gap-4">

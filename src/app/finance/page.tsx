@@ -330,6 +330,7 @@ export default function FinanceDashboard() {
 
           {/* Activity Feed */}
           <ActivityFeed
+            onCategoryChange={handleSaveTransactionCategory}
             onClearAll={handleClearAllTransactions}
             onDelete={handleDeleteTransaction}
             onEdit={handleEditTransaction}
