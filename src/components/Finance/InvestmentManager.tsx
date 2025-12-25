@@ -68,7 +68,7 @@ export default function InvestmentManager() {
         });
     }, [fetchInvestments, fetchPrices]);
 
-    const handleSave = async (inv: Partial<Investment>) => { // inv type is partial Investment
+    const handleSave = useCallback(async (inv: Partial<Investment>) => { // inv type is partial Investment
         const method = inv._id ? 'PUT' : 'POST';
         const url = inv._id ? `/api/finance/investments/${inv._id}` : '/api/finance/investments';
 
@@ -83,7 +83,7 @@ export default function InvestmentManager() {
             // Refresh prices if it's a new ticker or updated
             if (updatedList.length > 0) fetchPrices(updatedList);
         }
-    };
+    }, [fetchInvestments, fetchPrices]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Delete investment?')) return;
@@ -118,6 +118,10 @@ export default function InvestmentManager() {
         return { totalBook, totalMarket, diff: totalMarket - totalBook };
     };
 
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+    }, []);
+
     return (
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-6">
@@ -151,7 +155,7 @@ export default function InvestmentManager() {
                         const { totalMarket, diff } = calculateTotals(items);
 
                         return (
-                            <div key={category} className="border-b last:border-0 border-slate-100 pb-4 last:pb-0">
+                            <div className="border-b last:border-0 border-slate-100 pb-4 last:pb-0" key={category}>
                                 <div className="flex justify-between items-center mb-3">
                                     <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wide">{category}</h4>
                                     <span className={`text-xs font-bold ${diff >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
@@ -179,7 +183,7 @@ export default function InvestmentManager() {
                                                 const gainLossPercent = (gainLoss / (inv.quantity * inv.bookPrice));
 
                                                 return (
-                                                    <tr key={inv._id} className="group hover:bg-slate-50/50">
+                                                    <tr className="group hover:bg-slate-50/50" key={inv._id}>
                                                         <td className="py-2 font-bold text-slate-700">{inv.ticker}</td>
                                                         <td className="py-2 text-right text-slate-600">{inv.quantity}</td>
                                                         <td className="py-2 text-right text-slate-500">{formatCurrency(inv.bookPrice)}</td>
@@ -191,10 +195,10 @@ export default function InvestmentManager() {
                                                             {gainLossPercent ? formatPercent(gainLossPercent) : '-'}
                                                         </td>
                                                         <td className="py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
-                                                            <button onClick={() => { setEditingInv(inv); setIsModalOpen(true); }} className="text-slate-400 hover:text-indigo-600">
+                                                            <button className="text-slate-400 hover:text-indigo-600" onClick={() => { setEditingInv(inv); setIsModalOpen(true); }}>
                                                                 <PencilSquareIcon className="h-3 w-3" />
                                                             </button>
-                                                            <button onClick={() => handleDelete(inv._id)} className="text-slate-400 hover:text-rose-500">
+                                                            <button className="text-slate-400 hover:text-rose-500" onClick={() => handleDelete(inv._id)}>
                                                                 <TrashIcon className="h-3 w-3" />
                                                             </button>
                                                         </td>
@@ -215,10 +219,10 @@ export default function InvestmentManager() {
             )}
 
             <InvestmentModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSave={handleSave}
                 initialData={editingInv}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={handleSave}
             />
         </div>
     );
