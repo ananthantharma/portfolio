@@ -63,7 +63,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDe
 
                             {/* Center Category Icon */}
                             <div
-                                className="hidden sm:flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-slate-100 text-2xl transition-all hover:scale-110 hover:bg-indigo-100 hover:shadow-md"
+                                className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-slate-100 text-2xl transition-all hover:scale-110 hover:bg-indigo-100 hover:shadow-md"
                                 onClick={() => onEdit(t)}
                                 title={`Edit Category: ${t.category}`}
                             >
