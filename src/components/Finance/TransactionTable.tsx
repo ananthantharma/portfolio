@@ -1,4 +1,4 @@
-import { TrashIcon } from '@heroicons/react/24/outline';
+import {TrashIcon} from '@heroicons/react/24/outline';
 import React from 'react';
 
 interface Transaction {
@@ -9,11 +9,11 @@ interface Transaction {
   type: 'Income' | 'Expense';
   category: string;
   property?:
-  | {
-    name: string;
-  }
-  | string
-  | null;
+    | {
+        name: string;
+      }
+    | string
+    | null;
   cardLast4?: string;
 }
 
@@ -22,7 +22,7 @@ interface TransactionTableProps {
   onDelete: (id: string) => void;
 }
 
-const TransactionTable: React.FC<TransactionTableProps> = React.memo(({ transactions, onDelete }) => {
+const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transactions, onDelete}) => {
   const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString('en-CA', {
       year: 'numeric',
@@ -101,8 +101,9 @@ const TransactionTable: React.FC<TransactionTableProps> = React.memo(({ transact
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">{transaction.category}</td>
                 <td
-                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
+                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${
+                    transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
+                  }`}>
                   {transaction.type === 'Income' ? '+' : '-'}
                   {formatCurrency(transaction.amount)}
                 </td>

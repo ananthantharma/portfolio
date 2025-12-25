@@ -7,15 +7,15 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useMemo, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
+import {INoteCategory} from '@/models/NoteCategory';
 
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface CategoryListProps {
   categories: INoteCategory[];
@@ -38,7 +38,7 @@ const CategoryItem = React.memo<{
   onEdit: (category: INoteCategory) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-}>(({ category, isSelected, onSelect, onEdit, onDelete, isCollapsed }) => {
+}>(({category, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
   const CategoryIcon = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options.Folder;
 
   const style = useMemo(
@@ -58,8 +58,9 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
-          }`}
+        className={`p-2 rounded-lg transition-all ${
+          isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+        }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
         {category.image ? (
@@ -84,10 +85,11 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${isSelected
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
+          isSelected
             ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
             : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
-          }`}
+        }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
         {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-blue-500" />}
@@ -105,8 +107,9 @@ const CategoryItem = React.memo<{
             />
           ) : null}
           <CategoryIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-              }`}
+            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${
+              isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+            }`}
             style={style}
           />
           <span className="truncate">{category.name}</span>
@@ -177,7 +180,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = categories.findIndex(c => c._id === active.id);

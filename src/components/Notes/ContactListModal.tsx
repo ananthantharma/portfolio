@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-sort-props, simple-import-sort/imports, react-memo/require-usememo */
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
-import { Dialog, Listbox, Transition } from '@headlessui/react';
+import React, {Fragment, useEffect, useMemo, useState} from 'react';
+import {Dialog, Listbox, Transition} from '@headlessui/react';
 import {
   ChevronUpDownIcon,
   MagnifyingGlassIcon,
@@ -13,8 +13,8 @@ import {
   EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 
-import { CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact } from '@/lib/contact-constants';
-import ContactFormModal, { ContactFormData } from './ContactFormModal';
+import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact} from '@/lib/contact-constants';
+import ContactFormModal, {ContactFormData} from './ContactFormModal';
 
 interface ContactListModalProps {
   isOpen: boolean;
@@ -46,11 +46,12 @@ const FilterDropdown = React.memo(
           <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-xs z-10">
             <Listbox.Option
               value="All"
-              className={({ active }) =>
-                `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+              className={({active}) =>
+                `relative cursor-default select-none py-2 pl-3 pr-4 ${
+                  active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                 }`
               }>
-              {({ selected }) => (
+              {({selected}) => (
                 <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>All</span>
               )}
             </Listbox.Option>
@@ -58,11 +59,12 @@ const FilterDropdown = React.memo(
               <Listbox.Option
                 key={idx}
                 value={opt}
-                className={({ active }) =>
-                  `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                className={({active}) =>
+                  `relative cursor-default select-none py-2 pl-3 pr-4 ${
+                    active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                   }`
                 }>
-                {({ selected }) => (
+                {({selected}) => (
                   <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{opt}</span>
                 )}
               </Listbox.Option>
@@ -75,7 +77,7 @@ const FilterDropdown = React.memo(
 );
 FilterDropdown.displayName = 'FilterDropdown';
 
-const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, onClose }) => {
+const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, onClose}) => {
   const [contacts, setContacts] = useState<IContact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +122,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
     try {
       // Optimistic update
       setContacts(prev => prev.filter(c => c._id !== id));
-      await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+      await fetch(`/api/contacts/${id}`, {method: 'DELETE'});
     } catch (error) {
       console.error('Error deleting contact:', error);
       fetchContacts(); // Revert
@@ -132,13 +134,13 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
       if (editingContact) {
         await fetch(`/api/contacts/${editingContact._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data),
         });
       } else {
         await fetch('/api/contacts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data),
         });
       }
@@ -287,13 +289,16 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                                   src={`/api/notes/brandfetch?domain=${contact.image}`}
                                   alt={contact.name}
                                   className="h-10 w-10 rounded-full object-contain bg-white border border-gray-200"
-                                  onError={(e) => {
+                                  onError={e => {
                                     e.currentTarget.style.display = 'none';
                                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
                                   }}
                                 />
                               ) : null}
-                              <div className={`h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold ${contact.image ? 'hidden' : ''}`}>
+                              <div
+                                className={`h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold ${
+                                  contact.image ? 'hidden' : ''
+                                }`}>
                                 {contact.name.charAt(0).toUpperCase()}
                               </div>
                             </div>
@@ -301,10 +306,11 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                               <div className="flex justify-between items-start">
                                 <p className="text-sm font-medium text-gray-900">{contact.name}</p>
                                 <span
-                                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${contact.type === 'Internal'
+                                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                    contact.type === 'Internal'
                                       ? 'bg-green-100 text-green-800'
                                       : 'bg-blue-100 text-blue-800'
-                                    }`}>
+                                  }`}>
                                   {contact.type}
                                 </span>
                               </div>

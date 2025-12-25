@@ -1,11 +1,11 @@
 /* eslint-disable react/jsx-sort-props */
-import { Dialog, Listbox, Transition } from '@headlessui/react';
-import { ChevronUpDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useState } from 'react';
+import {Dialog, Listbox, Transition} from '@headlessui/react';
+import {ChevronUpDownIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, useEffect, useState} from 'react';
 
-import { CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact } from '@/lib/contact-constants';
+import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact} from '@/lib/contact-constants';
 
-import { IconPicker } from './IconPicker';
+import {IconPicker} from './IconPicker';
 
 export interface ContactFormData {
   name: string;
@@ -28,7 +28,7 @@ interface ContactFormModalProps {
 }
 
 const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
-  ({ isOpen, onClose, onSave, initialData, title }) => {
+  ({isOpen, onClose, onSave, initialData, title}) => {
     const [name, setName] = useState('');
     const [company, setCompany] = useState('');
     const [phone, setPhone] = useState('');
@@ -123,11 +123,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Logo</label>
                       <div className="mt-1">
-                        <IconPicker
-                          selectedIcon="User"
-                          selectedImage={image}
-                          onSelectIcon={handleIconSelect}
-                        />
+                        <IconPicker selectedIcon="User" selectedImage={image} onSelectIcon={handleIconSelect} />
                       </div>
                     </div>
 
@@ -159,7 +155,6 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Type</label>
                         <Listbox value={type} onChange={setType}>
-
                           <div className="relative mt-1">
                             <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-300 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
                               <span className="block truncate">{type}</span>
@@ -177,11 +172,12 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                                   <Listbox.Option
                                     key={idx}
                                     value={t}
-                                    className={({ active }) =>
-                                      `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                                    className={({active}) =>
+                                      `relative cursor-default select-none py-2 pl-3 pr-4 ${
+                                        active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                                       }`
                                     }>
-                                    {({ selected }) => (
+                                    {({selected}) => (
                                       <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                         {t}
                                       </span>
@@ -213,11 +209,12 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                                   <Listbox.Option
                                     key={idx}
                                     value={pos}
-                                    className={({ active }) =>
-                                      `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                                    className={({active}) =>
+                                      `relative cursor-default select-none py-2 pl-3 pr-4 ${
+                                        active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                                       }`
                                     }>
-                                    {({ selected }) => (
+                                    {({selected}) => (
                                       <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                         {pos}
                                       </span>
@@ -251,11 +248,12 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                                 <Listbox.Option
                                   key={idx}
                                   value={dept}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                                  className={({active}) =>
+                                    `relative cursor-default select-none py-2 pl-3 pr-4 ${
+                                      active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                                     }`
                                   }>
-                                  {({ selected }) => (
+                                  {({selected}) => (
                                     <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                       {dept}
                                     </span>
