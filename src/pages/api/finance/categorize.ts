@@ -18,9 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`Categorize API: Processing ${transactions.length} transactions`);
 
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
         if (!apiKey) {
-            console.error("Categorize API: Missing GEMINI_API_KEY");
+            console.error("Categorize API: Missing GEMINI_API_KEY or GOOGLE_API_KEY");
             return res.status(500).json({ error: 'Gemini API key not configured' });
         }
         // Log masked key for verification
@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             apiKey,
             [],
             prompt,
-            'gemini-2.0-flash-lite-preview-02-05' // User requested Flash-Lite Latest
+            'gemini-1.5-flash-8b' // User requested Nano/Fastest model
         );
 
         // Clean response of markdown if present
