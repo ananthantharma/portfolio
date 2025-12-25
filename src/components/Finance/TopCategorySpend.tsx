@@ -26,7 +26,6 @@ const TopCategorySpend: React.FC<TopCategorySpendProps> = React.memo(({ transact
 
         const sorted = Object.entries(map)
             .sort(([, a], [, b]) => b - a)
-            .slice(0, 5)
             .map(([category, amount]) => ({ category, amount }));
 
         return sorted;
@@ -36,8 +35,8 @@ const TopCategorySpend: React.FC<TopCategorySpendProps> = React.memo(({ transact
 
     return (
         <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-100 mb-6">
-            <h3 className="mb-4 text-lg font-bold text-slate-800">Top Spending</h3>
-            <div className="space-y-4">
+            <h3 className="mb-4 text-lg font-bold text-slate-800">Category Spending</h3>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {topCategories.map((item, index) => (
                     <div className="flex items-center justify-between" key={item.category}>
                         <div className="flex items-center gap-3">
