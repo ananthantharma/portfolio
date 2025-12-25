@@ -1,5 +1,5 @@
-import { FunnelIcon, PencilSquareIcon, SparklesIcon, TrashIcon } from '@heroicons/react/24/solid';
-import React, { useMemo, useState } from 'react';
+import { CheckCircleIcon, FunnelIcon, PencilSquareIcon, SparklesIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { getCategoryEmoji } from '@/lib/categories';
 
@@ -134,11 +134,23 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onBulkCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
-    const [isCategorizing, setIsCategorizing] = useState(false);
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [successCount, setSuccessCount] = useState(0);
     const [minAmount, setMinAmount] = useState<string>('');
     const [maxAmount, setMaxAmount] = useState<string>('');
     const [sortBy, setSortBy] = useState<'date' | 'amount_asc' | 'amount_desc'>('date');
     const [filterCategory, setFilterCategory] = useState<string>('');
+
+    // Reset success status after 3 seconds
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (status === 'success' || status === 'error') {
+            timer = setTimeout(() => setStatus('idle'), 3000);
+        }
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [status]);
 
     const uniqueCategories = useMemo(() => {
         const cats = new Set(transactions.map(t => t.category));
@@ -174,22 +186,28 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
         if (!confirm(`Auto-categorize ${filteredTransactions.length} transactions with Gemini AI?`)) return;
 
         try {
-            setIsCategorizing(true);
+            setStatus('loading');
             const res = await fetch('/api/finance/categorize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ transactions: filteredTransactions })
             });
 
+            if (!res.ok) throw new Error(res.statusText);
+
             const data = await res.json();
             if (data.categorizations) {
+                const count = Object.keys(data.categorizations).length;
                 onBulkCategoryChange(data.categorizations);
+                setSuccessCount(count);
+                setStatus('success');
+            } else {
+                setStatus('error'); // No data returned
             }
         } catch (error) {
             console.error("Auto categorization failed", error);
+            setStatus('error');
             alert("Failed to categorize transactions. Please check API configuration.");
-        } finally {
-            setIsCategorizing(false);
         }
     };
 
@@ -200,12 +218,24 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
                     <h3 className="text-lg font-bold text-slate-800">Recent Activity</h3>
                     <div className="flex items-center gap-2">
                         <button
-                            className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-colors border ${isCategorizing ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200'}`}
-                            disabled={isCategorizing || filteredTransactions.length === 0}
+                            className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg transition-colors border 
+                                ${status === 'loading' ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : ''}
+                                ${status === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : ''}
+                                ${status === 'error' ? 'bg-rose-50 border-rose-200 text-rose-600' : ''}
+                                ${status === 'idle' ? 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200' : ''}
+                            `}
+                            disabled={status === 'loading' || filteredTransactions.length === 0}
                             onClick={handleAutoCategorize}
                         >
-                            <SparklesIcon className={`h-3 w-3 ${isCategorizing ? 'animate-pulse' : ''}`} />
-                            {isCategorizing ? 'Thinking...' : 'AI Categorize'}
+                            {status === 'loading' && <SparklesIcon className="h-3 w-3 animate-pulse" />}
+                            {status === 'success' && <CheckCircleIcon className="h-3 w-3" />}
+                            {status === 'error' && <XCircleIcon className="h-3 w-3" />}
+                            {status === 'idle' && <SparklesIcon className="h-3 w-3" />}
+
+                            {status === 'loading' && 'Thinking...'}
+                            {status === 'success' && `Categorized ${successCount}!`}
+                            {status === 'error' && 'Failed'}
+                            {status === 'idle' && 'AI Categorize'}
                         </button>
                         {filteredTransactions.length > 0 && (
                             <button
