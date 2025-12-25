@@ -34,7 +34,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const prompt = `
       You are a helpful financial assistant.
       I have a list of transactions with descriptions.
-      Please categorize each transaction into EXACTLY one of the following categories:
+      Please categorize each transaction into EXACTLY one of the following categories, AND determine if it is "Income" or "Expense".
+
+      Categories:
       ${JSON.stringify(TRANSACTION_CATEGORIES)}
 
       Income Categories (Use positive sentiment or payroll clues):
@@ -47,17 +49,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ]
 
       Output Format:
-      A Valid JSON object mapping ID to Category Name.
+      A Valid JSON object mapping ID to an Object with "category" and "type".
       Example:
       {
-        "1": "Groceries",
-        "2": "Gas"
+        "1": { "category": "Groceries", "type": "Expense" },
+        "2": { "category": "Salary", "type": "Income" }
       }
 
       Rules:
       1. Only use the provided categories.
       2. If uncertain, map to "Miscellaneous".
       3. Return ONLY the JSON object, no markdown code blocks.
+      4. "type" MUST be either "Income" or "Expense".
 
       Transactions to categorize:
       ${JSON.stringify(batch.map(t => ({ id: t._id, description: t.description, amount: t.amount })))}

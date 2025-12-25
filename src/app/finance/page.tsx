@@ -203,36 +203,33 @@ export default function FinanceDashboard() {
     }
   }, [fetchData]);
 
-  const handleBulkCategoryChange = useCallback(async (updates: { [id: string]: string }) => {
+  const handleBulkCategoryChange = useCallback(async (updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' } }) => {
     // Optimistic Update
-    setTransactions(prev => prev.map(t => updates[t._id] ? { ...t, category: updates[t._id] } : t));
+    setTransactions(prev => prev.map(t => {
+      const update = updates[t._id];
+      if (update) {
+        return {
+          ...t,
+          category: update.category,
+          amount: update.amount !== undefined ? update.amount : t.amount,
+          type: update.type || t.type
+        };
+      }
+      return t;
+    }));
 
-    // Parallel requests or single Batch API?
-    // Since we don't have a batch update API, we will loop.
-    // However, for 50 items, 50 requests is bad.
-    // Ideally we should CREATE a batch update API.
-    // User didn't ask for a batch API, but "implement".
-    // I already made the categorize API.
-    // I should probably make a batch update API or loop here.
-    // Looping 50 fetches is cleaner than adding another API route right now given time constraints, 
-    // unless I just add it to `api/finance/transactions/update-batch`.
-    // Let's loop for now but limit concurrency? Or just Promise.all.
-
-    // Actually, creating /api/finance/transactions/batch-update is 1 file and much better.
-    // But let's stick to Promise.all for simplicity unless it fails.
-    // For 20-50 items it's fine.
-
-    const updatePromises = Object.entries(updates).map(([id, category]) => {
+    // Perform API updates
+    const updatePromises = Object.entries(updates).map(([id, data]) => {
       return fetch(`/api/finance/transactions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category })
+        body: JSON.stringify(data)
       });
     });
 
     try {
       await Promise.all(updatePromises);
-      fetchData();
+      fetchData(); // Refresh to ensure backend sync
     } catch (err) {
       console.error("Bulk update failed", err);
     }
@@ -335,26 +332,7 @@ export default function FinanceDashboard() {
       .sort((a, b) => b.budgeted - a.budgeted);
   }, [budgetItems, filteredTransactions]);
 
-  // --- Trend Data (Historical) ---
-  const trendData = useMemo(() => {
-    const groups: { [key: string]: { amount: number, date: Date } } = {};
-    const sortedTrans = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    sortedTrans.forEach(t => {
-      if (t.type === 'Expense') {
-        const d = new Date(t.date);
-        const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-        if (!groups[key]) groups[key] = { amount: 0, date: d };
-        groups[key].amount += t.amount;
-      }
-    });
-
-    return Object.entries(groups).map(([month, val]) => ({
-      month,
-      amount: val.amount,
-      fullDate: val.date
-    }));
-  }, [transactions]);
 
 
 
@@ -459,7 +437,7 @@ export default function FinanceDashboard() {
           <BudgetOverview categories={categoryData} onCategoryClick={handleCategoryClick} />
 
           {/* Spend Trend Chart (Deep Dive) */}
-          <SpendTrendChart data={trendData} onMonthClick={handleMonthClick} />
+          <SpendTrendChart onMonthClick={handleMonthClick} transactions={transactions} />
 
           {/* Activity Feed */}
           <ActivityFeed

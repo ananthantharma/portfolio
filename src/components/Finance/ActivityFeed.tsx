@@ -22,8 +22,8 @@ interface ActivityItemProps {
 }
 
 interface ActivityFeedProps {
+    onBulkCategoryChange: (updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' } }) => void;
     onCategoryChange: (id: string, category: string) => void;
-    onBulkCategoryChange: (updates: { [id: string]: string }) => void;
     onClearAll: () => void;
     onDelete: (id: string) => void;
     onEdit: (t: Transaction) => void;
@@ -125,21 +125,16 @@ const ActivityItem = React.memo(({ t, onCategoryChange, onDelete, onEdit }: Acti
 });
 ActivityItem.displayName = 'ActivityItem';
 
-interface ActivityFeedProps {
-    onCategoryChange: (id: string, category: string) => void;
-    onClearAll: () => void;
-    onDelete: (id: string) => void;
-    onEdit: (t: Transaction) => void;
-    transactions: Transaction[];
-}
 
-const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onBulkCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
+
+const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onBulkCategoryChange, onCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [successCount, setSuccessCount] = useState(0);
     const [minAmount, setMinAmount] = useState<string>('');
     const [maxAmount, setMaxAmount] = useState<string>('');
     const [sortBy, setSortBy] = useState<'date' | 'amount_asc' | 'amount_desc'>('date');
     const [filterCategory, setFilterCategory] = useState<string>('');
+    const [filterType, setFilterType] = useState<'All' | 'Income' | 'Expense'>('All');
 
     // Reset success status after 3 seconds
     useEffect(() => {
@@ -158,28 +153,26 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
     }, [transactions]);
 
     const filteredTransactions = useMemo(() => {
-        const filtered = transactions.filter(t => {
-            const min = minAmount ? parseFloat(minAmount) : -Infinity;
-            const max = maxAmount ? parseFloat(maxAmount) : Infinity;
+        let filtered = transactions;
 
-            // Amount filter
-            if (t.amount < min || t.amount > max) return false;
+        if (minAmount) filtered = filtered.filter(t => Math.abs(t.amount) >= parseFloat(minAmount));
+        if (maxAmount) filtered = filtered.filter(t => Math.abs(t.amount) <= parseFloat(maxAmount));
+        if (filterCategory) {
+            filtered = filtered.filter(t => t.category.toLowerCase().includes(filterCategory.toLowerCase()));
+        }
+        if (filterType !== 'All') {
+            filtered = filtered.filter(t => t.type === filterType);
+        }
 
-            // Category filter
-            if (filterCategory && t.category !== filterCategory) return false;
-
-            return true;
-        });
-
-        // Sort logic
-        filtered.sort((a, b) => {
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            if (sortBy === 'date') return dateB - dateA;
             if (sortBy === 'amount_asc') return a.amount - b.amount;
             if (sortBy === 'amount_desc') return b.amount - a.amount;
-            return new Date(b.date).getTime() - new Date(a.date).getTime(); // Default: Date desc
+            return 0;
         });
-
-        return filtered;
-    }, [transactions, minAmount, maxAmount, sortBy, filterCategory]);
+    }, [transactions, minAmount, maxAmount, sortBy, filterCategory, filterType]);
 
     const handleAutoCategorize = async () => {
         if (filteredTransactions.length === 0) return;
@@ -188,9 +181,9 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
         try {
             setStatus('loading');
             const res = await fetch('/api/finance/categorize', {
-                method: 'POST',
+                body: JSON.stringify({ transactions: filteredTransactions }),
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ transactions: filteredTransactions })
+                method: 'POST'
             });
 
             if (!res.ok) {
@@ -200,12 +193,36 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
 
             const data = await res.json();
             if (data.categorizations) {
+                const updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' } } = {};
+
+                Object.entries(data.categorizations).forEach(([id, result]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const resObj = (typeof result === 'string') ? { category: result } : (result as any);
+                    const newCategory = resObj.category;
+                    const newType = resObj.type as 'Income' | 'Expense' | undefined;
+
+                    updates[id] = { category: newCategory };
+
+                    if (newType) {
+                        updates[id].type = newType;
+                        const originalT = transactions.find(t => t._id === id);
+                        if (originalT) {
+                            if (newType === 'Income' && originalT.amount < 0) {
+                                updates[id].amount = Math.abs(originalT.amount);
+                            } else if (newType === 'Expense' && originalT.amount > 0) {
+                                // Optional: Enforce negative for expenses if that's the convention
+                            }
+                        }
+                    }
+                });
+
                 const count = Object.keys(data.categorizations).length;
-                onBulkCategoryChange(data.categorizations);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onBulkCategoryChange(updates as any);
                 setSuccessCount(count);
                 setStatus('success');
             } else {
-                setStatus('error'); // No data returned
+                setStatus('error');
             }
         } catch (error) {
             console.error("Auto categorization failed", error);
@@ -254,12 +271,23 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
 
                 {/* Filters Row */}
                 <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    {/* Top Row: Min/Max */}
                     <div className="flex items-center justify-between gap-2">
+                        {/* Type Filter */}
+                        <div className="flex bg-white border border-slate-100 rounded-lg p-0.5 shadow-sm">
+                            {(['All', 'Income', 'Expense'] as const).map((type) => (
+                                <button
+                                    className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${filterType === type ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-700'}`}
+                                    key={type}
+                                    onClick={() => setFilterType(type)}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
                         <div className="flex items-center gap-2">
-                            <FunnelIcon className="h-4 w-4 text-slate-400" />
+                            <FunnelIcon className="h-3 w-3 text-slate-400" />
                             <input
-                                className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                                className="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                                 onChange={(e) => setMinAmount(e.target.value)}
                                 placeholder="Min"
                                 type="number"
@@ -267,7 +295,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
                             />
                             <span className="text-slate-400 text-xs">-</span>
                             <input
-                                className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                                className="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
                                 onChange={(e) => setMaxAmount(e.target.value)}
                                 placeholder="Max"
                                 type="number"
@@ -276,7 +304,6 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
                         </div>
                     </div>
 
-                    {/* Bottom Row: Sort and Category */}
                     <div className="flex items-center gap-2">
                         <select
                             className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
