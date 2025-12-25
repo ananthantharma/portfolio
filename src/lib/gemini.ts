@@ -10,12 +10,29 @@ export const getChatResponse = async (
   message: string,
   modelName: string = 'gemini-2.5-flash',
   systemInstruction?: string,
+  baseUrl?: string,
 ) => {
   const genAI = initGemini(apiKey);
-  const model = genAI.getGenerativeModel({
+  interface GeminiModelParams {
+    model: string;
+    systemInstruction?: string;
+  }
+
+  const modelOptions: GeminiModelParams = {
     model: modelName,
     systemInstruction: systemInstruction,
-  });
+  };
+
+  interface GeminiRequestOptions {
+    baseUrl?: string;
+  }
+
+  const requestOptions: GeminiRequestOptions = {};
+  if (baseUrl) {
+    requestOptions.baseUrl = baseUrl;
+  }
+
+  const model = genAI.getGenerativeModel(modelOptions, requestOptions);
 
   const chat = model.startChat({
     history: history.map(msg => ({

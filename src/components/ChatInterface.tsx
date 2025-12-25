@@ -1,8 +1,8 @@
-import {Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import {getAvailableModels, getChatResponse} from '../lib/gemini';
+import { getAvailableModels, getChatResponse } from '../lib/gemini';
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -43,7 +43,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
+export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -62,7 +62,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const [selectedModel, setSelectedModel] = useState('');
-  const [availableModels, setAvailableModels] = useState<{id: string; label: string}[]>([]);
+  const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -103,18 +103,18 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
           // specific logic for Pro (must contain 'pro')
           const pro = findLatestModel(['pro']);
 
-          const newAvailableModels: {id: string; label: string}[] = [];
+          const newAvailableModels: { id: string; label: string }[] = [];
           let defaultSelection = '';
 
           if (flash) {
-            newAvailableModels.push({id: flash.id, label: 'Gemini Flash Latest'});
+            newAvailableModels.push({ id: flash.id, label: 'Gemini Flash Latest' });
             defaultSelection = flash.id; // Flash is preferred default
           }
           if (flashLite) {
-            newAvailableModels.push({id: flashLite.id, label: 'Gemini Flash-Lite Latest'});
+            newAvailableModels.push({ id: flashLite.id, label: 'Gemini Flash-Lite Latest' });
           }
           if (pro) {
-            newAvailableModels.push({id: pro.id, label: 'Gemini Pro Latest'});
+            newAvailableModels.push({ id: pro.id, label: 'Gemini Pro Latest' });
           }
 
           // If we found any models, update state
@@ -143,7 +143,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -219,7 +219,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, {role: 'user', parts: userMessage} as Message];
+      const newMessages = [...session.messages, { role: 'user', parts: userMessage } as Message];
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
         session.messages.length === 0 && session.title === 'New Chat'
@@ -240,11 +240,11 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
       const history = session ? session.messages : [];
       const systemInstruction = session?.systemInstruction;
 
-      const response = await getChatResponse(apiKey, history, userMessage, selectedModel, systemInstruction);
+      const response = await getChatResponse(apiKey, history, userMessage, selectedModel, systemInstruction, '/api/proxy');
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, {role: 'model', parts: response}],
+        messages: [...s.messages, { role: 'model', parts: response }],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -289,11 +289,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
-                currentSessionId === session.id
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
                   ? 'bg-zinc-800 text-white'
                   : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
+                }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
               <div className="flex-shrink-0">
@@ -350,9 +349,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${
-                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-              }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+                }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -393,9 +391,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                  }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                    }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -404,11 +401,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${
-                    msg.role === 'user'
+                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
                       ? 'bg-blue-600 text-white rounded-tr-none'
                       : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                  }`}>
+                    }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     <ReactMarkdown>{msg.parts}</ReactMarkdown>
                   </div>
