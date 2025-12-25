@@ -333,7 +333,7 @@ export default function FinanceDashboard() {
             onClearAll={handleClearAllTransactions}
             onDelete={handleDeleteTransaction}
             onEdit={handleEditTransaction}
-            transactions={filteredTransactions.slice(0, 20)}
+            transactions={filteredTransactions}
           />
         </div>
 

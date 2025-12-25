@@ -46,8 +46,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDe
                     transactions.map(t => (
                         <div className="group flex items-center justify-between rounded-xl bg-slate-50/50 p-3 transition-colors hover:bg-slate-100 border border-transparent hover:border-slate-200" key={t._id}>
                             <div className="flex items-center gap-4">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${t.type === 'Income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'
-                                    }`}>
+                                <div
+                                    className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 ${t.type === 'Income' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}
+                                    onClick={() => onEdit(t)}
+                                    title="Edit Category"
+                                >
                                     {t.type === 'Income' ? <ArrowUpIcon className="h-5 w-5" /> : <ArrowDownIcon className="h-5 w-5" />}
                                 </div>
                                 <div>

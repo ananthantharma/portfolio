@@ -1,13 +1,13 @@
 'use client';
 
-import {CurrencyDollarIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useSession} from 'next-auth/react';
-import {useEffect} from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-export default function FinanceLayout({children}: {children: React.ReactNode}) {
-  const {status} = useSession();
+export default function FinanceLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function FinanceLayout({children}: {children: React.ReactNode}) {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <nav className="border-b border-gray-800 bg-gray-900">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -61,7 +61,7 @@ export default function FinanceLayout({children}: {children: React.ReactNode}) {
         </div>
       </nav>
       <main>
-        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">{children}</div>
+        <div className="w-full py-6 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
   );
