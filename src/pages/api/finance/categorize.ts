@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             apiKey,
             [],
             prompt,
-            'gemini-1.5-flash-8b' // User requested Nano/Fastest model
+            'gemini-flash-lite-latest' // User requested latest alias
         );
 
         // Clean response of markdown if present
