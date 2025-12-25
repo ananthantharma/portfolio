@@ -26,8 +26,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Log masked key for verification
         console.log(`Categorize API: Using Key ID: ${apiKey.substring(0, 4)}...`);
 
-        // Limit batch size to 50 to avoid token limits or timeouts
-        const batch = transactions.slice(0, 50);
+        // Limit based on model context window and timeout risk
+        // Flash-Lite can handle large context, but Vercel functions have timeouts.
+        // 250 should be safe for a single batch.
+        const batch = transactions.slice(0, 250);
 
         const prompt = `
       You are a helpful financial assistant.
