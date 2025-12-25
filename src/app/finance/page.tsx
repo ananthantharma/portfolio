@@ -6,7 +6,6 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import {
   ArrowTrendingUpIcon,
   BanknotesIcon,
-  ChartBarIcon,
   CreditCardIcon,
   WalletIcon,
 } from '@heroicons/react/24/solid';
@@ -17,10 +16,10 @@ import BudgetListModal from '@/components/Finance/BudgetListModal';
 import BudgetOverview from '@/components/Finance/BudgetOverview';
 import CategoryDetailModal from '@/components/Finance/CategoryDetailModal';
 import CSVUploader from '@/components/Finance/CSVUploader';
+import InvestmentManager from '@/components/Finance/InvestmentManager';
 import MetricCard from '@/components/Finance/MetricCard';
 import MonthSelector from '@/components/Finance/MonthSelector';
 import SpendTrendChart from '@/components/Finance/SpendTrendChart';
-import StatCard from '@/components/Finance/StatCard';
 import TopCategorySpend from '@/components/Finance/TopCategorySpend';
 import TransactionEditModal from '@/components/Finance/TransactionEditModal';
 import UpcomingExpenses from '@/components/Finance/UpcomingExpenses';
@@ -265,14 +264,7 @@ export default function FinanceDashboard() {
   }, [transactions]);
 
 
-  // --- Rental Performance (KPIs) ---
-  const rentalIncome = budgetItems
-    .filter((i) => i.type === 'Income' && i.category === 'Rental Income')
-    .reduce((s, i) => s + i.amount, 0);
-  const rentalExpenses = budgetItems
-    .filter((i) => i.type === 'Expense' && i.propertyTag !== 'General')
-    .reduce((s, i) => s + i.amount, 0);
-  const rentalPerformance = rentalIncome - rentalExpenses;
+
 
   const handleCloseEditTransactionModal = useCallback(() => {
     setIsEditTransactionModalOpen(false);
@@ -389,20 +381,9 @@ export default function FinanceDashboard() {
         {/* Right Sidebar (4 cols) */}
         <div className="col-span-12 space-y-8 lg:col-span-4">
 
-          {/* KPI Stats Stacked */}
-          <div className="space-y-4">
-            <StatCard
-              amount={rentalPerformance}
-              colorClass="text-indigo-600"
-              icon={ChartBarIcon}
-              title="Rental Performance"
-            />
-            <StatCard
-              amount={plannedIncome > 0 ? (netCashFlow / plannedIncome) * 100 : 0}
-              colorClass="text-violet-600"
-              icon={ArrowTrendingUpIcon}
-              title="Savings Rate"
-            />
+          {/* Investment Portfolio */}
+          <div className="mb-8">
+            <InvestmentManager />
           </div>
 
           {/* Quick Actions */}
