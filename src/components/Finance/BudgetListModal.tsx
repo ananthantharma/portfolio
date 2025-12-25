@@ -14,11 +14,7 @@ interface BudgetListModalProps {
     type: 'Income' | 'Expense' | 'Investment';
 }
 
-const BudgetListModal: React.FC<BudgetListModalProps> = ({ isOpen, items, onClose, onDelete, onEdit, onAdd, type }) => {
-    const filteredItems = items.filter(item => {
-        if (type === 'Investment') return item.category === 'Savings & Investments' || item.type === 'Expense' && item.isVariable; // Approximate filter or need specific logic
-        return item.type === type;
-    });
+const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(({ isOpen, items, onClose, onDelete, onEdit, onAdd, type }) => {
 
     // Quick fix for Investment filter: Just show savings/investments category or specific logic if needed.
     // For now assuming 'Investment' maps to specific categories or we just pass pre-filtered items?
@@ -74,7 +70,7 @@ const BudgetListModal: React.FC<BudgetListModalProps> = ({ isOpen, items, onClos
                                         <p className="text-center text-slate-400 py-8">No items found.</p>
                                     ) : (
                                         displayItems.map(item => (
-                                            <div key={item._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100" key={item._id}>
                                                 <div>
                                                     <p className="font-bold text-slate-700">{item.name}</p>
                                                     <p className="text-xs text-slate-500">{item.category} • {item.subcategory}</p>
@@ -83,15 +79,15 @@ const BudgetListModal: React.FC<BudgetListModalProps> = ({ isOpen, items, onClos
                                                     <span className="font-bold text-slate-800">{formatCurrency(item.amount)}</span>
                                                     <div className="flex gap-1">
                                                         <button
-                                                            onClick={() => onEdit(item)}
                                                             className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                            onClick={() => onEdit(item)}
                                                             title="Edit"
                                                         >
                                                             <PencilSquareIcon className="h-4 w-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => onDelete(item._id)}
                                                             className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                                                            onClick={() => onDelete(item._id)}
                                                             title="Delete"
                                                         >
                                                             <TrashIcon className="h-4 w-4" />
@@ -105,11 +101,11 @@ const BudgetListModal: React.FC<BudgetListModalProps> = ({ isOpen, items, onClos
 
                                 <div className="mt-6 border-t border-slate-100 pt-4 flex justify-end">
                                     <button
+                                        className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 transition-colors"
                                         onClick={() => {
                                             onClose();
                                             onAdd(); // Logic to open Add Modal (pre-filled type?)
                                         }}
-                                        className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700 transition-colors"
                                     >
                                         <PlusIcon className="h-4 w-4" />
                                         Add New Item
@@ -122,6 +118,8 @@ const BudgetListModal: React.FC<BudgetListModalProps> = ({ isOpen, items, onClos
             </Dialog>
         </Transition>
     );
-};
+});
+
+BudgetListModal.displayName = 'BudgetListModal';
 
 export default BudgetListModal;

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+
 import { getCategoryEmoji } from '@/lib/categories';
 
 interface Transaction {
@@ -11,7 +12,7 @@ interface TopCategorySpendProps {
     transactions: Transaction[];
 }
 
-const TopCategorySpend: React.FC<TopCategorySpendProps> = ({ transactions }) => {
+const TopCategorySpend: React.FC<TopCategorySpendProps> = React.memo(({ transactions }) => {
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(val);
 
@@ -38,7 +39,7 @@ const TopCategorySpend: React.FC<TopCategorySpendProps> = ({ transactions }) => 
             <h3 className="mb-4 text-lg font-bold text-slate-800">Top Spending</h3>
             <div className="space-y-4">
                 {topCategories.map((item, index) => (
-                    <div key={item.category} className="flex items-center justify-between">
+                    <div className="flex items-center justify-between" key={item.category}>
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-xl">
                                 {getCategoryEmoji(item.category)}
@@ -58,6 +59,8 @@ const TopCategorySpend: React.FC<TopCategorySpendProps> = ({ transactions }) => 
             </div>
         </div>
     );
-};
+});
+
+TopCategorySpend.displayName = 'TopCategorySpend';
 
 export default TopCategorySpend;
