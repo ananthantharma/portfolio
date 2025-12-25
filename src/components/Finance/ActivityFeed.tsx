@@ -54,8 +54,8 @@ const ActivityItem = React.memo(({ t, onCategoryChange, onDelete, onEdit }: Acti
                 <div className="relative">
                     <button
                         className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-105 active:scale-95 text-lg shadow-sm border ${t.type === 'Income'
-                                ? 'bg-white border-emerald-100 ring-1 ring-emerald-50'
-                                : 'bg-white border-indigo-100 ring-1 ring-indigo-50'
+                            ? 'bg-white border-emerald-100 ring-1 ring-emerald-50'
+                            : 'bg-white border-indigo-100 ring-1 ring-indigo-50'
                             }`}
                         onClick={handleTogglePicker}
                         title="Change Category"
@@ -127,14 +127,37 @@ interface ActivityFeedProps {
 const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange, onClearAll, onDelete, onEdit, transactions }) => {
     const [minAmount, setMinAmount] = useState<string>('');
     const [maxAmount, setMaxAmount] = useState<string>('');
+    const [sortBy, setSortBy] = useState<'date' | 'amount_asc' | 'amount_desc'>('date');
+    const [filterCategory, setFilterCategory] = useState<string>('');
+
+    const uniqueCategories = useMemo(() => {
+        const cats = new Set(transactions.map(t => t.category));
+        return Array.from(cats).sort();
+    }, [transactions]);
 
     const filteredTransactions = useMemo(() => {
-        return transactions.filter(t => {
+        const filtered = transactions.filter(t => {
             const min = minAmount ? parseFloat(minAmount) : -Infinity;
             const max = maxAmount ? parseFloat(maxAmount) : Infinity;
-            return t.amount >= min && t.amount <= max;
+
+            // Amount filter
+            if (t.amount < min || t.amount > max) return false;
+
+            // Category filter
+            if (filterCategory && t.category !== filterCategory) return false;
+
+            return true;
         });
-    }, [transactions, minAmount, maxAmount]);
+
+        // Sort logic
+        filtered.sort((a, b) => {
+            if (sortBy === 'amount_asc') return a.amount - b.amount;
+            if (sortBy === 'amount_desc') return b.amount - a.amount;
+            return new Date(b.date).getTime() - new Date(a.date).getTime(); // Default: Date desc
+        });
+
+        return filtered;
+    }, [transactions, minAmount, maxAmount, sortBy, filterCategory]);
 
     return (
         <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-100 h-full flex flex-col">
@@ -151,24 +174,53 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onCategoryChange
                     )}
                 </div>
 
-                {/* Filters */}
-                <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <FunnelIcon className="h-4 w-4 text-slate-400" />
-                    <input
-                        className="w-24 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
-                        onChange={(e) => setMinAmount(e.target.value)}
-                        placeholder="Min $"
-                        type="number"
-                        value={minAmount}
-                    />
-                    <span className="text-slate-400 text-xs">-</span>
-                    <input
-                        className="w-24 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
-                        onChange={(e) => setMaxAmount(e.target.value)}
-                        placeholder="Max $"
-                        type="number"
-                        value={maxAmount}
-                    />
+                {/* Filters Row */}
+                <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    {/* Top Row: Min/Max */}
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <FunnelIcon className="h-4 w-4 text-slate-400" />
+                            <input
+                                className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                                onChange={(e) => setMinAmount(e.target.value)}
+                                placeholder="Min"
+                                type="number"
+                                value={minAmount}
+                            />
+                            <span className="text-slate-400 text-xs">-</span>
+                            <input
+                                className="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                                onChange={(e) => setMaxAmount(e.target.value)}
+                                placeholder="Max"
+                                type="number"
+                                value={maxAmount}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Bottom Row: Sort and Category */}
+                    <div className="flex items-center gap-2">
+                        <select
+                            className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
+                            onChange={(e) => setSortBy(e.target.value as 'date' | 'amount_asc' | 'amount_desc')}
+                            value={sortBy}
+                        >
+                            <option value="date">Most Recent</option>
+                            <option value="amount_desc">Highest Spend</option>
+                            <option value="amount_asc">Lowest Spend</option>
+                        </select>
+
+                        <select
+                            className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            value={filterCategory}
+                        >
+                            <option value="">All Categories</option>
+                            {uniqueCategories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
