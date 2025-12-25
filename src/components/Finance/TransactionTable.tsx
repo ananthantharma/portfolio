@@ -1,4 +1,4 @@
-import {PencilIcon, TrashIcon} from '@heroicons/react/24/outline';
+import { TrashIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 
 interface Transaction {
@@ -9,11 +9,12 @@ interface Transaction {
   type: 'Income' | 'Expense';
   category: string;
   property?:
-    | {
-        name: string;
-      }
-    | string
-    | null;
+  | {
+    name: string;
+  }
+  | string
+  | null;
+  cardLast4?: string;
 }
 
 interface TransactionTableProps {
@@ -21,7 +22,7 @@ interface TransactionTableProps {
   onDelete: (id: string) => void;
 }
 
-const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transactions, onDelete}) => {
+const TransactionTable: React.FC<TransactionTableProps> = React.memo(({ transactions, onDelete }) => {
   const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString('en-CA', {
       year: 'numeric',
@@ -59,6 +60,11 @@ const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transacti
               <th
                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
                 scope="col">
+                Card
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
+                scope="col">
                 Property
               </th>
               <th
@@ -83,6 +89,9 @@ const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transacti
                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-white">
                   {transaction.description}
                 </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
+                  {transaction.cardLast4 ? `**** ${transaction.cardLast4}` : '-'}
+                </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                   <span className="inline-flex items-center rounded-md bg-gray-700 px-2 py-1 text-xs font-medium text-gray-300 ring-1 ring-inset ring-gray-600">
                     {typeof transaction.property === 'object' && transaction.property && 'name' in transaction.property
@@ -92,17 +101,13 @@ const TransactionTable: React.FC<TransactionTableProps> = React.memo(({transacti
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">{transaction.category}</td>
                 <td
-                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${
-                    transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
-                  }`}>
+                  className={`whitespace-nowrap px-6 py-4 text-sm font-bold ${transaction.type === 'Income' ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
                   {transaction.type === 'Income' ? '+' : '-'}
                   {formatCurrency(transaction.amount)}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                   <div className="flex justify-end space-x-2">
-                    <button className="text-gray-400 hover:text-white transition-colors" title="Edit">
-                      <PencilIcon className="h-5 w-5" />
-                    </button>
                     <button
                       className="text-gray-400 hover:text-red-400 transition-colors"
                       onClick={() => onDelete(transaction._id)}

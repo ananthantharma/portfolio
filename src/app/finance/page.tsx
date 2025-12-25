@@ -1,13 +1,14 @@
 'use client';
 
-import {PlusIcon} from '@heroicons/react/24/solid';
-import React, {useEffect, useState} from 'react';
+import { PlusIcon } from '@heroicons/react/24/solid';
+import React, { useEffect, useState } from 'react';
 
 import BudgetItemModal from '@/components/Finance/BudgetItemModal';
 import BudgetTable from '@/components/Finance/BudgetTable';
 import FinanceCharts from '@/components/Finance/FinanceCharts';
 import SummaryCards from '@/components/Finance/SummaryCards';
-import {IBudgetItem, IBudgetItemData} from '@/models/BudgetItem';
+import TransactionList from '@/components/Finance/TransactionList';
+import { IBudgetItem, IBudgetItemData } from '@/models/BudgetItem';
 
 export default function FinanceDashboard() {
   const [items, setItems] = useState<IBudgetItem[]>([]);
@@ -173,6 +174,8 @@ export default function FinanceDashboard() {
         onClose={handleCloseModal}
         onSave={handleSaveItem}
       />
+
+      <TransactionList />
     </div>
   );
 }
