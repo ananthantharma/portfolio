@@ -127,7 +127,26 @@ export const INCOME_CATEGORIES = [
   'Other',
 ];
 
+export const getParentCategory = (subCat: string): string => {
+  // Check if it's a main category (Budget or Income)
+  if (BUDGET_CATEGORIES[subCat as keyof typeof BUDGET_CATEGORIES]) return subCat;
+  if (INCOME_CATEGORIES.includes(subCat)) return 'Income'; // Or distinct income types?
+
+  // Find parent in Budget Categories
+  for (const [mainCat, subCats] of Object.entries(BUDGET_CATEGORIES)) {
+    if (subCats.includes(subCat)) return mainCat;
+  }
+
+  // Basic fallback or check if it IS a main category but passed as a "transaction category" (unlikely now)
+  return 'Miscellaneous';
+};
+
 export const getCategoryEmoji = (cat: string): string => {
+  // Try to find direct emoji for the category (if it's a main one)
+  // or resolve parent if it's a subcategory
+  const parent = getParentCategory(cat);
+  const target = parent !== 'Miscellaneous' ? parent : cat; // Try parent first, else fallback to cat itself
+
   const map: { [key: string]: string } = {
     'Housing': '🏠',
     'Utilities': '💡',
@@ -157,10 +176,11 @@ export const getCategoryEmoji = (cat: string): string => {
     'Tax Refunds': '📄',
     'Other': '🏷️'
   };
-  return map[cat] || '🏷️';
+
+  return map[target] || map[cat] || '🏷️';
 };
 
 export const TRANSACTION_CATEGORIES = [
-  ...Object.keys(BUDGET_CATEGORIES),
+  ...Object.values(BUDGET_CATEGORIES).flat(),
   ...INCOME_CATEGORIES
 ];

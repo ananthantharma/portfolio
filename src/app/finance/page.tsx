@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable simple-import-sort/imports */
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import {
   ArrowTrendingUpIcon,
@@ -8,7 +10,6 @@ import {
   CreditCardIcon,
   WalletIcon,
 } from '@heroicons/react/24/solid';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import ActivityFeed from '@/components/Finance/ActivityFeed';
 import BudgetItemModal from '@/components/Finance/BudgetItemModal';
@@ -23,6 +24,7 @@ import StatCard from '@/components/Finance/StatCard';
 import TopCategorySpend from '@/components/Finance/TopCategorySpend';
 import TransactionEditModal from '@/components/Finance/TransactionEditModal';
 import UpcomingExpenses from '@/components/Finance/UpcomingExpenses';
+import { getParentCategory } from '@/lib/categories';
 import { IBudgetItemData } from '@/models/BudgetItem';
 
 interface Transaction {
@@ -212,20 +214,31 @@ export default function FinanceDashboard() {
 
   // --- Budget Overview Data (Planned vs Actual Filtered) ---
   const categoryData = useMemo(() => {
-    const categories = new Set([
+    // We need to define the Main Categories we care about (from Budget)
+    // Budget items already have 'category' as Main Category (e.g. Housing)
+    // Transactions now have 'category' as Subcategory (e.g. Rent) -> Need to map to Parent
+
+    const activeCategories = new Set([
       ...budgetItems.filter((i) => i.type === 'Expense').map((i) => i.category),
-      ...filteredTransactions.filter((t) => t.type === 'Expense').map((t) => t.category),
+      // For transactions, get the parent category
+      ...filteredTransactions.filter((t) => t.type === 'Expense').map((t) => getParentCategory(t.category)),
     ]);
 
-    return Array.from(categories)
-      .map((cat) => {
+    return Array.from(activeCategories)
+      .map((mainCat) => {
         const budgeted = budgetItems
-          .filter((i) => i.category === cat && i.type === 'Expense')
+          .filter((i) => i.category === mainCat && i.type === 'Expense')
           .reduce((s, i) => s + i.amount, 0);
+
         const spent = filteredTransactions
-          .filter((t) => t.category === cat && t.type === 'Expense')
+          .filter((t) => {
+            if (t.type !== 'Expense') return false;
+            const parent = getParentCategory(t.category);
+            // Match if parent matches, OR if the transaction category literally overlaps (legacy data)
+            return parent === mainCat || t.category === mainCat;
+          })
           .reduce((s, t) => s + t.amount, 0);
-        return { name: cat, budgeted, spent };
+        return { name: mainCat, budgeted, spent };
       })
       .sort((a, b) => b.budgeted - a.budgeted);
   }, [budgetItems, filteredTransactions]);

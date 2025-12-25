@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useState } from 'react';
 
 import { getCategoryEmoji, TRANSACTION_CATEGORIES } from '@/lib/categories';
 
@@ -20,6 +20,13 @@ interface TransactionEditModalProps {
 
 const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ isOpen, onClose, onSave, transaction }) => {
     const [selectedCategory, setSelectedCategory] = useState(transaction?.category || TRANSACTION_CATEGORIES[0]);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredCategories = useMemo(() => {
+        return TRANSACTION_CATEGORIES.filter(c =>
+            c.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [searchTerm]);
 
     useEffect(() => {
         if (transaction) {
@@ -81,10 +88,21 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ 
 
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Start typing or select a category
+                                        Select a category
                                     </label>
-                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 max-h-[300px] overflow-y-auto pr-2">
-                                        {TRANSACTION_CATEGORIES.map((cat) => {
+
+                                    <div className="relative mb-4">
+                                        <input
+                                            className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Search categories..."
+                                            type="text"
+                                            value={searchTerm}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {filteredCategories.map((cat) => {
                                             const isSelected = selectedCategory === cat;
                                             return (
                                                 <button
@@ -106,6 +124,9 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = React.memo(({ 
                                                 </button>
                                             );
                                         })}
+                                        {filteredCategories.length === 0 && (
+                                            <p className="col-span-full text-center text-sm text-slate-400 py-4">No categories found.</p>
+                                        )}
                                     </div>
                                 </div>
 
