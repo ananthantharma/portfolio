@@ -10,7 +10,7 @@ interface Transaction {
     category: string;
     date: string | Date;
     description: string;
-    type: 'Income' | 'Expense';
+    type: 'Income' | 'Expense' | 'Transfer';
 }
 
 interface CategoryDetailModalProps {

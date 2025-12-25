@@ -193,7 +193,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onBulkCategoryCh
 
             const data = await res.json();
             if (data.categorizations) {
-                const updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' } } = {};
+                const updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' | 'Transfer' } } = {};
 
                 Object.entries(data.categorizations).forEach(([id, result]) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
