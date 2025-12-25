@@ -12,13 +12,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { transactions } = req.body;
 
         if (!Array.isArray(transactions) || transactions.length === 0) {
+            console.warn("Categorize API: No transactions provided");
             return res.status(400).json({ error: 'Explore transactions to categorize' });
         }
 
+        console.log(`Categorize API: Processing ${transactions.length} transactions`);
+
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
+            console.error("Categorize API: Missing GEMINI_API_KEY");
             return res.status(500).json({ error: 'Gemini API key not configured' });
         }
+        // Log masked key for verification
+        console.log(`Categorize API: Using Key ID: ${apiKey.substring(0, 4)}...`);
 
         // Limit batch size to 50 to avoid token limits or timeouts
         const batch = transactions.slice(0, 50);
