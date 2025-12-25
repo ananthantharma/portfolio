@@ -1,9 +1,31 @@
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
 
 import dbConnect from '@/lib/dbConnect';
-import Transaction, {ITransaction} from '@/models/Transaction';
+import Transaction, { ITransaction } from '@/models/Transaction';
 
 // Helper to parse numeric values from CSV strings
+// Helper to properly split CSV lines respecting quotes
+const splitCSV = (line: string, delimiter: string) => {
+  const parts: string[] = [];
+  let currentPart = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === delimiter && !inQuotes) {
+      parts.push(currentPart);
+      currentPart = '';
+    } else {
+      currentPart += char;
+    }
+  }
+  parts.push(currentPart);
+  return parts.map(p => p.trim().replace(/^"|"$/g, '').trim());
+};
+
 const parseAmount = (str: string): number => {
   if (!str) return 0;
   return parseFloat(str.replace(/[^0-9.-]+/g, ''));
@@ -17,7 +39,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({error: 'No file provided'}, {status: 400});
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     const text = await file.text();
@@ -38,10 +60,10 @@ export async function POST(req: NextRequest) {
       // Let's assume standard CSV first (comma) but fall back or support tab if no commas found?
       // The user prompt example clearly had wide spaces, suggesting tabs.
 
-      let parts = line.split('\t');
+      let parts = splitCSV(line, '\t');
       if (parts.length < 2) {
         // Try comma
-        parts = line.split(',');
+        parts = splitCSV(line, ',');
       }
 
       // Expected: Date, Transaction (Desc), Debt, Credit, Card #
@@ -60,9 +82,12 @@ export async function POST(req: NextRequest) {
 
       // Basic validation
       if (!dateStr || !description) {
+        // console.log('Skipping invalid line:', line);
         skippedCount++;
         continue;
       }
+
+
 
       const debt = parseAmount(debtStr);
       const credit = parseAmount(creditStr);
@@ -129,6 +154,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error processing CSV:', error);
-    return NextResponse.json({error: 'Failed to process file'}, {status: 500});
+    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
   }
 }
