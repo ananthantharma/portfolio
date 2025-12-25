@@ -24,7 +24,6 @@ async function clearTransactions() {
             });
             if (delRes.ok) {
                 deletedCount++;
-                // console.log(`Deleted ${t._id}`);
             } else {
                 console.error(`Failed to delete ${t._id}: ${delRes.status}`);
             }
