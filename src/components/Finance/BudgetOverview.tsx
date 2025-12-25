@@ -1,30 +1,6 @@
 import React from 'react';
 
-// Simple Emoji Map helper (Extend as needed)
-const getCategoryEmoji = (cat: string) => {
-    const map: { [key: string]: string } = {
-        'Housing': '🏠',
-        'Utilities': '💡',
-        'Groceries': '🛒',
-        'Dining Out': '🍔',
-        'Transportation': '🚗',
-        'Insurance': '🛡️',
-        'Healthcare': '💊',
-        'Childcare & Education': '🎓',
-        'Personal & Household': '🧼',
-        'Recreation & Entertainment': '🎬',
-        'Subscriptions & Memberships': '🔄',
-        'Travel & Vacations': '✈️',
-        'Technology & Communications': '📱',
-        'Debt & Financial Obligations': '💳',
-        'Savings & Investments': '💰',
-        'Gifts & Celebrations': '🎁',
-        'Pets': '🐾',
-        'Taxes & Government Fees': '🏛️',
-        'Miscellaneous / Other': '📦'
-    };
-    return map[cat] || '🏷️';
-};
+import { getCategoryEmoji } from '@/lib/categories';
 
 interface CategoryData {
     budgeted: number;

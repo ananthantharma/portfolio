@@ -1,6 +1,8 @@
 import { ArrowDownIcon, ArrowUpIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
 
+import { getCategoryEmoji } from '@/lib/categories';
+
 interface Transaction {
     _id: string;
     amount: number;
@@ -57,6 +59,15 @@ const ActivityFeed: React.FC<ActivityFeedProps> = React.memo(({ onClearAll, onDe
                                     <p className="text-sm font-bold text-slate-700 truncate max-w-[150px] sm:max-w-[200px]">{t.description}</p>
                                     <p className="text-xs text-slate-500 font-medium">{t.category} • {formatDate(t.date)}</p>
                                 </div>
+                            </div>
+
+                            {/* Center Category Icon */}
+                            <div
+                                className="hidden sm:flex h-12 w-12 cursor-pointer items-center justify-center rounded-2xl bg-slate-100 text-2xl transition-all hover:scale-110 hover:bg-indigo-100 hover:shadow-md"
+                                onClick={() => onEdit(t)}
+                                title={`Edit Category: ${t.category}`}
+                            >
+                                {getCategoryEmoji(t.category)}
                             </div>
 
                             <div className="flex items-center gap-4">
