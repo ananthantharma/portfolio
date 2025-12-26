@@ -14,6 +14,11 @@ export default function SmartInvoicesPage() {
     const router = useRouter();
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+    // Dashboard State
+    const [selectedYear, setSelectedYear] = useState<string>('All');
+    const [availableYears, setAvailableYears] = useState<string[]>([]);
+    const [stats, setStats] = useState({ amount: 0, tax: 0 });
+
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/auth/signin');
@@ -23,6 +28,20 @@ export default function SmartInvoicesPage() {
     /* eslint-disable react-memo/require-usememo */
     const handleInvoiceSaved = useCallback(() => {
         setRefreshTrigger(prev => prev + 1);
+    }, []);
+
+    const handleStatsUpdate = useCallback((newStats: { amount: number; tax: number }) => {
+        setStats(newStats);
+    }, []);
+
+    const handleYearsLoaded = useCallback((years: string[]) => {
+        setAvailableYears(prev => {
+            // Only update if different to avoid infinite loops
+            if (JSON.stringify(prev) !== JSON.stringify(years)) {
+                return years;
+            }
+            return prev;
+        });
     }, []);
 
     if (status === 'loading') {
@@ -46,14 +65,69 @@ export default function SmartInvoicesPage() {
                     </p>
                 </header>
 
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-neutral-900 rounded-2xl p-6 border border-neutral-800 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span className="text-6xl">💰</span>
+                        </div>
+                        <h3 className="text-slate-400 font-medium mb-1">Total Amount ({selectedYear})</h3>
+                        <div className="text-3xl font-bold text-white">
+                            ${stats.amount.toFixed(2)}
+                        </div>
+                    </div>
+
+                    <div className="bg-neutral-900 rounded-2xl p-6 border border-neutral-800 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span className="text-6xl">🧾</span>
+                        </div>
+                        <h3 className="text-slate-400 font-medium mb-1">Total Tax ({selectedYear})</h3>
+                        <div className="text-3xl font-bold text-emerald-400">
+                            ${stats.tax.toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Year Selector */}
+                {availableYears.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === 'All'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                                }`}
+                            onClick={() => setSelectedYear('All')}
+                        >
+                            All Time
+                        </button>
+                        {availableYears.map(year => (
+                            <button
+                                key={year}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === year
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                        : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                                    }`}
+                                onClick={() => setSelectedYear(year)}
+                            >
+                                {year}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 <section className="bg-neutral-900 rounded-2xl shadow-sm border border-neutral-800 p-6">
                     <h2 className="text-xl font-bold mb-6 text-white">Add New Invoice</h2>
                     <InvoiceScanner onSaved={handleInvoiceSaved} />
                 </section>
 
                 <section className="bg-neutral-900 rounded-2xl shadow-sm border border-neutral-800 p-6">
-                    <h2 className="text-xl font-bold mb-6 text-white">Recent Invoices</h2>
-                    <InvoiceList key={refreshTrigger} />
+                    <h2 className="text-xl font-bold mb-6 text-white">Invoice History</h2>
+                    <InvoiceList
+                        key={refreshTrigger}
+                        onStatsUpdate={handleStatsUpdate}
+                        onYearsLoaded={handleYearsLoaded}
+                        selectedYear={selectedYear}
+                    />
                 </section>
             </div>
         </div>

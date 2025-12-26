@@ -4,21 +4,23 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Loader2, ExternalLink, Download, Calendar, Trash2, Pencil, Check, X } from 'lucide-react';
+import { Loader2, ExternalLink, Download, Trash2, Pencil, Check, X } from 'lucide-react';
 import { IInvoice } from '@/models/Invoice';
 
 interface Invoice extends IInvoice {
     _id: string;
 }
 
-export default function InvoiceList() {
+interface InvoiceListProps {
+    selectedYear: string;
+    onStatsUpdate: (stats: { amount: number; tax: number }) => void;
+    onYearsLoaded: (years: string[]) => void;
+}
+
+export default function InvoiceList({ selectedYear, onStatsUpdate, onYearsLoaded }: InvoiceListProps) {
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    // Date Filter State
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
 
     // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -30,13 +32,23 @@ export default function InvoiceList() {
             const res = await fetch('/api/invoices');
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to fetch invoices');
-            setInvoices(data.data);
+
+            const fetchedInvoices: Invoice[] = data.data;
+            setInvoices(fetchedInvoices);
+
+            // Extract years for parent selector
+            const years = Array.from(new Set(fetchedInvoices.map(inv =>
+                new Date(inv.date || inv.createdAt).getFullYear().toString()
+            ))).sort((a, b) => b.localeCompare(a));
+
+            onYearsLoaded(years);
+
         } catch (err: any) {
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [onYearsLoaded]);
 
     useEffect(() => {
         fetchInvoices();
@@ -44,13 +56,18 @@ export default function InvoiceList() {
 
     const filteredInvoices = useMemo(() => {
         return invoices.filter(invoice => {
-            const invoiceDate = new Date(invoice.date || invoice.createdAt).getTime();
-            const start = startDate ? new Date(startDate).getTime() : 0;
-            const end = endDate ? new Date(endDate).getTime() + (24 * 60 * 60 * 1000) : Infinity;
-
-            return invoiceDate >= start && invoiceDate < end;
+            if (selectedYear === 'All') return true;
+            const invYear = new Date(invoice.date || invoice.createdAt).getFullYear().toString();
+            return invYear === selectedYear;
         });
-    }, [invoices, startDate, endDate]);
+    }, [invoices, selectedYear]);
+
+    // Calculate stats when filtered invoices change
+    useEffect(() => {
+        const totalAmount = filteredInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+        const totalTax = filteredInvoices.reduce((sum, inv) => sum + (inv.tax || 0), 0);
+        onStatsUpdate({ amount: totalAmount, tax: totalTax });
+    }, [filteredInvoices, onStatsUpdate]);
 
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this invoice?')) return;
@@ -122,7 +139,7 @@ export default function InvoiceList() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `invoices_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', `invoices_${selectedYear}_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -146,25 +163,8 @@ export default function InvoiceList() {
 
     return (
         <div className="space-y-4">
-            {/* Controls: Date Filter & Export */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/5 p-4 rounded-lg border border-gray-700/50">
-                <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-gray-400" />
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                    <span className="text-gray-400">-</span>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                </div>
-
+            {/* Controls: Export Only (Date Filter moved to Parent) */}
+            <div className="flex justify-end items-center gap-4 bg-neutral-800/50 p-4 rounded-lg border border-neutral-700">
                 <button
                     onClick={handleExportCSV}
                     className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
