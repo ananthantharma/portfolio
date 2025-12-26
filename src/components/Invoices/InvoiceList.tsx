@@ -102,7 +102,7 @@ export default function InvoiceList() {
     };
 
     const handleExportCSV = () => {
-        const headers = ['Date', 'Vendor', 'Category', 'Description', 'Amount', 'Tax', 'Currency', 'Status', 'GST Number', 'Image URL'];
+        const headers = ['Date', 'Vendor', 'Category', 'Description', 'Amount', 'Tax'];
         const csvRows = [headers.join(',')];
 
         filteredInvoices.forEach(invoice => {
@@ -112,11 +112,7 @@ export default function InvoiceList() {
                 `"${(invoice.category || '').replace(/"/g, '""')}"`,
                 `"${(invoice.description || '').replace(/"/g, '""')}"`,
                 invoice.amount || 0,
-                invoice.tax || 0,
-                invoice.currency || 'CAD',
-                invoice.status,
-                `"${(invoice.gstNumber || '').replace(/"/g, '""')}"`,
-                invoice.imageUrl || ''
+                invoice.tax || 0
             ];
             csvRows.push(row.join(','));
         });
