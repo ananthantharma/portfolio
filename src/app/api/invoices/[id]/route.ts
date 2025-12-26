@@ -1,3 +1,5 @@
+/* eslint-disable simple-import-sort/imports */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
