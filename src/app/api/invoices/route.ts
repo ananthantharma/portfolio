@@ -15,7 +15,18 @@ export async function GET(_req: Request) {
         }
 
         await dbConnect();
-        const invoices = await Invoice.find({ userEmail: session.user.email }).sort({ date: -1, createdAt: -1 });
+        const SHARED_ACCESS_EMAILS = ['lankanprinze@gmail.com', 'saikantha@gmail.com'];
+        let query;
+
+        if (session.user.email && SHARED_ACCESS_EMAILS.includes(session.user.email)) {
+            // If user is in the shared group, they can see invoices from any email in that group
+            query = { userEmail: { $in: SHARED_ACCESS_EMAILS } };
+        } else {
+            // Default strict isolation
+            query = { userEmail: session.user.email };
+        }
+
+        const invoices = await Invoice.find(query).sort({ date: -1, createdAt: -1 });
 
         return NextResponse.json({ success: true, data: invoices });
     } catch (error) {

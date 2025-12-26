@@ -13,6 +13,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const ALLOWED_EMAILS = ['lankanprinze@gmail.com', 'saikantha@gmail.com'];
+        if (!ALLOWED_EMAILS.includes(session.user.email)) {
+            return NextResponse.json({
+                error: 'AI feature restricted: Your account is not authorized to use the scanner.'
+            }, { status: 403 });
+        }
+
         const contentType = req.headers.get('content-type') || '';
         if (!contentType.includes('multipart/form-data')) {
             return NextResponse.json({ error: 'Content-type must be multipart/form-data' }, { status: 400 });

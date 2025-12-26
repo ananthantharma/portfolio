@@ -20,11 +20,17 @@ export async function DELETE(
 
         await dbConnect();
 
-        // Ensure the invoice belongs to the user
-        const result = await Invoice.findOneAndDelete({
-            _id: params.id,
-            userEmail: session.user.email
-        });
+        const SHARED_ACCESS_EMAILS = ['lankanprinze@gmail.com', 'saikantha@gmail.com'];
+        let query;
+
+        if (session.user.email && SHARED_ACCESS_EMAILS.includes(session.user.email)) {
+            query = { _id: params.id, userEmail: { $in: SHARED_ACCESS_EMAILS } };
+        } else {
+            query = { _id: params.id, userEmail: session.user.email };
+        }
+
+        // Ensure the invoice belongs to the user (or shared group)
+        const result = await Invoice.findOneAndDelete(query);
 
         if (!result) {
             return NextResponse.json({ error: 'Invoice not found or unauthorized' }, { status: 404 });
@@ -53,8 +59,17 @@ export async function PUT(
         // Prevent userEmail injection
         delete body.userEmail;
 
+        const SHARED_ACCESS_EMAILS = ['lankanprinze@gmail.com', 'saikantha@gmail.com'];
+        let query;
+
+        if (session.user.email && SHARED_ACCESS_EMAILS.includes(session.user.email)) {
+            query = { _id: params.id, userEmail: { $in: SHARED_ACCESS_EMAILS } };
+        } else {
+            query = { _id: params.id, userEmail: session.user.email };
+        }
+
         const result = await Invoice.findOneAndUpdate(
-            { _id: params.id, userEmail: session.user.email },
+            query,
             { $set: body },
             { new: true } // Return updated document
         );
