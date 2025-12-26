@@ -13,6 +13,7 @@ interface ExtractedData {
     date?: string;
     dueDate?: string;
     amount?: number;
+    tax?: number;
     currency?: string;
     description?: string;
     gstNumber?: string;
@@ -242,6 +243,10 @@ export default function InvoiceScanner({ onSaved }: InvoiceScannerProps) {
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-1">Total Amount</label>
                             <input type="number" step="0.01" name="amount" value={scanData.amount || ''} onChange={handleChange} className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">Tax (GST/HST)</label>
+                            <input type="number" step="0.01" name="tax" value={scanData.tax || ''} onChange={handleChange} className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-400 mb-1">Date</label>

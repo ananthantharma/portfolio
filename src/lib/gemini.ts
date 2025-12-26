@@ -102,6 +102,7 @@ export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeTy
       "date": "Date of the invoice (YYYY-MM-DD)",
       "dueDate": "Due date if available (YYYY-MM-DD)",
       "amount": number (total amount),
+      "tax": number (total tax amount, e.g. GST/HST/PST),
       "currency": "Currency code (e.g. CAD, USD)",
       "description": "Brief summary of items",
       "gstNumber": "GST/HST/Business Number if available",

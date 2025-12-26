@@ -8,6 +8,7 @@ export interface IInvoice extends Document {
     dueDate?: Date;
     amount?: number;
     currency?: string;
+    tax?: number;
     description?: string;
     gstNumber?: string;
     category?: string;
@@ -26,6 +27,7 @@ const InvoiceSchema = new Schema<IInvoice>(
         dueDate: { type: Date },
         amount: { type: Number },
         currency: { type: String, default: 'CAD' },
+        tax: { type: Number },
         description: { type: String },
         gstNumber: { type: String },
         category: { type: String },
