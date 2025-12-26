@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import React, {useMemo, useState} from 'react';
+import {Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 
 interface Transaction {
   amount: number;
@@ -12,19 +12,19 @@ interface SpendTrendChartProps {
   transactions: Transaction[];
 }
 
-const CHART_MARGIN = { top: 10, right: 10, left: -20, bottom: 0 };
-const TOOLTIP_CONTENT_STYLE = { backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' };
-const TOOLTIP_CURSOR_STYLE = { fill: '#f1f5f9' };
-const TOOLTIP_ITEM_STYLE = { color: '#fff' };
-const TICK_STYLE = { fill: '#64748b', fontSize: 12 };
+const CHART_MARGIN = {top: 10, right: 10, left: -20, bottom: 0};
+const TOOLTIP_CONTENT_STYLE = {backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff'};
+const TOOLTIP_CURSOR_STYLE = {fill: '#f1f5f9'};
+const TOOLTIP_ITEM_STYLE = {color: '#fff'};
+const TICK_STYLE = {fill: '#64748b', fontSize: 12};
 const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0];
 
-const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({ onMonthClick, transactions }) => {
+const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({onMonthClick, transactions}) => {
   const [filterType, setFilterType] = useState<'Expense' | 'Income'>('Expense');
   const [timeframe, setTimeframe] = useState<'Year' | 'All'>('Year');
 
   const data = useMemo(() => {
-    const groups: { [key: string]: { amount: number; date: Date } } = {};
+    const groups: {[key: string]: {amount: number; date: Date}} = {};
     let filtered = transactions.filter(t => t.type === filterType);
 
     if (timeframe === 'Year') {
@@ -37,8 +37,8 @@ const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({ onMonthCli
 
     sortedTrans.forEach(t => {
       const d = new Date(t.date);
-      const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-      if (!groups[key]) groups[key] = { amount: 0, date: d };
+      const key = d.toLocaleDateString('en-US', {month: 'short', year: '2-digit'});
+      if (!groups[key]) groups[key] = {amount: 0, date: d};
       groups[key].amount += t.amount;
     });
 
@@ -54,7 +54,7 @@ const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({ onMonthCli
   const formatTooltipValue = React.useCallback(
     (value: number) => {
       return [
-        new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(value),
+        new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0}).format(value),
         filterType === 'Income' ? 'Earned' : 'Spent',
       ];
     },
@@ -74,8 +74,8 @@ const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({ onMonthCli
     [onMonthClick],
   );
 
-  const style = React.useMemo(() => ({ cursor: 'pointer' }), []);
-  const activeBarStyle = useMemo(() => ({ fill: filterType === 'Income' ? '#059669' : '#e11d48' }), [filterType]);
+  const style = React.useMemo(() => ({cursor: 'pointer'}), []);
+  const activeBarStyle = useMemo(() => ({fill: filterType === 'Income' ? '#059669' : '#e11d48'}), [filterType]);
   const barFill = filterType === 'Income' ? '#10b981' : '#f43f5e';
 
   return (
@@ -87,28 +87,32 @@ const SpendTrendChart: React.FC<SpendTrendChartProps> = React.memo(({ onMonthCli
         </div>
         <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
           <button
-            className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${filterType === 'Expense' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
+              filterType === 'Expense' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
             onClick={() => setFilterType('Expense')}>
             Expense
           </button>
           <button
-            className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${filterType === 'Income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-all ${
+              filterType === 'Income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
             onClick={() => setFilterType('Income')}>
             Income
           </button>
         </div>
         <div className="flex bg-slate-100 rounded-lg p-1 gap-1 ml-2">
           <button
-            className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${timeframe === 'Year' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+            className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${
+              timeframe === 'Year' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
             onClick={() => setTimeframe('Year')}>
             1Y
           </button>
           <button
-            className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${timeframe === 'All' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+            className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${
+              timeframe === 'All' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
             onClick={() => setTimeframe('All')}>
             All
           </button>

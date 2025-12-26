@@ -1,0 +1,203 @@
+'use client';
+import React, { useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload } from 'lucide-react';
+import { useEffect } from 'react';
+
+import Header from '@/components/Sections/Header';
+
+/* eslint-disable react-memo/require-usememo */
+
+interface DriveFile {
+    id: string;
+    name: string;
+    mimeType: string;
+    webViewLink: string;
+    webContentLink: string;
+    iconLink: string;
+    thumbnailLink?: string;
+    createdTime: string;
+    size?: string;
+}
+
+export default function DrivePage() {
+    const { data: session, status } = useSession();
+    const [files, setFiles] = useState<DriveFile[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    /* eslint-disable react-memo/require-usememo */
+    const fetchFiles = React.useCallback(async () => {
+        try {
+            setLoading(true);
+            const res = await fetch('/api/drive/files');
+            const data = await res.json();
+
+            if (!res.ok) {
+                if (res.status === 401) {
+                    setError('Access Denied. Please Sign Out and Sign In again to grant Drive permissions.');
+                } else {
+                    setError(data.error || 'Failed to fetch files');
+                }
+                return;
+            }
+
+            setFiles(data.files || []);
+            setError('');
+        } catch (err) {
+            setError('Network error occurred');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            fetchFiles();
+        }
+    }, [status, fetchFiles]);
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/drive/files', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+
+            await fetchFiles(); // Refresh list
+        } catch (err) {
+            alert('Failed to upload file');
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const formatSize = (bytes?: string) => {
+        if (!bytes) return '-';
+        const num = parseInt(bytes, 10);
+        if (num < 1024) return num + ' B';
+        if (num < 1024 * 1024) return (num / 1024).toFixed(1) + ' KB';
+        return (num / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    const getIcon = (mimeType: string) => {
+        if (mimeType === 'application/vnd.google-apps.folder') return <Folder className="text-yellow-500" />;
+        if (mimeType.includes('image')) return <ImageIcon className="text-purple-400" />;
+        return <FileText className="text-blue-400" />;
+    };
+
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+                <Loader2 className="animate-spin text-indigo-500 w-8 h-8" />
+            </div>
+        );
+    }
+
+    if (status === 'unauthenticated') {
+        return (
+            <div className="min-h-screen bg-neutral-950 p-6 flex items-center justify-center text-slate-400">
+                Please sign in to access Drive.
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen w-full bg-neutral-950 p-6 font-sans text-slate-200">
+            <Header />
+            <div className="max-w-7xl mx-auto space-y-8 pt-20">
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-3xl font-extrabold text-transparent">
+                            My Drive Explorer
+                        </h1>
+                        <p className="mt-2 text-slate-400">Access your Google Drive files directly.</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" />
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}>
+                            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                            Upload File
+                        </button>
+                    </div>
+                </header>
+
+                {error && (
+                    <div className="bg-red-900/20 border border-red-800 text-red-200 p-4 rounded-xl flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                        <div>
+                            <p className="font-medium">Authentication Error</p>
+                            <p className="text-sm opacity-90">{error}</p>
+                        </div>
+                    </div>
+                )}
+
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="animate-spin text-indigo-500 w-10 h-10" />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {files.map(file => (
+                            <div
+                                key={file.id}
+                                className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:border-indigo-500/50 transition-all group relative">
+                                <div className="flex items-start justify-between mb-3">
+                                    <div className="p-2 bg-neutral-800 rounded-lg">{getIcon(file.mimeType)}</div>
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a
+                                            href={file.webViewLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
+                                            title="View in Drive">
+                                            <Eye className="w-4 h-4" />
+                                        </a>
+                                        {file.webContentLink && (
+                                            <a
+                                                href={file.webContentLink}
+                                                className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
+                                                title="Download">
+                                                <Download className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                                <h3 className="text-slate-200 font-medium truncate mb-1" title={file.name}>
+                                    {file.name}
+                                </h3>
+                                <div className="flex items-center justify-between text-xs text-slate-500">
+                                    <span>{formatSize(file.size)}</span>
+                                    <span>{new Date(file.createdTime).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {files.length === 0 && !error && (
+                            <div className="col-span-full py-20 text-center text-slate-500">
+                                <Folder className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                                <p>No files found in your main Drive folder.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

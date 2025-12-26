@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, {Document, Model, Schema} from 'mongoose';
 
 export interface INoteSection extends Document {
   name: string;

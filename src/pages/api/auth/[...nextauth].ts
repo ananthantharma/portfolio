@@ -12,6 +12,14 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      authorization: {
+        params: {
+          scope: 'openid email profile https://www.googleapis.com/auth/drive',
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
+        },
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -20,8 +28,20 @@ export const authOptions = {
       console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
       return true;
     },
-    async session({session}: {session: Session}) {
-      // Send properties to the client, like an access_token from a provider.
+    async session({session, user}: {session: Session; user: User}) {
+      // Fetch the account to get the access token
+      const client = await clientPromise;
+      const db = client.db('qt_portfolio');
+      const account = await db.collection('accounts').findOne({
+        userId: new (await import('mongodb')).ObjectId(user.id),
+        provider: 'google',
+      });
+
+      if (account) {
+        // @ts-ignore - Extending session type dynamically
+        session.accessToken = (account as any).access_token;
+      }
+
       return session;
     },
   },

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {GoogleGenerativeAI} from '@google/generative-ai';
 
 export const initGemini = (apiKey: string) => {
   return new GoogleGenerativeAI(apiKey);
@@ -6,7 +6,7 @@ export const initGemini = (apiKey: string) => {
 
 export const getChatResponse = async (
   apiKey: string,
-  history: { role: 'user' | 'model'; parts: string }[],
+  history: {role: 'user' | 'model'; parts: string}[],
   message: string,
   modelName: string = 'gemini-2.5-flash',
   systemInstruction?: string,
@@ -37,7 +37,7 @@ export const getChatResponse = async (
   const chat = model.startChat({
     history: history.map(msg => ({
       role: msg.role,
-      parts: [{ text: msg.parts }],
+      parts: [{text: msg.parts}],
     })),
   });
 
@@ -116,8 +116,8 @@ export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeTy
     systemInstruction: systemInstruction,
     generationConfig: {
       temperature: 0.0, // Zero creativity for data extraction
-      responseMimeType: "application/json"
-    }
+      responseMimeType: 'application/json',
+    },
   });
 
   const prompt = `
@@ -140,7 +140,7 @@ export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeTy
   const imagePart = {
     inlineData: {
       data: base64Image,
-      mimeType: mimeType
+      mimeType: mimeType,
     },
   };
 

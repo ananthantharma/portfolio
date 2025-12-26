@@ -1,19 +1,19 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import {NextApiRequest, NextApiResponse} from 'next';
 
-import { TRANSACTION_CATEGORIES } from '@/lib/categories';
-import { getChatResponse } from '@/lib/gemini';
+import {TRANSACTION_CATEGORIES} from '@/lib/categories';
+import {getChatResponse} from '@/lib/gemini';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({error: 'Method not allowed'});
   }
 
   try {
-    const { transactions } = req.body;
+    const {transactions} = req.body;
 
     if (!Array.isArray(transactions) || transactions.length === 0) {
       console.warn('Categorize API: No transactions provided');
-      return res.status(400).json({ error: 'Explore transactions to categorize' });
+      return res.status(400).json({error: 'Explore transactions to categorize'});
     }
 
     console.log(`Categorize API: Processing ${transactions.length} transactions`);
@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       console.error('Categorize API: Missing GEMINI_API_KEY or GOOGLE_API_KEY');
-      return res.status(500).json({ error: 'Gemini API key not configured' });
+      return res.status(500).json({error: 'Gemini API key not configured'});
     }
     // Log masked key for verification
     console.log(`Categorize API: Using Key ID: ${apiKey.substring(0, 4)}...`);
@@ -86,7 +86,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       4. "type" MUST be "Income", "Expense", or "Transfer".
 
       Transactions to categorize:
-      ${JSON.stringify(batch.map(t => ({ id: t._id, description: t.description, amount: t.amount })))}
+      ${JSON.stringify(batch.map(t => ({id: t._id, description: t.description, amount: t.amount})))}
     `;
 
     const responseText = await getChatResponse(
@@ -107,14 +107,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       categorizationMap = JSON.parse(cleanJson);
     } catch (e) {
       console.error('Failed to parse Gemini response', responseText);
-      return res.status(500).json({ error: 'Failed to parse AI response' });
+      return res.status(500).json({error: 'Failed to parse AI response'});
     }
 
-    res.status(200).json({ categorizations: categorizationMap });
+    res.status(200).json({categorizations: categorizationMap});
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : 'No stack';
-    console.error('Categorization error details:', { message: errorMsg, stack: errorStack });
+    console.error('Categorization error details:', {message: errorMsg, stack: errorStack});
 
     // Return detailed error in dev mode only
     res.status(500).json({
