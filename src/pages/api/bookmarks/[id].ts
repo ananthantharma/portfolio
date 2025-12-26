@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 import { getServerSession } from 'next-auth/next';
 import { ObjectId } from 'mongodb';
 import type { NextApiRequest, NextApiResponse } from 'next';
