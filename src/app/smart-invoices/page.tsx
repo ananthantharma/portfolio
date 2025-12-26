@@ -93,8 +93,8 @@ export default function SmartInvoicesPage() {
                     <div className="flex flex-wrap gap-2">
                         <button
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === 'All'
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                                    : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
                                 }`}
                             onClick={() => setSelectedYear('All')}
                         >
@@ -102,11 +102,11 @@ export default function SmartInvoicesPage() {
                         </button>
                         {availableYears.map(year => (
                             <button
-                                key={year}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === year
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                                        : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                                    : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
                                     }`}
+                                key={year}
                                 onClick={() => setSelectedYear(year)}
                             >
                                 {year}
