@@ -166,23 +166,35 @@ export default function InvoiceList() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${invoice.status === 'Paid' ? 'bg-green-100 text-green-800' :
-                                                    invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-red-100 text-red-800'
+                                                invoice.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
                                                 }`}>
                                                 {invoice.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             {invoice.imageUrl && (
-                                                <a
-                                                    href={invoice.imageUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-indigo-400 hover:text-indigo-300 flex items-center justify-end space-x-1"
-                                                >
-                                                    <ExternalLink size={16} />
-                                                    <span>View</span>
-                                                </a>
+                                                <>
+                                                    <a
+                                                        href={invoice.imageUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-indigo-400 hover:text-indigo-300 flex items-center justify-end space-x-1"
+                                                        title="View Attachment"
+                                                    >
+                                                        <ExternalLink size={16} />
+                                                        <span className="hidden sm:inline">View</span>
+                                                    </a>
+                                                    <a
+                                                        href={invoice.imageUrl}
+                                                        download={`Invoice_${invoice.vendorName || 'scan'}_${invoice.date || 'date'}.jpg`}
+                                                        className="text-green-400 hover:text-green-300 flex items-center justify-end space-x-1 ml-3"
+                                                        title="Download Attachment"
+                                                    >
+                                                        <Download size={16} />
+                                                        <span className="hidden sm:inline">Save</span>
+                                                    </a>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
