@@ -11,9 +11,10 @@ import {authOptions} from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session || !session.user?.email) {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
+  const userEmail = session.user.email;
   await dbConnect();
 
   // Ensure models are registered to avoid MissingSchemaError during population
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
   const searchSectionNamesOnly = searchParams.get('searchSectionNamesOnly') === 'true';
 
   try {
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = {userEmail};
     if (search) {
       const searchRegex = {$regex: search, $options: 'i'};
       const specificSearch = searchPageTitlesOnly || searchSectionNamesOnly;
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
         let results: any[] = [];
 
         if (searchPageTitlesOnly) {
-          const pages = await NotePage.find({title: searchRegex}).sort({order: 1}).populate({
+          const pages = await NotePage.find({title: searchRegex, userEmail}).sort({order: 1}).populate({
             path: 'sectionId',
             select: 'categoryId name',
           });
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
           console.log('DEBUG: Searching Sections/Categories with regex:', search);
 
           // Search Sections
-          const sections = await NoteSection.find({name: searchRegex}).populate('categoryId');
+          const sections = await NoteSection.find({name: searchRegex, userEmail}).populate('categoryId');
           results = [
             ...results,
             ...sections.map(s => ({
@@ -60,7 +61,7 @@ export async function GET(request: Request) {
           ];
 
           // Search Categories (Notebooks)
-          const categories = await NoteCategory.find({name: searchRegex});
+          const categories = await NoteCategory.find({name: searchRegex, userEmail});
           console.log(
             'DEBUG: Matched Categories:',
             categories.map(c => c.name),
@@ -90,11 +91,11 @@ export async function GET(request: Request) {
         return NextResponse.json({success: true, data: uniqueResults});
       } else {
         // Standard Search: Title OR Hierarchy (Category/Section) OR Content
-        const matchedCategories = await NoteCategory.find({name: searchRegex}).select('_id');
+        const matchedCategories = await NoteCategory.find({name: searchRegex, userEmail}).select('_id');
         const matchedCategoryIds = matchedCategories.map(c => c._id);
 
         const matchedSections = await NoteSection.find({
-          $or: [{name: searchRegex}, {categoryId: {$in: matchedCategoryIds}}],
+          $and: [{userEmail}, {$or: [{name: searchRegex}, {categoryId: {$in: matchedCategoryIds}}]}],
         }).select('_id');
         const matchedSectionIds = matchedSections.map(s => s._id);
 
@@ -123,14 +124,19 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session || !session.user?.email) {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
   await dbConnect();
   try {
     const body = await request.json();
     const count = await NotePage.countDocuments({sectionId: body.sectionId});
-    const page = await NotePage.create({...body, order: count, image: body.image || null});
+    const page = await NotePage.create({
+      ...body,
+      userEmail: session.user.email,
+      order: count,
+      image: body.image || null,
+    });
     return NextResponse.json({success: true, data: page}, {status: 201});
   } catch (error) {
     return NextResponse.json({success: false, error: error}, {status: 400});

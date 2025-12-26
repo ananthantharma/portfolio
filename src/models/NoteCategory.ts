@@ -1,16 +1,22 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteCategory extends Document {
   name: string;
   color?: string;
   icon?: string;
   image?: string | null;
+  userEmail?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const NoteCategorySchema: Schema = new Schema(
   {
+    userEmail: {
+      type: String,
+      required: true,
+      index: true,
+    },
     name: {
       type: String,
       required: [true, 'Please provide a category name'],

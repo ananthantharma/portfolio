@@ -1,13 +1,13 @@
 'use client';
 
-import { CurrencyDollarIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import {CurrencyDollarIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import {useRouter} from 'next/navigation';
+import {useSession} from 'next-auth/react';
+import {useEffect} from 'react';
 
-export default function FinanceLayout({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+export default function FinanceLayout({children}: {children: React.ReactNode}) {
+  const {status} = useSession();
   const router = useRouter();
 
   useEffect(() => {

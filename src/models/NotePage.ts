@@ -1,4 +1,4 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INotePage extends Document {
   title: string;
@@ -9,12 +9,18 @@ export interface INotePage extends Document {
   sectionId: mongoose.Types.ObjectId;
   isFlagged: boolean;
   isImportant: boolean;
+  userEmail?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const NotePageSchema: Schema = new Schema(
   {
+    userEmail: {
+      type: String,
+      required: true,
+      index: true,
+    },
     title: {
       type: String,
       required: [true, 'Please provide a page title'],

@@ -10,10 +10,16 @@ export interface ITransaction {
   property?: mongoose.Types.ObjectId | { _id: string; name: string; type: string };
   isRecurring: boolean;
   cardLast4?: string;
+  userEmail?: string;
 }
 
 const TransactionSchema = new Schema<ITransaction>(
   {
+    userEmail: {
+      type: String,
+      required: true,
+      index: true,
+    },
     date: {
       type: Date,
       required: true,

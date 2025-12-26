@@ -147,40 +147,37 @@ export const getCategoryEmoji = (cat: string): string => {
   const parent = getParentCategory(cat);
   const target = parent !== 'Miscellaneous' ? parent : cat; // Try parent first, else fallback to cat itself
 
-  const map: { [key: string]: string } = {
-    'Housing': '🏠',
-    'Utilities': '💡',
-    'Transportation': '🚗',
+  const map: {[key: string]: string} = {
+    Housing: '🏠',
+    Utilities: '💡',
+    Transportation: '🚗',
     'Food & Groceries': '🛒',
     'Healthcare & Medical': '💊',
-    'Insurance': '🛡️',
+    Insurance: '🛡️',
     'Personal Spending': '🛍️',
     'Recreation & Entertainment': '🎬',
     'Child & Family': '🧸',
     'Savings & Debt': '🏦',
-    'Giving': '🎁',
+    Giving: '🎁',
     'Business/Work': '💼',
-    'Pets': '🐾',
-    'Miscellaneous': '📦',
+    Pets: '🐾',
+    Miscellaneous: '📦',
     // Income Categories
-    'Salary': '💵',
-    'Bonuses': '🎊',
-    'Commission': '🤝',
-    'Overtime': '⏱️',
+    Salary: '💵',
+    Bonuses: '🎊',
+    Commission: '🤝',
+    Overtime: '⏱️',
     'Rental Income': '🏠',
     'Investment Income': '📈',
-    'Dividends': '📊',
+    Dividends: '📊',
     'Capital Gains': '🚀',
     'Side Hustle': '🔨',
     'Child Benefits (CCB)': '👶',
     'Tax Refunds': '📄',
-    'Other': '🏷️'
+    Other: '🏷️',
   };
 
   return map[target] || map[cat] || '🏷️';
 };
 
-export const TRANSACTION_CATEGORIES = [
-  ...Object.values(BUDGET_CATEGORIES).flat(),
-  ...INCOME_CATEGORIES
-];
+export const TRANSACTION_CATEGORIES = [...Object.values(BUDGET_CATEGORIES).flat(), ...INCOME_CATEGORIES];

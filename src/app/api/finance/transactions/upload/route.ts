@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
-import Transaction, { ITransaction } from '@/models/Transaction';
+import Transaction, {ITransaction} from '@/models/Transaction';
 
 // Helper to parse numeric values from CSV strings
 // Helper to properly split CSV lines respecting quotes
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({error: 'No file provided'}, {status: 400});
     }
 
     const text = await file.text();
@@ -85,8 +85,6 @@ export async function POST(req: NextRequest) {
         skippedCount++;
         continue;
       }
-
-
 
       const debt = parseAmount(debtStr);
       const credit = parseAmount(creditStr);
@@ -153,6 +151,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error processing CSV:', error);
-    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
+    return NextResponse.json({error: 'Failed to process file'}, {status: 500});
   }
 }

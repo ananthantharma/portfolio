@@ -1,4 +1,4 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteSection extends Document {
   name: string;
@@ -7,12 +7,18 @@ export interface INoteSection extends Document {
   image?: string | null;
   order: number;
   categoryId: mongoose.Types.ObjectId;
+  userEmail?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const NoteSectionSchema: Schema = new Schema(
   {
+    userEmail: {
+      type: String,
+      required: true,
+      index: true,
+    },
     name: {
       type: String,
       required: [true, 'Please provide a section name'],

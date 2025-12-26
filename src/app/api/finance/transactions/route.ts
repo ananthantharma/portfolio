@@ -1,20 +1,45 @@
+/* eslint-disable simple-import-sort/imports */
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
+import BudgetItem from '@/models/BudgetItem';
+import Investment from '@/models/Investment';
+import NoteCategory from '@/models/NoteCategory';
+import NotePage from '@/models/NotePage';
+import NoteSection from '@/models/NoteSection';
+import Password from '@/models/Password';
+import ToDo from '@/models/ToDo';
 import Transaction from '@/models/Transaction';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export async function GET(_req: NextRequest) {
   try {
     await dbConnect();
+    const session = await getServerSession(authOptions);
 
-    // Fetch all transactions, sorted by date desc
-    const transactions = await Transaction.find({}).sort({ date: -1, createdAt: -1 });
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Find the latest uploaded/created date
-    // We can do this by sorting by createdAt desc and taking top 1,
-    // or just iterating since we have them all (if list isn't huge).
-    // Let's just query specifically for it to be efficient if list is large
-    const latest = await Transaction.findOne({}).sort({ createdAt: -1 }).select('createdAt');
+    const userEmail = session.user.email;
+
+    // --- LAZY MIGRATION (One-time fix for existing owner) ---
+    if (userEmail === 'lankanprinze@gmail.com') {
+      const orphanCount = await Transaction.countDocuments({ userEmail: { $exists: false } });
+      if (orphanCount > 0) {
+        console.log('Migrating orphaned data to', userEmail);
+        const models = [Transaction, BudgetItem, Investment, Password, NoteCategory, NoteSection, NotePage, ToDo];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await Promise.all(models.map((m: any) => m.updateMany({ userEmail: { $exists: false } }, { $set: { userEmail } })));
+      }
+    }
+    // --------------------------------------------------------
+
+    // Fetch transactions for the user
+    const transactions = await Transaction.find({ userEmail }).sort({ date: -1, createdAt: -1 });
+
+    const latest = await Transaction.findOne({ userEmail }).sort({ createdAt: -1 }).select('createdAt');
 
     const lastUpdated = latest ? latest.createdAt : null;
 
@@ -32,7 +57,13 @@ export async function GET(_req: NextRequest) {
 export async function DELETE(_req: NextRequest) {
   try {
     await dbConnect();
-    const result = await Transaction.deleteMany({});
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only delete user's transactions
+    const result = await Transaction.deleteMany({ userEmail: session.user.email });
     return NextResponse.json({ success: true, deletedCount: result.deletedCount });
   } catch (error) {
     console.error('Error clearing transactions:', error);

@@ -1,21 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type {NextApiRequest, NextApiResponse} from 'next';
 
 import clientPromise from '../../../lib/mongodb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PUT') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({error: 'Method not allowed'});
   }
 
   try {
-    const { oldCategory, newCategory } = req.body;
+    const {oldCategory, newCategory} = req.body;
 
     if (!oldCategory || !newCategory) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({error: 'Missing required fields'});
     }
 
     if (!clientPromise) {
-      return res.status(503).json({ error: 'Database not configured. Please set MONGODB_URI environment variable.' });
+      return res.status(503).json({error: 'Database not configured. Please set MONGODB_URI environment variable.'});
     }
 
     const client = await clientPromise;
@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const result = await db
       .collection('bookmarks')
-      .updateMany({ category: oldCategory }, { $set: { category: newCategory } });
+      .updateMany({category: oldCategory}, {$set: {category: newCategory}});
 
     res.status(200).json({
       success: true,
@@ -31,6 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Failed to update category' });
+    res.status(500).json({error: 'Failed to update category'});
   }
 }

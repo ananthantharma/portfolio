@@ -1,4 +1,4 @@
-import { MongoClient, MongoClientOptions } from 'mongodb';
+import {MongoClient, MongoClientOptions} from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -40,13 +40,13 @@ try {
   // Remove "test" logic or specific overrides if needed.
 } catch (e) {
   // Parsing failed (maybe custom schemes?), attempt manual cleanup of empty params
-  connectionUri = uri.replace(/[?&][^=&]+=(?:&|$)/g, (match) => {
+  connectionUri = uri.replace(/[?&][^=&]+=(?:&|$)/g, match => {
     // e.g. "?foo=&" -> "?"
     // e.g. "&foo=&" -> "&"
     // e.g. "&foo=" -> ""
     return match.startsWith('&') ? '' : match.charAt(0);
   });
-  console.warn("Manual URI cleanup applied due to URL parse error", e);
+  console.warn('Manual URI cleanup applied due to URL parse error', e);
 }
 
 // Remove trailing ? or & if any (regex might leave them)
@@ -58,11 +58,11 @@ console.log('MongoDB Connection Init:', {
   length: uri.length,
   passwordDebug: passwordMatch
     ? {
-      length: passwordMatch[1].length,
-      startsWith: passwordMatch[1].substring(0, 2),
-      endsWith: passwordMatch[1].slice(-2),
-      isEncoded: passwordMatch[1].includes('%'),
-    }
+        length: passwordMatch[1].length,
+        startsWith: passwordMatch[1].substring(0, 2),
+        endsWith: passwordMatch[1].slice(-2),
+        isEncoded: passwordMatch[1].includes('%'),
+      }
     : 'Not Found',
   options: {
     tls: true,

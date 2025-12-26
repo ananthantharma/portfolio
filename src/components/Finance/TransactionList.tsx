@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 import CSVUploader from './CSVUploader';
 import FinanceCharts from './FinanceCharts';
@@ -11,7 +11,7 @@ interface Transaction {
   amount: number;
   type: 'Income' | 'Expense';
   category: string;
-  property?: { name: string } | string | null;
+  property?: {name: string} | string | null;
   cardLast4?: string;
 }
 
@@ -41,7 +41,7 @@ const TransactionList: React.FC = React.memo(() => {
   const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Delete this transaction?')) return;
     try {
-      const res = await fetch(`/api/finance/transactions/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/finance/transactions/${id}`, {method: 'DELETE'});
       if (res.ok) {
         setTransactions(prev => prev.filter(t => t._id !== id));
       } else {
@@ -96,7 +96,7 @@ const TransactionList: React.FC = React.memo(() => {
             onClick={async () => {
               if (confirm('Are you sure you want to DELETE ALL transactions? This cannot be undone.')) {
                 try {
-                  const res = await fetch('/api/finance/transactions', { method: 'DELETE' });
+                  const res = await fetch('/api/finance/transactions', {method: 'DELETE'});
                   if (res.ok) {
                     setTransactions([]);
                     setLastUpdated(null);
