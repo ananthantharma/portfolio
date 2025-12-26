@@ -95,20 +95,20 @@ export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeTy
   });
 
   const prompt = `
-    Analyze this image of an invoice/bill. Extract the following details in JSON format:
+    Analyze this image of a financial document (invoice, bill, receipt, statement, notice, etc.). Extract the following details in JSON format:
     {
-      "vendorName": "Name of the business/vendor",
+      "vendorName": "Name of the business/vendor (e.g. Toronto Water, Rogers, Enbridge)",
       "vendorAddress": "Address if available",
-      "date": "Date of the invoice (YYYY-MM-DD)",
+      "date": "Document date (Invoice Date, Statement Date, Notice Date) in YYYY-MM-DD",
       "dueDate": "Due date if available (YYYY-MM-DD)",
-      "amount": number (total amount),
-      "tax": number (total tax amount, e.g. GST/HST/PST),
-      "currency": "Currency code (e.g. CAD, USD)",
-      "description": "Brief summary of items",
+      "amount": number (Total Amount, Balance Due, or Overdue Amount),
+      "tax": number (total tax amount, e.g. GST/HST/PST/VAT if visible),
+      "currency": "Currency code (e.g. CAD, USD) - Default to CAD if looking like a Canadian bill",
+      "description": "Brief summary of items (e.g. 'Overdue Notice', 'Water Bill')",
       "gstNumber": "GST/HST/Business Number if available",
       "category": "Suggested category from: Utilities, Groceries, Dining, Entertainment, Transportation, Housing, Insurance, Medical, Business, Other"
     }
-    Return ONLY raw JSON.
+    Return ONLY raw JSON. If some fields are missing, return null or empty string.
   `;
 
   const imagePart = {
