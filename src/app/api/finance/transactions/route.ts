@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
 import BudgetItem from '@/models/BudgetItem';
+import Contact from '@/models/Contact';
 import Investment from '@/models/Investment';
 import NoteCategory from '@/models/NoteCategory';
 import NotePage from '@/models/NotePage';
@@ -29,7 +30,7 @@ export async function GET(_req: NextRequest) {
       const orphanCount = await Transaction.countDocuments({ userEmail: { $exists: false } });
       if (orphanCount > 0) {
         console.log('Migrating orphaned data to', userEmail);
-        const models = [Transaction, BudgetItem, Investment, Password, NoteCategory, NoteSection, NotePage, ToDo];
+        const models = [Transaction, BudgetItem, Investment, Password, NoteCategory, NoteSection, NotePage, ToDo, Contact];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await Promise.all(models.map((m: any) => m.updateMany({ userEmail: { $exists: false } }, { $set: { userEmail } })));
       }
