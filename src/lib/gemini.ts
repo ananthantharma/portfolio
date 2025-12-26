@@ -112,7 +112,7 @@ export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeTy
   `;
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview',
     systemInstruction: systemInstruction,
     generationConfig: {
       temperature: 0.0, // Zero creativity for data extraction
