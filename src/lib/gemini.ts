@@ -1,4 +1,4 @@
-import {GoogleGenerativeAI} from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const initGemini = (apiKey: string) => {
   return new GoogleGenerativeAI(apiKey);
@@ -6,7 +6,7 @@ export const initGemini = (apiKey: string) => {
 
 export const getChatResponse = async (
   apiKey: string,
-  history: {role: 'user' | 'model'; parts: string}[],
+  history: { role: 'user' | 'model'; parts: string }[],
   message: string,
   modelName: string = 'gemini-2.5-flash',
   systemInstruction?: string,
@@ -37,7 +37,7 @@ export const getChatResponse = async (
   const chat = model.startChat({
     history: history.map(msg => ({
       role: msg.role,
-      parts: [{text: msg.parts}],
+      parts: [{ text: msg.parts }],
     })),
   });
 
@@ -85,4 +85,39 @@ export const getAvailableModels = async (apiKey: string): Promise<GeminiModel[]>
     console.error('Error fetching models:', error);
     return [];
   }
+};
+export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeType: string) => {
+  const genAI = initGemini(apiKey);
+  // Using gemini-2.0-flash-exp as requested (or fallback to 1.5-flash if needed)
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash-exp',
+    generationConfig: { responseMimeType: "application/json" }
+  });
+
+  const prompt = `
+    Analyze this image of an invoice/bill. Extract the following details in JSON format:
+    {
+      "vendorName": "Name of the business/vendor",
+      "vendorAddress": "Address if available",
+      "date": "Date of the invoice (YYYY-MM-DD)",
+      "dueDate": "Due date if available (YYYY-MM-DD)",
+      "amount": number (total amount),
+      "currency": "Currency code (e.g. CAD, USD)",
+      "description": "Brief summary of items",
+      "gstNumber": "GST/HST/Business Number if available",
+      "category": "Suggested category from: Utilities, Groceries, Dining, Entertainment, Transportation, Housing, Insurance, Medical, Business, Other"
+    }
+    Return ONLY raw JSON.
+  `;
+
+  const imagePart = {
+    inlineData: {
+      data: base64Image,
+      mimeType: mimeType
+    },
+  };
+
+  const result = await model.generateContent([prompt, imagePart]);
+  const response = await result.response;
+  return response.text();
 };
