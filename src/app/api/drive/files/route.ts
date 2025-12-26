@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Readable } from 'stream';
 
-import { google } from 'googleapis';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 

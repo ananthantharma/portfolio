@@ -1,8 +1,7 @@
 'use client';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload } from 'lucide-react';
-import { useEffect } from 'react';
 
 import Header from '@/components/Sections/Header';
 
@@ -21,7 +20,7 @@ interface DriveFile {
 }
 
 export default function DrivePage() {
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -127,12 +126,13 @@ export default function DrivePage() {
                     </div>
 
                     <div className="flex gap-2">
-                        <input type="file" ref={fileInputRef} onChange={handleUpload} className="hidden" />
+                        <input className="hidden" onChange={handleUpload} ref={fileInputRef} type="file" />
                         <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
                             className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}>
+                                }`}
+                            disabled={uploading}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
                             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                             Upload File
                         </button>
@@ -163,18 +163,20 @@ export default function DrivePage() {
                                     <div className="p-2 bg-neutral-800 rounded-lg">{getIcon(file.mimeType)}</div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <a
-                                            href={file.webViewLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
                                             className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
-                                            title="View in Drive">
+                                            href={file.webViewLink}
+                                            rel="noopener noreferrer"
+                                            target="_blank"
+                                            title="View in Drive"
+                                        >
                                             <Eye className="w-4 h-4" />
                                         </a>
                                         {file.webContentLink && (
                                             <a
-                                                href={file.webContentLink}
                                                 className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
-                                                title="Download">
+                                                href={file.webContentLink}
+                                                title="Download"
+                                            >
                                                 <Download className="w-4 h-4" />
                                             </a>
                                         )}
