@@ -42,6 +42,48 @@ export default function InvoiceScanner({ onSaved }: InvoiceScannerProps) {
         }
     };
 
+    const compressImage = async (file: File): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const img = document.createElement('img');
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                img.src = e.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Resize to max 1024px dimension to save size
+                    const MAX_DIM = 1024;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_DIM) {
+                            height *= MAX_DIM / width;
+                            width = MAX_DIM;
+                        }
+                    } else {
+                        if (height > MAX_DIM) {
+                            width *= MAX_DIM / height;
+                            height = MAX_DIM;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error('Image compression failed'));
+                    }, 'image/jpeg', 0.8); // 80% quality JPEG
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    };
+
     const handleScan = async () => {
         if (!file) return;
 
@@ -49,8 +91,9 @@ export default function InvoiceScanner({ onSaved }: InvoiceScannerProps) {
         setError(null);
 
         try {
+            const compressedBlob = await compressImage(file);
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', compressedBlob, 'invoice.jpg');
 
             const res = await fetch('/api/invoices/scan', {
                 method: 'POST',
