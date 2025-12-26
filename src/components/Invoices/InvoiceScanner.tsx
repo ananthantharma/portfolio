@@ -52,8 +52,8 @@ export default function InvoiceScanner({ onSaved }: InvoiceScannerProps) {
                 img.src = e.target?.result as string;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    // Resize to max 1024px dimension to save size
-                    const MAX_DIM = 1024;
+                    // Resize to max 3072px (Ultra High Resolution for OCR) to capture small text
+                    const MAX_DIM = 3072;
                     let width = img.width;
                     let height = img.height;
 

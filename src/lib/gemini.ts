@@ -88,27 +88,53 @@ export const getAvailableModels = async (apiKey: string): Promise<GeminiModel[]>
 };
 export const analyzeInvoice = async (apiKey: string, base64Image: string, mimeType: string) => {
   const genAI = initGemini(apiKey);
-  // Using gemini-2.0-flash-exp as requested (or fallback to 1.5-flash if needed)
+
+  // Logic-Based Instruction: Mathematical Verification Rule
+  const systemInstruction = `
+    You are a specialized financial document extraction AI. Your goal is 100% precision.
+    
+    Mathematical Verification Rule:
+    Before finalizing the 'amount', perform this internal check: 
+    (Sum of Line Items) - (Discounts) + (Taxes) = Amount. 
+    If the image shows a "Total" or "Balance Due" that matches this calculation, use that. 
+    If there is a discrepancy, prioritize the figure explicitly labeled "Total" or "Balance Due".
+    
+    Strictly follow this extraction schema:
+    - Vendor Name: Official business name.
+    - Vendor Address: Full address if available.
+    - Date: YYYY-MM-DD. Look for "Invoice Date", "Statement Date", or "Notice Date".
+    - Due Date: YYYY-MM-DD.
+    - Amount: The final PAYABLE amount.
+    - Tax: Total tax amount (GST/HST/PST/VAT).
+    - Currency: ISO code (e.g. CAD, USD). Default to CAD if Canadian address.
+    - Description: Brief summary (e.g. "Overdue Notice", "Water Bill").
+    - GST Number: Business number if visible.
+  `;
+
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash-exp',
-    generationConfig: { responseMimeType: "application/json" }
+    systemInstruction: systemInstruction,
+    generationConfig: {
+      temperature: 0.0, // Zero creativity for data extraction
+      responseMimeType: "application/json"
+    }
   });
 
   const prompt = `
-    Analyze this image of a financial document (invoice, bill, receipt, statement, notice, etc.). Extract the following details in JSON format:
+    Extract the following details from this financial document in strict JSON format:
     {
-      "vendorName": "Name of the business/vendor (e.g. Toronto Water, Rogers, Enbridge)",
-      "vendorAddress": "Address if available",
-      "date": "Document date (Invoice Date, Statement Date, Notice Date) in YYYY-MM-DD",
-      "dueDate": "Due date if available (YYYY-MM-DD)",
-      "amount": number (Total Amount, Balance Due, or Overdue Amount),
-      "tax": number (total tax amount, e.g. GST/HST/PST/VAT if visible),
-      "currency": "Currency code (e.g. CAD, USD) - Default to CAD if looking like a Canadian bill",
-      "description": "Brief summary of items (e.g. 'Overdue Notice', 'Water Bill')",
-      "gstNumber": "GST/HST/Business Number if available",
-      "category": "Suggested category from: Utilities, Groceries, Dining, Entertainment, Transportation, Housing, Insurance, Medical, Business, Other"
+      "vendorName": string,
+      "vendorAddress": string,
+      "date": string (YYYY-MM-DD),
+      "dueDate": string (YYYY-MM-DD),
+      "amount": number,
+      "tax": number,
+      "currency": string,
+      "description": string,
+      "gstNumber": string,
+      "category": string (One of: Utilities, Groceries, Dining, Entertainment, Transportation, Housing, Insurance, Medical, Business, Other)
     }
-    Return ONLY raw JSON. If some fields are missing, return null or empty string.
+    Return ONLY raw JSON. If a field is not found, use null.
   `;
 
   const imagePart = {
