@@ -1,11 +1,18 @@
-import type {NextApiRequest, NextApiResponse} from 'next';
+import { getServerSession } from 'next-auth/next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 import clientPromise from '../../lib/mongodb';
+import { authOptions } from './auth/[...nextauth]';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const session = await getServerSession(req, res, authOptions);
+    if (!session || !session.user?.email) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     if (!clientPromise) {
-      return res.status(503).json({error: 'Database not configured. Please set MONGODB_URI environment variable.'});
+      return res.status(503).json({ error: 'Database not configured. Please set MONGODB_URI environment variable.' });
     }
 
     const client = await clientPromise;
@@ -13,16 +20,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const collection = db.collection('bookmarks');
 
     if (req.method === 'GET') {
-      const bookmarks = await collection.find({}).sort({category: 1, title: 1}).toArray();
-      res.status(200).json({bookmarks});
+      const bookmarks = await collection.find({ userEmail: session.user.email }).sort({ category: 1, title: 1 }).toArray();
+      res.status(200).json({ bookmarks });
     } else if (req.method === 'POST') {
-      const {title, url, category, description} = req.body;
+      const { title, url, category, description } = req.body;
 
       if (!title || !url || !category) {
-        return res.status(400).json({error: 'Missing required fields'});
+        return res.status(400).json({ error: 'Missing required fields' });
       }
 
       const newBookmark = {
+        userEmail: session.user.email,
         title,
         url,
         category,
@@ -33,13 +41,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       const result = await collection.insertOne(newBookmark);
-      res.status(201).json({success: true, id: result.insertedId});
+      res.status(201).json({ success: true, id: result.insertedId });
     } else {
-      res.status(405).json({error: 'Method not allowed'});
+      res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (e: unknown) {
     console.error('API Error:', e);
     const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-    res.status(500).json({error: `Failed to process request: ${errorMessage}`});
+    res.status(500).json({ error: `Failed to process request: ${errorMessage}` });
   }
 }
