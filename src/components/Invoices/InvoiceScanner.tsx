@@ -136,8 +136,12 @@ export default function InvoiceScanner({ onSaved }: InvoiceScannerProps) {
             // For MVP, we'll just save the data. Image storage strategy:
             // We can convert the file to base64 here to send to save API (since it wasn't saved in scan API).
 
+            // Compress the image before saving to ensure it fits in the payload
+            // This re-uses the 3072px limit which is high quality but much smaller than raw 12MP+ photos
+            const compressedBlob = await compressImage(file!);
+
             const reader = new FileReader();
-            reader.readAsDataURL(file!);
+            reader.readAsDataURL(compressedBlob);
             reader.onload = async () => {
                 const base64Image = reader.result as string;
 
