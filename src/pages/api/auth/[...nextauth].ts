@@ -32,30 +32,33 @@ export const authOptions = {
         expiresAt: account?.expires_at
       });
 
-      if (account?.provider === 'google' && account.refresh_token) {
+      if (account?.provider === 'google') {
         try {
           const client = await clientPromise;
           const db = client.db('qt_portfolio');
+
+          const updateData: any = {
+            access_token: account.access_token,
+            expires_at: account.expires_at,
+            scope: account.scope,
+            token_type: account.token_type,
+            id_token: account.id_token
+          };
+
+          if (account.refresh_token) {
+            updateData.refresh_token = account.refresh_token;
+          }
 
           await db.collection('accounts').updateOne(
             {
               provider: 'google',
               userId: new (await import('mongodb')).ObjectId(user.id)
             },
-            {
-              $set: {
-                access_token: account.access_token,
-                expires_at: account.expires_at,
-                refresh_token: account.refresh_token,
-                scope: account.scope,
-                token_type: account.token_type,
-                id_token: account.id_token
-              }
-            }
+            { $set: updateData }
           );
-          console.log('SignIn: Manually updated account tokens with refresh_token');
+          console.log('SignIn: Updated account tokens', { hasRefresh: !!account.refresh_token });
         } catch (error) {
-          console.error('SignIn: Failed to manually update tokens', error);
+          console.error('SignIn: Failed to update tokens', error);
         }
       }
       return true;
