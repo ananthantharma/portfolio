@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 
-import { getDriveClient } from '@/lib/googleDrive';
+import { ensureFolder, getDriveClient } from '@/lib/googleDrive';
 
 import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const parentId = formData.get('parentId') as string;
+    const folderName = formData.get('folderName') as string;
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -79,7 +80,11 @@ export async function POST(req: Request) {
       mimeType: file.type || 'application/octet-stream',
     };
 
-    if (parentId) {
+    if (folderName) {
+      // Use ensureFolder logic if folderName is provided
+      const folderId = await ensureFolder(drive, folderName);
+      fileMetadata.parents = [folderId];
+    } else if (parentId) {
       fileMetadata.parents = [parentId];
     }
 

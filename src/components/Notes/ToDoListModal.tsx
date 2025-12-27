@@ -1,6 +1,6 @@
 /* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo */
-import React, {Fragment, useEffect, useMemo, useState} from 'react';
-import {Dialog, Listbox, Transition} from '@headlessui/react';
+import React, { Fragment, useEffect, useMemo, useState } from 'react';
+import { Dialog, Listbox, Transition } from '@headlessui/react';
 import {
   ArrowDownIcon,
   ArrowTopRightOnSquareIcon,
@@ -13,11 +13,11 @@ import {
   XMarkIcon,
   PaperClipIcon,
 } from '@heroicons/react/24/outline';
-import {CheckCircleIcon as CheckCircleIconSolid} from '@heroicons/react/24/solid';
+import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
-import {INotePage} from '@/models/NotePage';
-import {IToDo} from '@/models/ToDo';
-import TaskFormModal, {TaskFormData} from './TaskFormModal';
+import { INotePage } from '@/models/NotePage';
+import { IToDo } from '@/models/ToDo';
+import TaskFormModal, { TaskFormData } from './TaskFormModal';
 
 interface ToDoListModalProps {
   isOpen: boolean;
@@ -56,12 +56,11 @@ const FilterDropdown = React.memo(
           <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-xs z-10">
             <Listbox.Option
               value="All"
-              className={({active}) =>
-                `relative cursor-default select-none py-2 pl-3 pr-4 ${
-                  active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+              className={({ active }) =>
+                `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                 }`
               }>
-              {({selected}) => (
+              {({ selected }) => (
                 <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>All</span>
               )}
             </Listbox.Option>
@@ -69,12 +68,11 @@ const FilterDropdown = React.memo(
               <Listbox.Option
                 key={idx}
                 value={opt}
-                className={({active}) =>
-                  `relative cursor-default select-none py-2 pl-3 pr-4 ${
-                    active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                className={({ active }) =>
+                  `relative cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                   }`
                 }>
-                {({selected}) => (
+                {({ selected }) => (
                   <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>{opt}</span>
                 )}
               </Listbox.Option>
@@ -87,7 +85,7 @@ const FilterDropdown = React.memo(
 );
 FilterDropdown.displayName = 'FilterDropdown';
 
-const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose, onNavigate}) => {
+const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClose, onNavigate }) => {
   const [todos, setTodos] = useState<IToDo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,12 +130,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
     try {
       const newStatus = !todo.isCompleted;
       // Optimistic update
-      setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, isCompleted: newStatus} as IToDo) : t)));
+      setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, isCompleted: newStatus } as IToDo) : t)));
 
       await fetch(`/api/todos/${todo._id}`, {
         method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({isCompleted: newStatus}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: newStatus }),
       });
     } catch (error) {
       console.error('Error updating status:', error);
@@ -150,7 +148,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
     try {
       // Optimistic update
       setTodos(prev => prev.filter(t => t._id !== id));
-      await fetch(`/api/todos/${id}`, {method: 'DELETE'});
+      await fetch(`/api/todos/${id}`, { method: 'DELETE' });
     } catch (error) {
       console.error('Error deleting task:', error);
       fetchTodos(); // Revert
@@ -188,6 +186,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
         data.newFiles.forEach(file => {
           formData.append('files', file);
         });
+      }
+
+      // Drive Attachments
+      if (data.driveAttachments) {
+        formData.append('driveAttachments', JSON.stringify(data.driveAttachments));
       }
 
       // Existing Attachments (for PUT)
@@ -252,7 +255,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
 
       switch (sortField) {
         case 'priority': {
-          const priorityOrder: Record<string, number> = {High: 3, Medium: 2, Low: 1, None: 0};
+          const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1, None: 0 };
           comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
           break;
         }
@@ -358,16 +361,14 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
                       <span>To Do List</span>
                       <div className="flex bg-gray-100 rounded-lg p-1">
                         <button
-                          className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                            !showCompleted ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                          className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${!showCompleted ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+                            }`}
                           onClick={() => setShowCompleted(false)}>
                           Active
                         </button>
                         <button
-                          className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                            showCompleted ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                          className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${showCompleted ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+                            }`}
                           onClick={() => setShowCompleted(true)}>
                           Completed
                         </button>
@@ -405,11 +406,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
                     <div className="flex gap-2 mb-4 flex-shrink-0 flex-wrap">
                       {(['priority', 'dueDate', 'title', 'category'] as SortField[]).map(field => (
                         <button
-                          className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 capitalize transition-colors ${
-                            sortField === field
+                          className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 capitalize transition-colors ${sortField === field
                               ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
                               : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                          }`}
+                            }`}
                           key={field}
                           onClick={() => handleSort(field)}>
                           {field === 'dueDate' ? 'Due Date' : field}
@@ -444,17 +444,15 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
                     ) : (
                       sortedTodos.map(todo => (
                         <div
-                          className={`p-2 border rounded-lg transition-colors bg-white shadow-sm group ${
-                            todo.isCompleted
+                          className={`p-2 border rounded-lg transition-colors bg-white shadow-sm group ${todo.isCompleted
                               ? 'border-gray-100 bg-gray-50 opacity-75'
                               : 'border-gray-200 hover:border-indigo-200'
-                          }`}
+                            }`}
                           key={todo._id}>
                           <div className="flex items-center gap-3">
                             <button
-                              className={`flex-shrink-0 transition-colors ${
-                                todo.isCompleted ? 'text-green-500' : 'text-gray-300 hover:text-indigo-500'
-                              }`}
+                              className={`flex-shrink-0 transition-colors ${todo.isCompleted ? 'text-green-500' : 'text-gray-300 hover:text-indigo-500'
+                                }`}
                               onClick={() => handleToggleComplete(todo)}
                               title={todo.isCompleted ? 'Mark as active' : 'Mark as complete'}>
                               {todo.isCompleted ? (
@@ -468,9 +466,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({isOpen, onClose
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                   <h4
-                                    className={`font-medium truncate ${
-                                      todo.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
-                                    }`}>
+                                    className={`font-medium truncate ${todo.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
+                                      }`}>
                                     {todo.title}
                                   </h4>
                                   {getPriorityBadge(todo.priority)}

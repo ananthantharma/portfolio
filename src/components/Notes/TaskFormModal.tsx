@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props */
-import {Dialog, Listbox, Transition} from '@headlessui/react';
+import { Dialog, Listbox, Switch, Transition } from '@headlessui/react';
 import {
   CalendarIcon,
   CheckIcon,
@@ -8,8 +8,9 @@ import {
   ExclamationTriangleIcon,
   MinusCircleIcon,
   XMarkIcon,
+  CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
-import React, {Fragment, useEffect, useState} from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 
 export interface TaskFormData {
   title: string;
@@ -17,8 +18,9 @@ export interface TaskFormData {
   dueDate: Date;
   category: string;
   notes: string;
-  attachments?: {name: string; type: string; fileId?: string; size: number}[];
+  attachments?: { name: string; type: string; fileId?: string; size: number }[];
   newFiles?: File[]; // For carrying new uploads to the parent
+  driveAttachments?: { name: string; type: string; webViewLink: string; fileId: string; storageType: 'drive'; size: number }[];
 }
 
 interface TaskFormModalProps {
@@ -30,33 +32,37 @@ interface TaskFormModalProps {
 }
 
 const PRIORITIES = [
-  {name: 'High', value: 'High', icon: ExclamationCircleIcon, color: 'text-red-500'},
-  {name: 'Medium', value: 'Medium', icon: ExclamationTriangleIcon, color: 'text-amber-500'},
-  {name: 'Low', value: 'Low', icon: MinusCircleIcon, color: 'text-green-500'},
-  {name: 'None', value: 'None', icon: MinusCircleIcon, color: 'text-gray-400'},
+  { name: 'High', value: 'High', icon: ExclamationCircleIcon, color: 'text-red-500' },
+  { name: 'Medium', value: 'Medium', icon: ExclamationTriangleIcon, color: 'text-amber-500' },
+  { name: 'Low', value: 'Low', icon: MinusCircleIcon, color: 'text-green-500' },
+  { name: 'None', value: 'None', icon: MinusCircleIcon, color: 'text-gray-400' },
 ];
 
 const CATEGORIES = [
-  {name: 'Urgent!', value: 'Urgent!', color: 'bg-red-100 text-red-800'},
-  {name: 'Sourcing!', value: 'Sourcing!', color: 'bg-amber-100 text-amber-800'},
-  {name: 'Boss!', value: 'Boss!', color: 'bg-purple-100 text-purple-800'},
-  {name: 'Staff! (Team)', value: 'Staff! (Team)', color: 'bg-blue-100 text-blue-800'},
-  {name: 'Projects!', value: 'Projects!', color: 'bg-green-100 text-green-800'},
-  {name: 'Admin!', value: 'Admin!', color: 'bg-gray-100 text-gray-800'},
-  {name: 'Personal!', value: 'Personal!', color: 'bg-teal-100 text-teal-800'},
+  { name: 'Urgent!', value: 'Urgent!', color: 'bg-red-100 text-red-800' },
+  { name: 'Sourcing!', value: 'Sourcing!', color: 'bg-amber-100 text-amber-800' },
+  { name: 'Boss!', value: 'Boss!', color: 'bg-purple-100 text-purple-800' },
+  { name: 'Staff! (Team)', value: 'Staff! (Team)', color: 'bg-blue-100 text-blue-800' },
+  { name: 'Projects!', value: 'Projects!', color: 'bg-green-100 text-green-800' },
+  { name: 'Admin!', value: 'Admin!', color: 'bg-gray-100 text-gray-800' },
+  { name: 'Personal!', value: 'Personal!', color: 'bg-teal-100 text-teal-800' },
 ];
 
 const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
-  ({isOpen, onClose, onSave, initialData, title: modalTitle}) => {
+  ({ isOpen, onClose, onSave, initialData, title: modalTitle }) => {
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState(PRIORITIES[3]);
     const [dueDate, setDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<{name: string; value: string; color: string} | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<{ name: string; value: string; color: string } | null>(null);
     const [attachments, setAttachments] = useState<
-      {name: string; type: string; fileId?: string; size: number; file?: File}[]
+      { name: string; type: string; fileId?: string; size: number; file?: File }[]
     >([]);
     const [dragActive, setDragActive] = useState(false);
+
+    // Drive Integation State
+    const [useDriveStorage, setUseDriveStorage] = useState(false);
+    const [isUploadingDrive, setIsUploadingDrive] = useState(false);
 
     // Reset state when opening or initialData changes
     useEffect(() => {
@@ -87,30 +93,69 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
         } else {
           setAttachments([]);
         }
+
+        // Reset Drive Toggle
+        setUseDriveStorage(false);
+        setIsUploadingDrive(false);
       }
     }, [isOpen, initialData]);
 
-    const handleSave = () => {
-      // We need to return a special object that signals to the parent (ToDoListModal)
-      // that this is a FormData submission, or handle the submission directly here?
-      // The parent `onSave` expects `TaskFormData`.
-      // We will modify `onSave` to accept `FormData` OR `TaskFormData` in the parent,
-      // OR we just construct the object here and let the parent convert to FormData if needed.
-      // BETTER: Modifying the parent `handleSaveTask` to handle the conversion is complex because it receives the object.
-      // EASIER: Pass a "submission" object which can be raw data or FormData.
-      // Actually, let's keep `TaskFormData` as the DTO but add a `files` array for *new* files.
-      // The parent will construct the FormData found in `onSave`.
+    const handleSave = async () => {
+      let finalNewFiles: File[] = [];
+      let finalDriveAttachments: { name: string; type: string; webViewLink: string; fileId: string; storageType: 'drive'; size: number }[] = [];
 
-      onSave({
-        title,
-        priority: priority.value as 'High' | 'Medium' | 'Low' | 'None',
-        dueDate: new Date(dueDate),
-        category: selectedCategory ? selectedCategory.value : '',
-        notes,
-        attachments: attachments.filter(a => !a.file), // Keep existing ones (no file obj)
-        newFiles: attachments.map(a => a.file).filter(f => f !== undefined) as File[],
-      });
-      onClose();
+      try {
+        const filesToUpload = attachments.map(a => a.file).filter(f => f !== undefined) as File[];
+
+        if (useDriveStorage && filesToUpload.length > 0) {
+          setIsUploadingDrive(true);
+
+          for (const file of filesToUpload) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folderName', 'Portfolio Task Attachments');
+
+            const res = await fetch('/api/drive/files', {
+              method: 'POST',
+              body: formData
+            });
+
+            if (!res.ok) throw new Error(`Failed to upload ${file.name} to Drive`);
+
+            const data = await res.json();
+            if (data.success && data.file) {
+              finalDriveAttachments.push({
+                name: data.file.name,
+                type: data.file.mimeType,
+                webViewLink: data.file.webViewLink,
+                fileId: data.file.id,
+                storageType: 'drive',
+                size: file.size
+              });
+            }
+          }
+        } else {
+          // Local storage (std behavior)
+          finalNewFiles = filesToUpload;
+        }
+
+        onSave({
+          title,
+          priority: priority.value as 'High' | 'Medium' | 'Low' | 'None',
+          dueDate: new Date(dueDate),
+          category: selectedCategory ? selectedCategory.value : '',
+          notes,
+          attachments: attachments.filter(a => !a.file), // Keep existing ones (no file obj)
+          newFiles: finalNewFiles,
+          driveAttachments: finalDriveAttachments,
+        });
+        onClose();
+      } catch (error) {
+        console.error("Upload Error", error);
+        alert("Failed to upload to Drive. Please try again.");
+      } finally {
+        setIsUploadingDrive(false);
+      }
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -125,9 +170,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
     const processFiles = (files: FileList) => {
       Array.from(files).forEach(file => {
-        if (file.size > 2 * 1024 * 1024) {
-          // 2MB Safety Limit for Vercel
-          alert(`File ${file.name} is too large. Vercel restriction is strict (max 2MB safely).`);
+        if (!useDriveStorage && file.size > 2 * 1024 * 1024) {
+          // 2MB Safety Limit for Vercel (Local Only)
+          alert(`File ${file.name} is too large. Vercel restriction is strict (max 2MB safely). Enable Drive Storage for larger files.`);
           return;
         }
 
@@ -217,11 +262,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                         {PRIORITIES.map(p => (
                           <button
                             key={p.name}
-                            className={`flex flex-col items-center p-2 rounded-md border ${
-                              priority.name === p.name
+                            className={`flex flex-col items-center p-2 rounded-md border ${priority.name === p.name
                                 ? 'border-indigo-600 bg-indigo-50'
                                 : 'border-gray-200 hover:bg-gray-50'
-                            }`}
+                              }`}
                             type="button"
                             onClick={() => setPriority(p)}>
                             <p.icon className={`h-6 w-6 ${p.color}`} />
@@ -267,14 +311,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                             leaveTo="opacity-0">
                             <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
                               <Listbox.Option
-                                className={({active}) =>
-                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                    active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                                className={({ active }) =>
+                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                                   }`
                                 }
                                 key="none"
                                 value={null}>
-                                {({selected}) => (
+                                {({ selected }) => (
                                   <>
                                     <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                       None
@@ -290,14 +333,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
                               {CATEGORIES.map((cat, catIdx) => (
                                 <Listbox.Option
-                                  className={({active}) =>
-                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                      active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                                  className={({ active }) =>
+                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
                                     }`
                                   }
                                   key={catIdx}
                                   value={cat}>
-                                  {({selected}) => (
+                                  {({ selected }) => (
                                     <>
                                       <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                                         {cat.name}
@@ -331,11 +373,31 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
                     {/* Attachments - Drag and Drop */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-gray-700">Attachments</label>
+                        <Switch.Group>
+                          <div className="flex items-center">
+                            <Switch.Label className={`mr-2 text-xs ${useDriveStorage ? 'text-indigo-600 font-bold' : 'text-gray-500'}`}>
+                              {useDriveStorage ? 'Save to Drive' : 'Local Storage'}
+                            </Switch.Label>
+                            <Switch
+                              checked={useDriveStorage}
+                              onChange={setUseDriveStorage}
+                              className={`${useDriveStorage ? 'bg-indigo-600' : 'bg-gray-200'
+                                } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+                            >
+                              <span
+                                className={`${useDriveStorage ? 'translate-x-5' : 'translate-x-1'
+                                  } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
+                              />
+                            </Switch>
+                          </div>
+                        </Switch.Group>
+                      </div>
+
                       <div
-                        className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-colors ${
-                          dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:bg-gray-50'
-                        }`}
+                        className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-colors ${dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:bg-gray-50'
+                          }`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
@@ -347,10 +409,18 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <p className="mb-2 text-sm text-gray-500">
-                            <span className="font-semibold">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500">Max 2MB per file (Server Limit)</p>
+                          {useDriveStorage ? (
+                            <CloudArrowUpIcon className="h-8 w-8 text-indigo-400 mb-2" />
+                          ) : (
+                            <p className="mb-2 text-sm text-gray-500">
+                              <span className="font-semibold">Click to upload</span> or drag and drop
+                            </p>
+                          )}
+                          {useDriveStorage ? (
+                            <p className="text-sm text-indigo-600 font-medium">Uploads to Portfolio Folder</p>
+                          ) : (
+                            <p className="text-xs text-gray-500">Max 2MB per file</p>
+                          )}
                         </div>
                       </div>
 
@@ -383,10 +453,11 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                       Cancel
                     </button>
                     <button
-                      className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                      className={`inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${isUploadingDrive ? 'opacity-70 cursor-wait' : ''}`}
                       type="button"
+                      disabled={isUploadingDrive}
                       onClick={handleSave}>
-                      Save
+                      {isUploadingDrive ? 'Uploading...' : 'Save'}
                     </button>
                   </div>
                 </Dialog.Panel>
