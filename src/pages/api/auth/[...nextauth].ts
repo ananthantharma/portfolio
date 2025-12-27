@@ -1,5 +1,5 @@
-import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
-import NextAuth, {Account, Session, User} from 'next-auth';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+import NextAuth, { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from '../../../lib/mongodb';
@@ -24,11 +24,11 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({user, account}: {user: User; account: Account | null}) {
-      console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
+    async signIn({ user, account }: { user: User; account: Account | null }) {
+      console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
       return true;
     },
-    async session({session, user}: {session: Session; user: User}) {
+    async session({ session, user }: { session: Session; user: User }) {
       // Fetch the account to get the access token
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
@@ -39,13 +39,14 @@ export const authOptions = {
 
       if (account) {
         console.log('NextAuth Session: Account found for user', user.id);
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         console.log('NextAuth Session: Token expires at', (account as any).expires_at);
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (session as any).accessToken = (account as any).access_token;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (session as any).refreshToken = (account as any).refresh_token;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (session as any).error = Date.now() / 1000 > (account as any).expires_at ? 'RefreshAccessTokenError' : null;
+        (session as any).error = (Date.now() / 1000 > (account as any).expires_at) ? 'RefreshAccessTokenError' : null;
       } else {
         console.log('NextAuth Session: No Google account found for user', user.id);
       }
