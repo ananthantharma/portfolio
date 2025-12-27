@@ -37,6 +37,7 @@ export const authOptions = {
           const client = await clientPromise;
           const db = client.db('qt_portfolio');
 
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
           const updateData: any = {
             access_token: account.access_token,
             expires_at: account.expires_at,
