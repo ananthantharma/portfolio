@@ -124,7 +124,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
             if (!res.ok) {
               if (res.status === 403 || data.code === 'DRIVE_ACCESS_DENIED') {
-                throw new Error('DRIVE_PERMISSION_ERROR');
+                const detailMsg = data.error || 'Google Drive Permission Denied';
+                const debugDetails = data.details ? JSON.stringify(data.details) : '';
+                throw new Error(`DRIVE_ACCESS_DENIED: ${detailMsg} \nDetails: ${debugDetails}`);
               }
               throw new Error(data.error || `Failed to upload ${file.name} to Drive`);
             }
@@ -160,7 +162,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
       } catch (error: any) {
         console.error("Upload Error", error);
         if (error.message === 'DRIVE_PERMISSION_ERROR') {
-          alert("Google Drive Write Permission Denied.\n\nYou likely missed checking the 'See, edit, create, and delete all of your Google Drive files' box during sign-in.\n\nPlease Sign Out and Sign In again to fix this.");
+          // We might not have access to 'data' here easily unless we throw it
+          // But wait, the previous code threw 'DRIVE_PERMISSION_ERROR' string.
+          // I need to pass the details.
+          alert("Google Drive Write Permission Denied. Please Sign Out and Sign In again.");
+        } else if (error.message && error.message.includes('DRIVE_ACCESS_DENIED') || error.message.includes('permission denied')) {
+          alert(`Upload Failed: ${error.message}`);
         } else {
           alert(`Failed to upload to Drive: ${error.message}`);
         }
