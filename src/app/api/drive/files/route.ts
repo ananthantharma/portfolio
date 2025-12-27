@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Readable} from 'node:stream';
+import { Readable } from 'node:stream';
 
-import {NextResponse} from 'next/server';
-import {getServerSession} from 'next-auth';
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 
-import {getDriveClient} from '@/lib/googleDrive';
+import { getDriveClient } from '@/lib/googleDrive';
 
-import {authOptions} from '../../../../pages/api/auth/[...nextauth]';
+import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 
 export const runtime = 'nodejs';
 
@@ -16,13 +16,13 @@ export async function GET(_req: Request) {
     if (!session?.accessToken) {
       console.error('Drive API: No access token in session');
       return NextResponse.json(
-        {error: 'Unauthorized or missing Drive access. Please sign out and sign in again.'},
-        {status: 401},
+        { error: 'Unauthorized or missing Drive access. Please sign out and sign in again.' },
+        { status: 401 },
       );
     }
 
     const drive = getDriveClient(session.accessToken, session.refreshToken);
-    console.log('Drive API Client (GET): Initialized');
+    console.log('Drive API Client (GET): Initialized. Has Refresh Token?', !!session.refreshToken);
 
     // List files: folders first, then files
     const response = await drive.files.list({
@@ -40,7 +40,13 @@ export async function GET(_req: Request) {
     });
   } catch (error: any) {
     console.error('Drive List Error:', error);
-    return NextResponse.json({error: error.message || 'Failed to list files'}, {status: 500});
+    if (error.response) {
+      console.error('Drive API Error Details:', JSON.stringify(error.response.data, null, 2));
+    }
+    return NextResponse.json({
+      error: error.message || 'Failed to list files',
+      debug: error.response?.data
+    }, { status: 500 });
   }
 }
 
@@ -48,7 +54,7 @@ export async function POST(req: Request) {
   try {
     const session: any = await getServerSession(authOptions);
     if (!session?.accessToken) {
-      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const drive = getDriveClient(session.accessToken, session.refreshToken);
@@ -59,7 +65,7 @@ export async function POST(req: Request) {
     const parentId = formData.get('parentId') as string;
 
     if (!file) {
-      return NextResponse.json({error: 'No file uploaded'}, {status: 400});
+      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -85,9 +91,9 @@ export async function POST(req: Request) {
       fields: 'id, name, mimeType, webViewLink',
     });
 
-    return NextResponse.json({success: true, file: response.data});
+    return NextResponse.json({ success: true, file: response.data });
   } catch (error: any) {
     console.error('Drive Upload Error:', error);
-    return NextResponse.json({error: error.message || 'Failed to upload file'}, {status: 500});
+    return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }
