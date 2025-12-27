@@ -26,6 +26,38 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account }: { user: User; account: Account | null }) {
       console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
+      console.log('SignIn Tokens Received:', {
+        hasAccess: !!account?.access_token,
+        hasRefresh: !!account?.refresh_token,
+        expiresAt: account?.expires_at
+      });
+
+      if (account?.provider === 'google' && account.refresh_token) {
+        try {
+          const client = await clientPromise;
+          const db = client.db('qt_portfolio');
+
+          await db.collection('accounts').updateOne(
+            {
+              provider: 'google',
+              userId: new (await import('mongodb')).ObjectId(user.id)
+            },
+            {
+              $set: {
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                refresh_token: account.refresh_token,
+                scope: account.scope,
+                token_type: account.token_type,
+                id_token: account.id_token
+              }
+            }
+          );
+          console.log('SignIn: Manually updated account tokens with refresh_token');
+        } catch (error) {
+          console.error('SignIn: Failed to manually update tokens', error);
+        }
+      }
       return true;
     },
     async session({ session, user }: { session: Session; user: User }) {
