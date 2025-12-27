@@ -4,11 +4,11 @@ import {
   CalendarIcon,
   CheckIcon,
   ChevronUpDownIcon,
+  CloudArrowUpIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   MinusCircleIcon,
   XMarkIcon,
-  CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
 import React, { Fragment, useEffect, useState } from 'react';
 
@@ -102,7 +102,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
     const handleSave = async () => {
       let finalNewFiles: File[] = [];
-      let finalDriveAttachments: { name: string; type: string; webViewLink: string; fileId: string; storageType: 'drive'; size: number }[] = [];
+      const finalDriveAttachments: { name: string; type: string; webViewLink: string; fileId: string; storageType: 'drive'; size: number }[] = [];
 
       try {
         const filesToUpload = attachments.map(a => a.file).filter(f => f !== undefined) as File[];
@@ -263,8 +263,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                           <button
                             key={p.name}
                             className={`flex flex-col items-center p-2 rounded-md border ${priority.name === p.name
-                                ? 'border-indigo-600 bg-indigo-50'
-                                : 'border-gray-200 hover:bg-gray-50'
+                              ? 'border-indigo-600 bg-indigo-50'
+                              : 'border-gray-200 hover:bg-gray-50'
                               }`}
                             type="button"
                             onClick={() => setPriority(p)}>

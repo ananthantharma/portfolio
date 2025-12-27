@@ -14,6 +14,7 @@ export const getDriveClient = (accessToken: string, refreshToken?: string) => {
   return google.drive({ version: 'v3', auth });
 };
 
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 export const ensureFolder = async (drive: any, folderName: string) => {
   try {
     // Check if folder exists in root
