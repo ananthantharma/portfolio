@@ -63,6 +63,18 @@ export async function POST(req: Request) {
     const drive = getDriveClient(session.accessToken, session.refreshToken);
     console.log('Drive API Client (POST): Initialized');
 
+    // DEBUG: Check Token Scopes
+    try {
+      const tokenInfo = await drive.about.get({ fields: 'user' });
+      console.log('Drive API Test (About): Success', tokenInfo.data.user?.emailAddress);
+    } catch (e: any) {
+      console.error('Drive API Test (About): Failed', e.message);
+      // Determine if it's a scope issue
+      if (e.code === 403) {
+        console.error('Drive API: 403 Forbidden - Likely missing scopes. Current scopes unknown (client-side), but API rejected request.');
+      }
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const parentId = formData.get('parentId') as string;
@@ -102,6 +114,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, file: response.data });
   } catch (error: any) {
     console.error('Drive Upload Error:', error);
+    if (error.response) {
+      console.error('Drive Upload Error Response:', JSON.stringify(error.response.data, null, 2));
+    }
     return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }
