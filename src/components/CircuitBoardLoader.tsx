@@ -1,12 +1,13 @@
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
-import {heroEducation, heroTimeline, socialLinks} from '../data/data';
-import {TimelineItem} from '../data/dataDef';
+import { heroEducation, heroTimeline, socialLinks } from '../data/data';
+import { TimelineItem } from '../data/dataDef';
 
+/* eslint-disable react/jsx-sort-props */
 /* --- 2. HELPERS --- */
 
 // The "Hacker" Text Effect
-const ScrambledText = memo(({delay = 0, text}: {delay?: number; text: string}) => {
+const ScrambledText = memo(({ delay = 0, text }: { delay?: number; text: string }) => {
   const [displayText, setDisplayText] = useState('');
   const chars = "#.^^{-!#$_№:0#{+.@}-??{4@%=.,^!?2@%\\;1}]?{%:%|{f[4{4%0%'1_0<{0%]>'42";
   const requestRef = useRef<number>();
@@ -41,7 +42,7 @@ ScrambledText.displayName = 'ScrambledText';
 
 // The Card rendered inside SVG
 const SvgCard = memo(
-  ({align = 'left', item, x, y}: {align?: 'left' | 'right'; item: TimelineItem; x: number; y: number}) => {
+  ({ align = 'left', item, x, y }: { align?: 'left' | 'right'; item: TimelineItem; x: number; y: number }) => {
     const isLeft = align === 'left';
 
     // Handle StaticImageData or string path for image
@@ -50,7 +51,7 @@ const SvgCard = memo(
 
     return (
       // Reduced height to 80px for tighter packing
-      <foreignObject height="80" style={{overflow: 'visible'}} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
+      <foreignObject height="80" style={{ overflow: 'visible' }} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
         <div className={`flex w-full h-full items-center ${isLeft ? 'justify-end pr-6' : 'justify-start pl-6'}`}>
           {/* THE CARD 
                    Reduced Scale
@@ -135,6 +136,13 @@ const UnifiedCircuitSection = memo(() => {
             <stop offset="0%" stopColor="#bbbbbb" />
             <stop offset="100%" stopColor="#555555" />
           </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {/* --- 1. LEFT SIDE (WORK) --- */}
@@ -155,18 +163,21 @@ const UnifiedCircuitSection = memo(() => {
 
             return (
               <g key={`work-${i}`}>
-                {/* The Trace Line */}
+                {/* The Trace Line (Background) */}
                 <path
-                  d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                  d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
                   stroke="#333"
                   strokeWidth="3"
                 />
+                {/* The Trace Line (Active Flow) */}
                 <path
                   className="animate-flow"
-                  d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                  filter="url(#glow)"
+                  d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
                   stroke={colors[i % colors.length]}
+                  strokeLinecap="round"
                   strokeWidth="3"
                 />
                 {/* The Pin on the Chip */}
@@ -193,17 +204,21 @@ const UnifiedCircuitSection = memo(() => {
 
             return (
               <g key={`edu-${i}`}>
+                {/* The Trace Line (Background) */}
                 <path
-                  d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                  d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
                   stroke="#333"
                   strokeWidth="3"
                 />
+                {/* The Trace Line (Active Flow) */}
                 <path
-                  className="animate-flow-reverse"
-                  d={`M${cardEdgeX} ${cardY} H${midX} V${pinY} H${pinX}`}
+                  className="animate-flow" // Same animation class because we reversed the path manually
+                  filter="url(#glow)"
+                  d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
                   stroke={colors[i % colors.length]}
+                  strokeLinecap="round"
                   strokeWidth="3"
                 />
                 <rect fill="url(#pinGradient)" height="12" rx="2" width="10" x={pinX} y={pinY - 6} />
@@ -230,7 +245,7 @@ const UnifiedCircuitSection = memo(() => {
 
               {/* Social Icons */}
               <div className="flex gap-x-4">
-                {socialLinks.map(({label, Icon, href}) => (
+                {socialLinks.map(({ label, Icon, href }) => (
                   <a
                     aria-label={label}
                     className="text-gray-400 transition-all duration-300 hover:text-[#00FF41] hover:scale-110"
@@ -251,19 +266,9 @@ const UnifiedCircuitSection = memo(() => {
         .animate-flow {
           stroke-dasharray: 40 400;
           stroke-dashoffset: 440;
-          animation: flow 3s linear infinite;
-        }
-        .animate-flow-reverse {
-          stroke-dasharray: 40 400;
-          stroke-dashoffset: 440;
-          animation: flowReverse 3s linear infinite;
+          animation: flow 2s linear infinite;
         }
         @keyframes flow {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
-        @keyframes flowReverse {
           to {
             stroke-dashoffset: 0;
           }
