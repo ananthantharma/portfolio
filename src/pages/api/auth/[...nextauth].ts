@@ -38,8 +38,16 @@ export const authOptions = {
       });
 
       if (account) {
+        console.log('NextAuth Session: Account found for user', user.id);
+        console.log('NextAuth Session: Token expires at', (account as any).expires_at);
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         (session as any).accessToken = (account as any).access_token;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        (session as any).refreshToken = (account as any).refresh_token;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        (session as any).error = Date.now() / 1000 > (account as any).expires_at ? 'RefreshAccessTokenError' : null;
+      } else {
+        console.log('NextAuth Session: No Google account found for user', user.id);
       }
 
       return session;
