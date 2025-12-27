@@ -21,8 +21,11 @@ export async function GET(_req: Request) {
       );
     }
 
+    const { searchParams } = new URL(_req.url);
+    const folderId = searchParams.get('folderId') || 'root';
+
     const drive = getDriveClient(session.accessToken, session.refreshToken);
-    console.log('Drive API Client (GET): Initialized. Has Refresh Token?', !!session.refreshToken);
+    console.log(`Drive API Client (GET): Listing folder ${folderId}`);
 
     // List files: folders first, then files
     const response = await drive.files.list({
@@ -30,7 +33,7 @@ export async function GET(_req: Request) {
       fields:
         'nextPageToken, files(id, name, mimeType, webContentLink, webViewLink, iconLink, thumbnailLink, createdTime, size)',
       orderBy: 'folder,modifiedTime desc',
-      q: 'trashed = false',
+      q: `'${folderId}' in parents and trashed = false`,
     });
 
     return NextResponse.json({
