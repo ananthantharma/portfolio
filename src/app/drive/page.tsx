@@ -83,22 +83,72 @@ export default function DrivePage() {
 
     try {
       setUploading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      if (currentFolder !== 'root') {
-        formData.append('parentId', currentFolder);
-      }
 
-      const res = await fetch('/api/drive/files', {
+      // 1. Initiate Resumable Upload
+      const initiateRes = await fetch('/api/drive/files', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'initiate',
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          parentId: currentFolder !== 'root' ? currentFolder : undefined,
+        }),
       });
 
-      if (!res.ok) throw new Error('Upload failed');
+      const initData = await initiateRes.json();
+
+      if (!initiateRes.ok) {
+        throw new Error(initData.error || 'Failed to initiate upload');
+      }
+
+      const uploadUrl = initData.uploadUrl;
+      if (!uploadUrl) throw new Error('Failed to get upload URL');
+
+      // 2. Upload Chunks
+      const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
+      let offset = 0;
+
+      while (offset < file.size) {
+        const chunk = file.slice(offset, offset + CHUNK_SIZE);
+        const contentRange = `bytes ${offset}-${offset + chunk.size - 1}/${file.size}`;
+
+        const chunkFormData = new FormData();
+        chunkFormData.append('action', 'upload_chunk');
+        chunkFormData.append('chunk', chunk, 'chunk');
+        chunkFormData.append('uploadUrl', uploadUrl);
+        chunkFormData.append('contentRange', contentRange);
+
+        const chunkRes = await fetch('/api/drive/files', {
+          method: 'POST',
+          body: chunkFormData,
+        });
+
+        if (!chunkRes.ok) {
+          const errText = await chunkRes.text();
+          throw new Error(`Chunk upload failed: ${chunkRes.status} ${errText}`);
+        }
+
+        const chunkData = await chunkRes.json();
+
+        if (chunkData.status === 308) {
+          // Resume Incomplete, continue
+          offset += chunk.size;
+        } else if (chunkData.success && (chunkData.status === 200 || chunkData.status === 201)) {
+          // Upload Complete
+          break;
+        } else {
+          throw new Error('Unexpected upload status from proxy');
+        }
+      }
 
       await fetchFiles(currentFolder); // Refresh list
     } catch (err) {
-      alert('Failed to upload file');
+      console.error(err);
+      alert('Failed to upload file. Check console for details.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
