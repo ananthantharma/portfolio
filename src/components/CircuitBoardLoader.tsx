@@ -96,6 +96,9 @@ SvgCard.displayName = 'SvgCard';
 
 /* --- 3. MAIN COMPONENT --- */
 const UnifiedCircuitSection = memo(() => {
+  // State for interactive "High Bandwidth" connection
+  const [activeId, setActiveId] = useState<string | null>(null);
+
   // Dynamic Layout Calculations
   const ITEM_HEIGHT = 110; // Tighter vertical spacing
   const TOP_OFFSET = 60;
@@ -143,6 +146,13 @@ const UnifiedCircuitSection = memo(() => {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {/* Turbulence Filter for "Liquid/Wiggle" Effect */}
+          <filter id="wiggle">
+            <feTurbulence baseFrequency="0.01" numOctaves="3" result="noise" type="fractalNoise">
+              <animate attributeName="baseFrequency" dur="10s" repeatCount="indefinite" values="0.01;0.015;0.01" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
         </defs>
 
         {/* --- 1. LEFT SIDE (WORK) --- */}
@@ -161,24 +171,37 @@ const UnifiedCircuitSection = memo(() => {
             // Dynamic elbow bend
             const midX = centerX - 300;
 
+            const isActive = activeId === `work-${i}`;
+            const strokeColor = isActive ? '#FFFFFF' : colors[i % colors.length];
+
             return (
-              <g key={`work-${i}`}>
+              <g
+                key={`work-${i}`}
+                onClick={() => setActiveId(isActive ? null : `work-${i}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
+                  filter="url(#wiggle)" // Apply wiggle to the wire structure
                   stroke="#333"
-                  strokeWidth="3"
+                  strokeWidth={isActive ? 4 : 3}
+                  style={{ transition: 'stroke-width 0.3s ease' }}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
                   className="animate-flow"
-                  filter="url(#glow)"
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
-                  stroke={colors[i % colors.length]}
+                  filter="url(#glow)"
+                  stroke={strokeColor} // White when active
                   strokeLinecap="round"
-                  strokeWidth="3"
+                  strokeWidth={isActive ? 5 : 3} // Thicker when active
+                  style={{
+                    animationDuration: isActive ? '1s' : '3s', // Fast pulse when active
+                    animationDelay: `${i * 0.5}s`, // Staggered start
+                  }}
                 />
                 {/* The Pin on the Chip */}
                 <rect fill="url(#pinGradient)" height="12" rx="2" width="10" x={pinX - 10} y={pinY - 6} />
@@ -202,24 +225,37 @@ const UnifiedCircuitSection = memo(() => {
             const pinX = centerX + chipWidth / 2; // Right side of chip
             const midX = centerX + 300; // Elbow bend X
 
+            const isActive = activeId === `edu-${i}`;
+            const strokeColor = isActive ? '#FFFFFF' : colors[i % colors.length];
+
             return (
-              <g key={`edu-${i}`}>
+              <g
+                key={`edu-${i}`}
+                onClick={() => setActiveId(isActive ? null : `edu-${i}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
+                  filter="url(#wiggle)"
                   stroke="#333"
-                  strokeWidth="3"
+                  strokeWidth={isActive ? 4 : 3}
+                  style={{ transition: 'stroke-width 0.3s ease' }}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
                   className="animate-flow" // Same animation class because we reversed the path manually
-                  filter="url(#glow)"
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
                   fill="none"
-                  stroke={colors[i % colors.length]}
+                  filter="url(#glow)"
+                  stroke={strokeColor}
                   strokeLinecap="round"
-                  strokeWidth="3"
+                  strokeWidth={isActive ? 5 : 3}
+                  style={{
+                    animationDuration: isActive ? '1s' : '3s',
+                    animationDelay: `${i * 0.7}s`, // Different stagger for variety
+                  }}
                 />
                 <rect fill="url(#pinGradient)" height="12" rx="2" width="10" x={pinX} y={pinY - 6} />
                 <SvgCard align="right" item={item} x={cardEdgeX} y={cardY} />
@@ -235,8 +271,11 @@ const UnifiedCircuitSection = memo(() => {
           */}
 
           <foreignObject height={chipHeight} width={chipWidth} x="0" y="0">
-            {/* Glassmorphism Container */}
-            <div className="w-full h-full flex flex-col items-center justify-center gap-y-4 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(0,255,65,0.1)]">
+            {/* Glassmorphism Container with Pulse Power Source */}
+            <div className="relative w-full h-full flex flex-col items-center justify-center gap-y-4 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(0,255,65,0.1)]">
+              {/* Pulse Ring */}
+              <div className="absolute inset-0 -z-10 rounded-3xl border-2 border-[#00FF41] opacity-0 animate-pulse-ring" />
+
               <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
                 <ScrambledText delay={200} text="Ananthan" />
                 <br />
@@ -271,6 +310,24 @@ const UnifiedCircuitSection = memo(() => {
         @keyframes flow {
           to {
             stroke-dashoffset: 0;
+          }
+        }
+        .animate-pulse-ring {
+          animation: pulseRing 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulseRing {
+          0% {
+            transform: scale(0.95);
+            opacity: 0.5;
+            border-width: 2px;
+          }
+          50% {
+             opacity: 0.3;
+          }
+          100% {
+            transform: scale(1.4);
+            opacity: 0;
+            border-width: 0px;
           }
         }
       `}</style>

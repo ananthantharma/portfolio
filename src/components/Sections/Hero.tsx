@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { FC, memo } from 'react';
 
 import CircuitBoardLoader from '../CircuitBoardLoader';
+import CursorTrails from './CursorTrails';
 import StarField from './StarField';
 import { heroData, SectionId } from '../../data/data';
 import Section from '../Layout/Section';
@@ -28,6 +29,7 @@ const Hero: FC = memo(() => {
 
         {/* Star Field Animation */}
         <StarField />
+        <CursorTrails />
 
         <div className="z-10 h-full w-full flex items-center justify-center">
           {/* Main Hero Content - Full Width */}
