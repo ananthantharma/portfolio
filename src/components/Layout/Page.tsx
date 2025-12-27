@@ -12,8 +12,8 @@ interface PageProps {
 const Page: NextPage<PropsWithChildren<PageProps>> = memo(({ children, title, description }) => {
   const { asPath: pathname } = useRouter();
 
-  // CHANGE THIS: Replace with your actual live domain
-  const siteUrl = 'https://your-new-domain.com';
+
+  const siteUrl = 'www.ananthan.org';
 
   return (
     <>

@@ -1,11 +1,23 @@
 {
-  "name": "react-resume-template",
-  "short_name": "react-resume-template",
+  "name": "Ananthan Tharmavelautham",
+  "short_name": "Ananthan",
+  "description": "Professional Portfolio and Resume of Ananthan Tharmavelautham",
   "icons": [
-    {"src": "/icon-192.png", "type": "image/png", "sizes": "192x192"},
-    {"src": "/icon-512.png", "type": "image/png", "sizes": "512x512"}
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
   ],
-  "theme_color": "#515455",
-  "background_color": "#515455",
+  "start_url": "/",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
   "display": "standalone"
 }
