@@ -137,27 +137,54 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
             const uploadUrl = initData.uploadUrl;
             if (!uploadUrl) throw new Error('Failed to get upload URL');
 
-            // 2. Direct Upload to Google (PUT)
-            const uploadRes = await fetch(uploadUrl, {
-              method: 'PUT',
-              body: file
-            });
+            // 2. Chunked Proxy Upload (to bypass Vercel limits & CORS)
+            const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB Chunk Size (Safe for Vercel 4.5MB limit)
+            let offset = 0;
+            const fileSize = file.size;
 
-            if (!uploadRes.ok) {
-              throw new Error(`Failed to upload file content: ${uploadRes.statusText}`);
-            }
+            while (offset < fileSize) {
+              const chunk = file.slice(offset, offset + CHUNK_SIZE);
 
-            const driveFile = await uploadRes.json();
 
-            if (driveFile && driveFile.id) {
-              finalDriveAttachments.push({
-                name: driveFile.name,
-                type: driveFile.mimeType,
-                webViewLink: driveFile.webViewLink,
-                fileId: driveFile.id,
-                storageType: 'drive',
-                size: file.size
+              const contentRange = `bytes ${offset}-${offset + chunk.size - 1}/${fileSize}`;
+
+              const chunkFormData = new FormData();
+              chunkFormData.append('action', 'upload_chunk');
+              chunkFormData.append('chunk', chunk, 'chunk');
+              chunkFormData.append('uploadUrl', uploadUrl);
+              chunkFormData.append('contentRange', contentRange);
+
+              const chunkRes = await fetch('/api/drive/files', {
+                method: 'POST',
+                body: chunkFormData
               });
+
+              if (!chunkRes.ok) {
+                const errData = await chunkRes.json();
+                throw new Error(errData.error || `Chunk upload failed at offset ${offset}`);
+              }
+
+              const chunkData = await chunkRes.json();
+
+              if (chunkData.status === 308) {
+                // Continue to next chunk
+                offset += chunk.size;
+              } else if (chunkData.success && (chunkData.status === 200 || chunkData.status === 201)) {
+                // Upload Complete!
+                if (chunkData.file && chunkData.file.id) {
+                  finalDriveAttachments.push({
+                    name: chunkData.file.name,
+                    type: chunkData.file.mimeType,
+                    webViewLink: chunkData.file.webViewLink,
+                    fileId: chunkData.file.id,
+                    storageType: 'drive',
+                    size: file.size
+                  });
+                }
+                break; // Done
+              } else {
+                throw new Error('Unexpected upload status from proxy');
+              }
             }
           }
         } else {

@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Determine content type to distinguish between JSON (initiate) and FormData (upload)
+    // Determine content type to distinguish between JSON (initiate) and FormData (upload/chunk)
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
@@ -136,8 +136,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, uploadUrl });
 
     } else {
-      // HANDLE LEGACY/SMALL FILE DIRECT UPLOAD (FormData)
+      // HANDLE FORMDATA: Direct Upload OR Chunk Proxy
       const formData = await req.formData();
+      const action = formData.get('action') as string;
+
+      if (action === 'upload_chunk') {
+        // PROXY CHUNK TO GOOGLE
+        const chunk = formData.get('chunk') as File;
+        const uploadUrl = formData.get('uploadUrl') as string;
+        const contentRange = formData.get('contentRange') as string;
+
+        if (!chunk || !uploadUrl || !contentRange) {
+          return NextResponse.json({ error: 'Missing chunk, uploadUrl, or contentRange' }, { status: 400 });
+        }
+
+        const buffer = Buffer.from(await chunk.arrayBuffer());
+
+        const proxyRes = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Length': buffer.length.toString(),
+            'Content-Range': contentRange,
+          },
+          body: buffer as any
+        });
+
+        // Google returns 308 for Resume Incomplete (Success for chunk)
+        // Google returns 200/201 for Completed
+        if (proxyRes.status === 308) {
+          return NextResponse.json({ success: true, status: 308 });
+        } else if (proxyRes.ok) { // 200 or 201
+          const fileData = await proxyRes.json();
+          return NextResponse.json({ success: true, status: 200, file: fileData });
+        } else {
+          const errText = await proxyRes.text();
+          console.error('Drive API: Proxy Chunk Failed', proxyRes.status, errText);
+          return NextResponse.json({ error: `Chunk upload failed: ${proxyRes.status}`, details: errText }, { status: proxyRes.status });
+        }
+      }
+
+      // HANDLE LEGACY/SMALL FILE DIRECT UPLOAD (FormData)
       const file = formData.get('file') as File;
       const parentId = formData.get('parentId') as string;
       const folderName = formData.get('folderName') as string;
