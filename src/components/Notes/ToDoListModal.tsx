@@ -407,8 +407,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       {(['priority', 'dueDate', 'title', 'category'] as SortField[]).map(field => (
                         <button
                           className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 capitalize transition-colors ${sortField === field
-                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                           key={field}
                           onClick={() => handleSort(field)}>
@@ -445,8 +445,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       sortedTodos.map(todo => (
                         <div
                           className={`p-2 border rounded-lg transition-colors bg-white shadow-sm group ${todo.isCompleted
-                              ? 'border-gray-100 bg-gray-50 opacity-75'
-                              : 'border-gray-200 hover:border-indigo-200'
+                            ? 'border-gray-100 bg-gray-50 opacity-75'
+                            : 'border-gray-200 hover:border-indigo-200'
                             }`}
                           key={todo._id}>
                           <div className="flex items-center gap-3">
@@ -481,18 +481,27 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                   )}
                                   {todo.attachments && todo.attachments.length > 0 && (
                                     <div className="flex items-center gap-1">
-                                      {todo.attachments.map((att, idx) => (
-                                        <a
-                                          key={idx}
-                                          href={att.data || (att.fileId ? `/api/attachments/${att.fileId}` : '#')}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-0.5 text-gray-400 hover:text-indigo-600 transition-colors"
-                                          title={`Download ${att.name} (${(att.size / 1024 / 1024).toFixed(2)} MB)`}
-                                          onClick={e => e.stopPropagation()}>
-                                          <PaperClipIcon className="h-3.5 w-3.5" />
-                                        </a>
-                                      ))}
+                                      {todo.attachments.map((att, idx) => {
+                                        const isDrive = att.storageType === 'drive';
+                                        // If Drive, use webViewLink directly. If local, use data URI or API route.
+                                        const link = isDrive
+                                          ? att.webViewLink
+                                          : (att.data || (att.fileId ? `/api/attachments/${att.fileId}` : '#'));
+
+                                        return (
+                                          <a
+                                            key={idx}
+                                            href={link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`flex items-center gap-0.5 transition-colors ${isDrive ? 'text-blue-500 hover:text-blue-700' : 'text-gray-400 hover:text-indigo-600'
+                                              }`}
+                                            title={`${isDrive ? 'Open in Drive' : 'Download'} - ${att.name} (${(att.size / 1024 / 1024).toFixed(2)} MB)`}
+                                            onClick={e => e.stopPropagation()}>
+                                            <PaperClipIcon className="h-3.5 w-3.5" />
+                                          </a>
+                                        );
+                                      })}
                                     </div>
                                   )}
                                 </div>
