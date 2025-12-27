@@ -2,8 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 
+interface DebugStatusData {
+    sessionEmail?: string;
+    dbAccountFound?: boolean;
+    hasAccessToken?: boolean;
+    hasRefreshToken?: boolean;
+    tokenExpiresAt?: string | number;
+    tokenScopeInDB?: string;
+    driveApiStatus?: string;
+    driveUser?: unknown;
+    driveError?: string;
+    driveErrorCode?: unknown;
+    driveErrorResponse?: unknown;
+    error?: string;
+}
+
 export default function DriveDebugPage() {
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<DebugStatusData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,8 +41,8 @@ export default function DriveDebugPage() {
             )}
             <div className="mt-4">
                 <button
-                    onClick={() => window.location.reload()}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={() => window.location.reload()}
                 >
                     Refresh Status
                 </button>
