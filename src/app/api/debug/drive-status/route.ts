@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../pages/api/auth/[...nextauth]';
+import { authOptions } from '../../../../pages/api/auth/[...nextauth]';
 import { getDriveClient } from '@/lib/googleDrive';
 import clientPromise from '@/lib/mongodb';
 
