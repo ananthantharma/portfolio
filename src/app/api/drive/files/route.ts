@@ -94,8 +94,15 @@ export async function POST(req: Request) {
 
     if (folderName) {
       // Use ensureFolder logic if folderName is provided
-      const folderId = await ensureFolder(drive, folderName);
-      fileMetadata.parents = [folderId];
+      try {
+        console.log('Drive API: Ensuring folder exists:', folderName);
+        const folderId = await ensureFolder(drive, folderName);
+        console.log('Drive API: Folder ensured, ID:', folderId);
+        fileMetadata.parents = [folderId];
+      } catch (folderError: any) {
+        console.error('Drive API: Failed to ensure folder:', folderError);
+        throw folderError;
+      }
     } else if (parentId) {
       fileMetadata.parents = [parentId];
     }
@@ -105,25 +112,31 @@ export async function POST(req: Request) {
       body: stream,
     };
 
+    console.log('Drive API: Starting file create/upload');
     const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
       fields: 'id, name, mimeType, webViewLink',
     });
+    console.log('Drive API: File upload success:', response.data.id);
 
     return NextResponse.json({ success: true, file: response.data });
   } catch (error: any) {
-    console.error('Drive Upload Error:', error);
+    console.error('Drive Upload Error (Top Level):', error.message);
     if (error.response) {
-      console.error('Drive Upload Error Response:', JSON.stringify(error.response.data, null, 2));
+      console.error('Drive Upload Error Response Data:', JSON.stringify(error.response.data, null, 2));
     }
 
     // Check for 403 Forbidden (insufficient permissions)
     if (error.code === 403 || error.status === 403 || error.response?.status === 403) {
+      // Extract more details if available
+      const reasons = error.errors?.map((e: any) => e.reason).join(', ') || 'Unknown';
+      const message = error.message || 'Access Denied';
+
       return NextResponse.json({
-        error: 'Google Drive permission denied. Please re-authenticate.',
+        error: `Google Drive permission denied (${reasons}). Please re-authenticate. Msg: ${message}`,
         code: 'DRIVE_ACCESS_DENIED',
-        details: error.message
+        details: error.response?.data || error.message
       }, { status: 403 });
     }
 
