@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 
-const CursorTrails: React.FC = () => {
+const CursorTrails: React.FC = memo(() => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const particles = useRef<{ x: number; y: number; size: number; opacity: number; speedX: number; speedY: number }[]>([]);
 
@@ -63,7 +63,8 @@ const CursorTrails: React.FC = () => {
         };
     }, []);
 
-    return <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-10 h-full w-full" />;
-};
+    return <canvas className="pointer-events-none absolute inset-0 z-10 h-full w-full" ref={canvasRef} />;
+});
 
+CursorTrails.displayName = 'CursorTrails';
 export default CursorTrails;
