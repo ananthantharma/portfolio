@@ -1,33 +1,39 @@
-import {NextPage} from 'next';
+import { NextPage } from 'next';
 import Head from 'next/head';
-import {useRouter} from 'next/router';
-import {memo, PropsWithChildren} from 'react';
+import { useRouter } from 'next/router';
+import { memo, PropsWithChildren } from 'react';
 
-import {HomepageMeta} from '../../data/dataDef';
+// Replace this with your own local types or a simple interface
+interface PageProps {
+  title: string;
+  description: string;
+}
 
-const Page: NextPage<PropsWithChildren<HomepageMeta>> = memo(({children, title, description}) => {
-  const {asPath: pathname} = useRouter();
+const Page: NextPage<PropsWithChildren<PageProps>> = memo(({ children, title, description }) => {
+  const { asPath: pathname } = useRouter();
+
+  // CHANGE THIS: Replace with your actual live domain
+  const siteUrl = 'https://your-new-domain.com';
 
   return (
     <>
       <Head>
+        {/* Core SEO */}
         <title>{title}</title>
         <meta content={description} name="description" />
+        <link href={`${siteUrl}${pathname}`} key="canonical" rel="canonical" />
 
-        {/* several domains list the same content, make sure google knows we mean this one. */}
-        <link href={`https://reactresume.com${pathname}`} key="canonical" rel="canonical" />
-
+        {/* Generic Icons (Ensure these exist in your /public folder) */}
         <link href="/favicon.ico" rel="icon" sizes="any" />
-        <link href="/icon.svg" rel="icon" type="image/svg+xml" />
         <link href="/apple-touch-icon.png" rel="apple-touch-icon" />
-        <link href="/site.webmanifest" rel="manifest" />
 
-        {/* Open Graph : https://ogp.me/ */}
+        {/* Social Media Previews (Open Graph) */}
         <meta content={title} property="og:title" />
         <meta content={description} property="og:description" />
-        <meta content={`https://reactresume.com${pathname}`} property="og:url" />
+        <meta content={`${siteUrl}${pathname}`} property="og:url" />
 
-        {/* Twitter: https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/markup */}
+        {/* Social Media Previews (Twitter) */}
+        <meta content="summary_large_image" name="twitter:card" />
         <meta content={title} name="twitter:title" />
         <meta content={description} name="twitter:description" />
       </Head>
