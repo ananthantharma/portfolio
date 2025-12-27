@@ -111,32 +111,50 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           setIsUploadingDrive(true);
 
           for (const file of filesToUpload) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folderName', 'Portfolio Task Attachments');
-
-            const res = await fetch('/api/drive/files', {
+            // 1. Initiate Upload Session
+            const initRes = await fetch('/api/drive/files', {
               method: 'POST',
-              body: formData
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'initiate',
+                name: file.name,
+                type: file.type,
+                folderName: 'Portfolio Task Attachments',
+                size: file.size
+              })
             });
 
-            const data = await res.json();
+            const initData = await initRes.json();
 
-            if (!res.ok) {
-              if (res.status === 403 || data.code === 'DRIVE_ACCESS_DENIED') {
-                const detailMsg = data.error || 'Google Drive Permission Denied';
-                const debugDetails = data.details ? JSON.stringify(data.details) : '';
-                throw new Error(`DRIVE_ACCESS_DENIED: ${detailMsg} \nDetails: ${debugDetails}`);
+            if (!initRes.ok) {
+              if (initRes.status === 403 || initData.code === 'DRIVE_ACCESS_DENIED') {
+                const detailMsg = initData.error || 'Google Drive Permission Denied';
+                throw new Error(`DRIVE_ACCESS_DENIED: ${detailMsg}`);
               }
-              throw new Error(data.error || `Failed to upload ${file.name} to Drive`);
+              throw new Error(initData.error || `Failed to initiate upload for ${file.name}`);
             }
 
-            if (data.success && data.file) {
+            const uploadUrl = initData.uploadUrl;
+            if (!uploadUrl) throw new Error('Failed to get upload URL');
+
+            // 2. Direct Upload to Google (PUT)
+            const uploadRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              body: file
+            });
+
+            if (!uploadRes.ok) {
+              throw new Error(`Failed to upload file content: ${uploadRes.statusText}`);
+            }
+
+            const driveFile = await uploadRes.json();
+
+            if (driveFile && driveFile.id) {
               finalDriveAttachments.push({
-                name: data.file.name,
-                type: data.file.mimeType,
-                webViewLink: data.file.webViewLink,
-                fileId: data.file.id,
+                name: driveFile.name,
+                type: driveFile.mimeType,
+                webViewLink: driveFile.webViewLink,
+                fileId: driveFile.id,
                 storageType: 'drive',
                 size: file.size
               });

@@ -75,52 +75,115 @@ export async function POST(req: Request) {
       }
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-    const parentId = formData.get('parentId') as string;
-    const folderName = formData.get('folderName') as string;
+    // Determine content type to distinguish between JSON (initiate) and FormData (upload)
+    const contentType = req.headers.get('content-type') || '';
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-    }
+    if (contentType.includes('application/json')) {
+      // HANDLE INITIATE UPLOAD (Resumable)
+      const body = await req.json();
+      const { name, type, folderName, parentId, action } = body;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const stream = Readable.from(buffer);
-
-    const fileMetadata: any = {
-      name: file.name,
-      mimeType: file.type || 'application/octet-stream',
-    };
-
-    if (folderName) {
-      // Use ensureFolder logic if folderName is provided
-      try {
-        console.log('Drive API: Ensuring folder exists:', folderName);
-        const folderId = await ensureFolder(drive, folderName);
-        console.log('Drive API: Folder ensured, ID:', folderId);
-        fileMetadata.parents = [folderId];
-      } catch (folderError: any) {
-        console.error('Drive API: Failed to ensure folder:', folderError);
-        throw folderError;
+      if (action !== 'initiate') {
+        return NextResponse.json({ error: 'Invalid JSON action. Use action="initiate".' }, { status: 400 });
       }
-    } else if (parentId) {
-      fileMetadata.parents = [parentId];
+
+      console.log('Drive API: Initiating Resumable Upload for:', name);
+
+      const fileMetadata: any = {
+        name: name,
+        mimeType: type || 'application/octet-stream',
+      };
+
+      if (folderName) {
+        try {
+          console.log('Drive API: Ensuring folder exists:', folderName);
+          const folderId = await ensureFolder(drive, folderName);
+          console.log('Drive API: Folder ensured, ID:', folderId);
+          fileMetadata.parents = [folderId];
+        } catch (folderError: any) {
+          console.error('Drive API: Failed to ensure folder:', folderError);
+          throw folderError;
+        }
+      } else if (parentId) {
+        fileMetadata.parents = [parentId];
+      }
+
+      // Generate Resumable Session URI
+      const initiateUrl = `https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,webViewLink,webContentLink`;
+
+      const initiateRes = await fetch(initiateUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+          'X-Upload-Content-Type': type || 'application/octet-stream',
+        },
+        body: JSON.stringify(fileMetadata)
+      });
+
+      if (!initiateRes.ok) {
+        const errText = await initiateRes.text();
+        console.error('Drive API: Failed to initiate resumable upload', initiateRes.status, errText);
+        throw new Error(`Failed to initiate upload session: ${initiateRes.status} ${errText}`);
+      }
+
+      const uploadUrl = initiateRes.headers.get('Location');
+      if (!uploadUrl) {
+        throw new Error('Drive API: No Location header received for resumable upload');
+      }
+
+      console.log('Drive API: Session URI generated successfully');
+      return NextResponse.json({ success: true, uploadUrl });
+
+    } else {
+      // HANDLE LEGACY/SMALL FILE DIRECT UPLOAD (FormData)
+      const formData = await req.formData();
+      const file = formData.get('file') as File;
+      const parentId = formData.get('parentId') as string;
+      const folderName = formData.get('folderName') as string;
+
+      if (!file) {
+        return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const stream = Readable.from(buffer);
+
+      const fileMetadata: any = {
+        name: file.name,
+        mimeType: file.type || 'application/octet-stream',
+      };
+
+      if (folderName) {
+        // Use ensureFolder logic if folderName is provided
+        try {
+          console.log('Drive API: Ensuring folder exists:', folderName);
+          const folderId = await ensureFolder(drive, folderName);
+          console.log('Drive API: Folder ensured, ID:', folderId);
+          fileMetadata.parents = [folderId];
+        } catch (folderError: any) {
+          console.error('Drive API: Failed to ensure folder:', folderError);
+          throw folderError;
+        }
+      } else if (parentId) {
+        fileMetadata.parents = [parentId];
+      }
+
+      const media = {
+        mimeType: file.type || 'application/octet-stream',
+        body: stream,
+      };
+
+      console.log('Drive API: Starting file create/upload (Standard Mode)');
+      const response = await drive.files.create({
+        requestBody: fileMetadata,
+        media: media,
+        fields: 'id, name, mimeType, webViewLink',
+      });
+      console.log('Drive API: File upload success:', response.data.id);
+
+      return NextResponse.json({ success: true, file: response.data });
     }
-
-    const media = {
-      mimeType: file.type || 'application/octet-stream',
-      body: stream,
-    };
-
-    console.log('Drive API: Starting file create/upload');
-    const response = await drive.files.create({
-      requestBody: fileMetadata,
-      media: media,
-      fields: 'id, name, mimeType, webViewLink',
-    });
-    console.log('Drive API: File upload success:', response.data.id);
-
-    return NextResponse.json({ success: true, file: response.data });
   } catch (error: any) {
     console.error('Drive Upload Error (Top Level):', error.message);
     if (error.response) {
@@ -129,7 +192,6 @@ export async function POST(req: Request) {
 
     // Check for 403 Forbidden (insufficient permissions)
     if (error.code === 403 || error.status === 403 || error.response?.status === 403) {
-      // Extract more details if available
       const reasons = error.errors?.map((e: any) => e.reason).join(', ') || 'Unknown';
       const message = error.message || 'Access Denied';
 
