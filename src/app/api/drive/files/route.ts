@@ -117,6 +117,16 @@ export async function POST(req: Request) {
     if (error.response) {
       console.error('Drive Upload Error Response:', JSON.stringify(error.response.data, null, 2));
     }
+
+    // Check for 403 Forbidden (insufficient permissions)
+    if (error.code === 403 || error.status === 403 || error.response?.status === 403) {
+      return NextResponse.json({
+        error: 'Google Drive permission denied. Please re-authenticate.',
+        code: 'DRIVE_ACCESS_DENIED',
+        details: error.message
+      }, { status: 403 });
+    }
+
     return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }

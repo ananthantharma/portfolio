@@ -120,9 +120,15 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
               body: formData
             });
 
-            if (!res.ok) throw new Error(`Failed to upload ${file.name} to Drive`);
-
             const data = await res.json();
+
+            if (!res.ok) {
+              if (res.status === 403 || data.code === 'DRIVE_ACCESS_DENIED') {
+                throw new Error('DRIVE_PERMISSION_ERROR');
+              }
+              throw new Error(data.error || `Failed to upload ${file.name} to Drive`);
+            }
+
             if (data.success && data.file) {
               finalDriveAttachments.push({
                 name: data.file.name,
@@ -150,9 +156,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           driveAttachments: finalDriveAttachments,
         });
         onClose();
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
         console.error("Upload Error", error);
-        alert("Failed to upload to Drive. Please try again.");
+        if (error.message === 'DRIVE_PERMISSION_ERROR') {
+          alert("Google Drive Write Permission Denied.\n\nYou likely missed checking the 'See, edit, create, and delete all of your Google Drive files' box during sign-in.\n\nPlease Sign Out and Sign In again to fix this.");
+        } else {
+          alert(`Failed to upload to Drive: ${error.message}`);
+        }
       } finally {
         setIsUploadingDrive(false);
       }
