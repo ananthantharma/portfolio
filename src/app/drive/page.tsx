@@ -1,5 +1,6 @@
 'use client';
-import { AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload } from 'lucide-react';
+/* eslint-disable simple-import-sort/imports */
+import { AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload, Trash2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -75,6 +76,27 @@ export default function DrivePage() {
   const handleBreadcrumbClick = (folderId: string, index: number) => {
     setCurrentFolder(folderId);
     setBreadcrumbs(prev => prev.slice(0, index + 1));
+  };
+
+  const handleDelete = async (fileId: string) => {
+    if (!confirm('Are you sure you want to delete this file? This cannot be undone.')) return;
+
+    try {
+      const res = await fetch(`/api/drive/files?fileId=${fileId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete');
+      }
+
+      // Remove from state immediately
+      setFiles(prev => prev.filter(f => f.id !== fileId));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete file');
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -277,6 +299,15 @@ export default function DrivePage() {
                             <Download className="w-4 h-4" />
                           </a>
                         )}
+                        <button
+                          className="p-1.5 hover:bg-red-900/50 rounded-md text-slate-400 hover:text-red-400"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(file.id);
+                          }}
+                          title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     )}
                   </div>

@@ -243,3 +243,44 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session: any = await getServerSession(authOptions);
+    if (!session?.accessToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const fileId = searchParams.get('fileId');
+
+    if (!fileId) {
+      return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
+    }
+
+    const drive = getDriveClient(session.accessToken, session.refreshToken);
+    console.log(`Drive API: Deleting file ${fileId}`);
+
+    await drive.files.delete({
+      fileId: fileId,
+    });
+
+    console.log(`Drive API: Successfully deleted file ${fileId}`);
+    return NextResponse.json({ success: true });
+
+  } catch (error: any) {
+    console.error('Drive Delete Error:', error);
+
+    if (error.code === 403 || error.status === 403) {
+      return NextResponse.json({
+        error: 'Permission denied. You may not have access to delete this file.',
+        code: 'DRIVE_ACCESS_DENIED'
+      }, { status: 403 });
+    }
+
+    return NextResponse.json({
+      error: error.message || 'Failed to delete file',
+      debug: error.response?.data
+    }, { status: 500 });
+  }
+}
