@@ -1,7 +1,8 @@
 /* eslint-disable simple-import-sort/imports */
 /* eslint-disable react/jsx-sort-props */
-import {PaperClipIcon, TrashIcon, ArrowDownTrayIcon} from '@heroicons/react/24/outline';
-import React, {useCallback, useEffect, useState} from 'react';
+import { PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
+import { Switch } from '@headlessui/react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface Attachment {
   _id: string;
@@ -9,6 +10,9 @@ interface Attachment {
   contentType: string;
   size: number;
   createdAt: string;
+  storageType?: 'local' | 'drive';
+  webViewLink?: string;
+  fileId?: string;
 }
 
 interface AttachmentManagerProps {
@@ -23,10 +27,11 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({pageId}) => {
+export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({ pageId }) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useDriveStorage, setUseDriveStorage] = useState(false);
 
   const fetchAttachments = useCallback(async () => {
     try {
@@ -58,38 +63,126 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
   const processUpload = useCallback(
     async (file: File) => {
-      if (file.size > 15 * 1024 * 1024) {
-        setError('File is too large (max 15MB)');
+      setError(null);
+
+      // Local limit check
+      if (!useDriveStorage && file.size > 15 * 1024 * 1024) {
+        setError('File is too large for Local Storage (max 15MB). Use Drive Storage.');
         return;
       }
 
       setIsUploading(true);
-      setError(null);
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('pageId', pageId);
 
       try {
-        const res = await fetch('/api/attachments', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await res.json();
+        if (useDriveStorage) {
+          // --- DRIVE UPLOAD FLOW ---
 
-        if (res.ok) {
-          setAttachments(prev => [data.data, ...prev]);
+          // 1. Initiate
+          const initRes = await fetch('/api/drive/files', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'initiate',
+              name: file.name,
+              type: file.type,
+              folderName: 'Portfolio Page Attachments', // Separate folder
+              size: file.size
+            })
+          });
+
+          const initData = await initRes.json();
+          if (!initRes.ok) throw new Error(initData.error || 'Failed to initiate Drive upload');
+
+          const uploadUrl = initData.uploadUrl;
+          if (!uploadUrl) throw new Error('No upload URL received');
+
+          // 2. Chunked Proxy Upload
+          const CHUNK_SIZE = 2 * 1024 * 1024;
+          let offset = 0;
+          let driveFileMetadata = null;
+
+          while (offset < file.size) {
+            const chunk = file.slice(offset, offset + CHUNK_SIZE);
+            const contentRange = `bytes ${offset}-${offset + chunk.size - 1}/${file.size}`;
+
+            const chunkFormData = new FormData();
+            chunkFormData.append('action', 'upload_chunk');
+            chunkFormData.append('chunk', chunk, 'chunk');
+            chunkFormData.append('uploadUrl', uploadUrl);
+            chunkFormData.append('contentRange', contentRange);
+
+            const chunkRes = await fetch('/api/drive/files', {
+              method: 'POST',
+              body: chunkFormData
+            });
+
+            if (!chunkRes.ok) {
+              const errText = await chunkRes.text();
+              throw new Error(`Chunk upload failed: ${chunkRes.status} ${errText}`);
+            }
+
+            const chunkData = await chunkRes.json();
+            if (chunkData.status === 308) {
+              offset += chunk.size;
+            } else if (chunkData.success && (chunkData.status === 200 || chunkData.status === 201)) {
+              driveFileMetadata = chunkData.file;
+              break;
+            } else {
+              throw new Error('Unexpected upload status');
+            }
+          }
+
+          if (!driveFileMetadata) throw new Error('Upload completed but no metadata returned');
+
+          // 3. Save Metadata to DB
+          const metaFormData = new FormData();
+          metaFormData.append('pageId', pageId);
+          metaFormData.append('storageType', 'drive');
+          metaFormData.append('filename', driveFileMetadata.name);
+          metaFormData.append('contentType', driveFileMetadata.mimeType || file.type);
+          metaFormData.append('size', file.size.toString());
+          metaFormData.append('fileId', driveFileMetadata.id);
+          metaFormData.append('webViewLink', driveFileMetadata.webViewLink);
+
+          const saveRes = await fetch('/api/attachments', {
+            method: 'POST',
+            body: metaFormData
+          });
+          const saveData = await saveRes.json();
+
+          if (saveRes.ok) {
+            setAttachments(prev => [saveData.data, ...prev]);
+          } else {
+            setError(saveData.error || 'Failed to save attachment metadata');
+          }
+
         } else {
-          setError(data.error || 'Upload failed');
+          // --- LOCAL UPLOAD FLOW ---
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('pageId', pageId);
+
+          const res = await fetch('/api/attachments', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            setAttachments(prev => [data.data, ...prev]);
+          } else {
+            setError(data.error || 'Upload failed');
+          }
         }
-      } catch (err) {
-        setError('Error uploading file');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        setError(err.message || 'Error uploading file');
         console.error(err);
       } finally {
         setIsUploading(false);
       }
     },
-    [pageId],
+    [pageId, useDriveStorage],
   );
 
   const onDrop = useCallback(
@@ -114,7 +207,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this attachment?')) return;
     try {
-      const res = await fetch(`/api/attachments/${id}`, {method: 'DELETE'});
+      const res = await fetch(`/api/attachments/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setAttachments(prev => prev.filter(a => a._id !== id));
       } else {
@@ -127,9 +220,8 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
   return (
     <div
-      className={`border-t border-gray-200 p-4 transition-colors ${
-        isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
-      }`}
+      className={`border-t border-gray-200 p-4 transition-colors ${isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
+        }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}>
@@ -138,11 +230,31 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           <PaperClipIcon className="h-4 w-4" />
           Attachments
         </h3>
-        <div>
+
+        <div className="flex items-center gap-4">
+          {/* Drive Toggle */}
+          <Switch.Group>
+            <div className="flex items-center">
+              <Switch.Label className={`mr-2 text-xs font-medium ${useDriveStorage ? 'text-indigo-600' : 'text-gray-500'}`}>
+                {useDriveStorage ? 'Save to Drive' : 'Local Storage'}
+              </Switch.Label>
+              <Switch
+                checked={useDriveStorage}
+                onChange={setUseDriveStorage}
+                className={`${useDriveStorage ? 'bg-indigo-600' : 'bg-gray-200'
+                  } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+              >
+                <span
+                  className={`${useDriveStorage ? 'translate-x-5' : 'translate-x-1'
+                    } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
+                />
+              </Switch>
+            </div>
+          </Switch.Group>
+
           <label
-            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${
-              isUploading ? 'opacity-50 pointer-events-none' : ''
-            }`}>
+            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''
+              }`}>
             {isUploading ? 'Uploading...' : 'Add File'}
             <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
           </label>
@@ -165,41 +277,49 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {attachments.map(file => (
-            <div
-              key={file._id}
-              className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm group hover:border-indigo-300 transition-colors">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="flex-shrink-0 h-8 w-8 bg-gray-100 rounded flex items-center justify-center text-gray-500 font-bold text-xs uppercase">
-                  {file.filename.split('.').pop() || '?'}
+          {attachments.map(file => {
+            const isDrive = file.storageType === 'drive';
+            const link = isDrive
+              ? file.webViewLink
+              : `/api/attachments/${file._id}`;
+
+            return (
+              <div
+                key={file._id}
+                className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm group hover:border-indigo-300 transition-colors">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className={`flex-shrink-0 h-8 w-8 rounded flex items-center justify-center font-bold text-xs uppercase ${isDrive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                    {isDrive ? <CloudArrowUpIcon className="h-5 w-5" /> : (file.filename.split('.').pop() || '?')}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate" title={file.filename}>
+                      {file.filename}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatSize(file.size)} • {new Date(file.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate" title={file.filename}>
-                    {file.filename}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {formatSize(file.size)} • {new Date(file.createdAt).toLocaleDateString()}
-                  </p>
+                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`p-1.5 rounded transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600 hover:bg-blue-50' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                    title={isDrive ? "Open in Drive" : "Download"}>
+                    <ArrowDownTrayIcon className="h-4 w-4" />
+                  </a>
+                  <button
+                    onClick={() => handleDelete(file._id)}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Delete">
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                <a
-                  href={`/api/attachments/${file._id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                  title="Download">
-                  <ArrowDownTrayIcon className="h-4 w-4" />
-                </a>
-                <button
-                  onClick={() => handleDelete(file._id)}
-                  className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                  title="Delete">
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
