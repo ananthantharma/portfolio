@@ -174,7 +174,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                 if (chunkData.file && chunkData.file.id) {
                   finalDriveAttachments.push({
                     name: chunkData.file.name,
-                    type: chunkData.file.mimeType,
+                    type: chunkData.file.mimeType || file.type,
                     webViewLink: chunkData.file.webViewLink,
                     fileId: chunkData.file.id,
                     storageType: 'drive',

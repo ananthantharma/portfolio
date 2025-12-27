@@ -109,7 +109,7 @@ export async function POST(req: Request) {
       }
 
       // Generate Resumable Session URI
-      const initiateUrl = `https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,webViewLink,webContentLink`;
+      const initiateUrl = `https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,mimeType,webViewLink,webContentLink`;
 
       const initiateRes = await fetch(initiateUrl, {
         method: 'POST',
