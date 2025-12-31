@@ -461,7 +461,7 @@ const NotesLayout: React.FC = React.memo(() => {
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
       {/* Top Navigation / Breadcrumbs Bar */}
-      <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-30">
+      <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-50">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <HomeIcon className="h-4 w-4 text-gray-400" />
           <span className="font-medium">Workspace</span>
