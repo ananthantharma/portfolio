@@ -278,7 +278,12 @@ const LucideIcons = {
 // Filter and Prefix Iconoir exports
 const PrefixedIconoirIcons = Object.fromEntries(
   Object.entries(IconoirIcons)
-    .filter(([key]) => /^[A-Z]/.test(key) && key !== 'IconoirProvider')
+    .filter(([key, val]) =>
+      /^[A-Z]/.test(key) &&
+      key !== 'IconoirProvider' &&
+      key !== 'IconoirContext' &&
+      typeof val === 'function'
+    )
     .map(([key, val]) => [`Iconoir_${key}`, val])
 );
 
@@ -460,16 +465,16 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
             <div className="flex mb-3 border-b border-gray-100">
               <button
                 className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'icons'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 onClick={() => setActiveTab('icons')}>
                 Icons
               </button>
               <button
                 className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'brand'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 onClick={() => setActiveTab('brand')}>
                 Brand Logo
@@ -492,8 +497,8 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                     return (
                       <button
                         className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${selectedIcon === iconName && !selectedImage
-                            ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
-                            : 'text-gray-500'
+                          ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                          : 'text-gray-500'
                           }`}
                         key={iconName}
                         onClick={() => {
@@ -568,8 +573,8 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
 
                 <button
                   className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${previewImage && !previewError
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
                   disabled={!previewImage || previewError}
                   onClick={handleSelectBrand}>
