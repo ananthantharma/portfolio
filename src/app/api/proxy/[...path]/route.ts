@@ -18,6 +18,7 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
 
         let isGeminiScoped = false;
         if (key === 'GEMINI_SCOPED') isGeminiScoped = true;
+        if (keyFromHeader === 'GEMINI_SCOPED') isGeminiScoped = true;
 
         // Handle Managed Key
         if (isManaged) {
