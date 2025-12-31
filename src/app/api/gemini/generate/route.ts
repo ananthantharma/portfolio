@@ -28,8 +28,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    // Use requested model or fallback to gemini-2.5-flash (updated default as per recent usage)
-    const modelToUse = requestedModel || 'gemini-1.5-flash';
+    // Use requested model or fallback to gemini-flash-latest (updated default as per recent usage)
+    const modelToUse = requestedModel || 'gemini-flash-latest';
     console.log(`Using Gemini model: ${modelToUse}`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

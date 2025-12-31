@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import {Dialog, Transition} from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -17,15 +17,15 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import {useSession} from 'next-auth/react'; // Import useSession
-import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
+import { useSession } from 'next-auth/react'; // Import useSession
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
 import ToDoModal from './ToDoModal';
-import {AttachmentManager} from './AttachmentManager';
+import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
@@ -50,8 +50,8 @@ interface NoteEditorProps {
   page: INotePage | null;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag, page}) => {
-  const {data: session} = useSession(); // Get session data
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
+  const { data: session } = useSession(); // Get session data
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
@@ -61,7 +61,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
+  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
 
   // Rewrite Modal State
   const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
@@ -151,7 +151,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     if (!range) return null;
 
     const text = quill.getText(range.index, range.length);
-    return {text, range};
+    return { text, range };
   };
 
   const handleOpenRewrite = () => {
@@ -229,10 +229,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
-          model: 'gemini-2.5-flash',
+          model: 'gemini-flash-latest',
         }),
       });
       const data = await response.json();
@@ -311,8 +311,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: text}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text }),
       });
       const data = await response.json();
       console.log('Gemini API Response:', data);
@@ -364,13 +364,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
   }, []);
 
   const handleSaveToDo = useCallback(
-    async (toDoData: {title: string; priority: string; dueDate: Date; category: string; notes: string}) => {
+    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
       try {
         if (!page) return;
 
         const response = await fetch('/api/todos', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
@@ -447,11 +447,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
           </button>
 
           <button
-            className={`rounded-full p-2 transition-colors ${
-              isImportant
+            className={`rounded-full p-2 transition-colors ${isImportant
                 ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
                 : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-            }`}
+              }`}
             onClick={handleToggleImportant}
             title={isImportant ? 'Mark as not important' : 'Mark as important'}>
             {isImportant ? (
@@ -461,19 +460,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag,
             )}
           </button>
           <button
-            className={`rounded-full p-2 transition-colors ${
-              isFlagged
+            className={`rounded-full p-2 transition-colors ${isFlagged
                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
                 : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-            }`}
+              }`}
             onClick={handleToggleFlagged}
             title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
           </button>
           <button
-            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${
-              isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
-            }`}
+            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
+              }`}
             disabled={!isDirty}
             onClick={handleSave}>
             Save
