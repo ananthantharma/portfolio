@@ -9,7 +9,6 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
     try {
         const path = params.path.join('/');
         const url = new URL(req.url);
-        const url = new URL(req.url);
         let key = url.searchParams.get('key');
         let keyFromHeader = req.headers.get('x-goog-api-key');
 
