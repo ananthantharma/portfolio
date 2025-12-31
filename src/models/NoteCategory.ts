@@ -1,4 +1,4 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteCategory extends Document {
   name: string;
@@ -6,6 +6,7 @@ export interface INoteCategory extends Document {
   icon?: string;
   image?: string | null;
   userEmail?: string;
+  importantCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

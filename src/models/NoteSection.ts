@@ -1,4 +1,4 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface INoteSection extends Document {
   name: string;
@@ -8,6 +8,7 @@ export interface INoteSection extends Document {
   order: number;
   categoryId: mongoose.Types.ObjectId;
   userEmail?: string;
+  importantCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

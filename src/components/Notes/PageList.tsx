@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import {
   CalendarIcon,
   CheckIcon,
@@ -18,14 +18,14 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import {FileText} from 'lucide-react';
-import React, {useCallback, useMemo, useState} from 'react';
+import { FileText } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
-import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
-import {SortableItem} from './SortableItem';
+import { ColorPicker } from './ColorPicker';
+import { ICON_options, IconPicker } from './IconPicker';
+import { SortableItem } from './SortableItem';
 
 interface PageListProps {
   pages: INotePage[];
@@ -47,7 +47,7 @@ const PageItem = React.memo<{
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-}>(({page, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
+}>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed }) => {
   const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || FileText;
 
   const style = useMemo(
@@ -60,9 +60,8 @@ const PageItem = React.memo<{
   return (
     <SortableItem id={page._id as string}>
       <div
-        className={`group flex cursor-pointer items-center rounded-md transition-colors ${
-          isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
-        } ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+        className={`group flex cursor-pointer items-center rounded-md transition-colors ${isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
+          } ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
         onClick={() => onSelect(page._id as string)}
         title={page.title}>
         <div className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
@@ -79,9 +78,8 @@ const PageItem = React.memo<{
               />
             ) : null}
             <PageIcon
-              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${page.image ? 'hidden' : ''} ${
-                isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
-              }`}
+              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${page.image ? 'hidden' : ''} ${isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                }`}
             />
             {page.color && page.color !== '#000000' && (
               <span
@@ -92,7 +90,12 @@ const PageItem = React.memo<{
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
-              <span className="truncate">{page.title}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="truncate">{page.title}</span>
+                {page.isImportant && (
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-1 ring-white" title="Important" />
+                )}
+              </div>
               <span className="truncate text-[10px] text-gray-400 font-normal">
                 {new Date(page.updatedAt).toLocaleDateString()}
               </span>
@@ -167,7 +170,7 @@ const PageList: React.FC<PageListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const {active, over} = event;
+        const { active, over } = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = pages.findIndex(p => p._id === active.id);
@@ -194,7 +197,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     }, [newPageTitle, newPageColor, newPageIcon, newPageImage, onAddPage]);
 
     const handleAddToday = useCallback(() => {
-      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       onAddPage(today, '#000000', 'Calendar', null);
     }, [onAddPage]);
 

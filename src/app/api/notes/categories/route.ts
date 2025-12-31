@@ -1,49 +1,80 @@
 /* eslint-disable simple-import-sort/imports */
-import {NextResponse} from 'next/server';
-import {getServerSession} from 'next-auth';
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
 import NoteCategory from '@/models/NoteCategory';
-import {authOptions} from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export const dynamic = 'force-dynamic';
+
+
+import NotePage from '@/models/NotePage';
+import NoteSection from '@/models/NoteSection';
+import { INoteSection } from '@/models/NoteSection';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Ensure mongoose is connected via centralized helper
   await dbConnect();
   try {
-    const categories = await NoteCategory.find({userEmail: session!.user!.email}).sort({order: 1});
-    return NextResponse.json({success: true, data: categories});
+    const userEmail = session!.user!.email;
+    const categories = await NoteCategory.find({ userEmail }).sort({ order: 1 });
+
+    // Fetch all sections for mapping
+    const sections = await NoteSection.find({ userEmail });
+    const sectionToCategoryMap: Record<string, string> = {};
+    sections.forEach((sec: INoteSection) => {
+      sectionToCategoryMap[sec._id.toString()] = sec.categoryId.toString();
+    });
+
+    // Fetch all important pages
+    const importantPages = await NotePage.find({ userEmail, isImportant: true }).select('sectionId');
+
+    // Count important pages per category
+    const categoryCounts: Record<string, number> = {};
+    importantPages.forEach((page) => {
+      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      if (catId) {
+        categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
+      }
+    });
+
+    const categoriesWithCount = categories.map((cat) => ({
+      ...cat.toObject(),
+      importantCount: categoryCounts[cat._id.toString()] || 0
+    }));
+
+    return NextResponse.json({ success: true, data: categoriesWithCount });
   } catch (error) {
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user || !session.user.email) {
-    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   await dbConnect();
   try {
     const body = await request.json();
-    const count = await NoteCategory.countDocuments({userEmail: session.user.email});
+    const count = await NoteCategory.countDocuments({ userEmail: session.user.email });
     const category = await NoteCategory.create({
       ...body,
       userEmail: session.user.email,
       order: count,
     });
-    return NextResponse.json({success: true, data: category}, {status: 201});
+    return NextResponse.json({ success: true, data: category }, { status: 201 });
   } catch (error) {
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
