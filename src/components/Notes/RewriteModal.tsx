@@ -156,7 +156,7 @@ Text to rewrite:
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Audience</label>
                                             <select
                                                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2 border"
-                                                onChange={(e) => setAudience(e.target.value as any)}
+                                                onChange={(e) => setAudience(e.target.value as 'Peer' | 'Senior Leadership' | 'External Vendor')}
                                                 value={audience}
                                             >
                                                 <option>Peer</option>
@@ -253,6 +253,6 @@ Text to rewrite:
             </Dialog>
         </Transition>
     );
-};
+});
 
 export default RewriteModal;
