@@ -508,9 +508,12 @@ const NotesLayout: React.FC = React.memo(() => {
             <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
             Tasks
             {activeTaskCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-                {activeTaskCount}
-              </span>
+              <>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                  {activeTaskCount}
+                </span>
+              </>
             )}
           </button>
           <button
