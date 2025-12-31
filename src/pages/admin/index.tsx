@@ -104,7 +104,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ users, accessLogs }) =>
 export const getServerSideProps: GetServerSideProps = async context => {
     const session = await getSession(context);
 
-    if (!session || session.user?.email !== 'lankanprinze@gmail.com') {
+    console.log('Admin Access Attempt:', {
+        email: session?.user?.email,
+        expected: 'lankanprinze@gmail.com',
+        match: session?.user?.email === 'lankanprinze@gmail.com'
+    });
+
+    if (!session || !session.user?.email || session.user.email.toLowerCase() !== 'lankanprinze@gmail.com') {
         return {
             redirect: {
                 destination: '/',
