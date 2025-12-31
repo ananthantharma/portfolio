@@ -33,6 +33,29 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
         }
     }, [isOpen]);
 
+    const compressImage = (base64Str: string, maxWidth = 1024, quality = 0.8): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+        });
+    };
+
     const handlePaste = useCallback((e: ClipboardEvent | React.ClipboardEvent) => {
         const items = e.clipboardData?.items;
         if (!items) return;
@@ -43,10 +66,17 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
                 const blob = item.getAsFile();
                 if (blob) {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
+                    reader.onload = async (event) => {
                         const base64 = event.target?.result as string;
-                        setImagePreview(base64);
-                        setError(null);
+                        try {
+                            // Compress immediately for preview and upload
+                            const compressed = await compressImage(base64);
+                            setImagePreview(compressed);
+                            setError(null);
+                        } catch (err) {
+                            console.error("Compression failed", err);
+                            setImagePreview(base64); // Fallback
+                        }
                     };
                     reader.readAsDataURL(blob);
                     return; // Stop after finding the first image
@@ -79,7 +109,7 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
 
         try {
             // Parse base64 and mime type
-            // base64 string format: "data:image/png;base64,....."
+            // base64 string format: "data:image/jpeg;base64,....." (likely jpeg due to compression)
             const matches = imagePreview.match(/^data:(.+);base64,(.+)$/);
 
             if (!matches || matches.length !== 3) {
@@ -111,7 +141,9 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to extract text');
+                // Include DETAILS in the error message for debugging
+                const detailMsg = data.details || data.error || 'Failed to extract text';
+                throw new Error(detailMsg);
             }
 
             setResultText(data.text);
@@ -136,7 +168,6 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
     return (
         <Transition.Root as={Fragment} show={isOpen}>
             <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={onClose}>
-                {/* Simplified Centering Container */}
                 <div className="flex min-h-screen items-center justify-center p-4 text-center">
                     <Transition.Child
                         as={Fragment}
@@ -158,7 +189,6 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                         leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                         leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
 
-                        {/* Modal Content */}
                         <div className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all h-[80vh] flex flex-col">
 
                             {/* Header */}
@@ -169,7 +199,7 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                                         Extract Text from Image
                                     </h3>
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Paste an image (Ctrl+V) to extract tables and text as Markdown.
+                                        Paste an image (Ctrl+V) to extract tables and text (auto-compressed).
                                     </p>
                                 </div>
                                 <button
@@ -219,8 +249,8 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                                     </div>
 
                                     {error && (
-                                        <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100">
-                                            {error}
+                                        <div className="mt-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100 overflow-y-auto max-h-32">
+                                            <span className="font-bold">Error:</span> {error}
                                         </div>
                                     )}
 
