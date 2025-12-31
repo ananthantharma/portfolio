@@ -61,7 +61,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash-latest');
+  const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
   const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null);

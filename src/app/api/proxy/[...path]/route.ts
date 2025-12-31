@@ -29,13 +29,14 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
                     { status: 500 }
                 );
             }
-            key = envKey;
+            key = envKey.trim();
+            console.log(`[Proxy] Using Managed Google Key. Length: ${key.length}, StartsWith: ${key.substring(0, 4)}***`);
         }
 
         // Construct target URL
         const targetUrl = new URL(path, TARGET_BASE);
         url.searchParams.forEach((value, name) => {
-            if (name !== 'key') targetUrl.searchParams.append(name, value);
+            if (value && name !== 'key') targetUrl.searchParams.append(name, value);
         });
 
         // Explicitly append key if it exists
