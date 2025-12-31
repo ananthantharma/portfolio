@@ -1,5 +1,7 @@
+/* eslint-disable simple-import-sort/imports */
 'use client';
 
+import axios from 'axios'; // Moved up
 import {
   ChevronRightIcon, // For breadcrumbs
   ClipboardDocumentListIcon,
@@ -7,21 +9,22 @@ import {
   FlagIcon,
   HomeIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon, // Added
+  PencilSquareIcon,
+  PhotoIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
-import axios from 'axios';
-import { useSession } from 'next-auth/react'; // Added useSession
+import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
 import { INoteSection } from '@/models/NoteSection';
 
-import StandaloneRewriteModal from '../StandaloneRewriteModal'; // Added Modal Import
+import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
+import ImageExtractionModal from './ImageExtractionModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
 import SearchModal from './SearchModal';
@@ -425,6 +428,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
   const { data: session } = useSession();
 
+  // Image Extraction Modal
+  const [isImageExtractOpen, setIsImageExtractOpen] = useState(false);
+  const handleOpenImageExtract = useCallback(() => setIsImageExtractOpen(true), []);
+  const handleCloseImageExtract = useCallback(() => setIsImageExtractOpen(false), []);
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
       {/* Top Navigation / Breadcrumbs Bar */}
@@ -483,14 +491,23 @@ const NotesLayout: React.FC = React.memo(() => {
           </button>
           <div className="h-4 w-px bg-gray-200"></div>
 
-          {/* Restricted Rewrite Button */}
+          {/* Restricted Buttons */}
           {session?.user?.email === 'lankanprinze@gmail.com' && (
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
-              onClick={handleOpenRewrite}>
-              <PencilSquareIcon className="h-3.5 w-3.5" />
-              Rewrite
-            </button>
+            <>
+              <button
+                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
+                onClick={handleOpenRewrite}>
+                <PencilSquareIcon className="h-3.5 w-3.5" />
+                Rewrite
+              </button>
+              <button
+                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                onClick={handleOpenImageExtract}
+                title="Extract Text from Image">
+                <PhotoIcon className="h-3.5 w-3.5" />
+                OCR
+              </button>
+            </>
           )}
 
           <div className="h-4 w-px bg-gray-200"></div>
@@ -600,6 +617,7 @@ const NotesLayout: React.FC = React.memo(() => {
         onSelectTask={handleJumpToTask}
       />
       <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
+      <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
     </div>
   );
 });
