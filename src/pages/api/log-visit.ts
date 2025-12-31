@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 import dbConnect from '@/lib/dbConnect';
 import AccessLog from '@/models/AccessLog';
 
-import { authOptions } from './auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {

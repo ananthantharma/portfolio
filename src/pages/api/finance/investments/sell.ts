@@ -1,28 +1,28 @@
-import type {NextApiRequest, NextApiResponse} from 'next';
-import {getServerSession} from 'next-auth/next';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth/next';
 
 import dbConnect from '@/lib/dbConnect';
 import Investment from '@/models/Investment';
-import {authOptions} from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session || !session.user?.email) {
-    return res.status(401).json({success: false, message: 'Unauthorized'});
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({success: false, message: 'Method not allowed'});
+    return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
   await dbConnect();
 
-  const {ticker, category, quantity} = req.body;
+  const { ticker, category, quantity } = req.body;
   const sellQty = Number(quantity);
 
   if (!ticker || !category || !sellQty || sellQty <= 0) {
-    return res.status(400).json({success: false, message: 'Invalid input'});
+    return res.status(400).json({ success: false, message: 'Invalid input' });
   }
 
   try {
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userEmail: session.user.email,
       ticker: ticker,
       category: category,
-    }).sort({purchaseDate: 1});
+    }).sort({ purchaseDate: 1 });
 
     let remainingSellQty = sellQty;
     const totalOwned = investments.reduce((sum, inv) => sum + inv.quantity, 0);
@@ -59,9 +59,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    return res.status(200).json({success: true, message: 'Sold successfully'});
+    return res.status(200).json({ success: true, message: 'Sold successfully' });
   } catch (error) {
     console.error('Sell error:', error);
-    return res.status(500).json({success: false, message: 'Internal Server Error'});
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 }
