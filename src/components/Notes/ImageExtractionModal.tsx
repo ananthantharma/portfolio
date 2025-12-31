@@ -18,7 +18,6 @@ interface ImageExtractionModalProps {
 
 const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ isOpen, onClose }) => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [mimeType, setMimeType] = useState<string | null>(null);
     const [resultText, setResultText] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -29,7 +28,6 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
         if (isOpen) {
             setResultText('');
             setImagePreview(null);
-            setMimeType(null);
             setError(null);
             setCopied(false);
         }
@@ -48,7 +46,6 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
                     reader.onload = (event) => {
                         const base64 = event.target?.result as string;
                         setImagePreview(base64);
-                        setMimeType(item.type);
                         setError(null);
                     };
                     reader.readAsDataURL(blob);
@@ -71,7 +68,7 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
     }, [isOpen, handlePaste]);
 
     const handleExtract = async () => {
-        if (!imagePreview || !mimeType) {
+        if (!imagePreview) {
             setError('Please paste an image first.');
             return;
         }
@@ -81,8 +78,16 @@ const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ 
         setError(null);
 
         try {
-            // Extract base64 without prefix
-            const base64Data = imagePreview.split(',')[1];
+            // Parse base64 and mime type
+            // base64 string format: "data:image/png;base64,....."
+            const matches = imagePreview.match(/^data:(.+);base64,(.+)$/);
+
+            if (!matches || matches.length !== 3) {
+                throw new Error("Invalid image data");
+            }
+
+            const mimeType = matches[1];
+            const base64Data = matches[2];
 
             const sysInstruction = `You are a high-precision OCR and data extraction expert. Your task is to extract all text from the provided image.
 Tables: Recreate them exactly as Markdown tables with headers.
@@ -99,7 +104,7 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                     image: base64Data,
                     mimeType: mimeType,
                     systemInstruction: sysInstruction,
-                    model: 'gemini-1.5-flash', // Use supported multimodal model (1.5-flash)
+                    model: 'gemini-1.5-flash',
                 }),
             });
 
@@ -131,7 +136,8 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
     return (
         <Transition.Root as={Fragment} show={isOpen}>
             <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={onClose}>
-                <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                {/* Simplified Centering Container */}
+                <div className="flex min-h-screen items-center justify-center p-4 text-center">
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -143,9 +149,6 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                         <Dialog.Overlay className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" />
                     </Transition.Child>
 
-                    <span aria-hidden="true" className="hidden sm:inline-block sm:h-screen sm:align-middle">
-                        &#8203;
-                    </span>
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-300"
@@ -154,7 +157,9 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                         leave="ease-in duration-200"
                         leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                         leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                        <div className="inline-block w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all h-[80vh] flex flex-col">
+
+                        {/* Modal Content */}
+                        <div className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all h-[80vh] flex flex-col">
 
                             {/* Header */}
                             <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
