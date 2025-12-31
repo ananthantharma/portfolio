@@ -27,12 +27,7 @@ const nextConfig = {
     domains: ['images.unsplash.com', 'source.unsplash.com', 'ui-avatars.com'],
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/proxy/:path*',
-        destination: 'https://generativelanguage.googleapis.com/:path*',
-      },
-    ];
+    return [];
   },
 };
 
