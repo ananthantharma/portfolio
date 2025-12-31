@@ -40,6 +40,19 @@ const UserProfileMenu = memo(() => {
                         <p className="text-sm font-medium text-gray-900 truncate">{session.user?.name || 'User'}</p>
                         <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
                     </div>
+                    {session.user?.email === 'lankanprinze@gmail.com' && (
+                        <Menu.Item>
+                            {({ active }) => (
+                                <a
+                                    href="/admin"
+                                    className={`${active ? 'bg-gray-100' : ''
+                                        } block px-4 py-2 text-sm text-gray-700`}
+                                >
+                                    Admin Portal
+                                </a>
+                            )}
+                        </Menu.Item>
+                    )}
                     <Menu.Item>
                         {({ active }) => (
                             <button

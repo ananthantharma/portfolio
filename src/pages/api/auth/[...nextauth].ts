@@ -1,5 +1,5 @@
-import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
-import NextAuth, {Account, Session, User} from 'next-auth';
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+import NextAuth, { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from '../../../lib/mongodb';
@@ -24,8 +24,8 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({user, account}: {user: User; account: Account | null}) {
-      console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
+    async signIn({ user, account }: { user: User; account: Account | null }) {
+      console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
       console.log('SignIn Tokens Received:', {
         hasAccess: !!account?.access_token,
         hasRefresh: !!account?.refresh_token,
@@ -55,16 +55,23 @@ export const authOptions = {
               provider: 'google',
               userId: new (await import('mongodb')).ObjectId(user.id),
             },
-            {$set: updateData},
+            { $set: updateData },
           );
-          console.log('SignIn: Updated account tokens', {hasRefresh: !!account.refresh_token});
+
+          // Update user last login
+          await db.collection('users').updateOne(
+            { _id: new (await import('mongodb')).ObjectId(user.id) },
+            { $set: { lastLogin: new Date() } },
+          );
+
+          console.log('SignIn: Updated account tokens', { hasRefresh: !!account.refresh_token });
         } catch (error) {
           console.error('SignIn: Failed to update tokens', error);
         }
       }
       return true;
     },
-    async session({session, user}: {session: Session; user: User}) {
+    async session({ session, user }: { session: Session; user: User }) {
       // Fetch the account to get the access token
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
