@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable object-curly-spacing */
 import { Dialog, Transition } from '@headlessui/react';
 import {
@@ -9,14 +10,17 @@ import {
   DocumentTextIcon,
   HomeIcon,
   LockClosedIcon,
+  PencilSquareIcon, // Icon for Rewrite
   ReceiptPercentIcon,
 } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
+import { useSession } from 'next-auth/react'; // Import useSession
 import Link from 'next/link';
 import { FC, Fragment, memo, useCallback, useMemo, useState } from 'react';
 
 import { SectionId } from '../../data/data';
 import { useNavObserver } from '../../hooks/useNavObserver';
+import StandaloneRewriteModal from '../StandaloneRewriteModal'; // Import Modal
 
 export const headerID = 'headerNav';
 
@@ -24,22 +28,52 @@ const Header: FC = memo(() => {
   const [currentSection, setCurrentSection] = useState<SectionId | null>(null);
   const navSections = useMemo(() => [SectionId.Contact], []);
 
+  // Standalone Rewrite Modal State
+  const [isRewriteOpen, setIsRewriteOpen] = useState(false);
+  const { data: session } = useSession();
+
   const intersectionHandler = useCallback((section: SectionId | null) => {
     section && setCurrentSection(section);
   }, []);
 
+  const handleOpenRewrite = useCallback(() => {
+    setIsRewriteOpen(true);
+  }, []);
+
+  const handleCloseRewrite = useCallback(() => {
+    setIsRewriteOpen(false);
+  }, []);
+
   useNavObserver(navSections.map(section => `#${section}`).join(','), intersectionHandler);
+
+  const isAuthorized = session?.user?.email === 'lankanprinze@gmail.com';
 
   return (
     <>
-      <MobileNav currentSection={currentSection} navSections={navSections} />
-      <DesktopNav currentSection={currentSection} navSections={navSections} />
+      <MobileNav
+        currentSection={currentSection}
+        isAuthorized={isAuthorized}
+        navSections={navSections}
+        onOpenRewrite={handleOpenRewrite}
+      />
+      <DesktopNav
+        currentSection={currentSection}
+        isAuthorized={isAuthorized}
+        navSections={navSections}
+        onOpenRewrite={handleOpenRewrite}
+      />
+      <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
     </>
   );
 });
 
-const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null }> = memo(
-  ({ navSections, currentSection }) => {
+const DesktopNav: FC<{
+  navSections: SectionId[];
+  currentSection: SectionId | null;
+  isAuthorized?: boolean;
+  onOpenRewrite: () => void;
+}> = memo(
+  ({ navSections, currentSection, isAuthorized, onOpenRewrite }) => {
     const baseClass =
       '-m-1.5 p-1.5 rounded-md font-bold first-letter:uppercase hover:transition-colors hover:duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 sm:hover:text-orange-500 text-neutral-100';
     const activeClass = classNames(baseClass, 'text-orange-500');
@@ -71,6 +105,16 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
               <ChatBubbleLeftRightIcon className="h-5 w-5" /> Open
             </span>
           </Link>
+
+          {/* Restricted Rewrite Button */}
+          {isAuthorized && (
+            <button className={inactiveClass} onClick={onOpenRewrite}>
+              <span className="flex items-center gap-2 text-pink-500 hover:text-pink-400">
+                <PencilSquareIcon className="h-5 w-5" /> Rewrite
+              </span>
+            </button>
+          )}
+
           <Link className={inactiveClass} href="/drive">
             <span className="flex items-center gap-2">
               <CloudIcon className="h-5 w-5" /> Drive
@@ -107,8 +151,13 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
   },
 );
 
-const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null }> = memo(
-  ({ navSections, currentSection }) => {
+const MobileNav: FC<{
+  navSections: SectionId[];
+  currentSection: SectionId | null;
+  isAuthorized?: boolean;
+  onOpenRewrite: () => void;
+}> = memo(
+  ({ navSections, currentSection, isAuthorized, onOpenRewrite }) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const toggleOpen = useCallback(() => {
@@ -175,6 +224,22 @@ const MobileNav: FC<{ navSections: SectionId[]; currentSection: SectionId | null
                       <ChatBubbleLeftRightIcon className="h-5 w-5" /> Open
                     </span>
                   </Link>
+
+                  {/* Restricted Rewrite Button Mobile */}
+                  {isAuthorized && (
+                    <button
+                      className={classNames(inactiveClass, "text-left w-full")}
+                      onClick={() => {
+                        onOpenRewrite();
+                        toggleOpen();
+                      }}
+                    >
+                      <span className="flex items-center gap-2 text-pink-500">
+                        <PencilSquareIcon className="h-5 w-5" /> Rewrite
+                      </span>
+                    </button>
+                  )}
+
                   <Link className={inactiveClass} href="/drive" onClick={toggleOpen}>
                     <span className="flex items-center gap-2">
                       <CloudIcon className="h-5 w-5" /> Drive
