@@ -5439,7 +5439,7 @@ quill@^1.3.7:
     parchment "^1.1.4"
     quill-delta "^3.6.2"
 
-quill@^2.0.3:
+quill@^2.0.3, quill@~2.0.2:
   version "2.0.3"
   resolved "https://registry.npmjs.org/quill/-/quill-2.0.3.tgz"
   integrity sha512-xEYQBqfYx/sfb33VJiKnSJp8ehloavImQ2A6564GAbqG55PGw1dAWUn1MUbQB62t0azawUS2CZZhWCjO8gRvTw==
@@ -5508,6 +5508,14 @@ react-parallax-tilt@^1.7.315:
   version "1.7.315"
   resolved "https://registry.npmjs.org/react-parallax-tilt/-/react-parallax-tilt-1.7.315.tgz"
   integrity sha512-m0I2yPEmzEC+qGelF+8P+L60lH/S50OJE+pz1bVmurnkKNMyd2Q4qhtAi8zRibNkwFd6oOGvA8qEqAySBbAOJg==
+
+react-quill-new@^3.7.0:
+  version "3.7.0"
+  resolved "https://registry.npmjs.org/react-quill-new/-/react-quill-new-3.7.0.tgz"
+  integrity sha512-i5qz1WukIR84ktJrA2VMcZdkRrfOl/4TAK6ygMTX1/9Grcrgj0NW+LnoanBhuIbHaHJZwcvcWMBvSjUFsxQIQA==
+  dependencies:
+    lodash-es "^4.17.21"
+    quill "~2.0.2"
 
 react-quill@^2.0.0:
   version "2.0.0"

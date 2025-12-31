@@ -41,6 +41,7 @@
     "react-markdown": "^10.1.0",
     "react-parallax-tilt": "^1.7.315",
     "react-quill": "^2.0.0",
+    "react-quill-new": "^3.7.0",
     "recharts": "^3.5.1",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.4.0",
