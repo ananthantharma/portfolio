@@ -523,13 +523,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
           <div className="h-4 w-px bg-gray-200"></div>
 
-          {/* User Profile Menu */}
-          <div className="flex items-center">
-            <UserProfileMenu />
-          </div>
-
-          <div className="h-4 w-px bg-gray-200"></div>
-
           {/* Restricted Buttons */}
           {session?.user?.email === 'lankanprinze@gmail.com' && (
             <>
@@ -562,6 +555,13 @@ const NotesLayout: React.FC = React.memo(() => {
             title="Key Tasks">
             <FlagIcon className="h-4 w-4" />
           </button>
+
+          <div className="h-4 w-px bg-gray-200"></div>
+
+          {/* User Profile Menu */}
+          <div className="flex items-center">
+            <UserProfileMenu />
+          </div>
         </div>
       </div>
 

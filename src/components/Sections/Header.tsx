@@ -102,10 +102,12 @@ const DesktopNav: FC<{ navSections: SectionId[]; currentSection: SectionId | nul
               <ReceiptPercentIcon className="h-5 w-5" /> Invoices
             </span>
           </Link>
-          <div className="flex items-center">
-            <UserProfileMenu />
-          </div>
         </nav>
+
+        {/* User Profile Menu - Absolute Right */}
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center">
+          <UserProfileMenu />
+        </div>
       </header>
     );
   },

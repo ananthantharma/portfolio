@@ -1,13 +1,15 @@
 'use client';
 
-import {CurrencyDollarIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useSession} from 'next-auth/react';
-import {useEffect} from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-export default function FinanceLayout({children}: {children: React.ReactNode}) {
-  const {status} = useSession();
+import UserProfileMenu from '../../components/UserProfileMenu';
+
+export default function FinanceLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -56,6 +58,10 @@ export default function FinanceLayout({children}: {children: React.ReactNode}) {
                   </Link>
                 </div>
               </div>
+            </div>
+            {/* User Profile Menu */}
+            <div className="flex items-center">
+              <UserProfileMenu />
             </div>
           </div>
         </div>
