@@ -8,6 +8,8 @@ export async function POST(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body = await req.json();
     let { apiKey } = body;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { prompt, history, model: requestedModel, systemInstruction, image, mimeType } = body;
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
       if (!session || !(session.user as any).googleApiEnabled) {
