@@ -134,7 +134,7 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                     image: base64Data,
                     mimeType: mimeType,
                     systemInstruction: sysInstruction,
-                    model: 'gemini-1.5-flash-latest',
+                    model: 'gemini-flash-latest',
                 }),
             });
 
