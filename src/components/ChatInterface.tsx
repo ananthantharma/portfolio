@@ -266,7 +266,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         </div>
 
         <div className="p-4 border-t border-zinc-800">
-          {apiKey === 'MANAGED' ? (
+          {apiKey === 'MANAGED' || apiKey === 'GEMINI_SCOPED' ? (
             <div className="w-full flex items-center gap-2 px-3 py-2 text-emerald-400 text-sm font-medium bg-emerald-400/10 rounded-lg border border-emerald-400/20">
               <span className="flex-1">✨ Managed Access</span>
             </div>

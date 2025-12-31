@@ -15,7 +15,7 @@ export default function ChatPage() {
   useEffect(() => {
     // Check for Managed Permission
     if (session?.user && (session.user as any).googleApiEnabled) {
-      setApiKey('MANAGED');
+      setApiKey('GEMINI_SCOPED');
       setIsLoading(false);
       return;
     }

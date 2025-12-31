@@ -16,6 +16,9 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
         if (key === 'MANAGED') isManaged = true;
         if (keyFromHeader === 'MANAGED') isManaged = true;
 
+        let isGeminiScoped = false;
+        if (key === 'GEMINI_SCOPED') isGeminiScoped = true;
+
         // Handle Managed Key
         if (isManaged) {
             const session = await getServerSession(authOptions);
@@ -36,6 +39,28 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
             }
             key = envKey.trim();
             console.log(`[Proxy] Using Managed Google Key. Length: ${key.length}, StartsWith: ${key.substring(0, 4)}***`);
+        }
+
+        // Handle Gemini Scoped Key
+        if (isGeminiScoped) {
+            const session = await getServerSession(authOptions);
+            if (!session || !(session.user as any).googleApiEnabled) {
+                return NextResponse.json(
+                    { error: 'Access Denied: You do not have permission to use the managed Gemini API key.' },
+                    { status: 403 }
+                );
+            }
+
+            const envKey = process.env.Gemini_Key;
+            if (!envKey) {
+                console.error('Server Error: Gemini_Key is not defined in environment variables.');
+                return NextResponse.json(
+                    { error: 'Server Configuration Error: Managed Gemini API Key is not configured.' },
+                    { status: 500 }
+                );
+            }
+            key = envKey.trim();
+            console.log(`[Proxy] Using Gemini Scoped Key. Length: ${key.length}, StartsWith: ${key.substring(0, 4)}***`);
         }
 
         // Construct target URL
