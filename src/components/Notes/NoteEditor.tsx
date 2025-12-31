@@ -233,6 +233,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
+          apiKey: 'MANAGED',
         }),
       });
       const data = await response.json();
@@ -312,7 +313,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text }),
+        body: JSON.stringify({ prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest' }),
       });
       const data = await response.json();
       console.log('Gemini API Response:', data);
@@ -448,8 +449,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
           <button
             className={`rounded-full p-2 transition-colors ${isImportant
-                ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+              ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
               }`}
             onClick={handleToggleImportant}
             title={isImportant ? 'Mark as not important' : 'Mark as important'}>
@@ -461,8 +462,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           </button>
           <button
             className={`rounded-full p-2 transition-colors ${isFlagged
-                ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+              ? 'text-red-500 bg-red-50 hover:bg-red-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
               }`}
             onClick={handleToggleFlagged}
             title={isFlagged ? 'Unflag task' : 'Flag as key task'}>

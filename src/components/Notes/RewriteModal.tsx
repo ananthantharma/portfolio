@@ -61,6 +61,7 @@ Text to rewrite:
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
+          apiKey: 'MANAGED',
         }),
       });
 
