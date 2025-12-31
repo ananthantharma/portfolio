@@ -67,71 +67,17 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+  // Hardcoded models to avoid fetch failure on load
   useEffect(() => {
-    async function fetchModels() {
-      if (apiKey) {
-        const models = await getAvailableModels(apiKey);
-        if (models.length > 0) {
-          // Helper to find the latest version of a specific type
-          const findLatestModel = (typeKeywords: string[], excludeKeywords: string[] = []) => {
-            const matches = models
-              .filter(m => {
-                const id = m.id.toLowerCase();
-                // Must contain all type keywords
-                const hasKeywords = typeKeywords.every(k => id.includes(k));
-                // Must NOT contain any exclude keywords
-                const hasExcludes = excludeKeywords.some(k => id.includes(k));
-                return hasKeywords && !hasExcludes;
-              })
-              .sort((a, b) => {
-                // Sort by version number (descending)
-                // Extract version numbers like 1.5, 2.0
-                const getVersion = (id: string) => {
-                  const match = id.match(/(\d+\.\d+)/);
-                  return match ? parseFloat(match[1]) : 0;
-                };
-                return getVersion(b.id) - getVersion(a.id);
-              });
-
-            return matches.length > 0 ? matches[0] : null;
-          };
-
-          // specific logic for Flash-Lite (must contain 'flash' and 'lite')
-          const flashLite = findLatestModel(['flash', 'lite']);
-          // specific logic for Flash (must contain 'flash', must NOT contain 'lite' or '8b')
-          const flash = findLatestModel(['flash'], ['lite', '8b']);
-          // specific logic for Pro (must contain 'pro')
-          const pro = findLatestModel(['pro']);
-
-          const newAvailableModels: { id: string; label: string }[] = [];
-          let defaultSelection = '';
-
-          if (flash) {
-            newAvailableModels.push({ id: flash.id, label: 'Gemini Flash Latest' });
-            defaultSelection = flash.id; // Flash is preferred default
-          }
-          if (flashLite) {
-            newAvailableModels.push({ id: flashLite.id, label: 'Gemini Flash-Lite Latest' });
-          }
-          if (pro) {
-            newAvailableModels.push({ id: pro.id, label: 'Gemini Pro Latest' });
-          }
-
-          // If we found any models, update state
-          if (newAvailableModels.length > 0) {
-            setAvailableModels(newAvailableModels);
-            // specific requirement: gemini flash latest is the default selected
-            if (defaultSelection) {
-              setSelectedModel(defaultSelection);
-            } else {
-              setSelectedModel(newAvailableModels[0].id);
-            }
-          }
-        }
-      }
-    }
-    fetchModels();
-  }, [apiKey]);
+    // We only care about Flash and Pro for now
+    const models = [
+      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
+      { id: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Exp)' }, // Optional: Add new ones if desired
+      { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+    ];
+    setAvailableModels(models);
+    setSelectedModel('gemini-flash-latest');
+  }, []);
 
   // Initialize currentSessionId
   useEffect(() => {

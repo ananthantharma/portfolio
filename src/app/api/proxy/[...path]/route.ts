@@ -9,10 +9,16 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
     try {
         const path = params.path.join('/');
         const url = new URL(req.url);
+        const url = new URL(req.url);
         let key = url.searchParams.get('key');
+        let keyFromHeader = req.headers.get('x-goog-api-key');
+
+        let isManaged = false;
+        if (key === 'MANAGED') isManaged = true;
+        if (keyFromHeader === 'MANAGED') isManaged = true;
 
         // Handle Managed Key
-        if (key === 'MANAGED') {
+        if (isManaged) {
             const session = await getServerSession(authOptions);
             if (!session || !(session.user as any).googleApiEnabled) {
                 return NextResponse.json(
@@ -39,7 +45,10 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
             if (value && name !== 'key') targetUrl.searchParams.append(name, value);
         });
 
-        // Explicitly append key if it exists
+        // Appending Resolved Key
+        // If it was managed (or just passed normally), we prefer putting it in the Query Param for simplicity with Google API
+        // UNLESS it was meant to be a header. But Google API accepts 'key' query param even if SDK sent header.
+        // We will strip the 'x-goog-api-key' header later to avoid conflict/invalid value.
         if (key) {
             targetUrl.searchParams.set('key', key);
         }
@@ -58,6 +67,10 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
                 body = text;
             }
         }
+
+        // Headers cleaning
+        headers.delete('x-goog-api-key'); // Remove the header to rely on the query param we set
+        headers.delete('host');
 
         const response = await fetch(targetUrl.toString(), {
             method: req.method,
