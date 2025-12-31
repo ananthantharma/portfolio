@@ -7,13 +7,20 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 /* eslint-disable react-memo/require-memo */
 const ReactQuill = dynamic(
   async () => {
-    const { default: RQ, Quill } = await import('react-quill');
+    const { default: RQ } = await import('react-quill');
+    const { default: Quill } = await import('quill');
     const { default: BlotFormatter } = await import('quill-blot-formatter');
     const { default: QuillBetterTable } = await import('quill-better-table');
 
-    Quill.register('modules/blotFormatter', BlotFormatter);
-    Quill.register('modules/better-table', QuillBetterTable);
+    // Register modules with the Quill instance
+    if (Quill && !Quill.imports['modules/blotFormatter']) {
+      Quill.register('modules/blotFormatter', BlotFormatter);
+    }
+    if (Quill && !Quill.imports['modules/better-table']) {
+      Quill.register('modules/better-table', QuillBetterTable);
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ({ forwardedRef, ...props }: any) => <RQ ref={forwardedRef} {...props} />;
   },
   {
