@@ -1,14 +1,14 @@
-import 'react-quill/dist/quill.snow.css';
+import 'quill/dist/quill.snow.css';
 
 import dynamic from 'next/dynamic';
-import React, {forwardRef, useImperativeHandle, useRef} from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 
 /* eslint-disable react-memo/require-memo */
 const ReactQuill = dynamic(
   async () => {
-    const {default: RQ} = await import('react-quill');
+    const { default: RQ } = await import('react-quill');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ({forwardedRef, ...props}: any) => <RQ ref={forwardedRef} {...props} />;
+    return ({ forwardedRef, ...props }: any) => <RQ ref={forwardedRef} {...props} />;
   },
   {
     loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
@@ -26,12 +26,12 @@ export interface RichTextEditorProps {
 
 const modules = {
   toolbar: [
-    [{header: [1, 2, 3, false]}],
-    [{font: []}],
+    [{ header: [1, 2, 3, false] }],
+    [{ font: [] }],
     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{color: []}, {background: []}],
-    [{list: 'ordered'}, {list: 'bullet'}, {indent: '-1'}, {indent: '+1'}],
-    [{align: []}],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+    [{ align: [] }],
     ['link', 'image'],
     ['clean'],
   ],
@@ -40,7 +40,7 @@ const modules = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RichTextEditor = React.memo(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  forwardRef<any, RichTextEditorProps>(({onChange, onBlur, placeholder, value}, ref) => {
+  forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillRef = useRef<any>(null);
 
