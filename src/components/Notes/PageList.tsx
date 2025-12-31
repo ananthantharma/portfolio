@@ -92,6 +92,9 @@ const PageItem = React.memo<{
             <div className="flex flex-col overflow-hidden">
               <div className="flex items-center gap-1.5">
                 <span className="truncate">{page.title}</span>
+                {page.isFlagged && (
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-orange-500 ring-1 ring-white" title="Key Task" />
+                )}
                 {page.isImportant && (
                   <span className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-1 ring-white" title="Important" />
                 )}

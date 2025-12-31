@@ -38,15 +38,27 @@ export async function GET(request: Request) {
       isImportant: true
     }).select('sectionId');
 
-    const sectionCounts: Record<string, number> = {};
+    const flaggedPages = await NotePage.find({
+      userEmail: session.user.email,
+      isFlagged: true
+    }).select('sectionId');
+
+    const sectionImportantCounts: Record<string, number> = {};
     importantPages.forEach((page) => {
       const secId = page.sectionId.toString();
-      sectionCounts[secId] = (sectionCounts[secId] || 0) + 1;
+      sectionImportantCounts[secId] = (sectionImportantCounts[secId] || 0) + 1;
+    });
+
+    const sectionFlaggedCounts: Record<string, number> = {};
+    flaggedPages.forEach((page) => {
+      const secId = page.sectionId.toString();
+      sectionFlaggedCounts[secId] = (sectionFlaggedCounts[secId] || 0) + 1;
     });
 
     const sectionsWithCount = sections.map((sec) => ({
       ...sec.toObject(),
-      importantCount: sectionCounts[sec._id.toString()] || 0
+      importantCount: sectionImportantCounts[sec._id.toString()] || 0,
+      flaggedCount: sectionFlaggedCounts[sec._id.toString()] || 0
     }));
 
     return NextResponse.json({ success: true, data: sectionsWithCount });

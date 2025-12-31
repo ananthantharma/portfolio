@@ -9,6 +9,7 @@ export interface INoteSection extends Document {
   categoryId: mongoose.Types.ObjectId;
   userEmail?: string;
   importantCount?: number;
+  flaggedCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

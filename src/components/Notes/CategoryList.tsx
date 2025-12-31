@@ -85,8 +85,8 @@ const CategoryItem = React.memo<{
     <SortableItem id={category._id as string}>
       <div
         className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${isSelected
-            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-            : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+          : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
           }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
@@ -112,11 +112,18 @@ const CategoryItem = React.memo<{
           <span className="truncate">{category.name}</span>
         </div>
 
-        {category.importantCount !== undefined && category.importantCount > 0 && (
-          <span className="ml-auto mr-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-            {category.importantCount}
-          </span>
-        )}
+        <div className="ml-auto mr-2 flex items-center gap-1">
+          {category.flaggedCount !== undefined && category.flaggedCount > 0 && (
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+              {category.flaggedCount}
+            </span>
+          )}
+          {category.importantCount !== undefined && category.importantCount > 0 && (
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+              {category.importantCount}
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <button

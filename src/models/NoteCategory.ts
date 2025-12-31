@@ -7,6 +7,7 @@ export interface INoteCategory extends Document {
   image?: string | null;
   userEmail?: string;
   importantCount?: number;
+  flaggedCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

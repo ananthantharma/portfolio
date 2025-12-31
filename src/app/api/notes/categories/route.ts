@@ -35,18 +35,31 @@ export async function GET() {
     // Fetch all important pages
     const importantPages = await NotePage.find({ userEmail, isImportant: true }).select('sectionId');
 
+    // Fetch all flagged pages
+    const flaggedPages = await NotePage.find({ userEmail, isFlagged: true }).select('sectionId');
+
     // Count important pages per category
-    const categoryCounts: Record<string, number> = {};
+    const categoryImportantCounts: Record<string, number> = {};
     importantPages.forEach((page) => {
       const catId = sectionToCategoryMap[page.sectionId.toString()];
       if (catId) {
-        categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
+        categoryImportantCounts[catId] = (categoryImportantCounts[catId] || 0) + 1;
+      }
+    });
+
+    // Count flagged pages per category
+    const categoryFlaggedCounts: Record<string, number> = {};
+    flaggedPages.forEach((page) => {
+      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      if (catId) {
+        categoryFlaggedCounts[catId] = (categoryFlaggedCounts[catId] || 0) + 1;
       }
     });
 
     const categoriesWithCount = categories.map((cat) => ({
       ...cat.toObject(),
-      importantCount: categoryCounts[cat._id.toString()] || 0
+      importantCount: categoryImportantCounts[cat._id.toString()] || 0,
+      flaggedCount: categoryFlaggedCounts[cat._id.toString()] || 0
     }));
 
     return NextResponse.json({ success: true, data: categoriesWithCount });
