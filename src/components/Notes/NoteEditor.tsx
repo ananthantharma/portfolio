@@ -364,6 +364,36 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsToDoOpen(false);
   }, []);
 
+  const handleInsertSymbol = (symbol: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
+    if (!quill) return;
+
+    const range = quill.getSelection(true); // true to focus if not focused, or just get selection
+    if (range) {
+      quill.insertText(range.index, symbol);
+      quill.setSelection(range.index + symbol.length);
+    } else {
+      // If no selection, append to end? Or just don't insert.
+      // Usually better to try to insert at end if no focus, or just focus.
+      const length = quill.getLength();
+      quill.insertText(length - 1, symbol);
+    }
+  };
+
+  const SYMBOLS = [
+    { char: '🚨', tooltip: 'Instant Action Required' },
+    { char: '⏳', tooltip: 'Waiting' },
+    { char: '💡', tooltip: 'Good Idea' },
+    { char: '⚠️', tooltip: 'Warning' },
+    { char: '💰', tooltip: 'Money / Financial' },
+    { char: '📉', tooltip: 'Decrease / Loss' },
+    { char: '🤝', tooltip: 'Deal / Agreement' },
+    { char: '🗣️', tooltip: 'Speak / Announce' },
+    { char: '✅', tooltip: 'Complete' },
+    { char: '❌', tooltip: 'Cancel / Fail' },
+  ];
+
   const handleSaveToDo = useCallback(
     async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
       try {
@@ -410,6 +440,21 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
         </div>
         <div className="flex gap-2">
+          {/* Symbol Toolbar */}
+          <div className="flex items-center gap-1 mr-2 border-r border-gray-200 pr-3">
+            {SYMBOLS.map((s) => (
+              <button
+                className="flex items-center justify-center rounded-md p-1.5 text-lg hover:bg-gray-100 transition-colors"
+                key={s.char}
+                onClick={() => handleInsertSymbol(s.char)}
+                title={s.tooltip}
+                type="button"
+              >
+                {s.char}
+              </button>
+            ))}
+          </div>
+
           {/* REWRITE AI BUTTON - Restricted Access */}
           {isAuthorizedFull && (
             <button
@@ -471,8 +516,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           </button>
           <button
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty
-                ? 'bg-gray-800 text-white hover:bg-gray-700'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-gray-800 text-white hover:bg-gray-700'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             disabled={!isDirty}
             onClick={handleSave}>
