@@ -413,7 +413,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           {/* REWRITE AI BUTTON - Restricted Access */}
           {isAuthorizedFull && (
             <button
-              className="flex items-center gap-2 rounded-md bg-pink-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-pink-700 disabled:bg-pink-300"
+              className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
               onClick={handleOpenRewrite}
               title="Advanced AI Rewrite"
               type="button">
@@ -423,27 +423,27 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           )}
 
           <button
-            className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:bg-indigo-300"
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
             onClick={handleRefineAI}
             type="button">
-            <WrenchIcon className="h-4 w-4" />
+            <WrenchIcon className="h-3 w-3" />
             Refine
           </button>
           <button
-            className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:bg-gray-300"
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
             onClick={handleGenerateAI}
-            title="Ask AI">
-            <SparklesIcon className="h-5 w-5" />
-            Ask AI
+            title="Question">
+            <SparklesIcon className="h-3 w-3" />
+            Question
           </button>
 
           {/* To Do Button */}
           <button
-            className="flex items-center gap-2 rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
             onClick={handleOpenToDo}
             title="Create To Do">
             {/* Using ClipboardDocumentListIcon represented as generic SVG here if import fails, but I will import it properly */}
-            <ClipboardDocumentListIcon className="h-5 w-5" />
+            <ClipboardDocumentListIcon className="h-3 w-3" />
             To Do
           </button>
 
@@ -470,7 +470,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
           </button>
           <button
-            className={`rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300'
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty
+                ? 'bg-gray-800 text-white hover:bg-gray-700'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             disabled={!isDirty}
             onClick={handleSave}>
