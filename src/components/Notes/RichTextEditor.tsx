@@ -1,4 +1,5 @@
 import 'quill/dist/quill.snow.css';
+import 'quill-better-table/dist/quill-better-table.css';
 
 import dynamic from 'next/dynamic';
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
@@ -6,8 +7,13 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 /* eslint-disable react-memo/require-memo */
 const ReactQuill = dynamic(
   async () => {
-    const { default: RQ } = await import('react-quill');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { default: RQ, Quill } = await import('react-quill');
+    const { default: BlotFormatter } = await import('quill-blot-formatter');
+    const { default: QuillBetterTable } = await import('quill-better-table');
+
+    Quill.register('modules/blotFormatter', BlotFormatter);
+    Quill.register('modules/better-table', QuillBetterTable);
+
     return ({ forwardedRef, ...props }: any) => <RQ ref={forwardedRef} {...props} />;
   },
   {
@@ -35,6 +41,16 @@ const modules = {
     ['link', 'image'],
     ['clean'],
   ],
+  'better-table': {
+    operationMenu: {
+      items: {
+        unmergeCells: {
+          text: 'Another unmerge cells name',
+        },
+      },
+    },
+  },
+  blotFormatter: {},
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
