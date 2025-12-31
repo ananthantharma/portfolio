@@ -1,8 +1,8 @@
 /* eslint-disable simple-import-sort/imports */
 /* eslint-disable react/jsx-sort-props */
-import { PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
-import { Switch } from '@headlessui/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import {PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon} from '@heroicons/react/24/outline';
+import {Switch} from '@headlessui/react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 interface Attachment {
   _id: string;
@@ -27,7 +27,7 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({ pageId }) => {
+export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({pageId}) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,14 +80,14 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           // 1. Initiate
           const initRes = await fetch('/api/drive/files', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
               action: 'initiate',
               name: file.name,
               type: file.type,
               folderName: 'Portfolio Page Attachments', // Separate folder
-              size: file.size
-            })
+              size: file.size,
+            }),
           });
 
           const initData = await initRes.json();
@@ -113,7 +113,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
             const chunkRes = await fetch('/api/drive/files', {
               method: 'POST',
-              body: chunkFormData
+              body: chunkFormData,
             });
 
             if (!chunkRes.ok) {
@@ -146,7 +146,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
           const saveRes = await fetch('/api/attachments', {
             method: 'POST',
-            body: metaFormData
+            body: metaFormData,
           });
           const saveData = await saveRes.json();
 
@@ -155,7 +155,6 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           } else {
             setError(saveData.error || 'Failed to save attachment metadata');
           }
-
         } else {
           // --- LOCAL UPLOAD FLOW ---
           const formData = new FormData();
@@ -207,7 +206,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this attachment?')) return;
     try {
-      const res = await fetch(`/api/attachments/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/attachments/${id}`, {method: 'DELETE'});
       if (res.ok) {
         setAttachments(prev => prev.filter(a => a._id !== id));
       } else {
@@ -220,8 +219,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
   return (
     <div
-      className={`border-t border-gray-200 p-4 transition-colors ${isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
-        }`}
+      className={`border-t border-gray-200 p-4 transition-colors ${
+        isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
+      }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}>
@@ -235,26 +235,29 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           {/* Drive Toggle */}
           <Switch.Group>
             <div className="flex items-center">
-              <Switch.Label className={`mr-2 text-xs font-medium ${useDriveStorage ? 'text-indigo-600' : 'text-gray-500'}`}>
+              <Switch.Label
+                className={`mr-2 text-xs font-medium ${useDriveStorage ? 'text-indigo-600' : 'text-gray-500'}`}>
                 {useDriveStorage ? 'Save to Drive' : 'Local Storage'}
               </Switch.Label>
               <Switch
                 checked={useDriveStorage}
                 onChange={setUseDriveStorage}
-                className={`${useDriveStorage ? 'bg-indigo-600' : 'bg-gray-200'
-                  } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
-              >
+                className={`${
+                  useDriveStorage ? 'bg-indigo-600' : 'bg-gray-200'
+                } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}>
                 <span
-                  className={`${useDriveStorage ? 'translate-x-5' : 'translate-x-1'
-                    } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
+                  className={`${
+                    useDriveStorage ? 'translate-x-5' : 'translate-x-1'
+                  } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
                 />
               </Switch>
             </div>
           </Switch.Group>
 
           <label
-            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''
-              }`}>
+            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${
+              isUploading ? 'opacity-50 pointer-events-none' : ''
+            }`}>
             {isUploading ? 'Uploading...' : 'Add File'}
             <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
           </label>
@@ -279,17 +282,18 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {attachments.map(file => {
             const isDrive = file.storageType === 'drive';
-            const link = isDrive
-              ? file.webViewLink
-              : `/api/attachments/${file._id}`;
+            const link = isDrive ? file.webViewLink : `/api/attachments/${file._id}`;
 
             return (
               <div
                 key={file._id}
                 className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm group hover:border-indigo-300 transition-colors">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`flex-shrink-0 h-8 w-8 rounded flex items-center justify-center font-bold text-xs uppercase ${isDrive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
-                    {isDrive ? <CloudArrowUpIcon className="h-5 w-5" /> : (file.filename.split('.').pop() || '?')}
+                  <div
+                    className={`flex-shrink-0 h-8 w-8 rounded flex items-center justify-center font-bold text-xs uppercase ${
+                      isDrive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                    {isDrive ? <CloudArrowUpIcon className="h-5 w-5" /> : file.filename.split('.').pop() || '?'}
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate" title={file.filename}>
@@ -305,9 +309,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`p-1.5 rounded transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600 hover:bg-blue-50' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
-                      }`}
-                    title={isDrive ? "Open in Drive" : "Download"}>
+                    className={`p-1.5 rounded transition-colors ${
+                      isDrive
+                        ? 'text-blue-400 hover:text-blue-600 hover:bg-blue-50'
+                        : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                    title={isDrive ? 'Open in Drive' : 'Download'}>
                     <ArrowDownTrayIcon className="h-4 w-4" />
                   </a>
                   <button

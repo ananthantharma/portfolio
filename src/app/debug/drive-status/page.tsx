@@ -1,52 +1,51 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 interface DebugStatusData {
-    sessionEmail?: string;
-    dbAccountFound?: boolean;
-    hasAccessToken?: boolean;
-    hasRefreshToken?: boolean;
-    tokenExpiresAt?: string | number;
-    tokenScopeInDB?: string;
-    driveApiStatus?: string;
-    driveUser?: unknown;
-    driveError?: string;
-    driveErrorCode?: unknown;
-    driveErrorResponse?: unknown;
-    error?: string;
+  sessionEmail?: string;
+  dbAccountFound?: boolean;
+  hasAccessToken?: boolean;
+  hasRefreshToken?: boolean;
+  tokenExpiresAt?: string | number;
+  tokenScopeInDB?: string;
+  driveApiStatus?: string;
+  driveUser?: unknown;
+  driveError?: string;
+  driveErrorCode?: unknown;
+  driveErrorResponse?: unknown;
+  error?: string;
 }
 
 export default function DriveDebugPage() {
-    const [data, setData] = useState<DebugStatusData | null>(null);
-    const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<DebugStatusData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetch('/api/debug/drive-status')
-            .then(res => res.json())
-            .then(setData)
-            .catch(err => setData({ error: err.message }))
-            .finally(() => setLoading(false));
-    }, []);
+  useEffect(() => {
+    fetch('/api/debug/drive-status')
+      .then(res => res.json())
+      .then(setData)
+      .catch(err => setData({error: err.message}))
+      .finally(() => setLoading(false));
+  }, []);
 
-    return (
-        <div className="p-10 font-mono text-sm">
-            <h1 className="text-2xl font-bold mb-4">Google Drive Debug Status</h1>
-            {loading ? (
-                <div>Loading...</div>
-            ) : (
-                <pre className="bg-gray-100 p-4 rounded overflow-auto border border-gray-300">
-                    {JSON.stringify(data, null, 2)}
-                </pre>
-            )}
-            <div className="mt-4">
-                <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    onClick={() => window.location.reload()}
-                >
-                    Refresh Status
-                </button>
-            </div>
-        </div>
-    );
+  return (
+    <div className="p-10 font-mono text-sm">
+      <h1 className="text-2xl font-bold mb-4">Google Drive Debug Status</h1>
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <pre className="bg-gray-100 p-4 rounded overflow-auto border border-gray-300">
+          {JSON.stringify(data, null, 2)}
+        </pre>
+      )}
+      <div className="mt-4">
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={() => window.location.reload()}>
+          Refresh Status
+        </button>
+      </div>
+    </div>
+  );
 }

@@ -1,7 +1,7 @@
-import { NextPage } from 'next';
+import {NextPage} from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { memo, PropsWithChildren } from 'react';
+import {useRouter} from 'next/router';
+import {memo, PropsWithChildren} from 'react';
 
 // Replace this with your own local types or a simple interface
 interface PageProps {
@@ -9,9 +9,8 @@ interface PageProps {
   description: string;
 }
 
-const Page: NextPage<PropsWithChildren<PageProps>> = memo(({ children, title, description }) => {
-  const { asPath: pathname } = useRouter();
-
+const Page: NextPage<PropsWithChildren<PageProps>> = memo(({children, title, description}) => {
+  const {asPath: pathname} = useRouter();
 
   const siteUrl = 'www.ananthan.org';
 

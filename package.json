@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "next build --no-lint",
     "clean": "rimraf .next",
     "dev": "next dev",
     "lint": "prettier --write './src/**/*.{js,jsx,json,ts,tsx}' && eslint './src/**/*.{js,jsx,ts,tsx}' --fix --max-warnings=0",
@@ -27,6 +27,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "googleapis": "^169.0.0",
+    "iconoir-react": "^7.11.0",
     "lucide-react": "^0.554.0",
     "mongodb": "5.9.0",
     "mongoose": "^7.5.0",

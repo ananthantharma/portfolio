@@ -1,8 +1,8 @@
 'use client';
 /* eslint-disable simple-import-sort/imports */
-import { AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload, Trash2 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import React, { useEffect, useRef, useState } from 'react';
+import {AlertCircle, Download, Eye, FileText, Folder, Image as ImageIcon, Loader2, Upload, Trash2} from 'lucide-react';
+import {useSession} from 'next-auth/react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import Header from '@/components/Sections/Header';
 
@@ -26,14 +26,14 @@ interface Breadcrumb {
 }
 
 export default function DrivePage() {
-  const { status } = useSession();
+  const {status} = useSession();
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const [currentFolder, setCurrentFolder] = useState<string>('root');
-  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([{ id: 'root', name: 'My Drive' }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([{id: 'root', name: 'My Drive'}]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +70,7 @@ export default function DrivePage() {
 
   const handleFolderClick = (folderId: string, folderName: string) => {
     setCurrentFolder(folderId);
-    setBreadcrumbs(prev => [...prev, { id: folderId, name: folderName }]);
+    setBreadcrumbs(prev => [...prev, {id: folderId, name: folderName}]);
   };
 
   const handleBreadcrumbClick = (folderId: string, index: number) => {
@@ -223,8 +223,9 @@ export default function DrivePage() {
             <div className="flex gap-2">
               <input className="hidden" onChange={handleUpload} ref={fileInputRef} type="file" />
               <button
-                className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors ${
+                  uploading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
                 disabled={uploading}
                 onClick={() => fileInputRef.current?.click()}>
                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -238,10 +239,10 @@ export default function DrivePage() {
             {breadcrumbs.map((crumb, index) => (
               <React.Fragment key={crumb.id}>
                 <button
-                  className={`text-sm hover:text-white transition-colors ${index === breadcrumbs.length - 1 ? 'text-white font-bold' : 'text-slate-400'
-                    }`}
-                  onClick={() => handleBreadcrumbClick(crumb.id, index)}
-                >
+                  className={`text-sm hover:text-white transition-colors ${
+                    index === breadcrumbs.length - 1 ? 'text-white font-bold' : 'text-slate-400'
+                  }`}
+                  onClick={() => handleBreadcrumbClick(crumb.id, index)}>
                   {crumb.name}
                 </button>
                 {index < breadcrumbs.length - 1 && <span className="text-slate-600">/</span>}
@@ -270,11 +271,11 @@ export default function DrivePage() {
               const isFolder = file.mimeType === 'application/vnd.google-apps.folder';
               return (
                 <div
-                  className={`bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:border-indigo-500/50 transition-all group relative ${isFolder ? 'cursor-pointer hover:bg-neutral-800' : ''
-                    }`}
+                  className={`bg-neutral-900 border border-neutral-800 rounded-xl p-4 hover:border-indigo-500/50 transition-all group relative ${
+                    isFolder ? 'cursor-pointer hover:bg-neutral-800' : ''
+                  }`}
                   key={file.id}
-                  onClick={() => isFolder && handleFolderClick(file.id, file.name)}
-                >
+                  onClick={() => isFolder && handleFolderClick(file.id, file.name)}>
                   <div className="flex items-start justify-between mb-3">
                     <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-colors">
                       {getIcon(file.mimeType)}
@@ -284,7 +285,7 @@ export default function DrivePage() {
                         <a
                           className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
                           href={file.webViewLink}
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={e => e.stopPropagation()}
                           rel="noopener noreferrer"
                           target="_blank"
                           title="View in Drive">
@@ -294,14 +295,14 @@ export default function DrivePage() {
                           <a
                             className="p-1.5 hover:bg-neutral-700 rounded-md text-slate-400 hover:text-white"
                             href={file.webContentLink}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
                             title="Download">
                             <Download className="w-4 h-4" />
                           </a>
                         )}
                         <button
                           className="p-1.5 hover:bg-red-900/50 rounded-md text-slate-400 hover:text-red-400"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             handleDelete(file.id);
                           }}
