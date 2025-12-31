@@ -1,23 +1,24 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import React, {useState, useEffect, useCallback} from 'react';
-import {useSession} from 'next-auth/react';
-import {useRouter} from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import InvoiceScanner from '@/components/Invoices/InvoiceScanner';
 import InvoiceList from '@/components/Invoices/InvoiceList';
+import AccessDenied from '@/components/AccessDenied';
 
 import Header from '@/components/Sections/Header';
 
 export default function SmartInvoicesPage() {
-  const {status} = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Dashboard State
   const [selectedYear, setSelectedYear] = useState<string>('All');
   const [availableYears, setAvailableYears] = useState<string[]>([]);
-  const [stats, setStats] = useState({amount: 0, tax: 0});
+  const [stats, setStats] = useState({ amount: 0, tax: 0 });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -30,7 +31,7 @@ export default function SmartInvoicesPage() {
     setRefreshTrigger(prev => prev + 1);
   }, []);
 
-  const handleStatsUpdate = useCallback((newStats: {amount: number; tax: number}) => {
+  const handleStatsUpdate = useCallback((newStats: { amount: number; tax: number }) => {
     setStats(newStats);
   }, []);
 
@@ -50,6 +51,10 @@ export default function SmartInvoicesPage() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
       </div>
     );
+  }
+
+  if (status === 'authenticated' && !(session?.user as any).invoiceEnabled) {
+    return <AccessDenied message="Access Denied. You do not have permission to access Invoices. Please contact Ananthan." />;
   }
 
   return (
@@ -88,21 +93,19 @@ export default function SmartInvoicesPage() {
         {availableYears.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <button
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                selectedYear === 'All'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                  : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === 'All'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                }`}
               onClick={() => setSelectedYear('All')}>
               All Time
             </button>
             {availableYears.map(year => (
               <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedYear === year
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                    : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === year
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                  }`}
                 key={year}
                 onClick={() => setSelectedYear(year)}>
                 {year}

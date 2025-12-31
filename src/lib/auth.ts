@@ -92,6 +92,27 @@ export const authOptions: AuthOptions = {
                 console.log('NextAuth Session: No Google account found for user', user.id);
             }
 
+            // Fetch User Permissions
+            const dbUser = await db.collection('users').findOne({
+                _id: new (await import('mongodb')).ObjectId(user.id),
+            });
+
+            if (dbUser) {
+                // Default Permissions for Admin (lankanprinze@gmail.com)
+                const isAdmin = dbUser.email?.toLowerCase() === 'lankanprinze@gmail.com';
+
+                session.user = {
+                    ...session.user,
+                    googleApiEnabled: isAdmin ? true : dbUser.googleApiEnabled || false,
+                    openAiApiEnabled: isAdmin ? true : dbUser.openAiApiEnabled || false,
+                    notesEnabled: isAdmin ? true : dbUser.notesEnabled || false,
+                    secureLoginEnabled: isAdmin ? true : dbUser.secureLoginEnabled || false, // Vault
+                    financeEnabled: isAdmin ? true : dbUser.financeEnabled || false,
+                    invoiceEnabled: isAdmin ? true : dbUser.invoiceEnabled || false,
+                    id: user.id
+                };
+            }
+
             return session;
         },
     },
