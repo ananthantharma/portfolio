@@ -20,7 +20,16 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
                     { status: 403 }
                 );
             }
-            key = process.env.GOOGLE_API_KEY || '';
+
+            const envKey = process.env.GOOGLE_API_KEY;
+            if (!envKey) {
+                console.error('Server Error: GOOGLE_API_KEY is not defined in environment variables.');
+                return NextResponse.json(
+                    { error: 'Server Configuration Error: Managed Google API Key is not configured.' },
+                    { status: 500 }
+                );
+            }
+            key = envKey;
         }
 
         // Construct target URL
@@ -28,7 +37,13 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
         url.searchParams.forEach((value, name) => {
             if (name !== 'key') targetUrl.searchParams.append(name, value);
         });
-        if (key) targetUrl.searchParams.append('key', key);
+
+        // Explicitly append key if it exists
+        if (key) {
+            targetUrl.searchParams.set('key', key);
+        }
+
+        console.log(`Proxying request to: ${targetUrl.origin}${targetUrl.pathname}`); // Don't log full URL with key
 
         // Prepare headers
         const headers = new Headers();
@@ -50,6 +65,12 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Google API Proxy Error:', response.status, data);
+            return NextResponse.json(data, { status: response.status });
+        }
+
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
         console.error('Proxy Error:', error);
