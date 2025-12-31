@@ -30,6 +30,7 @@ import PageList from './PageList';
 import SearchModal from './SearchModal';
 import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
+import UserProfileMenu from '../UserProfileMenu';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -518,6 +519,15 @@ const NotesLayout: React.FC = React.memo(() => {
             <UsersIcon className="h-3.5 w-3.5" />
             Contacts
           </button>
+
+
+          <div className="h-4 w-px bg-gray-200"></div>
+
+          {/* User Profile Menu */}
+          <div className="flex items-center">
+            <UserProfileMenu />
+          </div>
+
           <div className="h-4 w-px bg-gray-200"></div>
 
           {/* Restricted Buttons */}
@@ -647,7 +657,7 @@ const NotesLayout: React.FC = React.memo(() => {
       />
       <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
       <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
-    </div>
+    </div >
   );
 });
 
