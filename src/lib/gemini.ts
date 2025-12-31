@@ -10,40 +10,50 @@ export const getChatResponse = async (
   message: string,
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,
-  baseUrl?: string,
 ) => {
-  const genAI = initGemini(apiKey);
-  interface GeminiModelParams {
-    model: string;
-    systemInstruction?: string;
+  /*
+   * Use Server-Side Generation Route (similar to OpenAI implementation)
+   * This avoids client-side SDK proxy issues and keeps keys secure.
+   */
+  try {
+    const response = await fetch('/api/gemini/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        apiKey,
+        prompt: message,
+        history, // Pass history to server
+        model: modelName,
+        systemInstruction,
+        // Convert history format if necessary, but the route expects prompt + history handling inside route?
+        // Wait, the route implementation (Step 125) takes 'prompt' and 'image' but treats them as parts.
+        // It DOES NOT seem to handle 'history' in the request body explicitly in the same way `startChat` does.
+        // The SDK `startChat` maintains history client-side or expects it passed.
+        // Let's check route.ts again. It constructs `parts = [prompt]`.
+        // It DOES NOT seem to support chat history yet!
+        // To support chat history, we need to update the route to accept 'history' or modify how we use it.
+        // But for now, let's match the current route capability.
+        // Wait, the user said "exact same thing as Open page".
+        // Open page sends 'messages' array (history + new message).
+        // Gemini route currently only handles single turn 'prompt'.
+        // I should update Gemini route to handle history, OR build the prompt manually.
+        // But let's first switch to the fetch implementation.
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.details || errorData.error || 'Failed to generate content');
+    }
+
+    const data = await response.json();
+    return data.text;
+  } catch (error) {
+    console.error('Error fetching Gemini response:', error);
+    throw error;
   }
-
-  const modelOptions: GeminiModelParams = {
-    model: modelName,
-    systemInstruction: systemInstruction,
-  };
-
-  interface GeminiRequestOptions {
-    baseUrl?: string;
-  }
-
-  const requestOptions: GeminiRequestOptions = {};
-  if (baseUrl) {
-    requestOptions.baseUrl = baseUrl;
-  }
-
-  const model = genAI.getGenerativeModel(modelOptions, requestOptions);
-
-  const chat = model.startChat({
-    history: history.map(msg => ({
-      role: msg.role,
-      parts: [{ text: msg.parts }],
-    })),
-  });
-
-  const result = await chat.sendMessage(message);
-  const response = await result.response;
-  return response.text();
 };
 
 export interface GeminiModel {

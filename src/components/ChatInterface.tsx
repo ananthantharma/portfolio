@@ -192,7 +192,6 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         userMessage,
         selectedModel,
         systemInstruction,
-        '/api/proxy',
       );
 
       updateCurrentSession(s => ({

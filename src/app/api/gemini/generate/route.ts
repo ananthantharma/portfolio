@@ -8,14 +8,18 @@ export async function POST(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body = await req.json();
     let { apiKey } = body;
-    const { prompt, model: requestedModel, systemInstruction, image, mimeType } = body;
-
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
       if (!session || !(session.user as any).googleApiEnabled) {
         return NextResponse.json({ error: 'Access Denied: You do not have permission to use the managed Google API key.' }, { status: 403 });
       }
       apiKey = process.env.GOOGLE_API_KEY;
+    } else if (apiKey === 'GEMINI_SCOPED') {
+      const session = await getServerSession(authOptions);
+      if (!session || !(session.user as any).googleApiEnabled) {
+        return NextResponse.json({ error: 'Access Denied: You do not have permission to use the managed Gemini API key.' }, { status: 403 });
+      }
+      apiKey = process.env.Gemini_Key;
     }
 
     if (!apiKey) {
@@ -39,6 +43,27 @@ export async function POST(req: Request) {
     }
 
     const model = genAI.getGenerativeModel(modelParams);
+
+    // Check if we have history to start a chat session
+    if (history && Array.isArray(history)) {
+      const chat = model.startChat({
+        history: history.map((msg: any) => ({
+          role: msg.role,
+          parts: [{ text: msg.parts }], // Adjust based on how history is passed (string vs parts)
+        })),
+      });
+
+      const result = await chat.sendMessage(prompt);
+      const response = await result.response;
+      const text = response.text();
+      return NextResponse.json({ text });
+    }
+
+    // Default to single-turn generation (legacy behavior or image input)
+    // NOTE: Image input with chat history is trickier. For now, prioritize text chat history.
+    // If image is present, we likely want to use generateContent or add it to the chat message?
+    // Let's keep existing image logic for single turn if image exists, OR handle image in chat.
+    // Given the previous code, image logic was single turn.
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let parts: any[] = [prompt];
