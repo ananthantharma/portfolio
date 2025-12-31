@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
 import NoteCategory from '@/models/NoteCategory';
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 

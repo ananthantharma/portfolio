@@ -1,25 +1,25 @@
-import {NextResponse} from 'next/server';
-import {getServerSession} from 'next-auth';
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 
-import {authOptions} from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const {searchParams} = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
 
   if (!domain) {
-    return NextResponse.json({error: 'Domain is required'}, {status: 400});
+    return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
   }
 
   const apiKey = process.env.BRANDFETCH_API_KEY;
   if (!apiKey) {
     console.error('BRANDFETCH_API_KEY is not configured');
-    return NextResponse.json({error: 'Server configuration error'}, {status: 500});
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
   }
 
   try {
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
         // Verify if the Brandfetch URL is actually accessible (HEAD check)
         // because sometimes it returns 404 or requires strict hotlinking which fails even on redirect
         try {
-          const headCheck = await fetch(match.icon, {method: 'HEAD'});
+          const headCheck = await fetch(match.icon, { method: 'HEAD' });
           const contentType = headCheck.headers.get('content-type');
 
           if (headCheck.ok && contentType && contentType.startsWith('image/')) {
