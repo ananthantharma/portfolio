@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const uploadedFile = files.file?.[0];
         const apiKeyParam = fields.apiKey?.[0];
+        const modelName = fields.model?.[0] || 'gemini-flash-latest';
 
         if (!uploadedFile) {
             return res.status(400).json({ error: 'No file provided' });
@@ -113,7 +114,7 @@ ${text.slice(0, 30000)}
 `;
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const result = await model.generateContent(PROMPT);
         const response = await result.response;
