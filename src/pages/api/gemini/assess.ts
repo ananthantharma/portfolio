@@ -57,9 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         try {
             if (fileType === 'pdf') {
-                const pdfParser = new PDFParser(null, 1);
+                const pdfParser = new PDFParser(null, true);
                 text = await new Promise((resolve, reject) => {
-                    pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+                    pdfParser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
                     pdfParser.on("pdfParser_dataReady", () => {
                         resolve(pdfParser.getRawTextContent());
                     });
