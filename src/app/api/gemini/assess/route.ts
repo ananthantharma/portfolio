@@ -3,10 +3,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import mammoth from 'mammoth';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import pdfParse from 'pdf-parse';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfParse = require('pdf-parse');
 import * as XLSX from 'xlsx';
 
-import { authOptions } from '@/pages/api/auth/[...nextauth]';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
     try {

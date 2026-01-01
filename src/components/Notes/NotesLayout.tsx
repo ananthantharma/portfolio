@@ -544,10 +544,6 @@ const NotesLayout: React.FC = React.memo(() => {
               <button
                 className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
                 onClick={handleOpenImageExtract}
-              </button>
-              <button
-                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-                onClick={handleOpenImageExtract}
                 title="Extract Text from Image">
                 <PhotoIcon className="h-3.5 w-3.5" />
                 OCR
