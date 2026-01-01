@@ -24,6 +24,7 @@ import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
+import AssessmentModal from './AssessmentModal';
 import ImageExtractionModal from './ImageExtractionModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
@@ -458,6 +459,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenImageExtract = useCallback(() => setIsImageExtractOpen(true), []);
   const handleCloseImageExtract = useCallback(() => setIsImageExtractOpen(false), []);
 
+  // Assessment Modal
+  const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
+  const handleOpenAssessment = useCallback(() => setIsAssessmentOpen(true), []);
+  const handleCloseAssessment = useCallback(() => setIsAssessmentOpen(false), []);
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
       {/* Top Navigation / Breadcrumbs Bar */}
@@ -538,9 +544,30 @@ const NotesLayout: React.FC = React.memo(() => {
               <button
                 className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
                 onClick={handleOpenImageExtract}
+              </button>
+              <button
+                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                onClick={handleOpenImageExtract}
                 title="Extract Text from Image">
                 <PhotoIcon className="h-3.5 w-3.5" />
                 OCR
+              </button>
+              <button
+                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
+                onClick={handleOpenAssessment}
+                title="Document Assessment">
+                {/* Using ClipboardDocumentListIcon as placeholder or need new icon. DocumentTextIcon is used in modal. */}
+                {/* Re-using ClipboardDocumentListIcon or importing DocumentTextIcon would be better. */}
+                {/* Let's use generic PenciSquare logic or Photo. I'll use ClipboardDocumentListIcon for now OR import DocumentTextIcon from outline above. */}
+                {/* Wait, DocumentTextIcon is NOT imported in NotesLayout. import it? */}
+                {/* I will use ClipboardDocumentListIcon which IS imported, but it's used for Tasks. */}
+                {/* Let's verify imports. DocumentTextIcon is NOT in imports. */}
+                {/* I'll use PhotoIcon temporarily OR I can add DocumentTextIcon to imports. */}
+                {/* Better to add DocumentTextIcon to imports. */}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                Assessment
               </button>
             </>
           )}
@@ -660,6 +687,7 @@ const NotesLayout: React.FC = React.memo(() => {
       />
       <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
       <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
+      <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
     </div >
   );
 });
