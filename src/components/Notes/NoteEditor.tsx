@@ -444,7 +444,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           <div className="flex items-center gap-1 mr-2 border-r border-gray-200 pr-3">
             {SYMBOLS.map((s) => (
               <button
-                className="flex items-center justify-center rounded-md p-1.5 text-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center justify-center rounded-md p-1.5 text-lg transition-all grayscale hover:bg-gray-100 hover:grayscale-0"
                 key={s.char}
                 onClick={() => handleInsertSymbol(s.char)}
                 title={s.tooltip}
