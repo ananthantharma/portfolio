@@ -1,70 +1,84 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import formidable from 'formidable';
+import fs from 'fs';
 import mammoth from 'mammoth';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse = require('pdf-parse');
 import * as XLSX from 'xlsx';
 
 import { authOptions } from '@/lib/auth';
 
-export async function POST(req: Request) {
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     try {
-        const formData = await req.formData();
-        const file = formData.get('file') as File;
-        const apiKeyParam = formData.get('apiKey') as string;
-
-        if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        const session = await getServerSession(req, res, authOptions);
+        if (!session || !(session.user as any).googleApiEnabled) {
+            return res.status(403).json({ error: 'Unauthorized' });
         }
 
-        // Auth Check
-        const session = await getServerSession(authOptions);
-        if (!session || !(session.user as any).googleApiEnabled) { // Re-using permission check
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        const form = formidable({});
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [fields, files] = await form.parse(req);
+
+        const uploadedFile = files.file?.[0];
+        const apiKeyParam = fields.apiKey?.[0];
+
+        if (!uploadedFile) {
+            return res.status(400).json({ error: 'No file provided' });
         }
 
-        // Determine Key
         let apiKey = process.env.GOOGLE_API_KEY;
         if (apiKeyParam === 'GEMINI_SCOPED') {
             apiKey = process.env.Gemini_Key;
         }
 
         if (!apiKey) {
-            return NextResponse.json({ error: 'API Key not configured' }, { status: 500 });
+            return res.status(500).json({ error: 'API Key not configured' });
         }
 
-        // Extract Text
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        const fileBuffer = fs.readFileSync(uploadedFile.filepath);
         let text = '';
-        const fileType = file.name.split('.').pop()?.toLowerCase();
+
+        // Determine file type from original filename
+        const originalFilename = uploadedFile.originalFilename || '';
+        const fileType = originalFilename.split('.').pop()?.toLowerCase();
 
         try {
             if (fileType === 'pdf') {
-                const data = await pdfParse(buffer);
+                const data = await pdfParse(fileBuffer);
                 text = data.text;
             } else if (fileType === 'docx') {
-                const result = await mammoth.extractRawText({ buffer });
+                const result = await mammoth.extractRawText({ buffer: fileBuffer });
                 text = result.value;
             } else if (fileType === 'xlsx') {
-                const workbook = XLSX.read(buffer, { type: 'buffer' });
-                // Extract text from all sheets
+                const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
                 workbook.SheetNames.forEach(sheetName => {
                     const sheet = workbook.Sheets[sheetName];
                     text += XLSX.utils.sheet_to_txt(sheet) + '\n';
                 });
             } else {
-                return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
+                return res.status(400).json({ error: 'Unsupported file type' });
             }
         } catch (extractionError) {
             console.error('Text extraction failed:', extractionError);
-            return NextResponse.json({ error: 'Failed to extract text from document.' }, { status: 500 });
+            return res.status(500).json({ error: 'Failed to extract text from document.' });
         }
 
         if (!text || text.trim().length === 0) {
-            return NextResponse.json({ error: 'No text content found in document.' }, { status: 400 });
+            return res.status(400).json({ error: 'No text content found in document.' });
         }
 
         // Gemini Analysis
@@ -90,20 +104,20 @@ Task: Act as a Senior Procurement Manager and Financial Analyst. Review the docu
 Output Format: Please provide the table first, followed by the multi-year breakdown, and conclude with the "Leader's Lens" executive summary.
 
 DOCUMENT CONTENT:
-${text.slice(0, 30000)} // Limit context if too large, but Gemini Flash 1.5 has large context window.
+${text.slice(0, 30000)}
 `;
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }); // Use 1.5 flash for large context support
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
         const result = await model.generateContent(PROMPT);
         const response = await result.response;
         const analysisText = response.text();
 
-        return NextResponse.json({ text: analysisText });
+        return res.status(200).json({ text: analysisText });
 
     } catch (error) {
         console.error('Assessment error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
 }
