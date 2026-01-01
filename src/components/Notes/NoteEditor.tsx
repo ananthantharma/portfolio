@@ -26,31 +26,36 @@ import { INotePage } from '@/models/NotePage';
 import RichTextEditor from './RichTextEditor';
 
 import ToDoModal from './ToDoModal';
+import ReactMarkdown from 'react-markdown';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const ORGANIZE_PROMPT = `
+The Fixed "Quill-Ready" Note Prompt
 Role: Act as a professional Executive Assistant and Editor.
 
-Task: I am going to provide a set of raw, unorganized, and "rushed" notes. Your goal is to transform them into a polished, structured document that is easy to read and reference.
+Task: I am going to provide a set of raw, unorganized notes. Please transform them into a polished, structured document that is easy to read and reference.
 
-Quill JS Compatibility Requirement: * Output the result in clean Markdown.
+Quill JS Compatibility: * Output in standard Markdown.
 
-Use only standard formatting (Headings, Bold, Bullet Points) to ensure it pastes perfectly into a Quill JS text editor without losing structure or creating weird spacing.
+Avoid horizontal rules (--- or ***). Instead, use clear bold headers and spacing to separate sections.
+
+Use only standard bullet points and bold text.
 
 Formatting Requirements:
 
-Thematic Headings: Group related points under clear, bolded headings (using ## or ###). Organize them logically by topic, not the order I wrote them.
+Thematic Headings: Group related points under clear, bolded headings (e.g., The Situation, History & Context, Target Solution).
 
-Bullet Points: Use clean bullet points. Bold key terms, names, or critical deadlines.
+Bullet Points: Use clean bullet points. Bold key names, systems, and costs.
 
-Action Items: Create a separate section at the bottom titled "Next Steps/Action Items."
+Action Items: Create a separate section at the bottom titled Next Steps/Action Items.
 
-Action Triggers: Use the exact string 🔴‼️💥ACTION💥‼️🔴 at the start of any line that requires a follow-up task.
+Action Triggers: Use the exact string 🔴‼️💥ACTION💥‼️🔴 at the end of any line that requires follow-up.
 
-Tone: Casual but professional (work-appropriate) and highly scannable.
+Tone: Casual but professional. It should sound like a helpful summary for a teammate—clear and direct, not overly formal or robotic.
 
-Clean Up: Fix typos and shorthand while maintaining the technical meaning.
+Clean Up: Fix shorthand (e.g., "form" to "from") and ensure technical clarity.
 `;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
@@ -86,6 +91,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
   const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
 
   // Rewrite Modal State
@@ -248,6 +254,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
+    setIsMarkdownResponse(false);
 
     const fullPrompt = `${REFINE_PROMPT}\n\n"${text}"`;
 
@@ -324,6 +331,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
+    setIsMarkdownResponse(true);
 
     const fullPrompt = `${ORGANIZE_PROMPT}\n\n"${text}"`;
 
@@ -409,6 +417,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
+    setIsMarkdownResponse(false);
 
     try {
       const response = await fetch('/api/gemini/generate', {
@@ -442,8 +451,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quill: any = quillRef.current?.getEditor();
     if (quill && insertionRange) {
-      quill.deleteText(insertionRange.index, insertionRange.length);
-      quill.insertText(insertionRange.index, generatedText);
+      if (isMarkdownResponse) {
+        // Convert Markdown to HTML for insertion
+        const htmlContent = renderToStaticMarkup(<ReactMarkdown>{generatedText}</ReactMarkdown>);
+        quill.deleteText(insertionRange.index, insertionRange.length);
+        quill.clipboard.dangerouslyPasteHTML(insertionRange.index, htmlContent);
+      } else {
+        quill.deleteText(insertionRange.index, insertionRange.length);
+        quill.insertText(insertionRange.index, generatedText);
+      }
     } else {
       alert('Could not insert text. Lost selection context.');
     }
@@ -690,8 +706,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                         <p className="mt-2 text-sm text-gray-500">Thinking...</p>
                       </div>
                     ) : (
-                      <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-60 overflow-y-auto whitespace-pre-wrap text-sm text-gray-800">
-                        {generatedText}
+                      <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-60 overflow-y-auto w-full">
+                        {isMarkdownResponse ? (
+                          <div className="prose prose-sm w-full max-w-none">
+                            <ReactMarkdown>{generatedText}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <div className="whitespace-pre-wrap text-sm text-gray-800">{generatedText}</div>
+                        )}
                       </div>
                     )}
                   </div>
