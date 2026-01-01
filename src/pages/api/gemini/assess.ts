@@ -113,7 +113,7 @@ ${text.slice(0, 30000)}
 `;
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
         const result = await model.generateContent(PROMPT);
         const response = await result.response;
