@@ -5,8 +5,7 @@ import fs from 'fs';
 import mammoth from 'mammoth';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParse = require('pdf-parse');
+import PDFParser from 'pdf2json';
 import * as XLSX from 'xlsx';
 
 import { authOptions } from '@/lib/auth';
@@ -58,8 +57,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         try {
             if (fileType === 'pdf') {
-                const data = await pdfParse(fileBuffer);
-                text = data.text;
+                const pdfParser = new PDFParser(null, 1);
+                text = await new Promise((resolve, reject) => {
+                    pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+                    pdfParser.on("pdfParser_dataReady", () => {
+                        resolve(pdfParser.getRawTextContent());
+                    });
+                    pdfParser.parseBuffer(fileBuffer);
+                });
             } else if (fileType === 'docx') {
                 const result = await mammoth.extractRawText({ buffer: fileBuffer });
                 text = result.value;
