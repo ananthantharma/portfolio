@@ -29,7 +29,29 @@ import ToDoModal from './ToDoModal';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
-const ORGANIZE_PROMPT = 'System: You are an expert organizer. Analyze the selected text and restructure it into a well-organized format using headers, bullet points, and numbered lists where appropriate. Group related concepts together. Keep the tone professional and clear. Return ONLY the organized content.';
+const ORGANIZE_PROMPT = `
+Role: Act as a professional Executive Assistant and Editor.
+
+Task: I am going to provide a set of raw, unorganized, and "rushed" notes. Your goal is to transform them into a polished, structured document that is easy to read and reference.
+
+Quill JS Compatibility Requirement: * Output the result in clean Markdown.
+
+Use only standard formatting (Headings, Bold, Bullet Points) to ensure it pastes perfectly into a Quill JS text editor without losing structure or creating weird spacing.
+
+Formatting Requirements:
+
+Thematic Headings: Group related points under clear, bolded headings (using ## or ###). Organize them logically by topic, not the order I wrote them.
+
+Bullet Points: Use clean bullet points. Bold key terms, names, or critical deadlines.
+
+Action Items: Create a separate section at the bottom titled "Next Steps/Action Items."
+
+Action Triggers: Use the exact string 🔴‼️💥ACTION💥‼️🔴 at the start of any line that requires a follow-up task.
+
+Tone: Casual but professional (work-appropriate) and highly scannable.
+
+Clean Up: Fix typos and shorthand while maintaining the technical meaning.
+`;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
