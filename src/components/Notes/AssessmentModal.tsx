@@ -14,6 +14,7 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({ isOpen, onClose }) =>
     const [file, setFile] = useState<File | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [result, setResult] = useState<string>('');
+    const [useProModel, setUseProModel] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,6 +33,7 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({ isOpen, onClose }) =>
         const formData = new FormData();
         formData.append('file', file);
         formData.append('apiKey', 'GEMINI_SCOPED'); // Use the scoped key
+        formData.append('model', useProModel ? 'gemini-pro-latest' : 'gemini-flash-latest');
 
         try {
             const response = await fetch('/api/gemini/assess', {
@@ -120,12 +122,25 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({ isOpen, onClose }) =>
                                         </label>
                                     </div>
 
+                                    {/* Options */}
+                                    <div className="flex items-center justify-end gap-2">
+                                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={useProModel}
+                                                onChange={(e) => setUseProModel(e.target.checked)}
+                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            />
+                                            Use Pro Model (gemini-pro-latest) - Slower but more detailed
+                                        </label>
+                                    </div>
+
                                     {/* Actions */}
                                     <div className="flex justify-end">
                                         <button
                                             className={`flex items-center gap-2 rounded-md px-4 py-2 text-white font-medium transition-colors ${!file || isAnalyzing
-                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                    : 'bg-indigo-600 hover:bg-indigo-700 shadow-sm'
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-sm'
                                                 }`}
                                             disabled={!file || isAnalyzing}
                                             onClick={handleAnalyze}
