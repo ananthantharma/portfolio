@@ -11,6 +11,7 @@ import {
   FlagIcon,
   SparklesIcon,
   WrenchIcon,
+  QueueListIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -27,6 +28,8 @@ import RichTextEditor from './RichTextEditor';
 import ToDoModal from './ToDoModal';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
+
+const ORGANIZE_PROMPT = 'System: You are an expert organizer. Analyze the selected text and restructure it into a well-organized format using headers, bullet points, and numbered lists where appropriate. Group related concepts together. Keep the tone professional and clear. Return ONLY the organized content.';
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
@@ -258,6 +261,82 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
   };
 
+  const handleOrganizeAI = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quillComponent: any = quillRef.current;
+
+    if (!quillComponent) return;
+
+    let quill;
+    try {
+      quill = quillComponent.getEditor();
+    } catch (e) {
+      console.error('Error getting editor from ref:', e);
+    }
+
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    let text = '';
+
+    if (range && range.length > 0) {
+      text = quill.getText(range.index, range.length);
+    } else {
+      const windowSelection = window.getSelection();
+      if (windowSelection && windowSelection.toString().length > 0) {
+        text = windowSelection.toString();
+      }
+    }
+
+    if (!text || text.trim().length === 0) {
+      alert('Please select some text to organize.');
+      return;
+    }
+
+    if (range) {
+      setInsertionRange(range);
+    } else {
+      setInsertionRange(null);
+    }
+
+    setIsModalOpen(true);
+    setIsGenerating(true);
+    setGeneratedText('');
+
+    const fullPrompt = `${ORGANIZE_PROMPT}\n\n"${text}"`;
+
+    try {
+      const response = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          model: 'gemini-flash-latest',
+          apiKey: 'MANAGED',
+        }),
+      });
+      const data = await response.json();
+      console.log('Organize AI Response:', data);
+
+      if (!response.ok) {
+        console.error('Organize AI Error Details:', data);
+        setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
+        return;
+      }
+
+      if (data.text) {
+        setGeneratedText(data.text);
+      } else {
+        setGeneratedText('Failed to organize content.');
+      }
+    } catch (error) {
+      console.error(error);
+      setGeneratedText('Error connecting to Gemini.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleGenerateAI = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillComponent: any = quillRef.current;
@@ -454,6 +533,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               </button>
             ))}
           </div>
+
+          {/* Organize Button */}
+          <button
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
+            onClick={handleOrganizeAI}
+            title="Organize Content"
+            type="button">
+            <QueueListIcon className="h-4 w-4" />
+            Organize
+          </button>
 
           {/* REWRITE AI BUTTON - Restricted Access */}
           {isAuthorizedFull && (
