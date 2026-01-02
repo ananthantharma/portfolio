@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 
 
 import NotePage from '@/models/NotePage';
+import ToDo from '@/models/ToDo';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -55,10 +56,31 @@ export async function GET(request: Request) {
       sectionFlaggedCounts[secId] = (sectionFlaggedCounts[secId] || 0) + 1;
     });
 
+    // To-Do Logic for Sections
+    const activeToDos = await ToDo.find({
+      userEmail: session.user.email,
+      isCompleted: false,
+      sourcePageId: { $ne: null }
+    }).select('sourcePageId');
+
+    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
+
+    const todoPages = await NotePage.find({
+      _id: { $in: todoPageIds },
+      userEmail: session.user.email
+    }).select('sectionId');
+
+    const sectionToDoCounts: Record<string, number> = {};
+    todoPages.forEach((page) => {
+      const secId = page.sectionId.toString();
+      sectionToDoCounts[secId] = (sectionToDoCounts[secId] || 0) + 1;
+    });
+
     const sectionsWithCount = sections.map((sec) => ({
       ...sec.toObject(),
       importantCount: sectionImportantCounts[sec._id.toString()] || 0,
-      flaggedCount: sectionFlaggedCounts[sec._id.toString()] || 0
+      flaggedCount: sectionFlaggedCounts[sec._id.toString()] || 0,
+      todoCount: sectionToDoCounts[sec._id.toString()] || 0
     }));
 
     return NextResponse.json({ success: true, data: sectionsWithCount });

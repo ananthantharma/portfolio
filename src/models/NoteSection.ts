@@ -10,6 +10,7 @@ export interface INoteSection extends Document {
   userEmail?: string;
   importantCount?: number;
   flaggedCount?: number;
+  todoCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

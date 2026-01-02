@@ -114,6 +114,11 @@ const SectionItem = React.memo<{
         </div>
 
         <div className="ml-auto mr-2 flex items-center gap-1">
+          {section.todoCount !== undefined && section.todoCount > 0 && (
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+              {section.todoCount}
+            </span>
+          )}
           {section.flaggedCount !== undefined && section.flaggedCount > 0 && (
             <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
               {section.flaggedCount}

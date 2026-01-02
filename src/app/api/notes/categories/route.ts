@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 import NotePage from '@/models/NotePage';
 import NoteSection from '@/models/NoteSection';
 import { INoteSection } from '@/models/NoteSection';
+import ToDo from '@/models/ToDo';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -56,10 +57,41 @@ export async function GET() {
       }
     });
 
+    // Valid Active To-Dos (isCompleted: false)
+    // We want to count HOW MANY PAGES have at least one active to-do.
+    // Logic:
+    // 1. Get all active ToDos with a sourcePageId
+    // 2. Get distinct sourcePageIds
+    // 3. Find sectionId for those pages
+    // 4. Aggregate by Category
+
+    const activeToDos = await ToDo.find({
+      userEmail,
+      isCompleted: false,
+      sourcePageId: { $ne: null }
+    }).select('sourcePageId');
+
+    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
+
+    // Find the pages to get their section IDs
+    const todoPages = await NotePage.find({
+      _id: { $in: todoPageIds },
+      userEmail
+    }).select('sectionId');
+
+    const categoryToDoCounts: Record<string, number> = {};
+    todoPages.forEach((page) => {
+      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      if (catId) {
+        categoryToDoCounts[catId] = (categoryToDoCounts[catId] || 0) + 1;
+      }
+    });
+
     const categoriesWithCount = categories.map((cat) => ({
       ...cat.toObject(),
       importantCount: categoryImportantCounts[cat._id.toString()] || 0,
-      flaggedCount: categoryFlaggedCounts[cat._id.toString()] || 0
+      flaggedCount: categoryFlaggedCounts[cat._id.toString()] || 0,
+      todoCount: categoryToDoCounts[cat._id.toString()] || 0
     }));
 
     return NextResponse.json({ success: true, data: categoriesWithCount });
