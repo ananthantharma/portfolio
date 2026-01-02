@@ -11,6 +11,7 @@ export interface IUser extends Document {
     secureLoginEnabled?: boolean;
     financeEnabled?: boolean;
     invoiceEnabled?: boolean;
+    organizePrompt?: string; // Custom prompt for Note Organize feature
     emailVerified?: Date;
     lastLogin?: Date;
     createdAt?: Date;
@@ -30,6 +31,7 @@ const UserSchema: Schema = new Schema(
         secureLoginEnabled: { type: Boolean, default: false },
         financeEnabled: { type: Boolean, default: false },
         invoiceEnabled: { type: Boolean, default: false },
+        organizePrompt: { type: String },
     },
     {
         timestamps: true,

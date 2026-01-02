@@ -26,6 +26,7 @@ import { INotePage } from '@/models/NotePage';
 import RichTextEditor from './RichTextEditor';
 
 import ToDoModal from './ToDoModal';
+import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AttachmentManager } from './AttachmentManager';
@@ -110,6 +111,28 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
   const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
+
+  // Prompt Editor State
+  const [isPromptEditorOpen, setIsPromptEditorOpen] = useState(false);
+  const [organizePrompt, setOrganizePrompt] = useState(ORGANIZE_PROMPT);
+
+  // Fetch saved prompt on mount
+  useEffect(() => {
+    const fetchPrompt = async () => {
+      try {
+        const res = await fetch('/api/prompts/organize');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.prompt) {
+            setOrganizePrompt(data.prompt);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch saved prompt:', error);
+      }
+    };
+    fetchPrompt();
+  }, []);
 
   // Rewrite Modal State
   const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
@@ -345,12 +368,39 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       setInsertionRange(null);
     }
 
+    setIsPromptEditorOpen(true);
+  };
+
+  const handleRunOrganize = async (customPrompt: string) => {
+    // Save the prompt first (or in parallel)
+    try {
+      await fetch('/api/prompts/organize', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: customPrompt }),
+      });
+      setOrganizePrompt(customPrompt);
+    } catch (e) {
+      console.error('Failed to save prompt:', e);
+    }
+
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
     setIsMarkdownResponse(true);
 
-    const fullPrompt = `${ORGANIZE_PROMPT}\n\n"${text}"`;
+    // Get text again (or use state if we stored it, but getting from quill is safer if reference held)
+    // We already set insertionRange but not the text content in state. 
+    // Let's grab it from Quill again using insertionRange or just re-grab selection logic if safe.
+    // Actually simpler: we need the text. Let's just grab it again safely.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
+    let text = '';
+    if (quill && insertionRange) {
+      text = quill.getText(insertionRange.index, insertionRange.length);
+    }
+
+    const fullPrompt = `${customPrompt}\n\n"${text}"`;
 
     try {
       const response = await fetch('/api/gemini/generate', {
@@ -363,10 +413,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         }),
       });
       const data = await response.json();
-      console.log('Organize AI Response:', data);
 
       if (!response.ok) {
-        console.error('Organize AI Error Details:', data);
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
@@ -765,6 +813,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       />
 
       <ToDoModal initialTitle={page.title} isOpen={isToDoOpen} onClose={handleCloseToDo} onSave={handleSaveToDo} />
+
+      <PromptEditorModal
+        isOpen={isPromptEditorOpen}
+        onClose={() => setIsPromptEditorOpen(false)}
+        onSaveAndRun={handleRunOrganize}
+        initialPrompt={organizePrompt}
+      />
 
       {/* Attachments Section */}
       <AttachmentManager pageId={page._id as string} />
