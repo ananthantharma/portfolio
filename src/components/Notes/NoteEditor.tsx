@@ -32,23 +32,26 @@ import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const ORGANIZE_PROMPT = `
+The "Final-Final" Quill-Optimized Prompt
 Role: Act as a specialized Executive Assistant for a Senior Procurement Manager.
 
 Task: I will provide raw, unorganized notes. Organize them into a polished document optimized for a Quill JS editor.
 
 Quill JS Formatting Rules (STRICT):
 
+No HTML Tags: Do NOT use <br>, <p>, or any other HTML tags.
+
+Spacing: Use only standard carriage returns. Leave two actual empty lines between every single bullet point and every section so that it pastes correctly into Quill.
+
 Font Size: Do NOT use Markdown headers (no # or ##). All text must remain the standard size.
 
 Headings: Use Bold Text (not all caps) for section headings.
 
-Bullet Points: Use standard bullet points for all detailed information.
-
-Spacing: Leave two full blank lines between every single bullet point and every section. This is vital to ensure the text doesn't bunch up in the editor.
+Bullet Points: Use standard bullet points (• or *) for all detailed information.
 
 Clean Text: Avoid horizontal rules, italics, or brackets.
 
-The Emoji Map (Apply these to the text): Use these emojis directly in front of the relevant information:
+The Emoji Map: Use these emojis directly in front of the relevant information:
 
 🏢 Vendors/Suppliers: (e.g., 🏢 Hexagon)
 
@@ -72,7 +75,7 @@ Executive Summary: A 1-2 sentence "Bottom Line Up Front" (BLUF).
 
 Thematic Sections: Group points logically (e.g., Project Status, Financial Impact).
 
-Next Steps / Action Items: End every task with the exact string: 🔴‼️💥ACTION💥‼️🔴
+Next Steps / Action Items: End every task line with the exact string: 🔴‼️💥ACTION💥‼️🔴
 `;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
