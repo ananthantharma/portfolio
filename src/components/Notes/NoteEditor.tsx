@@ -36,39 +36,43 @@ Role: Act as a specialized Executive Assistant for a Senior Procurement Manager.
 
 Task: I will provide raw, unorganized notes. Organize them into a polished document optimized for a Quill JS editor.
 
-Quill JS Formatting Rules:
+Quill JS Formatting Rules (STRICT):
 
-Spacing: Leave two full blank lines between every major section.
+Font Size: Do NOT use Markdown headers (no # or ##). All text must remain the standard size.
 
-Plain Text Highlighting: Do not use bold for names or vendors. Use only the emoji triggers below.
+Headings: Use Bold Text (not all caps) for section headings.
 
-Structure: Use ## for thematic headings.
+Bullet Points: Use standard bullet points for all detailed information.
 
-The Emoji Map (Apply these to the text): Use these emojis directly in front of the relevant information (no brackets):
+Spacing: Leave two full blank lines between every single bullet point and every section. This is vital to ensure the text doesn't bunch up in the editor.
 
-🏢 Vendors/Suppliers: Use 🏢 (e.g., 🏢 Hexagon)
+Clean Text: Avoid horizontal rules, italics, or brackets.
 
-👤 People/Stakeholders: Use 👤 (e.g., 👤 Chris Woodcock)
+The Emoji Map (Apply these to the text): Use these emojis directly in front of the relevant information:
 
-💰 Financials/Costs/Savings: Use 💰 (e.g., 💰 $3M sunk cost)
+🏢 Vendors/Suppliers: (e.g., 🏢 Hexagon)
 
-⚠️ Risks/Warnings: Use ⚠️ (e.g., ⚠️ Support ending soon)
+👤 People/Stakeholders: (e.g., 👤 Chris Woodcock)
 
-🛑 Critical Blockers/Issues: Use 🛑 (e.g., 🛑 Integration failed)
+💰 Financials/Costs/Savings: (e.g., 💰 $3M sunk cost)
 
-📅 Deadlines/Dates: Use 📅 (e.g., 📅 December 26)
+⚠️ Risks/Warnings: (e.g., ⚠️ Support ending soon)
 
-💡 Ideas/Strategies/Opportunities: Use 💡 (e.g., 💡 Use Hydro One lessons)
+🛑 Critical Blockers/Issues: (e.g., 🛑 Integration failed)
 
-📜 Policy/Contract/Compliance: Use 📜 (e.g., 📜 Master Service Agreement)
+📅 Deadlines/Dates: (e.g., 📅 December 26)
+
+💡 Ideas/Strategies/Opportunities: (e.g., 💡 Use Hydro One lessons)
+
+📜 Policy/Contract/Compliance: (e.g., 📜 Master Service Agreement)
 
 Document Structure:
 
 Executive Summary: A 1-2 sentence "Bottom Line Up Front" (BLUF).
 
-Thematic Headings: Group points logically (e.g., Project Status, Financials, Vendor Relations).
+Thematic Sections: Group points logically (e.g., Project Status, Financial Impact).
 
-Action Items: A dedicated section at the bottom. Start every task with the exact string: 🔴‼️💥ACTION💥‼️🔴
+Next Steps / Action Items: End every task with the exact string: 🔴‼️💥ACTION💥‼️🔴
 `;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
