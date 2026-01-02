@@ -49,6 +49,49 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
 
+  // Resizable Sidebar State
+  const [categoryWidth, setCategoryWidth] = useState(256);
+  const [sectionWidth, setSectionWidth] = useState(256);
+  const [pageWidth, setPageWidth] = useState(256);
+  const [resizingCol, setResizingCol] = useState<'category' | 'section' | 'page' | null>(null);
+
+  const startResizing = useCallback((e: React.MouseEvent, col: 'category' | 'section' | 'page') => {
+    setResizingCol(col);
+    e.preventDefault();
+  }, []);
+
+  useEffect(() => {
+    if (!resizingCol) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizingCol === 'category') {
+        setCategoryWidth(Math.max(200, Math.min(600, e.clientX)));
+      } else if (resizingCol === 'section') {
+        // Approximate x position for section start is categoryWidth
+        // Width = Mouse X - Start X
+        const startX = isCategoryCollapsed ? 56 : categoryWidth;
+        setSectionWidth(Math.max(200, Math.min(600, e.clientX - startX)));
+      } else if (resizingCol === 'page') {
+        const startX = (isCategoryCollapsed ? 56 : categoryWidth) + (isSectionCollapsed ? 56 : sectionWidth);
+        setPageWidth(Math.max(200, Math.min(600, e.clientX - startX)));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setResizingCol(null);
+      document.body.style.cursor = 'default';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'col-resize';
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingCol, categoryWidth, sectionWidth, isCategoryCollapsed, isSectionCollapsed]);
+
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
 
@@ -591,14 +634,14 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative" onPointerUp={() => { document.body.style.cursor = 'default'; }}>
         {/* Main Content Area with Glassmorphism Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
 
         {/* Column 1: Categories */}
         <div
-          className={`${isCategoryCollapsed ? 'w-14' : 'w-64'
-            } flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-20`}>
+          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
+          style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -611,12 +654,18 @@ const NotesLayout: React.FC = React.memo(() => {
             onToggleCollapse={handleToggleCategoryCollapse}
             selectedCategoryId={selectedCategoryId}
           />
+          {!isCategoryCollapsed && (
+            <div
+              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+              onMouseDown={(e) => startResizing(e, 'category')}
+            />
+          )}
         </div>
 
         {/* Column 2: Sections */}
         <div
-          className={`${isSectionCollapsed ? 'w-14' : 'w-64'
-            } flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-10`}>
+          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
+          style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -629,12 +678,18 @@ const NotesLayout: React.FC = React.memo(() => {
             sections={sections}
             selectedSectionId={selectedSectionId}
           />
+          {!isSectionCollapsed && (
+            <div
+              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+              onMouseDown={(e) => startResizing(e, 'section')}
+            />
+          )}
         </div>
 
         {/* Column 3: Pages */}
         <div
-          className={`${isPageCollapsed ? 'w-14' : 'w-64'
-            } flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-300 ease-in-out z-0`}>
+          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
+          style={{ width: isPageCollapsed ? 56 : pageWidth }}>
           <PageList
             isCollapsed={isPageCollapsed}
             loading={loadingPages}
@@ -647,6 +702,12 @@ const NotesLayout: React.FC = React.memo(() => {
             pages={pages}
             selectedPageId={selectedPageId}
           />
+          {!isPageCollapsed && (
+            <div
+              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+              onMouseDown={(e) => startResizing(e, 'page')}
+            />
+          )}
         </div>
 
         {/* Column 4: Editor */}
