@@ -627,9 +627,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
           {/* Symbol Toolbar - Dropdown */}
           <Menu as="div" className="relative text-left">
-            <Menu.Button className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
+            <Menu.Button className="flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
               <FaceSmileIcon className="h-4 w-4" />
-              Symbols
             </Menu.Button>
             <Transition
               as={Fragment}
