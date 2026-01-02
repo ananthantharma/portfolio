@@ -114,9 +114,12 @@ const CategoryItem = React.memo<{
 
         <div className="ml-auto mr-2 flex items-center gap-1">
           {category.todoCount !== undefined && category.todoCount > 0 && (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-              {category.todoCount}
-            </span>
+            <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
+              <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(147,51,234,0.6)] ring-1 ring-white">
+                {category.todoCount}
+              </span>
+            </div>
           )}
           {category.flaggedCount !== undefined && category.flaggedCount > 0 && (
             <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
