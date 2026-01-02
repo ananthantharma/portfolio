@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, Transition, Menu } from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -13,6 +13,7 @@ import {
   WrenchIcon,
   QueueListIcon,
   XMarkIcon,
+  FaceSmileIcon,
 } from '@heroicons/react/24/outline';
 import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
@@ -623,19 +624,43 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         </div>
         <div className="flex gap-2">
           {/* Symbol Toolbar */}
-          <div className="flex items-center gap-1 mr-2 border-r border-gray-200 pr-3">
-            {SYMBOLS.map((s) => (
-              <button
-                className="flex items-center justify-center rounded-md p-1.5 text-lg transition-all grayscale hover:bg-gray-100 hover:grayscale-0"
-                key={s.char}
-                onClick={() => handleInsertSymbol(s.char)}
-                title={s.tooltip}
-                type="button"
-              >
-                {s.char}
-              </button>
-            ))}
-          </div>
+
+          {/* Symbol Toolbar - Dropdown */}
+          <Menu as="div" className="relative inline-block text-left mr-2 border-r border-gray-200 pr-3">
+            <div>
+              <Menu.Button className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
+                <FaceSmileIcon className="h-4 w-4" />
+                Symbols
+              </Menu.Button>
+            </div>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
+            >
+              <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
+                {SYMBOLS.map((s) => (
+                  <Menu.Item key={s.char}>
+                    {({ active }) => (
+                      <button
+                        type="button"
+                        className={`${active ? 'bg-gray-100' : ''
+                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
+                        onClick={() => handleInsertSymbol(s.char)}
+                        title={s.tooltip}
+                      >
+                        {s.char}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </Menu.Items>
+            </Transition>
+          </Menu>
 
           {/* Organize Button */}
           <button
