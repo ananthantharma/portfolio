@@ -50,9 +50,9 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
 
   // Resizable Sidebar State
-  const [categoryWidth, setCategoryWidth] = useState(256);
-  const [sectionWidth, setSectionWidth] = useState(256);
-  const [pageWidth, setPageWidth] = useState(256);
+  const [categoryWidth, setCategoryWidth] = useState(200);
+  const [sectionWidth, setSectionWidth] = useState(200);
+  const [pageWidth, setPageWidth] = useState(200);
   const [resizingCol, setResizingCol] = useState<'category' | 'section' | 'page' | null>(null);
 
   const startResizing = useCallback((e: React.MouseEvent, col: 'category' | 'section' | 'page') => {
