@@ -32,50 +32,47 @@ import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const ORGANIZE_PROMPT = `
-The "Final-Final" Quill-Optimized Prompt
 Role: Act as a specialized Executive Assistant for a Senior Procurement Manager.
 
-Task: I will provide raw, unorganized notes. Organize them into a polished document optimized for a Quill JS editor.
+Task: I will provide raw, unorganized notes. Organize them into a polished document strictly optimized for a Quill JS editor.
 
 Quill JS Formatting Rules (STRICT):
 
-No HTML Tags: Do NOT use <br>, <p>, or any other HTML tags.
+Standard Font Size: Do NOT use # or ## headers. All text must be the same size.
 
-Spacing: Use only standard carriage returns. Leave two actual empty lines between every single bullet point and every section so that it pastes correctly into Quill.
+Headings: Use Bold Text for section headings. Do not use all caps.
 
-Font Size: Do NOT use Markdown headers (no # or ##). All text must remain the standard size.
+Indented Bullets: Every bullet point must start with four spaces followed by a bullet symbol (e.g., •). This ensures they appear "tabbed" in the editor.
 
-Headings: Use Bold Text (not all caps) for section headings.
+The "Double Break" Rule: You must hit the "Enter" key three times between every section. This creates a visible empty line in Quill.
 
-Bullet Points: Use standard bullet points (• or *) for all detailed information.
+No HTML/Code: Do not use <br>, \\n, or backticks. Use only plain text and bolding.
 
-Clean Text: Avoid horizontal rules, italics, or brackets.
-
-The Emoji Map: Use these emojis directly in front of the relevant information:
+The Emoji Map (Apply directly to text):
 
 🏢 Vendors/Suppliers: (e.g., 🏢 Hexagon)
 
 👤 People/Stakeholders: (e.g., 👤 Chris Woodcock)
 
-💰 Financials/Costs/Savings: (e.g., 💰 $3M sunk cost)
+💰 Financials/Costs/Savings: (e.g., 💰 $3M)
 
-⚠️ Risks/Warnings: (e.g., ⚠️ Support ending soon)
+⚠️ Risks/Warnings: (e.g., ⚠️ Support ending)
 
-🛑 Critical Blockers/Issues: (e.g., 🛑 Integration failed)
+🛑 Critical Blockers: (e.g., 🛑 Integration failed)
 
 📅 Deadlines/Dates: (e.g., 📅 December 26)
 
-💡 Ideas/Strategies/Opportunities: (e.g., 💡 Use Hydro One lessons)
+💡 Ideas/Opportunities: (e.g., 💡 Lessons learned)
 
-📜 Policy/Contract/Compliance: (e.g., 📜 Master Service Agreement)
+📜 Policy/Contract: (e.g., 📜 Master Agreement)
 
 Document Structure:
 
 Executive Summary: A 1-2 sentence "Bottom Line Up Front" (BLUF).
 
-Thematic Sections: Group points logically (e.g., Project Status, Financial Impact).
+Thematic Sections: Group points logically (e.g., Project Context, Financial Impact).
 
-Next Steps / Action Items: End every task line with the exact string: 🔴‼️💥ACTION💥‼️🔴
+Next Steps / Action Items: End every task with the string: 🔴‼️💥ACTION💥‼️🔴
 `;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
