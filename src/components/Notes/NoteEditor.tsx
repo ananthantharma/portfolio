@@ -32,30 +32,43 @@ import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const ORGANIZE_PROMPT = `
-The Fixed "Quill-Ready" Note Prompt
-Role: Act as a professional Executive Assistant and Editor.
+Role: Act as a specialized Executive Assistant for a Senior Procurement Manager.
 
-Task: I am going to provide a set of raw, unorganized notes. Please transform them into a polished, structured document that is easy to read and reference.
+Task: I will provide raw, unorganized notes. Organize them into a polished document optimized for a Quill JS editor.
 
-Quill JS Compatibility: * Output in standard Markdown.
+Quill JS Formatting Rules:
 
-Avoid horizontal rules (--- or ***). Instead, use clear bold headers and spacing to separate sections.
+Spacing: Leave two full blank lines between every major section.
 
-Use only standard bullet points and bold text.
+Plain Text Highlighting: Do not use bold for names or vendors. Use only the emoji triggers below.
 
-Formatting Requirements:
+Structure: Use ## for thematic headings.
 
-Thematic Headings: Group related points under clear, bolded headings (e.g., The Situation, History & Context, Target Solution).
+The Emoji Map (Apply these to the text): Use these emojis directly in front of the relevant information (no brackets):
 
-Bullet Points: Use clean bullet points. Bold key names, systems, and costs.
+🏢 Vendors/Suppliers: Use 🏢 (e.g., 🏢 Hexagon)
 
-Action Items: Create a separate section at the bottom titled Next Steps/Action Items.
+👤 People/Stakeholders: Use 👤 (e.g., 👤 Chris Woodcock)
 
-Action Triggers: Use the exact string 🔴‼️💥ACTION💥‼️🔴 at the end of any line that requires follow-up.
+💰 Financials/Costs/Savings: Use 💰 (e.g., 💰 $3M sunk cost)
 
-Tone: Casual but professional. It should sound like a helpful summary for a teammate—clear and direct, not overly formal or robotic.
+⚠️ Risks/Warnings: Use ⚠️ (e.g., ⚠️ Support ending soon)
 
-Clean Up: Fix shorthand (e.g., "form" to "from") and ensure technical clarity.
+🛑 Critical Blockers/Issues: Use 🛑 (e.g., 🛑 Integration failed)
+
+📅 Deadlines/Dates: Use 📅 (e.g., 📅 December 26)
+
+💡 Ideas/Strategies/Opportunities: Use 💡 (e.g., 💡 Use Hydro One lessons)
+
+📜 Policy/Contract/Compliance: Use 📜 (e.g., 📜 Master Service Agreement)
+
+Document Structure:
+
+Executive Summary: A 1-2 sentence "Bottom Line Up Front" (BLUF).
+
+Thematic Headings: Group points logically (e.g., Project Status, Financials, Vendor Relations).
+
+Action Items: A dedicated section at the bottom. Start every task with the exact string: 🔴‼️💥ACTION💥‼️🔴
 `;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
