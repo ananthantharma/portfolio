@@ -98,6 +98,14 @@ const PageItem = React.memo<{
                 {page.isImportant && (
                   <span className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-1 ring-white" title="Important" />
                 )}
+                {page.todoCount !== undefined && page.todoCount > 0 && (
+                  <div className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center ml-0.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
+                    <span className="relative inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-100 text-[9px] font-bold text-purple-600 shadow-sm ring-1 ring-purple-200">
+                      {page.todoCount}
+                    </span>
+                  </div>
+                )}
               </div>
               <span className="truncate text-[10px] text-gray-400 font-normal">
                 {new Date(page.updatedAt).toLocaleDateString()}

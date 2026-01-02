@@ -7,6 +7,7 @@ import dbConnect from '@/lib/dbConnect';
 import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import NotePage from '@/models/NotePage';
 import NoteSection from '@/models/NoteSection'; // Ensure registration
+import ToDo from '@/models/ToDo';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
@@ -114,7 +115,31 @@ export async function GET(request: Request) {
       select: 'categoryId name', // Populate categoryId to allow full navigation
     });
 
-    return NextResponse.json({ success: true, data: pages });
+    // Aggregate active To-Do counts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pageIds = pages.map((p: any) => p._id);
+    const activeToDos = await ToDo.find({
+      userEmail,
+      isCompleted: false,
+      sourcePageId: { $in: pageIds }
+    }).select('sourcePageId');
+
+    const pageToDoCounts: Record<string, number> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    activeToDos.forEach((todo: any) => {
+      const pid = todo.sourcePageId?.toString();
+      if (pid) {
+        pageToDoCounts[pid] = (pageToDoCounts[pid] || 0) + 1;
+      }
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pagesWithCount = pages.map((p: any) => ({
+      ...p.toObject(),
+      todoCount: pageToDoCounts[p._id.toString()] || 0
+    }));
+
+    return NextResponse.json({ success: true, data: pagesWithCount });
   } catch (error) {
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
