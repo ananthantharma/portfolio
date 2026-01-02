@@ -117,7 +117,7 @@ const SectionItem = React.memo<{
           {section.todoCount !== undefined && section.todoCount > 0 && (
             <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
-              <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-purple-400 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(168,85,247,0.6)] ring-1 ring-white">
+              <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-purple-600 shadow-sm ring-1 ring-purple-200">
                 {section.todoCount}
               </span>
             </div>
