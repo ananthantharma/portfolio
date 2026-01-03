@@ -1,8 +1,8 @@
-import {useCallback, useEffect, useState} from 'react';
-import {useSession} from 'next-auth/react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 
-import {ApiKeyInput} from '../components/ApiKeyInput';
-import {ChatInterface} from '../components/ChatInterface';
+import { ApiKeyInput } from '../components/ApiKeyInput';
+import { ChatInterface } from '../components/ChatInterface';
 import Page from '../components/Layout/Page';
 import Header from '../components/Sections/Header';
 
@@ -10,7 +10,7 @@ export default function ChatPage() {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const {data: session} = useSession();
+  const { data: session } = useSession();
 
   useEffect(() => {
     // Check for Managed Permission
@@ -44,7 +44,7 @@ export default function ChatPage() {
   return (
     <Page description="Chat with Gemini" title="Ananthan's AI Chat">
       <Header />
-      <div className="pt-16 h-screen box-border">
+      <div className="pt-24 h-screen box-border">
         {!apiKey ? (
           <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
         ) : (

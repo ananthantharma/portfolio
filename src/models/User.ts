@@ -1,4 +1,4 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IUser extends Document {
   name?: string;
@@ -11,6 +11,7 @@ export interface IUser extends Document {
   financeEnabled?: boolean;
   invoiceEnabled?: boolean;
   organizePrompt?: string; // Custom prompt for Note Organize feature
+  systemInstruction?: string; // Custom prompt for Chat Interface
   emailVerified?: Date;
   lastLogin?: Date;
   createdAt?: Date;
@@ -24,13 +25,14 @@ const UserSchema: Schema = new Schema(
     image: String,
     emailVerified: Date,
     lastLogin: Date,
-    googleApiEnabled: {type: Boolean, default: false},
-    openAiApiEnabled: {type: Boolean, default: false},
-    notesEnabled: {type: Boolean, default: false},
-    secureLoginEnabled: {type: Boolean, default: false},
-    financeEnabled: {type: Boolean, default: false},
-    invoiceEnabled: {type: Boolean, default: false},
-    organizePrompt: {type: String},
+    googleApiEnabled: { type: Boolean, default: false },
+    openAiApiEnabled: { type: Boolean, default: false },
+    notesEnabled: { type: Boolean, default: false },
+    secureLoginEnabled: { type: Boolean, default: false },
+    financeEnabled: { type: Boolean, default: false },
+    invoiceEnabled: { type: Boolean, default: false },
+    organizePrompt: { type: String },
+    systemInstruction: { type: String },
   },
   {
     timestamps: true,
