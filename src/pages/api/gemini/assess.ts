@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import mammoth from 'mammoth';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
-import * as XLSX from 'xlsx';
 
 import { authOptions } from '@/lib/auth';
 
