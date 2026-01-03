@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     let {apiKey} = body;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const {prompt, history, model: requestedModel, systemInstruction, images} = body;
+    const {prompt, history, model: requestedModel, systemInstruction, attachments} = body;
 
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
@@ -37,8 +37,8 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    if (!prompt && (!images || images.length === 0)) {
-      return NextResponse.json({error: 'Prompt or image is required'}, {status: 400});
+    if (!prompt && (!attachments || attachments.length === 0)) {
+      return NextResponse.json({error: 'Prompt or attachment is required'}, {status: 400});
     }
 
     // Use requested model or fallback
@@ -75,19 +75,26 @@ export async function POST(req: Request) {
       currentMessageParts.push({text: prompt});
     }
 
-    // Add image parts if images exist
-    if (images && Array.isArray(images)) {
-      images.forEach((img: string) => {
-        // img is expected to be a base64 Data URL: "data:image/png;base64,..."
-        const match = img.match(/^data:([^;]+);base64,(.+)$/);
-        if (match) {
-          const mimeType = match[1];
-          const data = match[2];
+    // Add attachment parts
+    if (attachments && Array.isArray(attachments)) {
+      attachments.forEach((att: any) => {
+        if (att.type === 'image' || att.type === 'pdf') {
+          // att.content is base64 Data URL
+          const match = att.content.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            const mimeType = match[1]; // Use extracted mime or att.mimeType
+            const data = match[2];
+            currentMessageParts.push({
+              inlineData: {
+                data: data,
+                mimeType: mimeType,
+              },
+            });
+          }
+        } else if (att.type === 'text') {
+          // Add as text part with filename context
           currentMessageParts.push({
-            inlineData: {
-              data: data,
-              mimeType: mimeType,
-            },
+            text: `\n\n--- Start of attached file: ${att.name} ---\n${att.content}\n--- End of attached file ---\n\n`,
           });
         }
       });

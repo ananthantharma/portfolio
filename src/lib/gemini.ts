@@ -10,7 +10,7 @@ export const getChatResponse = async (
   message: string,
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,
-  images: string[] = [],
+  attachments: {type: 'image' | 'pdf' | 'text'; content: string; name: string; mimeType?: string}[] = [],
 ) => {
   /*
    * Use Server-Side Generation Route (similar to OpenAI implementation)
@@ -28,20 +28,7 @@ export const getChatResponse = async (
         history, // Pass history to server
         model: modelName,
         systemInstruction,
-        images,
-        // Convert history format if necessary, but the route expects prompt + history handling inside route?
-        // Wait, the route implementation (Step 125) takes 'prompt' and 'image' but treats them as parts.
-        // It DOES NOT seem to handle 'history' in the request body explicitly in the same way `startChat` does.
-        // The SDK `startChat` maintains history client-side or expects it passed.
-        // Let's check route.ts again. It constructs `parts = [prompt]`.
-        // It DOES NOT seem to support chat history yet!
-        // To support chat history, we need to update the route to accept 'history' or modify how we use it.
-        // But for now, let's match the current route capability.
-        // Wait, the user said "exact same thing as Open page".
-        // Open page sends 'messages' array (history + new message).
-        // Gemini route currently only handles single turn 'prompt'.
-        // I should update Gemini route to handle history, OR build the prompt manually.
-        // But let's first switch to the fetch implementation.
+        attachments, // Updated from images
       }),
     });
 

@@ -1,7 +1,23 @@
-import {Bot, FilePenLine, Loader2, Paperclip, PlusCircle, Send, Trash2, User, X} from 'lucide-react';
+import {
+  Bot,
+  File as FileIcon,
+  FilePenLine,
+  FileSpreadsheet,
+  FileText,
+  ImageIcon,
+  Loader2,
+  Paperclip,
+  PlusCircle,
+  Send,
+  Trash2,
+  User,
+  X,
+} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 
 import {getChatResponse} from '../lib/gemini';
 
@@ -32,6 +48,14 @@ avoid using:
 interface Message {
   role: 'user' | 'model';
   parts: string;
+  attachments?: Attachment[];
+}
+
+interface Attachment {
+  type: 'image' | 'pdf' | 'text';
+  content: string; // Base64 (for images/pdf) or raw text
+  name: string;
+  mimeType?: string; // For images/pdf
 }
 
 interface ChatSession {
@@ -65,7 +89,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   // UI State
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
   const [availableModels, setAvailableModels] = useState<{id: string; label: string}[]>([]);
@@ -163,37 +187,203 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper: Compress and Resize Image
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const MAX_WIDTH = 800; // Increased max width for better visibility
+      const MAX_HEIGHT = 800;
+      const QUALITY = 0.6; // Slightly lower quality for better compression
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = event => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          // Resize logic
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG (usually smaller than PNG for photos)
+          // If original was PNG with transparency, this turns background black.
+          // To keep transparency we might need png, but it doesn't support quality setting well in all browsers.
+          // For chat attachments, usually JPEG is fine, but let's check input type.
+          const outputType = file.type === 'image/png' || file.type === 'image/webp' ? file.type : 'image/jpeg';
+
+          // Actually, 'image/png' in toDataURL argument 2 (quality) is generally ignored by browsers.
+          // So if we want compression we largely must use jpeg or webp.
+          // Let's force WEBP if supported or JPEG.
+          // Or just stick to JPEG/WEBP for all for strict size control.
+          // Let's try 'image/jpeg' for compression efficiency unless it's strictly needed to be persistent.
+
+          const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+          resolve(dataUrl);
+        };
+        img.onerror = error => reject(error);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setSelectedImages(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+      const newAttachments: Attachment[] = [];
+
+      setIsLoading(true);
+
+      for (const file of files) {
+        try {
+          // 1. Images
+          if (file.type.startsWith('image/')) {
+            const compressed = await compressImage(file);
+            newAttachments.push({
+              type: 'image',
+              content: compressed,
+              name: file.name,
+              mimeType: 'image/jpeg',
+            });
+            continue;
+          }
+
+          // 2. PDF
+          if (file.type === 'application/pdf') {
+            const reader = new FileReader();
+            await new Promise<void>(resolve => {
+              reader.onload = () => {
+                newAttachments.push({
+                  type: 'pdf',
+                  content: reader.result as string,
+                  name: file.name,
+                  mimeType: 'application/pdf',
+                });
+                resolve();
+              };
+              reader.readAsDataURL(file);
+            });
+            continue;
+          }
+
+          // 3. Word (Method: Extract Text)
+          if (file.name.endsWith('.docx')) {
+            const reader = new FileReader();
+            await new Promise<void>((resolve, reject) => {
+              reader.onload = async e => {
+                try {
+                  const arrayBuffer = e.target?.result as ArrayBuffer;
+                  const result = await mammoth.extractRawText({arrayBuffer});
+                  newAttachments.push({
+                    type: 'text',
+                    content: result.value,
+                    name: file.name,
+                  });
+                  resolve();
+                } catch (err) {
+                  console.error('Mammoth error', err);
+                  reject(err);
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            });
+            continue;
+          }
+
+          // 4. Excel (Method: Extract CSV of first sheet)
+          if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
+            const reader = new FileReader();
+            await new Promise<void>((resolve, reject) => {
+              reader.onload = e => {
+                try {
+                  const data = e.target?.result;
+                  const workbook = XLSX.read(data, {type: 'binary'});
+                  const firstSheetName = workbook.SheetNames[0];
+                  const worksheet = workbook.Sheets[firstSheetName];
+                  const csv = XLSX.utils.sheet_to_csv(worksheet);
+                  newAttachments.push({
+                    type: 'text',
+                    content: csv,
+                    name: file.name,
+                  });
+                  resolve();
+                } catch (err) {
+                  console.error('XLSX error', err);
+                  reject(err);
+                }
+              };
+              reader.readAsBinaryString(file);
+            });
+            continue;
+          }
+
+          // 5. Text / Code
+          // Default to reading as Text
+          const reader = new FileReader();
+          await new Promise<void>(resolve => {
+            reader.onload = () => {
+              newAttachments.push({
+                type: 'text',
+                content: reader.result as string,
+                name: file.name,
+              });
+              resolve();
+            };
+            reader.readAsText(file);
+          });
+        } catch (error) {
+          console.error('Error processing file:', file.name, error);
+        }
+      }
+
+      setAttachments(prev => [...prev, ...newAttachments]);
+      setIsLoading(false);
       // Clear input so same file can be selected again
       e.target.value = '';
     }
   };
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
         e.preventDefault();
         const file = items[i].getAsFile();
         if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setSelectedImages(prev => [...prev, reader.result as string]);
-          };
-          reader.readAsDataURL(file);
+          try {
+            const compressed = await compressImage(file);
+            setAttachments(prev => [
+              ...prev,
+              {
+                type: 'image',
+                content: compressed,
+                name: 'Pasted Image',
+                mimeType: 'image/jpeg',
+              },
+            ]);
+          } catch (error) {
+            console.error('Error pasting image:', error);
+          }
         }
       }
     }
@@ -201,36 +391,20 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && selectedImages.length === 0) || isLoading || !currentSessionId) return;
+    if ((!input.trim() && attachments.length === 0) || isLoading || !currentSessionId) return;
 
     const userMessage = input.trim();
-    const currentImages = [...selectedImages];
+    const currentAttachments = [...attachments];
 
     setInput('');
-    setSelectedImages([]);
+    setAttachments([]);
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      // Construct parts string for optimistic update (images not fully rendered yet in text mode, but handled by renderMessageContent mostly)
-      // Actually, we need to store parts as objects or handle them stringified?
-      // Since 'parts' in Message interface is string, we might need to adjust the interface OR append image markdowns
-      // BUT 'parts' in this app seems to be just string: interface Message { parts: string }.
-      // If we want to support images in history for UI display, we need to change Message interface or hack it.
-      // Wait, let's check renderMessageContent... it assumes `msg.parts` is string.
-      // To show images in UI history, we should probably update Message structure OR append markdown image syntax?
-      // Markdown image with base64 is ugly and slow.
-      // Better: Update Message interface to support parts array (like OpenAIChat).
-      // BUT that requires refactoring existing messages / type definitions everywhere.
-      // SHORTCUT: For now, I will append a special placeholder or just rendering logic updates.
-      // actually, let's look at `ChatInterface.tsx` again.
-      // `interface Message { role: 'user' | 'model'; parts: string; }`
-      // I will update the Message interface locally to support `parts: string | { text?: string; inlineData?: any }[]`?
-      // NO, let's stick to string but maybe store images separately for session?
-      // OR better: Update Message interface to support `images?: string[]`.
-
-      // Let's modify Message interface above.
-
-      const newMessages = [...session.messages, {role: 'user', parts: userMessage, images: currentImages} as any];
+      const newMessages = [
+        ...session.messages,
+        {role: 'user', parts: userMessage, attachments: currentAttachments} as any,
+      ];
 
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
@@ -258,7 +432,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
         userMessage,
         selectedModel,
         systemInstruction,
-        currentImages,
+        currentAttachments,
       );
 
       updateCurrentSession(s => ({
@@ -544,14 +718,31 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
         <div className="p-4 bg-zinc-900 border-t border-zinc-800">
           <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
             {/* Image Preview Area */}
-            {selectedImages.length > 0 && (
+            {attachments.length > 0 && (
               <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
-                {selectedImages.map((img, idx) => (
+                {attachments.map((att, idx) => (
                   <div className="relative group flex-shrink-0" key={idx}>
-                    <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
+                    {att.type === 'image' ? (
+                      <img
+                        alt="Preview"
+                        className="h-16 w-16 object-cover rounded-lg border border-zinc-700"
+                        src={att.content}
+                      />
+                    ) : (
+                      <div
+                        className="h-16 w-16 bg-zinc-800 rounded-lg border border-zinc-700 flex flex-col items-center justify-center p-1"
+                        title={att.name}>
+                        {att.type === 'pdf' ? (
+                          <FileIcon className="w-8 h-8 text-red-500" />
+                        ) : (
+                          <FileText className="w-8 h-8 text-blue-500" />
+                        )}
+                        <span className="text-[8px] text-zinc-400 mt-1 truncate w-full text-center">{att.name}</span>
+                      </div>
+                    )}
                     <button
                       className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeImage(idx)}
+                      onClick={() => removeAttachment(idx)}
                       type="button">
                       <X className="w-3 h-3" />
                     </button>
@@ -562,7 +753,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
             <div className="relative flex-1 flex gap-2 items-end">
               <input
-                accept="image/*"
+                accept="image/*,.pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.js,.ts,.tsx,.py"
                 className="hidden"
                 multiple
                 onChange={handleFileSelect}
@@ -573,7 +764,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
               <button
                 className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
                 onClick={() => fileInputRef.current?.click()}
-                title="Upload Image"
+                title="Upload File"
                 type="button">
                 <Paperclip className="w-5 h-5" />
               </button>
@@ -592,7 +783,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
                 />
                 <button
                   className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-blue-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                  disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
+                  disabled={(!input.trim() && attachments.length === 0) || isLoading}
                   type="submit">
                   <Send className="w-5 h-5" />
                 </button>
