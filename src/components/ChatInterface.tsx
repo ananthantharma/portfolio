@@ -7,6 +7,8 @@ import {
   Trash2,
   User,
   Menu,
+  Settings,
+  X,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -88,6 +90,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [useSearch, setUseSearch] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false); // Mobile sidebar toggle
+  const [showSettings, setShowSettings] = useState(false); // Settings modal
+  const [customInstruction, setCustomInstruction] = useState(DEFAULT_SYSTEM_INSTRUCTION);
   const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
@@ -97,6 +101,33 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
+
+  // Load settings from local storage
+  useEffect(() => {
+    const stored = localStorage.getItem('custom_system_instruction');
+    if (stored) {
+      setCustomInstruction(stored);
+      // Update the initial empty session if it exists and hasn't been modified
+      setSessions(prev => {
+        if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
+          return [{ ...prev[0], systemInstruction: stored }];
+        }
+        return prev;
+      });
+    }
+  }, []);
+
+  // Save settings
+  const handleSaveSettings = () => {
+    localStorage.setItem('custom_system_instruction', customInstruction);
+    setShowSettings(false);
+    // Optionally update current session if it's empty/new
+    if (currentSession?.messages.length === 0) {
+      updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+    }
+  };
+
+  // Hardcoded models to avoid fetch failure on load
 
   // Hardcoded models to avoid fetch failure on load
   useEffect(() => {
@@ -141,7 +172,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       id: Date.now().toString(),
       title: overrides?.title || 'New Chat',
       messages: [],
-      systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
+      systemInstruction: customInstruction, // Use dynamic instruction
       activeGem: null,
       createdAt: Date.now(),
       ...overrides,
@@ -683,8 +714,61 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               title="Clear API Key">
               <Trash2 className="w-4 h-4" />
             </button>
+
+            {/* Settings Button */}
+            <div className="h-4 w-px bg-zinc-700"></div>
+            <button
+              className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2"
+              onClick={() => setShowSettings(true)}
+              title="Settings">
+              <Settings className="w-5 h-5" />
+            </button>
           </div>
         </header>
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <div className="absolute inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+              <div className="flex items-center justify-between p-4 border-b border-zinc-700">
+                <h3 className="text-lg font-semibold text-white">System Instructions</h3>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="text-zinc-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 flex-1 overflow-y-auto">
+                <p className="text-sm text-zinc-400 mb-2">
+                  Edit the default system instruction for new chats. This controls how Gemini behaves.
+                </p>
+                <textarea
+                  className="w-full h-64 bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none font-mono"
+                  value={customInstruction}
+                  onChange={(e) => setCustomInstruction(e.target.value)}
+                  placeholder="Enter system instructions..."
+                />
+              </div>
+              <div className="p-4 border-t border-zinc-700 flex justify-end gap-2">
+                <button
+                  onClick={() => {
+                    setCustomInstruction(DEFAULT_SYSTEM_INSTRUCTION); // Reset to default
+                  }}
+                  className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                >
+                  Reset to Default
+                </button>
+                <button
+                  onClick={handleSaveSettings}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-500/20"
+                >
+                  Save & Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
