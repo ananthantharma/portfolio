@@ -294,319 +294,311 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     return processed;
   };
 
-  // 3. Fix compressed tables (missing newlines between rows)
-  // Case A: Header separator row (e.g. | Header | |---| )
-  processed = processed.replace(/\|\s*(\|[:-])/g, '|\n$1');
 
-  // Case B: Data rows starting with numbers (e.g. |...| | 1 |)
-  processed = processed.replace(/\|\s*(\|\s*\d)/g, '|\n$1');
 
-  return processed;
-};
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
 
-const handleKeyDown = (e: React.KeyboardEvent) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    handleSubmit(e);
-  }
-};
-
-const markdownComponents: any = {
-  // Tables - Gemini-like styling (Clean, lighter borders)
-  table: ({ node, ...props }: any) => (
-    <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
-      <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
-    </div>
-  ),
-  thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
-  tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
-  tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
-  th: ({ node, ...props }: any) => (
-    <th
-      className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider"
-      {...props}
-    />
-  ),
-  td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
-
-  // Text & Lists
-  p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-  a: ({ node, ...props }: any) => (
-    <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
-  ),
-  ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
-  ol: ({ node, ...props }: any) => (
-    <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />
-  ),
-  li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
-  blockquote: ({ node, ...props }: any) => (
-    <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
-  ),
-  hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
-
-  // Code
-  code: ({ node, inline, className, children, ...props }: any) => {
-    const match = /language-(\w+)/.exec(className || '');
-    return !inline && match ? (
-      <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
-        <div className="bg-zinc-800/50 px-4 py-2 text-xs text-zinc-500 border-b border-zinc-700/50 font-mono uppercase tracking-wider flex justify-between">
-          <span>{match[1]}</span>
-        </div>
-        <div className="p-4 overflow-x-auto">
-          <pre className="!m-0 !bg-transparent !p-0">
-            <code className={className} {...props}>
-              {children}
-            </code>
-          </pre>
-        </div>
+  const markdownComponents: any = {
+    // Tables - Gemini-like styling (Clean, lighter borders)
+    table: ({ node, ...props }: any) => (
+      <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
+        <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
-    ) : (
-      <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-400" {...props}>
-        {children}
-      </code>
-    );
-  },
-};
+    ),
+    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({ node, ...props }: any) => (
+      <th
+        className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider"
+        {...props}
+      />
+    ),
+    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
 
-const renderMessageContent = (content: MessageContent) => {
-  if (typeof content === 'string') {
+    // Text & Lists
+    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({ node, ...props }: any) => (
+      <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
+    ),
+    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({ node, ...props }: any) => (
+      <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />
+    ),
+    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
+    blockquote: ({ node, ...props }: any) => (
+      <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
+    ),
+    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
+
+    // Code
+    code: ({ node, inline, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
+          <div className="bg-zinc-800/50 px-4 py-2 text-xs text-zinc-500 border-b border-zinc-700/50 font-mono uppercase tracking-wider flex justify-between">
+            <span>{match[1]}</span>
+          </div>
+          <div className="p-4 overflow-x-auto">
+            <pre className="!m-0 !bg-transparent !p-0">
+              <code className={className} {...props}>
+                {children}
+              </code>
+            </pre>
+          </div>
+        </div>
+      ) : (
+        <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-400" {...props}>
+          {children}
+        </code>
+      );
+    },
+  };
+
+  const renderMessageContent = (content: MessageContent) => {
+    if (typeof content === 'string') {
+      return (
+        <div className="prose prose-invert max-w-none">
+          <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
+            {preprocessMarkdown(content)}
+          </ReactMarkdown>
+        </div>
+      );
+    }
     return (
-      <div className="prose prose-invert max-w-none">
-        <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
-          {preprocessMarkdown(content)}
-        </ReactMarkdown>
+      <div className="flex flex-col gap-4">
+        {content.map((part, index) => {
+          if (part.type === 'image_url') {
+            return (
+              <img
+                alt="User upload"
+                className="max-w-full rounded-lg max-h-96 object-contain self-start border border-zinc-700"
+                key={index}
+                src={part.image_url.url}
+              />
+            );
+          }
+          if (part.type === 'text') {
+            return (
+              <div key={index} className="prose prose-invert max-w-none">
+                <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
+                  {preprocessMarkdown(part.text)}
+                </ReactMarkdown>
+              </div>
+            );
+          }
+          return null;
+        })}
       </div>
     );
-  }
+  };
+
+  if (!currentSession) return null;
+
   return (
-    <div className="flex flex-col gap-4">
-      {content.map((part, index) => {
-        if (part.type === 'image_url') {
-          return (
-            <img
-              alt="User upload"
-              className="max-w-full rounded-lg max-h-96 object-contain self-start border border-zinc-700"
-              key={index}
-              src={part.image_url.url}
-            />
-          );
-        }
-        if (part.type === 'text') {
-          return (
-            <div key={index} className="prose prose-invert max-w-none">
-              <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
-                {preprocessMarkdown(part.text)}
-              </ReactMarkdown>
+    <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900/50 hidden md:flex">
+        <div className="p-4 border-b border-zinc-800">
+          <button
+            className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
+            onClick={handleNewChat}>
+            <Plus className="w-4 h-4" />
+            New Chat
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          {sessions.map(session => (
+            <div
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
+                ? 'bg-zinc-800 text-white'
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                }`}
+              key={session.id}
+              onClick={() => setCurrentSessionId(session.id)}>
+              <MessageSquare className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate flex-1 text-left">{session.title}</span>
+              {sessions.length > 1 && (
+                <button
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-opacity"
+                  onClick={e => deleteSession(e, session.id)}
+                  title="Delete chat">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
             </div>
-          );
-        }
-        return null;
-      })}
-    </div>
-  );
-};
+          ))}
+        </div>
 
-if (!currentSession) return null;
-
-return (
-  <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
-    {/* Sidebar */}
-    <div className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900/50 hidden md:flex">
-      <div className="p-4 border-b border-zinc-800">
-        <button
-          className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
-          onClick={handleNewChat}>
-          <Plus className="w-4 h-4" />
-          New Chat
-        </button>
+        <div className="p-4 border-t border-zinc-800">
+          <button
+            className="w-full flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-red-400 transition-colors text-sm"
+            onClick={onClearKey}>
+            <Trash2 className="w-4 h-4" />
+            Clear API Key
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {sessions.map(session => (
-          <div
-            className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-              ? 'bg-zinc-800 text-white'
-              : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
-            key={session.id}
-            onClick={() => setCurrentSessionId(session.id)}>
-            <MessageSquare className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate flex-1 text-left">{session.title}</span>
-            {sessions.length > 1 && (
-              <button
-                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-opacity"
-                onClick={e => deleteSession(e, session.id)}
-                title="Delete chat">
-                <Trash2 className="w-3 h-3" />
-              </button>
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col h-full min-w-0">
+        <header className="flex items-center justify-between px-6 py-4 bg-zinc-800 border-b border-zinc-700">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Bot className="w-6 h-6 text-green-400" />
+              <h1 className="text-lg font-semibold hidden sm:block">OpenAI Chat</h1>
+            </div>
+            <select
+              className="bg-zinc-700 text-zinc-100 text-sm rounded-lg px-3 py-1.5 border border-zinc-600 focus:ring-2 focus:ring-green-500 outline-none"
+              onChange={e => setSelectedModel(e.target.value)}
+              value={selectedModel}>
+              <option value="gpt-4o">GPT-5.2</option>
+              <option value="gpt-4o-mini">GPT-5 mini</option>
+              <option value="gpt-3.5-turbo">GPT-5 nano</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {currentSession.activeGem && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs font-medium">
+                <FilePenLine className="w-3 h-3" />
+                {currentSession.activeGem}
+              </div>
             )}
-          </div>
-        ))}
-      </div>
-
-      <div className="p-4 border-t border-zinc-800">
-        <button
-          className="w-full flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-red-400 transition-colors text-sm"
-          onClick={onClearKey}>
-          <Trash2 className="w-4 h-4" />
-          Clear API Key
-        </button>
-      </div>
-    </div>
-
-    {/* Main Chat Area */}
-    <div className="flex-1 flex flex-col h-full min-w-0">
-      <header className="flex items-center justify-between px-6 py-4 bg-zinc-800 border-b border-zinc-700">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Bot className="w-6 h-6 text-green-400" />
-            <h1 className="text-lg font-semibold hidden sm:block">OpenAI Chat</h1>
-          </div>
-          <select
-            className="bg-zinc-700 text-zinc-100 text-sm rounded-lg px-3 py-1.5 border border-zinc-600 focus:ring-2 focus:ring-green-500 outline-none"
-            onChange={e => setSelectedModel(e.target.value)}
-            value={selectedModel}>
-            <option value="gpt-4o">GPT-5.2</option>
-            <option value="gpt-4o-mini">GPT-5 mini</option>
-            <option value="gpt-3.5-turbo">GPT-5 nano</option>
-          </select>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {currentSession.activeGem && (
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs font-medium">
-              <FilePenLine className="w-3 h-3" />
-              {currentSession.activeGem}
-            </div>
-          )}
-          <button
-            className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-              }`}
-            onClick={handleEmailRefine}
-            title="Start Email Refiner Gem">
-            <FilePenLine className="w-4 h-4" />
-            <span className="hidden sm:inline">Refine Email</span>
-          </button>
-
-          {/* Mobile New Chat Button */}
-          <div className="md:hidden h-4 w-px bg-zinc-700"></div>
-          <button
-            className="md:hidden text-sm text-zinc-400 hover:text-green-400 transition-colors flex items-center gap-2"
-            onClick={handleNewChat}
-            title="Start New Chat">
-            <PlusCircle className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-        {currentSession.messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-4">
-            <Bot className="w-12 h-12 opacity-20" />
-            <p className="text-lg">Welcome. How can I help you today?</p>
-          </div>
-        )}
-
-        {currentSession.messages.map((msg, idx) => (
-          <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
-            <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
-                  }`}>
-                {msg.role === 'user' ? (
-                  <User className="w-5 h-5 text-white" />
-                ) : (
-                  <Bot className="w-5 h-5 text-white" />
-                )}
-              </div>
-
-              <div
-                className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-tr-none'
-                  : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                  }`}>
-                <div className="prose prose-invert max-w-none text-sm sm:text-base">
-                  {renderMessageContent(msg.content)}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex gap-4 justify-start">
-            <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
-            <div className="bg-zinc-800 px-4 py-3 rounded-2xl rounded-tl-none border border-zinc-700 flex items-center">
-              <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 bg-zinc-900 border-t border-zinc-800">
-        <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
-          {selectedImages.length > 0 && (
-            <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
-              {selectedImages.map((img, idx) => (
-                <div className="relative group flex-shrink-0" key={idx}>
-                  <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
-                  <button
-                    className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeImage(idx)}
-                    type="button">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="relative flex items-end gap-2">
-            <input
-              accept="image/*"
-              className="hidden"
-              multiple
-              onChange={handleFileSelect}
-              ref={fileInputRef}
-              type="file"
-            />
-
             <button
-              className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
-              onClick={() => fileInputRef.current?.click()}
-              title="Upload Image"
-              type="button">
-              <Paperclip className="w-5 h-5" />
+              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+                }`}
+              onClick={handleEmailRefine}
+              title="Start Email Refiner Gem">
+              <FilePenLine className="w-4 h-4" />
+              <span className="hidden sm:inline">Refine Email</span>
             </button>
 
-            <div className="relative flex-1">
-              <textarea
-                className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
-                disabled={isLoading}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder="Message OpenAI..."
-                ref={textareaRef}
-                rows={1}
-                value={input}
-              />
-              <button
-                className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-green-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
-                type="submit">
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Mobile New Chat Button */}
+            <div className="md:hidden h-4 w-px bg-zinc-700"></div>
+            <button
+              className="md:hidden text-sm text-zinc-400 hover:text-green-400 transition-colors flex items-center gap-2"
+              onClick={handleNewChat}
+              title="Start New Chat">
+              <PlusCircle className="w-4 h-4" />
+            </button>
           </div>
-        </form>
+        </header>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+          {currentSession.messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-4">
+              <Bot className="w-12 h-12 opacity-20" />
+              <p className="text-lg">Welcome. How can I help you today?</p>
+            </div>
+          )}
+
+          {currentSession.messages.map((msg, idx) => (
+            <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
+              <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
+                    }`}>
+                  {msg.role === 'user' ? (
+                    <User className="w-5 h-5 text-white" />
+                  ) : (
+                    <Bot className="w-5 h-5 text-white" />
+                  )}
+                </div>
+
+                <div
+                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                    }`}>
+                  <div className="prose prose-invert max-w-none text-sm sm:text-base">
+                    {renderMessageContent(msg.content)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {isLoading && (
+            <div className="flex gap-4 justify-start">
+              <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="bg-zinc-800 px-4 py-3 rounded-2xl rounded-tl-none border border-zinc-700 flex items-center">
+                <Loader2 className="w-5 h-5 text-zinc-400 animate-spin" />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 bg-zinc-900 border-t border-zinc-800">
+          <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
+            {selectedImages.length > 0 && (
+              <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+                {selectedImages.map((img, idx) => (
+                  <div className="relative group flex-shrink-0" key={idx}>
+                    <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
+                    <button
+                      className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(idx)}
+                      type="button">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative flex items-end gap-2">
+              <input
+                accept="image/*"
+                className="hidden"
+                multiple
+                onChange={handleFileSelect}
+                ref={fileInputRef}
+                type="file"
+              />
+
+              <button
+                className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload Image"
+                type="button">
+                <Paperclip className="w-5 h-5" />
+              </button>
+
+              <div className="relative flex-1">
+                <textarea
+                  className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
+                  disabled={isLoading}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder="Message OpenAI..."
+                  ref={textareaRef}
+                  rows={1}
+                  value={input}
+                />
+                <button
+                  className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-green-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
+                  disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
+                  type="submit">
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
