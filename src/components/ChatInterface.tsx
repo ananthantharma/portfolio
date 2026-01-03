@@ -1,9 +1,9 @@
-import { Bot, FilePenLine, Loader2, Paperclip, PlusCircle, Send, Trash2, User, X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import {Bot, FilePenLine, Loader2, Paperclip, PlusCircle, Send, Trash2, User, X} from 'lucide-react';
+import React, {useEffect, useRef, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { getChatResponse } from '../lib/gemini';
+import {getChatResponse} from '../lib/gemini';
 
 const plugins = [remarkGfm];
 
@@ -48,7 +48,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
+export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -68,7 +68,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
-  const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
+  const [availableModels, setAvailableModels] = useState<{id: string; label: string}[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -78,9 +78,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   useEffect(() => {
     // We only care about Flash and Pro for now
     const models = [
-      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
-      { id: 'gemini-pro-latest', label: 'Gemini Pro Latest' },
-      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest' },
+      {id: 'gemini-flash-latest', label: 'Gemini Flash Latest'},
+      {id: 'gemini-pro-latest', label: 'Gemini Pro Latest'},
+      {id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest'},
     ];
     setAvailableModels(models);
     setSelectedModel('gemini-flash-latest');
@@ -96,7 +96,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
@@ -230,7 +230,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
       // Let's modify Message interface above.
 
-      const newMessages = [...session.messages, { role: 'user', parts: userMessage, images: currentImages } as any];
+      const newMessages = [...session.messages, {role: 'user', parts: userMessage, images: currentImages} as any];
 
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
@@ -263,7 +263,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, { role: 'model', parts: response }],
+        messages: [...s.messages, {role: 'model', parts: response}],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -307,39 +307,34 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
   const markdownComponents: any = {
     // Tables - Gemini-like styling (Clean, lighter borders)
-    table: ({ node, ...props }: any) => (
+    table: ({node, ...props}: any) => (
       <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
         <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
     ),
-    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
-    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
-    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
-    th: ({ node, ...props }: any) => (
-      <th
-        className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider"
-        {...props}
-      />
+    thead: ({node, ...props}: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({node, ...props}: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({node, ...props}: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({node, ...props}: any) => (
+      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider" {...props} />
     ),
-    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
+    td: ({node, ...props}: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
 
     // Text & Lists
-    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-    a: ({ node, ...props }: any) => (
+    p: ({node, ...props}: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({node, ...props}: any) => (
       <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
     ),
-    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
-    ol: ({ node, ...props }: any) => (
-      <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />
-    ),
-    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
-    blockquote: ({ node, ...props }: any) => (
+    ul: ({node, ...props}: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({node, ...props}: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
+    li: ({node, ...props}: any) => <li className="pl-2" {...props} />,
+    blockquote: ({node, ...props}: any) => (
       <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
     ),
-    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
+    hr: ({node, ...props}: any) => <hr className="my-6 border-zinc-700" {...props} />,
 
     // Code
-    code: ({ node, inline, className, children, ...props }: any) => {
+    code: ({node, inline, className, children, ...props}: any) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
         <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
@@ -387,10 +382,11 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
+                currentSessionId === session.id
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
               <div className="flex-shrink-0">
@@ -453,8 +449,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-                }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${
+                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -495,8 +492,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                    }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                  }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -505,14 +503,20 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                    }`}>
+                  className={`px-4 py-3 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {/* Render User Images if present */}
                     {(msg as any).images?.map((img: string, i: number) => (
-                      <img key={i} src={img} alt="User Upload" className="max-w-full rounded-lg mb-2 max-h-64 object-contain" />
+                      <img
+                        key={i}
+                        src={img}
+                        alt="User Upload"
+                        className="max-w-full rounded-lg mb-2 max-h-64 object-contain"
+                      />
                     ))}
                     <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
                       {preprocessMarkdown(msg.parts)}
@@ -538,64 +542,65 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
         {/* Input Area */}
         <div className="p-4 bg-zinc-900 border-t border-zinc-800">
-          {/* Image Preview Area */}
-          {selectedImages.length > 0 && (
-            <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
-              {selectedImages.map((img, idx) => (
-                <div className="relative group flex-shrink-0" key={idx}>
-                  <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
-                  <button
-                    className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeImage(idx)}
-                    type="button">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
+            {/* Image Preview Area */}
+            {selectedImages.length > 0 && (
+              <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+                {selectedImages.map((img, idx) => (
+                  <div className="relative group flex-shrink-0" key={idx}>
+                    <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
+                    <button
+                      className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(idx)}
+                      type="button">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <div className="relative flex-1 flex gap-2 items-end">
-            <input
-              accept="image/*"
-              className="hidden"
-              multiple
-              onChange={handleFileSelect}
-              ref={fileInputRef}
-              type="file"
-            />
-
-            <button
-              className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
-              onClick={() => fileInputRef.current?.click()}
-              title="Upload Image"
-              type="button">
-              <Paperclip className="w-5 h-5" />
-            </button>
-
-            <div className="relative flex-1">
-              <textarea
-                className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
-                disabled={isLoading}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder="Message Gemini..."
-                ref={textareaRef}
-                rows={1}
-                value={input}
+            <div className="relative flex-1 flex gap-2 items-end">
+              <input
+                accept="image/*"
+                className="hidden"
+                multiple
+                onChange={handleFileSelect}
+                ref={fileInputRef}
+                type="file"
               />
+
               <button
-                className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-blue-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
-                type="submit">
-                <Send className="w-5 h-5" />
+                className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload Image"
+                type="button">
+                <Paperclip className="w-5 h-5" />
               </button>
+
+              <div className="relative flex-1">
+                <textarea
+                  className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
+                  disabled={isLoading}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder="Message Gemini..."
+                  ref={textareaRef}
+                  rows={1}
+                  value={input}
+                />
+                <button
+                  className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-blue-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
+                  disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
+                  type="submit">
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
