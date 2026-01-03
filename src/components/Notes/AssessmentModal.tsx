@@ -1,16 +1,18 @@
 /* eslint-disable simple-import-sort/imports */
-import {Dialog, Transition} from '@headlessui/react';
-import {ArrowPathIcon, CloudArrowUpIcon, DocumentTextIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, useRef, useState} from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { ArrowPathIcon, CloudArrowUpIcon, DocumentTextIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { Fragment, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 
 interface AssessmentModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AssessmentModal: React.FC<AssessmentModalProps> = ({isOpen, onClose}) => {
+const AssessmentModal: React.FC<AssessmentModalProps> = ({ isOpen, onClose }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<string>('');
@@ -30,15 +32,85 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({isOpen, onClose}) => {
     setIsAnalyzing(true);
     setResult('');
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('apiKey', 'GEMINI_SCOPED'); // Use the scoped key
-    formData.append('model', useProModel ? 'gemini-pro-latest' : 'gemini-flash-latest');
-
     try {
+      let payload: any = {
+        apiKey: 'GEMINI_SCOPED',
+        model: useProModel ? 'gemini-pro-latest' : 'gemini-flash-latest',
+      };
+
+      // 1. PDF -> Upload to Oracle
+      if (file.type === 'application/pdf') {
+        // Simple Oracle Upload Logic (Copied from ChatInterface)
+        const PAR_URL_BASE = 'https://objectstorage.ca-toronto-1.oraclecloud.com/p/QLAWx8wCq1Wb3kBchcG9RCcy3TcngoiuartQbdYovOIXVvYxNVvBGtWE09o29MvG/n/yzo9jkinnwr6/b/bucket-20260103-1212/o/';
+        const objectName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const uploadUrl = `${PAR_URL_BASE}${objectName}`;
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type }
+        });
+
+        if (!uploadRes.ok) throw new Error('Failed to upload PDF to storage');
+
+        payload.fileUrl = uploadUrl;
+        payload.fileType = 'pdf';
+      }
+      // 2. DOCX -> Extract Text Client-Side
+      else if (file.name.endsWith('.docx')) {
+        const reader = new FileReader();
+        await new Promise<void>((resolve, reject) => {
+          reader.onload = async (e) => {
+            try {
+              const arrayBuffer = e.target?.result as ArrayBuffer;
+              // Dynamic import or assume mammoth is validated globally? 
+              // AssessmentModal doesn't import mammoth yet. I need to add imports at top.
+              // Assuming imports added in next step or I should import them now? 
+              // I will rely on 'replace_file_content' to update imports if I include them in a separate block? 
+              // No, I must do it all here or multiple blocks.
+              // I will check imports first. Existing: ReactMarkdown, remarkGfm.
+              // I need to add mammoth and xlsx imports.
+
+              // Actually, I can't add imports in this single block properly if they are far away. 
+              // I will just use window.mammoth or assume logic. 
+              // Wait, I should add imports first.
+              const { value } = await mammoth.extractRawText({ arrayBuffer });
+              payload.text = value;
+              payload.fileType = 'text';
+              resolve();
+            } catch (err) { reject(err); }
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+      // 3. Excel -> Extract Text Client-Side
+      else if (file.name.endsWith('.xlsx')) {
+        const reader = new FileReader();
+        await new Promise<void>((resolve, reject) => {
+          reader.onload = (e) => {
+            try {
+              const data = new Uint8Array(e.target?.result as ArrayBuffer);
+              const workbook = XLSX.read(data, { type: 'array' });
+              let csv = '';
+              workbook.SheetNames.forEach(name => {
+                const sheet = workbook.Sheets[name];
+                csv += XLSX.utils.sheet_to_csv(sheet) + '\n\n';
+              });
+              payload.text = csv;
+              payload.fileType = 'text';
+              resolve();
+            } catch (err) { reject(err); }
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      } else {
+        throw new Error('Unsupported file type');
+      }
+
       const response = await fetch('/api/gemini/assess', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -48,9 +120,9 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({isOpen, onClose}) => {
       } else {
         setResult(data.text);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error analyzing document:', error);
-      setResult('Error connecting to assessment service.');
+      setResult(`Error: ${error.message || 'Connection failed'}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -137,11 +209,10 @@ const AssessmentModal: React.FC<AssessmentModalProps> = ({isOpen, onClose}) => {
                   {/* Actions */}
                   <div className="flex justify-end">
                     <button
-                      className={`flex items-center gap-2 rounded-md px-4 py-2 text-white font-medium transition-colors ${
-                        !file || isAnalyzing
-                          ? 'bg-gray-400 cursor-not-allowed'
-                          : 'bg-indigo-600 hover:bg-indigo-700 shadow-sm'
-                      }`}
+                      className={`flex items-center gap-2 rounded-md px-4 py-2 text-white font-medium transition-colors ${!file || isAnalyzing
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-indigo-600 hover:bg-indigo-700 shadow-sm'
+                        }`}
                       disabled={!file || isAnalyzing}
                       onClick={handleAnalyze}>
                       {isAnalyzing ? (

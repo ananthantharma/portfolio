@@ -22,7 +22,7 @@ import './ChatInterface.css';
 
 const plugins = [remarkGfm];
 
-const DEFAULT_SYSTEM_INSTRUCTION = `Do not use LaTeX or math symbols (like $ or \\mathbf) for simple numbers or tables. Use plain text and standard Markdown tables only. Each row must be on a new line.`;
+const DEFAULT_SYSTEM_INSTRUCTION = ``;
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 

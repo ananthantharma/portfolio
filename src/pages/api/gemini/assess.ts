@@ -1,44 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {GoogleGenerativeAI} from '@google/generative-ai';
-import formidable from 'formidable';
-import fs from 'fs';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import mammoth from 'mammoth';
-import {NextApiRequest, NextApiResponse} from 'next';
-import {getServerSession} from 'next-auth';
-import PDFParser from 'pdf2json';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { getServerSession } from 'next-auth';
 import * as XLSX from 'xlsx';
 
-import {authOptions} from '@/lib/auth';
+import { authOptions } from '@/lib/auth';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Config removed to enable default bodyParser (JSON)
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({error: 'Method not allowed'});
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const session = await getServerSession(req, res, authOptions);
     if (!session || !(session.user as any).googleApiEnabled) {
-      return res.status(403).json({error: 'Unauthorized'});
+      return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const form = formidable({});
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [fields, files] = await form.parse(req);
-
-    const uploadedFile = files.file?.[0];
-    const apiKeyParam = fields.apiKey?.[0];
-    const modelName = fields.model?.[0] || 'gemini-flash-latest';
-
-    if (!uploadedFile) {
-      return res.status(400).json({error: 'No file provided'});
-    }
+    const { model: requestedModel, apiKey: apiKeyParam, fileUrl, fileType, text: providedText } = req.body;
+    const modelName = requestedModel || 'gemini-flash-latest';
 
     let apiKey = process.env.GOOGLE_API_KEY;
     if (apiKeyParam === 'GEMINI_SCOPED') {
@@ -46,48 +29,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!apiKey) {
-      return res.status(500).json({error: 'API Key not configured'});
+      return res.status(500).json({ error: 'API Key not configured' });
     }
 
-    const fileBuffer = fs.readFileSync(uploadedFile.filepath);
-    let text = '';
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
 
-    // Determine file type from original filename
-    const originalFilename = uploadedFile.originalFilename || '';
-    const fileType = originalFilename.split('.').pop()?.toLowerCase();
+    let promptParts: any[] = [];
+    let textToAnalyze = '';
 
-    try {
-      if (fileType === 'pdf') {
-        const pdfParser = new PDFParser(null, true);
-        text = await new Promise((resolve, reject) => {
-          pdfParser.on('pdfParser_dataError', (errData: any) => reject(errData.parserError));
-          pdfParser.on('pdfParser_dataReady', () => {
-            resolve(pdfParser.getRawTextContent());
-          });
-          pdfParser.parseBuffer(fileBuffer);
+    // Case 1: PDF via Oracle URL
+    if (fileType === 'pdf' && fileUrl) {
+      try {
+        const fetchRes = await fetch(fileUrl);
+        if (!fetchRes.ok) throw new Error(`Failed to fetch PDF from ${fileUrl}`);
+        const arrayBuffer = await fetchRes.arrayBuffer();
+        const base64Content = Buffer.from(arrayBuffer).toString('base64');
+
+        promptParts.push({
+          inlineData: {
+            data: base64Content,
+            mimeType: 'application/pdf',
+          }
         });
-      } else if (fileType === 'docx') {
-        const result = await mammoth.extractRawText({buffer: fileBuffer});
-        text = result.value;
-      } else if (fileType === 'xlsx') {
-        const workbook = XLSX.read(fileBuffer, {type: 'buffer'});
-        workbook.SheetNames.forEach(sheetName => {
-          const sheet = workbook.Sheets[sheetName];
-          text += XLSX.utils.sheet_to_txt(sheet) + '\n';
-        });
-      } else {
-        return res.status(400).json({error: 'Unsupported file type'});
+        textToAnalyze = "PDF Document (Attached)";
+      } catch (err) {
+        console.error("Error fetching PDF for assessment:", err);
+        return res.status(500).json({ error: "Failed to retrieve PDF" });
       }
-    } catch (extractionError) {
-      console.error('Text extraction failed:', extractionError);
-      return res.status(500).json({error: 'Failed to extract text from document.'});
+    }
+    // Case 2: Text (DOCX/Excel extracted client-side)
+    else if (providedText) {
+      textToAnalyze = providedText;
+    } else {
+      return res.status(400).json({ error: "No file content provided" });
     }
 
-    if (!text || text.trim().length === 0) {
-      return res.status(400).json({error: 'No text content found in document.'});
-    }
-
-    // Gemini Analysis
     const PROMPT = `
 Task: Act as a Senior Procurement Manager and Financial Analyst. Review the document provided below and perform a comprehensive analysis of the vendor quote or pricing proposal.
 
@@ -110,19 +87,19 @@ Task: Act as a Senior Procurement Manager and Financial Analyst. Review the docu
 Output Format: Please provide the table first, followed by the multi-year breakdown, and conclude with the "Leader's Lens" executive summary.
 
 DOCUMENT CONTENT:
-${text.slice(0, 30000)}
+${textToAnalyze.slice(0, 50000)}
 `;
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({model: modelName});
+    promptParts.push({ text: PROMPT });
 
-    const result = await model.generateContent(PROMPT);
+    const result = await model.generateContent(promptParts);
     const response = await result.response;
     const analysisText = response.text();
 
-    return res.status(200).json({text: analysisText});
-  } catch (error) {
+    return res.status(200).json({ text: analysisText });
+
+  } catch (error: any) {
     console.error('Assessment error:', error);
-    return res.status(500).json({error: 'Internal Server Error'});
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
 }
