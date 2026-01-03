@@ -657,7 +657,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-full min-w-0">
-        <header className="flex items-center justify-between px-6 py-4 bg-zinc-800 border-b border-zinc-700">
+        <header className="flex items-center justify-between p-4 bg-zinc-800 border-b border-zinc-700">
           <div className="flex items-center gap-4">
             {/* Mobile Menu Toggle */}
             <button
