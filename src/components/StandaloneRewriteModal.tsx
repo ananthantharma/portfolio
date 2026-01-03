@@ -28,7 +28,7 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
   // Constraints
   const [noBulletPoints, setNoBulletPoints] = useState(false);
   const [noGreetings, setNoGreetings] = useState(false);
-  const [noSemicolons, setNoSemicolons] = useState(false);
+  const [noSemicolons, setNoSemicolons] = useState(true);
   const [negotiationPivot, setNegotiationPivot] = useState(false);
 
   // Result
