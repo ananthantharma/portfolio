@@ -288,8 +288,9 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     processed = processed.replace(/(^|\n)([^|\n]+)(\|)/g, '$1$2\n\n$3');
 
     // 3. Fix compressed tables: Replace "| |" with "|\n|" globally
-    // This catches "Header ||---" and "Cell || NextRowCell" (zero or more spaces)
-    processed = processed.replace(/\| *(\|)/g, '|\n$1');
+    // This catches "Header | |---" and "Cell | | NextRowCell"
+    // Validated to handle LaTeX cells and generic content.
+    processed = processed.replace(/\| *(\| *[^ |])/g, '|\n$1');
 
     return processed;
   };

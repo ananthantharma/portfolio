@@ -1,21 +1,17 @@
-const problematicString = `| Multiplier (x) | Result (5 $\times$ x) | |---|---| | 1 | 5 | | 2 | 10 | | 3 | 15 | | 4 | 20 | | 5 | 25 | | 6 | 30 | | 7 | 35 | | 8 | 40 | | 9 | 45 | | 10 | 50 | | 11 | 55 | | 12 | 60 |`;
+const problematicString = `| $\mathbf{\times}$ | $\mathbf{1}$ | $\mathbf{2}$ | $\mathbf{3}$ | $\mathbf{4}$ | $\mathbf{5}$ | | :---: | :---: | :---: | :---: | :---: | :---: | | $\mathbf{1}$ | 1 | 2 | 3 | 4 | 5 | | $\mathbf{2}$ | 2 | 4 | 6 | 8 | 10 | | $\mathbf{3}$ | 3 | 6 | 9 | 12 | 15 | | $\mathbf{4}$ | 4 | 8 | 12 | 16 | 20 | | $\mathbf{5}$ | 5 | 10 | 15 | 20 | 25 |`;
 
 console.log("Original:", problematicString);
 
-// Attempt 1: Current Regex
-const regex1 = /\| *(\|)/g;
-const result1 = problematicString.replace(regex1, '|\n$1');
-console.log("\n--- Regex 1 Output ---");
-console.log(result1);
+// Hypothesis: Split when we see "| |" followed by NON-space/pipe content
+// This avoids splitting empty cells "||" or "|  |" but splits "| | Content"
+const regex = /\| *(\| *[^ |])/g;
+const result = problematicString.replace(regex, '|\n$1');
 
-// Attempt 2: Flexible Whitespace
-const regex2 = /\|\s+(\|)/g;
-const result2 = problematicString.replace(regex2, '|\n$1');
-console.log("\n--- Regex 2 Output ---");
-console.log(result2);
+console.log("\n--- New Regex Output ---");
+console.log(result);
 
-// Attempt 3: Explicit Pipe-Space*-Pipe
-const regex3 = /\|[ \t]*(\|)/g;
-const result3 = problematicString.replace(regex3, '|\n$1');
-console.log("\n--- Regex 3 Output ---");
-console.log(result3);
+if (result.includes('\n')) {
+    console.log("\nSUCCESS: Newlines inserted.");
+} else {
+    console.log("\nFAILURE: No newlines inserted.");
+}
