@@ -46,6 +46,7 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
 Return ONLY the rewritten text.
 Do NOT include any introduction, explanation, summary, or headers.
 Do NOT say "Here is the rewritten text".
+For structured data or comparisons, you MUST use Markdown tables.
 Just output the result.
 
 Task: Rewrite the following text for a [${audience}].
@@ -273,6 +274,8 @@ Text to rewrite:
                                     </table>
                                   ),
                                   thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
+                                  tbody: ({ children }) => <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>,
+                                  tr: ({ children }) => <tr className="hover:bg-gray-50 transition-colors">{children}</tr>,
                                   th: ({ children }) => (
                                     <th className="border border-gray-300 px-4 py-2 font-bold text-left text-gray-700">
                                       {children}
