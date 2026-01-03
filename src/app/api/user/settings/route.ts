@@ -36,6 +36,7 @@ export async function POST(req: Request) {
         }
 
         const { systemInstruction } = await req.json();
+        console.log('Saving settings for:', session.user.email, 'Instruction:', systemInstruction);
 
         await dbConnect();
         const user = await User.findOneAndUpdate(
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
             { $set: { systemInstruction } },
             { new: true }
         );
+        console.log('User updated:', user ? 'Yes' : 'No');
 
         return NextResponse.json({
             success: true,

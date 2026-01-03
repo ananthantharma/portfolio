@@ -113,7 +113,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
           const response = await fetch('/api/user/settings');
           if (response.ok) {
             const data = await response.json();
-            if (data.systemInstruction) {
+            // Allow empty string if user explicitly cleared it
+            if (typeof data.systemInstruction === 'string') {
               setCustomInstruction(data.systemInstruction);
               updateInitialSession(data.systemInstruction);
               return;
