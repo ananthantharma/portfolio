@@ -275,11 +275,20 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const preprocessMarkdown = (content: string) => {
     if (!content) return '';
 
-    // Ensure newlines before tables (lines starting with |) if not present
-    let processed = content.replace(/([^\n])\n(\|.*\|)/g, '$1\n\n$2');
+    let processed = content;
 
-    // Ensure newlines before code blocks if not present
+    // 1. Ensure newlines before code blocks
     processed = processed.replace(/([^\n])\n(```)/g, '$1\n\n$2');
+
+    // 2. Ensure newlines before table start (first pipe after newline)
+    processed = processed.replace(/([^\n])\n(\|)/g, '$1\n\n$2');
+
+    // 3. Fix compressed tables (missing newlines between rows)
+    // Case A: Header separator row (e.g. | Header | |---| )
+    processed = processed.replace(/\|\s*(\|[:-])/g, '|\n$1');
+
+    // Case B: Data rows starting with numbers (e.g. |...| | 1 |)
+    processed = processed.replace(/\|\s*(\|\s*\d)/g, '|\n$1');
 
     return processed;
   };
@@ -292,10 +301,10 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   };
 
   const markdownComponents: any = {
-    // Tables
+    // Tables - Gemini-like styling (Clean, lighter borders)
     table: ({ node, ...props }: any) => (
-      <div className="overflow-x-auto my-6 rounded-lg border border-zinc-700">
-        <table className="min-w-full divide-y divide-zinc-700" {...props} />
+      <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
+        <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
     ),
     thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
