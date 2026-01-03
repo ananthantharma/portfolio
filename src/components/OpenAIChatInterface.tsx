@@ -288,8 +288,8 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     processed = processed.replace(/([^\n])\n(\|)/g, '$1\n\n$2');
 
     // 3. Fix compressed tables: Replace "| |" with "|\n|" globally
-    // This catches "Header | |---" and "Cell | | NextRowCell"
-    processed = processed.replace(/\|\s+(\|)/g, '|\n$1');
+    // This catches "Header ||---" and "Cell || NextRowCell" (zero or more spaces)
+    processed = processed.replace(/\| *(\|)/g, '|\n$1');
 
     return processed;
   };
@@ -363,7 +363,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const renderMessageContent = (content: MessageContent) => {
     if (typeof content === 'string') {
       return (
-        <div className="prose prose-invert max-w-none">
+        <div className="prose prose-invert max-w-none whitespace-pre-wrap">
           <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
             {preprocessMarkdown(content)}
           </ReactMarkdown>
@@ -385,7 +385,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
           }
           if (part.type === 'text') {
             return (
-              <div key={index} className="prose prose-invert max-w-none">
+              <div key={index} className="prose prose-invert max-w-none whitespace-pre-wrap">
                 <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
                   {preprocessMarkdown(part.text)}
                 </ReactMarkdown>
