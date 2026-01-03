@@ -18,21 +18,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await fetch(`https://api.api-ninjas.com/v1/stockprice?ticker=${ticker}`, {
-      headers: {
-        'X-Api-Key': apiKey,
-      },
-    });
+    const quote = await yahooFinance.quote(ticker);
 
-    if (!response.ok) {
-      throw new Error(`API Ninjas Error: ${response.statusText}`);
+    if (!quote) {
+      return res.status(404).json({ error: 'Ticker not found' });
     }
 
-    const data = await response.json();
-    // API Ninjas returns object like { ticker: 'AAPL', price: 150.00, ... }
-    return res.status(200).json(data);
+    const price = quote.regularMarketPrice;
+
+    return res.status(200).json({ price });
   } catch (error) {
-    console.error('Error fetching stock price:', error);
-    return res.status(500).json({ message: 'Failed to fetch stock price' });
+    console.error(`Error fetching price for ${ticker}:`, error);
+    return res.status(500).json({ error: 'Failed to fetch price' });
   }
 }
