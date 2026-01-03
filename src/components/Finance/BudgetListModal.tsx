@@ -1,36 +1,38 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { PencilSquareIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment } from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {PencilSquareIcon, PlusIcon, TrashIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment} from 'react';
 
-import { IBudgetItemData } from '@/models/BudgetItem';
+import {IBudgetItemData} from '@/models/BudgetItem';
 
 interface BudgetListModalProps {
   isOpen: boolean;
-  items: (IBudgetItemData & { _id: string })[];
+  items: (IBudgetItemData & {_id: string})[];
   onClose: () => void;
   onDelete: (id: string) => void;
-  onEdit: (item: IBudgetItemData & { _id: string }) => void;
+  onEdit: (item: IBudgetItemData & {_id: string}) => void;
   onAdd: () => void;
   type: 'Income' | 'Expense' | 'Investment';
 }
 
 const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
-  ({ isOpen, items, onClose, onDelete, onEdit, onAdd, type }) => {
+  ({isOpen, items, onClose, onDelete, onEdit, onAdd, type}) => {
     // Grouping State
     // Default to empty Set -> All collapsed initially (showing only totals)
     const [expandedCategories, setExpandedCategories] = React.useState<Set<string>>(new Set());
 
-    const displayItems = React.useMemo(() =>
-      type === 'Investment' ? items.filter(i => i.category === 'Savings & Debt') : items.filter(i => i.type === type),
-      [items, type]);
+    const displayItems = React.useMemo(
+      () =>
+        type === 'Investment' ? items.filter(i => i.category === 'Savings & Debt') : items.filter(i => i.type === type),
+      [items, type],
+    );
 
     const formatCurrency = (val: number) =>
-      new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(val);
+      new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format(val);
 
     // Group items and calculate totals
-    const { groupedItems, categoryTotals, totalAmount } = React.useMemo(() => {
-      const groups: { [key: string]: typeof items } = {};
-      const totals: { [key: string]: number } = {};
+    const {groupedItems, categoryTotals, totalAmount} = React.useMemo(() => {
+      const groups: {[key: string]: typeof items} = {};
+      const totals: {[key: string]: number} = {};
       let grandTotal = 0;
 
       displayItems.forEach(item => {
@@ -43,13 +45,11 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
         grandTotal += item.amount;
       });
 
-      return { groupedItems: groups, categoryTotals: totals, totalAmount: grandTotal };
+      return {groupedItems: groups, categoryTotals: totals, totalAmount: grandTotal};
     }, [displayItems]);
 
     // Derived sorted categories
-    const sortedCategories = React.useMemo(() =>
-      Object.keys(groupedItems).sort(),
-      [groupedItems]);
+    const sortedCategories = React.useMemo(() => Object.keys(groupedItems).sort(), [groupedItems]);
 
     const toggleCategory = (cat: string) => {
       const newSet = new Set(expandedCategories);
@@ -106,14 +106,12 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
                   <div className="flex items-center gap-3">
                     <button
                       onClick={toggleAll}
-                      className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                    >
+                      className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                       {expandedCategories.size === sortedCategories.length ? 'Collapse All' : 'Expand All'}
                     </button>
                     <button
                       className="rounded-full p-2 hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
-                      onClick={onClose}
-                    >
+                      onClick={onClose}>
                       <XMarkIcon className="h-6 w-6" />
                     </button>
                   </div>
@@ -137,12 +135,24 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
                             {/* Category Header Row */}
                             <div
                               className="flex items-center justify-between px-8 py-5 cursor-pointer hover:bg-slate-50 transition-colors group select-none"
-                              onClick={() => toggleCategory(cat)}
-                            >
+                              onClick={() => toggleCategory(cat)}>
                               <div className="flex items-center gap-4">
-                                <div className={`p-1.5 rounded-md transition-transform duration-200 ${isExpanded ? 'rotate-90 bg-indigo-100 text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                                <div
+                                  className={`p-1.5 rounded-md transition-transform duration-200 ${
+                                    isExpanded
+                                      ? 'rotate-90 bg-indigo-100 text-indigo-600'
+                                      : 'text-slate-400 group-hover:text-slate-600'
+                                  }`}>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    className="w-5 h-5">
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                      clipRule="evenodd"
+                                    />
                                   </svg>
                                 </div>
                                 <div>
@@ -156,7 +166,10 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
                             </div>
 
                             {/* Expanded Items Table */}
-                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                            <div
+                              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+                              }`}>
                               <div className="bg-slate-50 border-t border-slate-100">
                                 <table className="w-full text-left">
                                   <thead className="sr-only">
@@ -183,16 +196,20 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
                                           <div className="flex justify-end gap-2">
                                             <button
                                               className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-md transition-colors"
-                                              onClick={(e) => { e.stopPropagation(); onEdit(item); }}
-                                              title="Edit"
-                                            >
+                                              onClick={e => {
+                                                e.stopPropagation();
+                                                onEdit(item);
+                                              }}
+                                              title="Edit">
                                               <PencilSquareIcon className="h-4 w-4" />
                                             </button>
                                             <button
                                               className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-md transition-colors"
-                                              onClick={(e) => { e.stopPropagation(); onDelete(item._id); }}
-                                              title="Delete"
-                                            >
+                                              onClick={e => {
+                                                e.stopPropagation();
+                                                onDelete(item._id);
+                                              }}
+                                              title="Delete">
                                               <TrashIcon className="h-4 w-4" />
                                             </button>
                                           </div>
@@ -224,8 +241,7 @@ const BudgetListModal: React.FC<BudgetListModalProps> = React.memo(
                     onClick={() => {
                       onClose();
                       onAdd();
-                    }}
-                  >
+                    }}>
                     <PlusIcon className="h-5 w-5" />
                     Add New Item
                   </button>

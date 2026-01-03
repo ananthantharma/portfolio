@@ -13,12 +13,12 @@ import {
   PhotoIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import {useSession} from 'next-auth/react';
+import React, {useCallback, useEffect, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
-import { INoteSection } from '@/models/NoteSection';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
+import {INoteSection} from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
@@ -278,7 +278,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
+      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -288,7 +288,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -314,7 +314,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
+        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -346,7 +346,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -373,7 +373,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
+          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -407,7 +407,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
+        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -431,7 +431,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleSavePageContent = useCallback(async (id: string, content: string) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { content });
+      const response = await axios.put(`/api/notes/pages/${id}`, {content});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -443,7 +443,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -455,7 +455,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
+      const response = await axios.put(`/api/notes/pages/${id}`, {[field]: value});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error toggling flag', error);
@@ -495,7 +495,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   // Image Extraction Modal
   const [isImageExtractOpen, setIsImageExtractOpen] = useState(false);
@@ -572,7 +572,6 @@ const NotesLayout: React.FC = React.memo(() => {
             Contacts
           </button>
 
-
           <div className="h-4 w-px bg-gray-200"></div>
 
           {/* Restricted Buttons */}
@@ -603,8 +602,18 @@ const NotesLayout: React.FC = React.memo(() => {
                 {/* Let's verify imports. DocumentTextIcon is NOT in imports. */}
                 {/* I'll use PhotoIcon temporarily OR I can add DocumentTextIcon to imports. */}
                 {/* Better to add DocumentTextIcon to imports. */}
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-3.5 w-3.5">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                  />
                 </svg>
                 Assessment
               </button>
@@ -634,14 +643,18 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative" onPointerUp={() => { document.body.style.cursor = 'default'; }}>
+      <div
+        className="flex flex-1 overflow-hidden relative"
+        onPointerUp={() => {
+          document.body.style.cursor = 'default';
+        }}>
         {/* Main Content Area with Glassmorphism Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
 
         {/* Column 1: Categories */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
-          style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
+          style={{width: isCategoryCollapsed ? 56 : categoryWidth}}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -657,7 +670,7 @@ const NotesLayout: React.FC = React.memo(() => {
           {!isCategoryCollapsed && (
             <div
               className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={(e) => startResizing(e, 'category')}
+              onMouseDown={e => startResizing(e, 'category')}
             />
           )}
         </div>
@@ -665,7 +678,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Column 2: Sections */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
-          style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
+          style={{width: isSectionCollapsed ? 56 : sectionWidth}}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -681,7 +694,7 @@ const NotesLayout: React.FC = React.memo(() => {
           {!isSectionCollapsed && (
             <div
               className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={(e) => startResizing(e, 'section')}
+              onMouseDown={e => startResizing(e, 'section')}
             />
           )}
         </div>
@@ -689,7 +702,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Column 3: Pages */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
-          style={{ width: isPageCollapsed ? 56 : pageWidth }}>
+          style={{width: isPageCollapsed ? 56 : pageWidth}}>
           <PageList
             isCollapsed={isPageCollapsed}
             loading={loadingPages}
@@ -705,7 +718,7 @@ const NotesLayout: React.FC = React.memo(() => {
           {!isPageCollapsed && (
             <div
               className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={(e) => startResizing(e, 'page')}
+              onMouseDown={e => startResizing(e, 'page')}
             />
           )}
         </div>
@@ -745,7 +758,7 @@ const NotesLayout: React.FC = React.memo(() => {
       <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
       <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
       <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
-    </div >
+    </div>
   );
 });
 

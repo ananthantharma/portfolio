@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition, Menu } from '@headlessui/react';
+import {Dialog, Transition, Menu} from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -19,18 +19,18 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import { useSession } from 'next-auth/react'; // Import useSession
-import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import {useSession} from 'next-auth/react'; // Import useSession
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
 import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { AttachmentManager } from './AttachmentManager';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {AttachmentManager} from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
 const ORGANIZE_PROMPT = `
@@ -99,8 +99,8 @@ interface NoteEditorProps {
   page: INotePage | null;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
-  const { data: session } = useSession(); // Get session data
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, onToggleFlag, page}) => {
+  const {data: session} = useSession(); // Get session data
   const [content, setContent] = useState('');
   const [isDirty, setIsDirty] = useState(false);
   const [isFlagged, setIsFlagged] = useState(false);
@@ -111,7 +111,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [generatedText, setGeneratedText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
+  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
 
   // Prompt Editor State
   const [isPromptEditorOpen, setIsPromptEditorOpen] = useState(false);
@@ -223,7 +223,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     if (!range) return null;
 
     const text = quill.getText(range.index, range.length);
-    return { text, range };
+    return {text, range};
   };
 
   const handleOpenRewrite = () => {
@@ -302,7 +302,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -377,8 +377,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       await fetch('/api/prompts/organize', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: customPrompt}),
       });
       setOrganizePrompt(customPrompt);
     } catch (e) {
@@ -391,7 +391,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsMarkdownResponse(true);
 
     // Get text again (or use state if we stored it, but getting from quill is safer if reference held)
-    // We already set insertionRange but not the text content in state. 
+    // We already set insertionRange but not the text content in state.
     // Let's grab it from Quill again using insertionRange or just re-grab selection logic if safe.
     // Actually simpler: we need the text. Let's just grab it again safely.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -406,7 +406,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -488,8 +488,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest' }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest'}),
       });
       const data = await response.json();
       console.log('Gemini API Response:', data);
@@ -565,26 +565,26 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   };
 
   const SYMBOLS = [
-    { char: '🚨', tooltip: 'Instant Action Required' },
-    { char: '⏳', tooltip: 'Waiting' },
-    { char: '💡', tooltip: 'Good Idea' },
-    { char: '⚠️', tooltip: 'Warning' },
-    { char: '💰', tooltip: 'Money / Financial' },
-    { char: '📉', tooltip: 'Decrease / Loss' },
-    { char: '🤝', tooltip: 'Deal / Agreement' },
-    { char: '🗣️', tooltip: 'Speak / Announce' },
-    { char: '✅', tooltip: 'Complete' },
-    { char: '❌', tooltip: 'Cancel / Fail' },
+    {char: '🚨', tooltip: 'Instant Action Required'},
+    {char: '⏳', tooltip: 'Waiting'},
+    {char: '💡', tooltip: 'Good Idea'},
+    {char: '⚠️', tooltip: 'Warning'},
+    {char: '💰', tooltip: 'Money / Financial'},
+    {char: '📉', tooltip: 'Decrease / Loss'},
+    {char: '🤝', tooltip: 'Deal / Agreement'},
+    {char: '🗣️', tooltip: 'Speak / Announce'},
+    {char: '✅', tooltip: 'Complete'},
+    {char: '❌', tooltip: 'Cancel / Fail'},
   ];
 
   const handleSaveToDo = useCallback(
-    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
+    async (toDoData: {title: string; priority: string; dueDate: Date; category: string; notes: string}) => {
       try {
         if (!page) return;
 
         const response = await fetch('/api/todos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
@@ -637,19 +637,18 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               enterTo="transform opacity-100 scale-100"
               leave="transition ease-in duration-75"
               leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
+              leaveTo="transform opacity-0 scale-95">
               <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
-                {SYMBOLS.map((s) => (
+                {SYMBOLS.map(s => (
                   <Menu.Item key={s.char}>
-                    {({ active }) => (
+                    {({active}) => (
                       <button
                         type="button"
-                        className={`${active ? 'bg-gray-100' : ''
-                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
+                        className={`${
+                          active ? 'bg-gray-100' : ''
+                        } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
                         onClick={() => handleInsertSymbol(s.char)}
-                        title={s.tooltip}
-                      >
+                        title={s.tooltip}>
                         {s.char}
                       </button>
                     )}
@@ -707,10 +706,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           </button>
 
           <button
-            className={`rounded-full p-2 transition-colors ${isImportant
-              ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-              : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-              }`}
+            className={`rounded-full p-2 transition-colors ${
+              isImportant
+                ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+                : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+            }`}
             onClick={handleToggleImportant}
             title={isImportant ? 'Mark as not important' : 'Mark as important'}>
             {isImportant ? (
@@ -720,19 +720,19 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
             )}
           </button>
           <button
-            className={`rounded-full p-2 transition-colors ${isFlagged
-              ? 'text-red-500 bg-red-50 hover:bg-red-100'
-              : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-              }`}
+            className={`rounded-full p-2 transition-colors ${
+              isFlagged
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+            }`}
             onClick={handleToggleFlagged}
             title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
             {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
           </button>
           <button
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty
-              ? 'bg-gray-800 text-white hover:bg-gray-700'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
             disabled={!isDirty}
             onClick={handleSave}>
             Save

@@ -1,94 +1,94 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {GoogleGenerativeAI} from '@google/generative-ai';
 import formidable from 'formidable';
 import fs from 'fs';
 import mammoth from 'mammoth';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
+import {NextApiRequest, NextApiResponse} from 'next';
+import {getServerSession} from 'next-auth';
 import PDFParser from 'pdf2json';
 import * as XLSX from 'xlsx';
 
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 export const config = {
-    api: {
-        bodyParser: false,
-    },
+  api: {
+    bodyParser: false,
+  },
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({error: 'Method not allowed'});
+  }
+
+  try {
+    const session = await getServerSession(req, res, authOptions);
+    if (!session || !(session.user as any).googleApiEnabled) {
+      return res.status(403).json({error: 'Unauthorized'});
     }
 
+    const form = formidable({});
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [fields, files] = await form.parse(req);
+
+    const uploadedFile = files.file?.[0];
+    const apiKeyParam = fields.apiKey?.[0];
+    const modelName = fields.model?.[0] || 'gemini-flash-latest';
+
+    if (!uploadedFile) {
+      return res.status(400).json({error: 'No file provided'});
+    }
+
+    let apiKey = process.env.GOOGLE_API_KEY;
+    if (apiKeyParam === 'GEMINI_SCOPED') {
+      apiKey = process.env.Gemini_Key;
+    }
+
+    if (!apiKey) {
+      return res.status(500).json({error: 'API Key not configured'});
+    }
+
+    const fileBuffer = fs.readFileSync(uploadedFile.filepath);
+    let text = '';
+
+    // Determine file type from original filename
+    const originalFilename = uploadedFile.originalFilename || '';
+    const fileType = originalFilename.split('.').pop()?.toLowerCase();
+
     try {
-        const session = await getServerSession(req, res, authOptions);
-        if (!session || !(session.user as any).googleApiEnabled) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
+      if (fileType === 'pdf') {
+        const pdfParser = new PDFParser(null, true);
+        text = await new Promise((resolve, reject) => {
+          pdfParser.on('pdfParser_dataError', (errData: any) => reject(errData.parserError));
+          pdfParser.on('pdfParser_dataReady', () => {
+            resolve(pdfParser.getRawTextContent());
+          });
+          pdfParser.parseBuffer(fileBuffer);
+        });
+      } else if (fileType === 'docx') {
+        const result = await mammoth.extractRawText({buffer: fileBuffer});
+        text = result.value;
+      } else if (fileType === 'xlsx') {
+        const workbook = XLSX.read(fileBuffer, {type: 'buffer'});
+        workbook.SheetNames.forEach(sheetName => {
+          const sheet = workbook.Sheets[sheetName];
+          text += XLSX.utils.sheet_to_txt(sheet) + '\n';
+        });
+      } else {
+        return res.status(400).json({error: 'Unsupported file type'});
+      }
+    } catch (extractionError) {
+      console.error('Text extraction failed:', extractionError);
+      return res.status(500).json({error: 'Failed to extract text from document.'});
+    }
 
-        const form = formidable({});
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({error: 'No text content found in document.'});
+    }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [fields, files] = await form.parse(req);
-
-        const uploadedFile = files.file?.[0];
-        const apiKeyParam = fields.apiKey?.[0];
-        const modelName = fields.model?.[0] || 'gemini-flash-latest';
-
-        if (!uploadedFile) {
-            return res.status(400).json({ error: 'No file provided' });
-        }
-
-        let apiKey = process.env.GOOGLE_API_KEY;
-        if (apiKeyParam === 'GEMINI_SCOPED') {
-            apiKey = process.env.Gemini_Key;
-        }
-
-        if (!apiKey) {
-            return res.status(500).json({ error: 'API Key not configured' });
-        }
-
-        const fileBuffer = fs.readFileSync(uploadedFile.filepath);
-        let text = '';
-
-        // Determine file type from original filename
-        const originalFilename = uploadedFile.originalFilename || '';
-        const fileType = originalFilename.split('.').pop()?.toLowerCase();
-
-        try {
-            if (fileType === 'pdf') {
-                const pdfParser = new PDFParser(null, true);
-                text = await new Promise((resolve, reject) => {
-                    pdfParser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
-                    pdfParser.on("pdfParser_dataReady", () => {
-                        resolve(pdfParser.getRawTextContent());
-                    });
-                    pdfParser.parseBuffer(fileBuffer);
-                });
-            } else if (fileType === 'docx') {
-                const result = await mammoth.extractRawText({ buffer: fileBuffer });
-                text = result.value;
-            } else if (fileType === 'xlsx') {
-                const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
-                workbook.SheetNames.forEach(sheetName => {
-                    const sheet = workbook.Sheets[sheetName];
-                    text += XLSX.utils.sheet_to_txt(sheet) + '\n';
-                });
-            } else {
-                return res.status(400).json({ error: 'Unsupported file type' });
-            }
-        } catch (extractionError) {
-            console.error('Text extraction failed:', extractionError);
-            return res.status(500).json({ error: 'Failed to extract text from document.' });
-        }
-
-        if (!text || text.trim().length === 0) {
-            return res.status(400).json({ error: 'No text content found in document.' });
-        }
-
-        // Gemini Analysis
-        const PROMPT = `
+    // Gemini Analysis
+    const PROMPT = `
 Task: Act as a Senior Procurement Manager and Financial Analyst. Review the document provided below and perform a comprehensive analysis of the vendor quote or pricing proposal.
 
 1. Data Extraction & Table Construction: Create a structured table that includes the following columns:
@@ -113,17 +113,16 @@ DOCUMENT CONTENT:
 ${text.slice(0, 30000)}
 `;
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: modelName });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({model: modelName});
 
-        const result = await model.generateContent(PROMPT);
-        const response = await result.response;
-        const analysisText = response.text();
+    const result = await model.generateContent(PROMPT);
+    const response = await result.response;
+    const analysisText = response.text();
 
-        return res.status(200).json({ text: analysisText });
-
-    } catch (error) {
-        console.error('Assessment error:', error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
+    return res.status(200).json({text: analysisText});
+  } catch (error) {
+    console.error('Assessment error:', error);
+    return res.status(500).json({error: 'Internal Server Error'});
+  }
 }

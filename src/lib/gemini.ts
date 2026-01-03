@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {GoogleGenerativeAI} from '@google/generative-ai';
 
 export const initGemini = (apiKey: string) => {
   return new GoogleGenerativeAI(apiKey);
@@ -6,7 +6,7 @@ export const initGemini = (apiKey: string) => {
 
 export const getChatResponse = async (
   apiKey: string,
-  history: { role: 'user' | 'model'; parts: string }[],
+  history: {role: 'user' | 'model'; parts: string}[],
   message: string,
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,

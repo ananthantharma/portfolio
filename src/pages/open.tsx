@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import {useCallback, useEffect, useState} from 'react';
+import {useSession} from 'next-auth/react';
 
 import Page from '../components/Layout/Page';
-import { OpenAIApiKeyInput } from '../components/OpenAIApiKeyInput';
-import { OpenAIChatInterface } from '../components/OpenAIChatInterface';
+import {OpenAIApiKeyInput} from '../components/OpenAIApiKeyInput';
+import {OpenAIChatInterface} from '../components/OpenAIChatInterface';
 import Header from '../components/Sections/Header';
 
 export default function OpenPage() {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   useEffect(() => {
     // Check for Managed Permission

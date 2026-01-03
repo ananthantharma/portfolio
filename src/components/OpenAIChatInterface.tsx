@@ -11,11 +11,11 @@ import {
   User,
   X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { getOpenAIChatResponse, MessageContent } from '../lib/openai';
+import {getOpenAIChatResponse, MessageContent} from '../lib/openai';
 
 const plugins = [remarkGfm];
 
@@ -60,7 +60,7 @@ interface OpenAIChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceProps) {
+export function OpenAIChatInterface({apiKey, onClearKey}: OpenAIChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -94,7 +94,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   useEffect(() => {
@@ -214,14 +214,14 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     let uiContent: MessageContent = userMessageText;
     if (currentImages.length > 0) {
       uiContent = [
-        { type: 'text', text: userMessageText },
-        ...currentImages.map(img => ({ type: 'image_url' as const, image_url: { url: img } })),
+        {type: 'text', text: userMessageText},
+        ...currentImages.map(img => ({type: 'image_url' as const, image_url: {url: img}})),
       ];
     }
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, { role: 'user', content: uiContent } as Message];
+      const newMessages = [...session.messages, {role: 'user', content: uiContent} as Message];
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
         session.messages.length === 0 && session.title === 'New Chat'
@@ -253,7 +253,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, { role: 'assistant', content: response }],
+        messages: [...s.messages, {role: 'assistant', content: response}],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -297,8 +297,6 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     return processed;
   };
 
-
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -308,39 +306,34 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
   const markdownComponents: any = {
     // Tables - Gemini-like styling (Clean, lighter borders)
-    table: ({ node, ...props }: any) => (
+    table: ({node, ...props}: any) => (
       <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
         <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
     ),
-    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
-    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
-    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
-    th: ({ node, ...props }: any) => (
-      <th
-        className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider"
-        {...props}
-      />
+    thead: ({node, ...props}: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({node, ...props}: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({node, ...props}: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({node, ...props}: any) => (
+      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider" {...props} />
     ),
-    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
+    td: ({node, ...props}: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
 
     // Text & Lists
-    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-    a: ({ node, ...props }: any) => (
+    p: ({node, ...props}: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({node, ...props}: any) => (
       <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
     ),
-    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
-    ol: ({ node, ...props }: any) => (
-      <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />
-    ),
-    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
-    blockquote: ({ node, ...props }: any) => (
+    ul: ({node, ...props}: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({node, ...props}: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
+    li: ({node, ...props}: any) => <li className="pl-2" {...props} />,
+    blockquote: ({node, ...props}: any) => (
       <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
     ),
-    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
+    hr: ({node, ...props}: any) => <hr className="my-6 border-zinc-700" {...props} />,
 
     // Code
-    code: ({ node, inline, className, children, ...props }: any) => {
+    code: ({node, inline, className, children, ...props}: any) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
         <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
@@ -419,10 +412,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
+                currentSessionId === session.id
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
               <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -475,8 +469,9 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-                }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${
+                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -507,8 +502,9 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
-                    }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' ? 'bg-blue-600' : 'bg-green-600'
+                  }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -517,10 +513,11 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                    }`}>
+                  className={`px-4 py-3 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {renderMessageContent(msg.content)}
                   </div>

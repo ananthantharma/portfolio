@@ -1,13 +1,13 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, {memo, useEffect, useRef, useState} from 'react';
 
-import { heroEducation, heroTimeline, socialLinks } from '../data/data';
-import { TimelineItem } from '../data/dataDef';
+import {heroEducation, heroTimeline, socialLinks} from '../data/data';
+import {TimelineItem} from '../data/dataDef';
 
 /* eslint-disable react/jsx-sort-props */
 /* --- 2. HELPERS --- */
 
 // The "Hacker" Text Effect
-const ScrambledText = memo(({ delay = 0, text }: { delay?: number; text: string }) => {
+const ScrambledText = memo(({delay = 0, text}: {delay?: number; text: string}) => {
   const [displayText, setDisplayText] = useState('');
   const chars = "#.^^{-!#$_№:0#{+.@}-??{4@%=.,^!?2@%\\;1}]?{%:%|{f[4{4%0%'1_0<{0%]>'42";
   const requestRef = useRef<number>();
@@ -42,7 +42,7 @@ ScrambledText.displayName = 'ScrambledText';
 
 // The Card rendered inside SVG
 const SvgCard = memo(
-  ({ align = 'left', item, x, y }: { align?: 'left' | 'right'; item: TimelineItem; x: number; y: number }) => {
+  ({align = 'left', item, x, y}: {align?: 'left' | 'right'; item: TimelineItem; x: number; y: number}) => {
     const isLeft = align === 'left';
 
     // Handle StaticImageData or string path for image
@@ -51,7 +51,7 @@ const SvgCard = memo(
 
     return (
       // Reduced height to 80px for tighter packing
-      <foreignObject height="80" style={{ overflow: 'visible' }} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
+      <foreignObject height="80" style={{overflow: 'visible'}} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
         <div className={`flex w-full h-full items-center ${isLeft ? 'justify-end pr-6' : 'justify-start pl-6'}`}>
           {/* THE CARD 
                    Reduced Scale
@@ -178,7 +178,7 @@ const UnifiedCircuitSection = memo(() => {
               <g
                 key={`work-${i}`}
                 onClick={() => setActiveId(isActive ? null : `work-${i}`)}
-                style={{ cursor: 'pointer' }}>
+                style={{cursor: 'pointer'}}>
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
@@ -186,7 +186,7 @@ const UnifiedCircuitSection = memo(() => {
                   filter="url(#wiggle)" // Apply wiggle to the wire structure
                   stroke="#333"
                   strokeWidth={isActive ? 4 : 3}
-                  style={{ transition: 'stroke-width 0.3s ease' }}
+                  style={{transition: 'stroke-width 0.3s ease'}}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
@@ -228,7 +228,7 @@ const UnifiedCircuitSection = memo(() => {
             const strokeColor = isActive ? '#FFFFFF' : colors[i % colors.length];
 
             return (
-              <g key={`edu-${i}`} onClick={() => setActiveId(isActive ? null : `edu-${i}`)} style={{ cursor: 'pointer' }}>
+              <g key={`edu-${i}`} onClick={() => setActiveId(isActive ? null : `edu-${i}`)} style={{cursor: 'pointer'}}>
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
@@ -236,7 +236,7 @@ const UnifiedCircuitSection = memo(() => {
                   filter="url(#wiggle)"
                   stroke="#333"
                   strokeWidth={isActive ? 4 : 3}
-                  style={{ transition: 'stroke-width 0.3s ease' }}
+                  style={{transition: 'stroke-width 0.3s ease'}}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
@@ -265,7 +265,7 @@ const UnifiedCircuitSection = memo(() => {
               <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
           */}
 
-          <foreignObject height={chipHeight} style={{ overflow: 'visible' }} width={chipWidth} x="0" y="0">
+          <foreignObject height={chipHeight} style={{overflow: 'visible'}} width={chipWidth} x="0" y="0">
             {/* Space Card Structure */}
             <div className="outer">
               <div className="dot"></div>
@@ -279,7 +279,7 @@ const UnifiedCircuitSection = memo(() => {
 
                 {/* Social Icons within Card */}
                 <div className="flex gap-x-4 mt-4 z-10">
-                  {socialLinks.map(({ label, Icon, href }) => (
+                  {socialLinks.map(({label, Icon, href}) => (
                     <a
                       aria-label={label}
                       className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110"

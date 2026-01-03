@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Readable } from 'node:stream';
+import {Readable} from 'node:stream';
 
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
 
-import { ensureFolder, getDriveClient } from '@/lib/googleDrive';
+import {ensureFolder, getDriveClient} from '@/lib/googleDrive';
 
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 export const runtime = 'nodejs';
 
@@ -16,12 +16,12 @@ export async function GET(_req: Request) {
     if (!session?.accessToken) {
       console.error('Drive API: No access token in session');
       return NextResponse.json(
-        { error: 'Unauthorized or missing Drive access. Please sign out and sign in again.' },
-        { status: 401 },
+        {error: 'Unauthorized or missing Drive access. Please sign out and sign in again.'},
+        {status: 401},
       );
     }
 
-    const { searchParams } = new URL(_req.url);
+    const {searchParams} = new URL(_req.url);
     const folderId = searchParams.get('folderId') || 'root';
 
     const drive = getDriveClient(session.accessToken, session.refreshToken);
@@ -51,7 +51,7 @@ export async function GET(_req: Request) {
         error: error.message || 'Failed to list files',
         debug: error.response?.data,
       },
-      { status: 500 },
+      {status: 500},
     );
   }
 }
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
   try {
     const session: any = await getServerSession(authOptions);
     if (!session?.accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
     const drive = getDriveClient(session.accessToken, session.refreshToken);
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
     // DEBUG: Check Token Scopes
     try {
-      const tokenInfo = await drive.about.get({ fields: 'user' });
+      const tokenInfo = await drive.about.get({fields: 'user'});
       console.log('Drive API Test (About): Success', tokenInfo.data.user?.emailAddress);
     } catch (e: any) {
       console.error('Drive API Test (About): Failed', e.message);
@@ -86,10 +86,10 @@ export async function POST(req: Request) {
     if (contentType.includes('application/json')) {
       // HANDLE INITIATE UPLOAD (Resumable)
       const body = await req.json();
-      const { name, type, folderName, parentId, action } = body;
+      const {name, type, folderName, parentId, action} = body;
 
       if (action !== 'initiate') {
-        return NextResponse.json({ error: 'Invalid JSON action. Use action="initiate".' }, { status: 400 });
+        return NextResponse.json({error: 'Invalid JSON action. Use action="initiate".'}, {status: 400});
       }
 
       console.log('Drive API: Initiating Resumable Upload for:', name);
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
       }
 
       console.log('Drive API: Session URI generated successfully');
-      return NextResponse.json({ success: true, uploadUrl });
+      return NextResponse.json({success: true, uploadUrl});
     } else {
       // HANDLE FORMDATA: Direct Upload OR Chunk Proxy
       const formData = await req.formData();
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
         const contentRange = formData.get('contentRange') as string;
 
         if (!chunk || !uploadUrl || !contentRange) {
-          return NextResponse.json({ error: 'Missing chunk, uploadUrl, or contentRange' }, { status: 400 });
+          return NextResponse.json({error: 'Missing chunk, uploadUrl, or contentRange'}, {status: 400});
         }
 
         const buffer = Buffer.from(await chunk.arrayBuffer());
@@ -168,17 +168,17 @@ export async function POST(req: Request) {
         // Google returns 308 for Resume Incomplete (Success for chunk)
         // Google returns 200/201 for Completed
         if (proxyRes.status === 308) {
-          return NextResponse.json({ success: true, status: 308 });
+          return NextResponse.json({success: true, status: 308});
         } else if (proxyRes.ok) {
           // 200 or 201
           const fileData = await proxyRes.json();
-          return NextResponse.json({ success: true, status: 200, file: fileData });
+          return NextResponse.json({success: true, status: 200, file: fileData});
         } else {
           const errText = await proxyRes.text();
           console.error('Drive API: Proxy Chunk Failed', proxyRes.status, errText);
           return NextResponse.json(
-            { error: `Chunk upload failed: ${proxyRes.status}`, details: errText },
-            { status: proxyRes.status },
+            {error: `Chunk upload failed: ${proxyRes.status}`, details: errText},
+            {status: proxyRes.status},
           );
         }
       }
@@ -189,7 +189,7 @@ export async function POST(req: Request) {
       const folderName = formData.get('folderName') as string;
 
       if (!file) {
-        return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+        return NextResponse.json({error: 'No file uploaded'}, {status: 400});
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
       });
       console.log('Drive API: File upload success:', response.data.id);
 
-      return NextResponse.json({ success: true, file: response.data });
+      return NextResponse.json({success: true, file: response.data});
     }
   } catch (error: any) {
     console.error('Drive Upload Error (Top Level):', error.message);
@@ -247,11 +247,11 @@ export async function POST(req: Request) {
           code: 'DRIVE_ACCESS_DENIED',
           details: error.response?.data || error.message,
         },
-        { status: 403 },
+        {status: 403},
       );
     }
 
-    return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
+    return NextResponse.json({error: error.message || 'Failed to upload file'}, {status: 500});
   }
 }
 
@@ -259,14 +259,14 @@ export async function DELETE(req: Request) {
   try {
     const session: any = await getServerSession(authOptions);
     if (!session?.accessToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
 
-    const { searchParams } = new URL(req.url);
+    const {searchParams} = new URL(req.url);
     const fileId = searchParams.get('fileId');
 
     if (!fileId) {
-      return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
+      return NextResponse.json({error: 'File ID is required'}, {status: 400});
     }
 
     const drive = getDriveClient(session.accessToken, session.refreshToken);
@@ -277,7 +277,7 @@ export async function DELETE(req: Request) {
     });
 
     console.log(`Drive API: Successfully deleted file ${fileId}`);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({success: true});
   } catch (error: any) {
     console.error('Drive Delete Error:', error);
 
@@ -287,7 +287,7 @@ export async function DELETE(req: Request) {
           error: 'Permission denied. You may not have access to delete this file.',
           code: 'DRIVE_ACCESS_DENIED',
         },
-        { status: 403 },
+        {status: 403},
       );
     }
 
@@ -296,7 +296,7 @@ export async function DELETE(req: Request) {
         error: error.message || 'Failed to delete file',
         debug: error.response?.data,
       },
-      { status: 500 },
+      {status: 500},
     );
   }
 }

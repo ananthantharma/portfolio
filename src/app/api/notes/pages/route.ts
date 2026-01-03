@@ -1,19 +1,19 @@
 /* eslint-disable simple-import-sort/imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import {getServerSession} from 'next-auth';
+import {NextResponse} from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
 import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import NotePage from '@/models/NotePage';
 import NoteSection from '@/models/NoteSection'; // Ensure registration
 import ToDo from '@/models/ToDo';
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
   const userEmail = session.user.email;
   await dbConnect();
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   // Ensure models are registered to avoid MissingSchemaError during population
   console.log('Registered Models:', NoteSection.modelName, NoteCategory.modelName);
 
-  const { searchParams } = new URL(request.url);
+  const {searchParams} = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
   const isFlagged = searchParams.get('isFlagged') === 'true';
   const isImportant = searchParams.get('isImportant') === 'true';
@@ -30,39 +30,39 @@ export async function GET(request: Request) {
   const searchSectionNamesOnly = searchParams.get('searchSectionNamesOnly') === 'true';
 
   try {
-    const query: Record<string, unknown> = { userEmail };
+    const query: Record<string, unknown> = {userEmail};
     if (search) {
-      const searchRegex = { $regex: search, $options: 'i' };
+      const searchRegex = {$regex: search, $options: 'i'};
       const specificSearch = searchPageTitlesOnly || searchSectionNamesOnly;
 
       if (specificSearch) {
         let results: any[] = [];
 
         if (searchPageTitlesOnly) {
-          const pages = await NotePage.find({ title: searchRegex, userEmail }).sort({ order: 1 }).populate({
+          const pages = await NotePage.find({title: searchRegex, userEmail}).sort({order: 1}).populate({
             path: 'sectionId',
             select: 'categoryId name',
           });
-          results = [...results, ...pages.map(p => ({ ...p.toObject(), type: 'page' }))];
+          results = [...results, ...pages.map(p => ({...p.toObject(), type: 'page'}))];
         }
 
         if (searchSectionNamesOnly) {
           console.log('DEBUG: Searching Sections/Categories with regex:', search);
 
           // Search Sections
-          const sections = await NoteSection.find({ name: searchRegex, userEmail }).populate('categoryId');
+          const sections = await NoteSection.find({name: searchRegex, userEmail}).populate('categoryId');
           results = [
             ...results,
             ...sections.map(s => ({
               ...s.toObject(),
               type: 'section',
               title: `[Section] ${s.name}`, // Explicit label
-              sectionId: { name: s.name, categoryId: s.categoryId }, // Mock sectionId for UI display
+              sectionId: {name: s.name, categoryId: s.categoryId}, // Mock sectionId for UI display
             })),
           ];
 
           // Search Categories (Notebooks)
-          const categories = await NoteCategory.find({ name: searchRegex, userEmail });
+          const categories = await NoteCategory.find({name: searchRegex, userEmail});
           console.log(
             'DEBUG: Matched Categories:',
             categories.map(c => c.name),
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
               ...c.toObject(),
               type: 'section',
               title: `[Notebook] ${c.name}`, // Explicit label
-              sectionId: { name: 'Notebook', categoryId: c._id },
+              sectionId: {name: 'Notebook', categoryId: c._id},
             })),
           ];
         }
@@ -89,18 +89,18 @@ export async function GET(request: Request) {
           return true;
         });
 
-        return NextResponse.json({ success: true, data: uniqueResults });
+        return NextResponse.json({success: true, data: uniqueResults});
       } else {
         // Standard Search: Title OR Hierarchy (Category/Section) OR Content
-        const matchedCategories = await NoteCategory.find({ name: searchRegex, userEmail }).select('_id');
+        const matchedCategories = await NoteCategory.find({name: searchRegex, userEmail}).select('_id');
         const matchedCategoryIds = matchedCategories.map(c => c._id);
 
         const matchedSections = await NoteSection.find({
-          $and: [{ userEmail }, { $or: [{ name: searchRegex }, { categoryId: { $in: matchedCategoryIds } }] }],
+          $and: [{userEmail}, {$or: [{name: searchRegex}, {categoryId: {$in: matchedCategoryIds}}]}],
         }).select('_id');
         const matchedSectionIds = matchedSections.map(s => s._id);
 
-        query.$or = [{ title: searchRegex }, { sectionId: { $in: matchedSectionIds } }, { content: searchRegex }];
+        query.$or = [{title: searchRegex}, {sectionId: {$in: matchedSectionIds}}, {content: searchRegex}];
       }
     } else if (isFlagged) {
       query.isFlagged = true;
@@ -110,7 +110,7 @@ export async function GET(request: Request) {
       query.sectionId = sectionId;
     }
 
-    const pages = await NotePage.find(query).sort({ order: 1 }).populate({
+    const pages = await NotePage.find(query).sort({order: 1}).populate({
       path: 'sectionId',
       select: 'categoryId name', // Populate categoryId to allow full navigation
     });
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
     const activeToDos = await ToDo.find({
       userEmail,
       isCompleted: false,
-      sourcePageId: { $in: pageIds }
+      sourcePageId: {$in: pageIds},
     }).select('sourcePageId');
 
     const pageToDoCounts: Record<string, number> = {};
@@ -136,34 +136,34 @@ export async function GET(request: Request) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pagesWithCount = pages.map((p: any) => ({
       ...p.toObject(),
-      todoCount: pageToDoCounts[p._id.toString()] || 0
+      todoCount: pageToDoCounts[p._id.toString()] || 0,
     }));
 
-    return NextResponse.json({ success: true, data: pagesWithCount });
+    return NextResponse.json({success: true, data: pagesWithCount});
   } catch (error) {
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
+    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
   }
 }
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
   await dbConnect();
   try {
     const body = await request.json();
-    const count = await NotePage.countDocuments({ sectionId: body.sectionId });
+    const count = await NotePage.countDocuments({sectionId: body.sectionId});
     const page = await NotePage.create({
       ...body,
       userEmail: session.user.email,
       order: count,
       image: body.image || null,
     });
-    return NextResponse.json({ success: true, data: page }, { status: 201 });
+    return NextResponse.json({success: true, data: page}, {status: 201});
   } catch (error) {
-    return NextResponse.json({ success: false, error: error }, { status: 400 });
+    return NextResponse.json({success: false, error: error}, {status: 400});
   }
 }

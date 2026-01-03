@@ -1,12 +1,12 @@
 import 'tailwindcss/tailwind.css';
 import '../globalStyles.scss';
 
-import type { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
-import { SessionProvider } from 'next-auth/react';
-import { memo, useEffect } from 'react';
+import type {AppProps} from 'next/app';
+import {useRouter} from 'next/router';
+import {SessionProvider} from 'next-auth/react';
+import {memo, useEffect} from 'react';
 
-const MyApp = memo(({ Component, pageProps: { session, ...pageProps } }: AppProps): JSX.Element => {
+const MyApp = memo(({Component, pageProps: {session, ...pageProps}}: AppProps): JSX.Element => {
   const router = useRouter();
 
   useEffect(() => {
@@ -14,8 +14,8 @@ const MyApp = memo(({ Component, pageProps: { session, ...pageProps } }: AppProp
       try {
         await fetch('/api/log-visit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: url }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({path: url}),
         });
       } catch (e) {
         console.error('Analytics Error', e);

@@ -1,6 +1,6 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, memo, useState } from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, memo, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -9,7 +9,7 @@ interface StandaloneRewriteModalProps {
   onClose: () => void;
 }
 
-const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ isOpen, onClose }) => {
+const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({isOpen, onClose}) => {
   // Input State
   const [inputText, setInputText] = useState('');
 
@@ -40,7 +40,9 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
     if (noBulletPoints) constraints += '- Do not use bullet points.\n';
     if (noGreetings) constraints += '- Start immediately without intro phrases (e.g., no "Hi", "Dear Team").\n';
     if (noSemicolons) constraints += '- Do not use semicolons (;) or em-dashes (—).\n';
-    if (negotiationPivot) constraints += '- Negotiation Pivot: Rewrite any firm demands into "collaborative requests" to maintain vendor relationships.\n';
+    if (negotiationPivot)
+      constraints +=
+        '- Negotiation Pivot: Rewrite any firm demands into "collaborative requests" to maintain vendor relationships.\n';
 
     return `System: You are a strict text rewriting engine.
 Return ONLY the rewritten text.
@@ -78,7 +80,7 @@ Text to rewrite:
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -154,12 +156,18 @@ Text to rewrite:
                         min: 'Casual',
                         max: 'Formal',
                       },
-                      { label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt' },
-                      { label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly' },
-                      { label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index' },
-                      { label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive' },
-                      { label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical' },
-                      { label: 'Tech Density', val: technicalDensity, set: setTechnicalDensity, min: 'Layman', max: 'Expert' },
+                      {label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt'},
+                      {label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly'},
+                      {label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index'},
+                      {label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive'},
+                      {label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical'},
+                      {
+                        label: 'Tech Density',
+                        val: technicalDensity,
+                        set: setTechnicalDensity,
+                        min: 'Layman',
+                        max: 'Expert',
+                      },
                     ].map(s => (
                       <div key={s.label}>
                         <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
@@ -201,10 +209,10 @@ Text to rewrite:
                       <label className="block text-sm font-medium text-gray-700 mb-2">Constraints</label>
                       <div className="space-y-2">
                         {[
-                          { label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints },
-                          { label: 'No Greetings', checked: noGreetings, set: setNoGreetings },
-                          { label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons },
-                          { label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot },
+                          {label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints},
+                          {label: 'No Greetings', checked: noGreetings, set: setNoGreetings},
+                          {label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons},
+                          {label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot},
                         ].map(c => (
                           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer" key={c.label}>
                             <input
@@ -268,25 +276,29 @@ Text to rewrite:
                             {rewrittenText ? (
                               <ReactMarkdown
                                 components={{
-                                  table: ({ children }) => (
+                                  table: ({children}) => (
                                     <table className="border-collapse table-auto w-full text-sm my-4 border border-gray-300">
                                       {children}
                                     </table>
                                   ),
-                                  thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
-                                  tbody: ({ children }) => <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>,
-                                  tr: ({ children }) => <tr className="hover:bg-gray-50 transition-colors">{children}</tr>,
-                                  th: ({ children }) => (
+                                  thead: ({children}) => <thead className="bg-gray-100">{children}</thead>,
+                                  tbody: ({children}) => (
+                                    <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>
+                                  ),
+                                  tr: ({children}) => (
+                                    <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
+                                  ),
+                                  th: ({children}) => (
                                     <th className="border border-gray-300 px-4 py-2 font-bold text-left text-gray-700">
                                       {children}
                                     </th>
                                   ),
-                                  td: ({ children }) => (
+                                  td: ({children}) => (
                                     <td className="border border-gray-300 px-4 py-2 text-gray-700">{children}</td>
                                   ),
-                                  ul: ({ children }) => <ul className="list-disc ml-4 my-2">{children}</ul>,
-                                  ol: ({ children }) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
-                                  li: ({ children }) => <li className="mb-1">{children}</li>,
+                                  ul: ({children}) => <ul className="list-disc ml-4 my-2">{children}</ul>,
+                                  ol: ({children}) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
+                                  li: ({children}) => <li className="mb-1">{children}</li>,
                                 }}
                                 remarkPlugins={[remarkGfm]}>
                                 {rewrittenText}

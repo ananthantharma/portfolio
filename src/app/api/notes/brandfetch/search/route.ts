@@ -1,24 +1,24 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
 
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
-  const { searchParams } = new URL(request.url);
+  const {searchParams} = new URL(request.url);
   const query = searchParams.get('q');
 
   if (!query) {
-    return NextResponse.json({ error: 'Query is required' }, { status: 400 });
+    return NextResponse.json({error: 'Query is required'}, {status: 400});
   }
 
   const apiKey = process.env.BRANDFETCH_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    return NextResponse.json({error: 'Server configuration error'}, {status: 500});
   }
 
   try {
@@ -32,13 +32,13 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       // Handle rate limits or other errors gracefully
-      return NextResponse.json({ error: `Brandfetch Error: ${response.status}`, results: [] }, { status: response.status });
+      return NextResponse.json({error: `Brandfetch Error: ${response.status}`, results: []}, {status: response.status});
     }
 
     const data = await response.json();
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({success: true, data});
   } catch (error) {
     console.error('Error searching Brandfetch:', error);
-    return NextResponse.json({ error: 'Failed to search brands' }, { status: 502 });
+    return NextResponse.json({error: 'Failed to search brands'}, {status: 502});
   }
 }

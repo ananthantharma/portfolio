@@ -596,5 +596,6 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         </form>
       </div>
     </div>
+    </div>
   );
 }

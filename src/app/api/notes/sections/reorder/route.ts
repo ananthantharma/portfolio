@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
 import NoteSection from '@/models/NoteSection';
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 export async function PUT(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401});
   }
 
   await dbConnect();
   try {
-    const { items } = await request.json(); // Expect array of { id: string }
+    const {items} = await request.json(); // Expect array of { id: string }
 
     if (!Array.isArray(items)) {
-      return NextResponse.json({ error: 'Invalid data format' }, { status: 400 });
+      return NextResponse.json({error: 'Invalid data format'}, {status: 400});
     }
 
     const bulkOps = items.map((item, index) => ({
       updateOne: {
-        filter: { _id: item.id },
-        update: { $set: { order: index } },
+        filter: {_id: item.id},
+        update: {$set: {order: index}},
       },
     }));
 
@@ -30,8 +30,8 @@ export async function PUT(request: Request) {
       await NoteSection.bulkWrite(bulkOps);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({success: true});
   } catch (error) {
-    return NextResponse.json({ success: false, error: error }, { status: 400 });
+    return NextResponse.json({success: false, error: error}, {status: 400});
   }
 }

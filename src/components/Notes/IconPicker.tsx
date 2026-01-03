@@ -135,8 +135,8 @@ import {
   ZoomOut,
 } from 'lucide-react';
 import * as IconoirIcons from 'iconoir-react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 
 const LucideIcons = {
   Activity,
@@ -278,13 +278,11 @@ const LucideIcons = {
 // Filter and Prefix Iconoir exports
 const PrefixedIconoirIcons = Object.fromEntries(
   Object.entries(IconoirIcons)
-    .filter(([key, val]) =>
-      /^[A-Z]/.test(key) &&
-      key !== 'IconoirProvider' &&
-      key !== 'IconoirContext' &&
-      typeof val === 'function'
+    .filter(
+      ([key, val]) =>
+        /^[A-Z]/.test(key) && key !== 'IconoirProvider' && key !== 'IconoirContext' && typeof val === 'function',
     )
-    .map(([key, val]) => [`Iconoir_${key}`, val])
+    .map(([key, val]) => [`Iconoir_${key}`, val]),
 );
 
 export const ICON_options = {
@@ -298,13 +296,13 @@ interface IconPickerProps {
   selectedImage?: string | null;
 }
 
-export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon, selectedIcon, selectedImage }) => {
+export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, selectedIcon, selectedImage}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'icons' | 'brand'>('icons');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({top: 0, left: 0});
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -464,18 +462,20 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
             {/* Tabs */}
             <div className="flex mb-3 border-b border-gray-100">
               <button
-                className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'icons'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`flex-1 pb-2 text-sm font-medium ${
+                  activeTab === 'icons'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
                 onClick={() => setActiveTab('icons')}>
                 Icons
               </button>
               <button
-                className={`flex-1 pb-2 text-sm font-medium ${activeTab === 'brand'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`flex-1 pb-2 text-sm font-medium ${
+                  activeTab === 'brand'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
                 onClick={() => setActiveTab('brand')}>
                 Brand Logo
               </button>
@@ -496,10 +496,11 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                     const IconComponent = ICON_options[iconName as keyof typeof ICON_options];
                     return (
                       <button
-                        className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${selectedIcon === iconName && !selectedImage
-                          ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
-                          : 'text-gray-500'
-                          }`}
+                        className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${
+                          selectedIcon === iconName && !selectedImage
+                            ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                            : 'text-gray-500'
+                        }`}
                         key={iconName}
                         onClick={() => {
                           onSelectIcon(iconName, null); // Clear image
@@ -572,10 +573,11 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({ onSelectIcon,
                 )}
 
                 <button
-                  className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${previewImage && !previewError
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                  className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                    previewImage && !previewError
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
                   disabled={!previewImage || previewError}
                   onClick={handleSelectBrand}>
                   Use Logo
