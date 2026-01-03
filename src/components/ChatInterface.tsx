@@ -1,4 +1,5 @@
-Bot,
+import {
+  Bot,
   FileText,
   Loader2,
   FilePenLine,
