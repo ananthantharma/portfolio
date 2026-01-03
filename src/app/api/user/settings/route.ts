@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import User from '@/models/User';
-import { connectToDatabase } from '@/lib/db'; // Assuming this exists, checking imports in User.ts might help but standard pattern
+import dbConnect from '@/lib/dbConnect';
 
 export async function GET(req: Request) {
     try {
