@@ -4,14 +4,14 @@ import { authOptions } from '@/lib/auth';
 import User from '@/models/User';
 import dbConnect from '@/lib/dbConnect';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user?.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        await connectToDatabase();
+        await dbConnect();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const user = await User.findOne({ email: session.user.email });
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
         const { systemInstruction } = await req.json();
 
-        await connectToDatabase();
+        await dbConnect();
         const user = await User.findOneAndUpdate(
             { email: session.user.email },
             { $set: { systemInstruction } },
