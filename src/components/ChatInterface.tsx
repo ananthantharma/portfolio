@@ -1,5 +1,5 @@
-import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Bot, FilePenLine, Loader2, Paperclip, PlusCircle, Send, Trash2, User, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -65,12 +65,14 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // UI State
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
   const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
 
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Hardcoded models to avoid fetch failure on load
   useEffect(() => {
@@ -161,16 +163,75 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedImages(prev => [...prev, reader.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
+      // Clear input so same file can be selected again
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setSelectedImages(prev => [...prev, reader.result as string]);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading || !currentSessionId) return;
+    if ((!input.trim() && selectedImages.length === 0) || isLoading || !currentSessionId) return;
 
     const userMessage = input.trim();
+    const currentImages = [...selectedImages];
+
     setInput('');
+    setSelectedImages([]);
 
     // Optimistically update messages
     updateCurrentSession(session => {
-      const newMessages = [...session.messages, { role: 'user', parts: userMessage } as Message];
+      // Construct parts string for optimistic update (images not fully rendered yet in text mode, but handled by renderMessageContent mostly)
+      // Actually, we need to store parts as objects or handle them stringified?
+      // Since 'parts' in Message interface is string, we might need to adjust the interface OR append image markdowns
+      // BUT 'parts' in this app seems to be just string: interface Message { parts: string }.
+      // If we want to support images in history for UI display, we need to change Message interface or hack it.
+      // Wait, let's check renderMessageContent... it assumes `msg.parts` is string.
+      // To show images in UI history, we should probably update Message structure OR append markdown image syntax?
+      // Markdown image with base64 is ugly and slow.
+      // Better: Update Message interface to support parts array (like OpenAIChat).
+      // BUT that requires refactoring existing messages / type definitions everywhere.
+      // SHORTCUT: For now, I will append a special placeholder or just rendering logic updates.
+      // actually, let's look at `ChatInterface.tsx` again.
+      // `interface Message { role: 'user' | 'model'; parts: string; }`
+      // I will update the Message interface locally to support `parts: string | { text?: string; inlineData?: any }[]`?
+      // NO, let's stick to string but maybe store images separately for session?
+      // OR better: Update Message interface to support `images?: string[]`.
+
+      // Let's modify Message interface above.
+
+      const newMessages = [...session.messages, { role: 'user', parts: userMessage, images: currentImages } as any];
+
       // Update title if it's the first message and still named "New Chat"
       const newTitle =
         session.messages.length === 0 && session.title === 'New Chat'
@@ -197,6 +258,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         userMessage,
         selectedModel,
         systemInstruction,
+        currentImages,
       );
 
       updateCurrentSession(s => ({
@@ -448,6 +510,10 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                     : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
                     }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
+                    {/* Render User Images if present */}
+                    {(msg as any).images?.map((img: string, i: number) => (
+                      <img key={i} src={img} alt="User Upload" className="max-w-full rounded-lg mb-2 max-h-64 object-contain" />
+                    ))}
                     <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
                       {preprocessMarkdown(msg.parts)}
                     </ReactMarkdown>
@@ -472,13 +538,48 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
         {/* Input Area */}
         <div className="p-4 bg-zinc-900 border-t border-zinc-800">
-          <form className="max-w-4xl mx-auto relative flex items-end gap-2" onSubmit={handleSubmit}>
+          {/* Image Preview Area */}
+          {selectedImages.length > 0 && (
+            <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+              {selectedImages.map((img, idx) => (
+                <div className="relative group flex-shrink-0" key={idx}>
+                  <img alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-zinc-700" src={img} />
+                  <button
+                    className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeImage(idx)}
+                    type="button">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="relative flex-1 flex gap-2 items-end">
+            <input
+              accept="image/*"
+              className="hidden"
+              multiple
+              onChange={handleFileSelect}
+              ref={fileInputRef}
+              type="file"
+            />
+
+            <button
+              className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload Image"
+              type="button">
+              <Paperclip className="w-5 h-5" />
+            </button>
+
             <div className="relative flex-1">
               <textarea
                 className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
                 disabled={isLoading}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder="Message Gemini..."
                 ref={textareaRef}
                 rows={1}
@@ -486,13 +587,13 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               />
               <button
                 className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-blue-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() && selectedImages.length === 0) || isLoading}
                 type="submit">
                 <Send className="w-5 h-5" />
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

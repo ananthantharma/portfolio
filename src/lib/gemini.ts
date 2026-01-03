@@ -10,6 +10,7 @@ export const getChatResponse = async (
   message: string,
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,
+  images: string[] = [],
 ) => {
   /*
    * Use Server-Side Generation Route (similar to OpenAI implementation)
@@ -27,6 +28,7 @@ export const getChatResponse = async (
         history, // Pass history to server
         model: modelName,
         systemInstruction,
+        images,
         // Convert history format if necessary, but the route expects prompt + history handling inside route?
         // Wait, the route implementation (Step 125) takes 'prompt' and 'image' but treats them as parts.
         // It DOES NOT seem to handle 'history' in the request body explicitly in the same way `startChat` does.

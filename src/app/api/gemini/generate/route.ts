@@ -9,7 +9,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     let { apiKey } = body;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { prompt, history, model: requestedModel, systemInstruction, image, mimeType } = body;
+    const { prompt, history, model: requestedModel, systemInstruction, images } = body;
+
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
       if (!session || !(session.user as any).googleApiEnabled) {
@@ -30,11 +31,11 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    if (!prompt && (!images || images.length === 0)) {
+      return NextResponse.json({ error: 'Prompt or image is required' }, { status: 400 });
     }
 
-    // Use requested model or fallback to gemini-flash-latest (updated default as per recent usage)
+    // Use requested model or fallback
     const modelToUse = requestedModel || 'gemini-flash-latest';
     console.log(`Using Gemini model: ${modelToUse}`);
 
@@ -46,44 +47,48 @@ export async function POST(req: Request) {
 
     const model = genAI.getGenerativeModel(modelParams);
 
-    // Check if we have history to start a chat session
+    // Initialize chat with history if available
+    let chat;
     if (history && Array.isArray(history)) {
-      const chat = model.startChat({
+      chat = model.startChat({
         history: history.map((msg: any) => ({
           role: msg.role,
-          parts: [{ text: msg.parts }], // Adjust based on how history is passed (string vs parts)
+          parts: [{ text: msg.parts }], // Basic text history for now
         })),
       });
-
-      const result = await chat.sendMessage(prompt);
-      const response = await result.response;
-      const text = response.text();
-      return NextResponse.json({ text });
+    } else {
+      chat = model.startChat({ history: [] });
     }
 
-    // Default to single-turn generation (legacy behavior or image input)
-    // NOTE: Image input with chat history is trickier. For now, prioritize text chat history.
-    // If image is present, we likely want to use generateContent or add it to the chat message?
-    // Let's keep existing image logic for single turn if image exists, OR handle image in chat.
-    // Given the previous code, image logic was single turn.
-
+    // Construct the current message parts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let parts: any[] = [prompt];
+    const currentMessageParts: any[] = [];
 
-    // Handle Image Input
-    if (image && mimeType) {
-      parts = [
-        prompt,
-        {
-          inlineData: {
-            data: image,
-            mimeType: mimeType,
-          },
-        },
-      ];
+    // Add text part if prompt exists
+    if (prompt) {
+      currentMessageParts.push({ text: prompt });
     }
 
-    const result = await model.generateContent(parts);
+    // Add image parts if images exist
+    if (images && Array.isArray(images)) {
+      images.forEach((img: string) => {
+        // img is expected to be a base64 Data URL: "data:image/png;base64,..."
+        const match = img.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          const mimeType = match[1];
+          const data = match[2];
+          currentMessageParts.push({
+            inlineData: {
+              data: data,
+              mimeType: mimeType,
+            },
+          });
+        }
+      });
+    }
+
+    // Send message (multimodal if images present)
+    const result = await chat.sendMessage(currentMessageParts);
     const response = await result.response;
     const text = response.text();
 
