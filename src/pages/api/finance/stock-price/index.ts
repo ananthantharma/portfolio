@@ -24,7 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Ticker not found' });
     }
 
-    const price = quote.regularMarketPrice;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const price = (quote as any).regularMarketPrice;
 
     return res.status(200).json({ price });
   } catch (error) {
