@@ -1,4 +1,4 @@
-import {GoogleGenerativeAI} from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const initGemini = (apiKey: string) => {
   return new GoogleGenerativeAI(apiKey);
@@ -6,11 +6,11 @@ export const initGemini = (apiKey: string) => {
 
 export const getChatResponse = async (
   apiKey: string,
-  history: {role: 'user' | 'model'; parts: string}[],
+  history: { role: 'user' | 'model'; parts: string }[],
   message: string,
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,
-  attachments: {type: 'image' | 'pdf' | 'text'; content: string; name: string; mimeType?: string}[] = [],
+  attachments: { type: 'image' | 'pdf' | 'text'; content?: string; url?: string; name: string; mimeType?: string }[] = [],
 ) => {
   /*
    * Use Server-Side Generation Route (similar to OpenAI implementation)

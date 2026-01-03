@@ -11,13 +11,13 @@ import {
   User,
   X,
 } from 'lucide-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-import {getChatResponse} from '../lib/gemini';
+import { getChatResponse } from '../lib/gemini';
 
 const plugins = [remarkGfm];
 
@@ -51,7 +51,8 @@ interface Message {
 
 interface Attachment {
   type: 'image' | 'pdf' | 'text';
-  content: string; // Base64 (for images/pdf) or raw text
+  content?: string; // Base64 (for images/pdf) or raw text
+  url?: string; // Oracle Object Storage URL
   name: string;
   mimeType?: string; // For images/pdf
 }
@@ -70,7 +71,7 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
+export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -90,7 +91,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
-  const [availableModels, setAvailableModels] = useState<{id: string; label: string}[]>([]);
+  const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,9 +101,9 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   useEffect(() => {
     // We only care about Flash and Pro for now
     const models = [
-      {id: 'gemini-flash-latest', label: 'Gemini Flash Latest'},
-      {id: 'gemini-pro-latest', label: 'Gemini Pro Latest'},
-      {id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest'},
+      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
+      { id: 'gemini-pro-latest', label: 'Gemini Pro Latest' },
+      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest' },
     ];
     setAvailableModels(models);
     setSelectedModel('gemini-flash-latest');
@@ -118,7 +119,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -241,16 +242,48 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
     });
   };
 
+  // Helper: Upload file to Oracle Object Storage
+  const uploadToOracle = async (file: File): Promise<string> => {
+    // URL Layout: https://objectstorage.REGION.oraclecloud.com/p/PAR_TOKEN/n/NAMESPACE/b/BUCKET/o/OBJECT_NAME
+    const PAR_URL_BASE = 'https://objectstorage.ca-toronto-1.oraclecloud.com/p/QLAWx8wCq1Wb3kBchcG9RCcy3TcngoiuartQbdYovOIXVvYxNVvBGtWE09o29MvG/n/yzo9jkinnwr6/b/bucket-20260103-1212/o/';
+    const objectName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const uploadUrl = `${PAR_URL_BASE}${objectName}`;
+
+    try {
+      const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Oracle Upload Failed: ${response.statusText}`);
+      }
+      return uploadUrl;
+    } catch (error) {
+      console.error('Error uploading to Oracle:', error);
+      throw error;
+    }
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const newAttachments: Attachment[] = [];
+      const MAX_SIZE = 50 * 1024 * 1024; // 50MB Limit for Oracle
 
       setIsLoading(true);
 
       for (const file of files) {
+        if (file.size > MAX_SIZE) {
+          alert(`File ${file.name} is too large. Max size is 50MB.`);
+          continue;
+        }
+
         try {
-          // 1. Images
+          // 1. Images - Keep Client Side Compression (Small Payload)
           if (file.type.startsWith('image/')) {
             const compressed = await compressImage(file);
             newAttachments.push({
@@ -262,91 +295,37 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             continue;
           }
 
-          // 2. PDF
-          if (file.type === 'application/pdf') {
-            const reader = new FileReader();
-            await new Promise<void>(resolve => {
-              reader.onload = () => {
-                newAttachments.push({
-                  type: 'pdf',
-                  content: reader.result as string,
-                  name: file.name,
-                  mimeType: 'application/pdf',
-                });
-                resolve();
-              };
-              reader.readAsDataURL(file);
+          // 2. Documents (PDF, Word, Excel, Text) - Upload to Oracle
+          // We upload to Oracle to bypass Vercel payload limits
+          try {
+            // For generic docs, we get a URL.
+            // If it's a DOCX/XLSX we might still want to extract text client-side if small enough?
+            // But for consistency let's try to upload everything or stick to client side for small, server for large?
+            // User wants to solve 413.
+            // Let's upload all non-images to Oracle.
+            // BUT wait, my backend for DOCX/XLSX currently expects 'text' content extracted client side in the 'text' type attachment behavior?
+            // If I change to URL, backend needs to fetch content.
+            // Mammoth runs on nodejs (backend) too.
+            // So I can just send URL.
+
+            const url = await uploadToOracle(file);
+            let type: 'pdf' | 'text' = 'text';
+            if (file.type === 'application/pdf') type = 'pdf';
+
+            newAttachments.push({
+              type,
+              url, // Store URL instead of content for backend to fetch
+              name: file.name,
+              mimeType: file.type || 'application/octet-stream',
             });
-            continue;
+          } catch (uploadError) {
+            console.error("Upload failed", uploadError);
+            alert(`Failed to upload ${file.name} to storage.`);
           }
 
-          // 3. Word (Method: Extract Text)
-          if (file.name.endsWith('.docx')) {
-            const reader = new FileReader();
-            await new Promise<void>((resolve, reject) => {
-              reader.onload = async e => {
-                try {
-                  const arrayBuffer = e.target?.result as ArrayBuffer;
-                  const result = await mammoth.extractRawText({arrayBuffer});
-                  newAttachments.push({
-                    type: 'text',
-                    content: result.value,
-                    name: file.name,
-                  });
-                  resolve();
-                } catch (err) {
-                  console.error('Mammoth error', err);
-                  reject(err);
-                }
-              };
-              reader.readAsArrayBuffer(file);
-            });
-            continue;
-          }
-
-          // 4. Excel (Method: Extract CSV of first sheet)
-          if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
-            const reader = new FileReader();
-            await new Promise<void>((resolve, reject) => {
-              reader.onload = e => {
-                try {
-                  const data = e.target?.result;
-                  const workbook = XLSX.read(data, {type: 'binary'});
-                  const firstSheetName = workbook.SheetNames[0];
-                  const worksheet = workbook.Sheets[firstSheetName];
-                  const csv = XLSX.utils.sheet_to_csv(worksheet);
-                  newAttachments.push({
-                    type: 'text',
-                    content: csv,
-                    name: file.name,
-                  });
-                  resolve();
-                } catch (err) {
-                  console.error('XLSX error', err);
-                  reject(err);
-                }
-              };
-              reader.readAsBinaryString(file);
-            });
-            continue;
-          }
-
-          // 5. Text / Code
-          // Default to reading as Text
-          const reader = new FileReader();
-          await new Promise<void>(resolve => {
-            reader.onload = () => {
-              newAttachments.push({
-                type: 'text',
-                content: reader.result as string,
-                name: file.name,
-              });
-              resolve();
-            };
-            reader.readAsText(file);
-          });
         } catch (error) {
           console.error('Error processing file:', file.name, error);
+          alert(`Failed to process ${file.name}`);
         }
       }
 
@@ -401,7 +380,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
     updateCurrentSession(session => {
       const newMessages = [
         ...session.messages,
-        {role: 'user', parts: userMessage, attachments: currentAttachments} as any,
+        { role: 'user', parts: userMessage, attachments: currentAttachments } as any,
       ];
 
       // Update title if it's the first message and still named "New Chat"
@@ -435,7 +414,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, {role: 'model', parts: response}],
+        messages: [...s.messages, { role: 'model', parts: response }],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -479,34 +458,34 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
 
   const markdownComponents: any = {
     // Tables - Gemini-like styling (Clean, lighter borders)
-    table: ({node, ...props}: any) => (
+    table: ({ node, ...props }: any) => (
       <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
         <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
     ),
-    thead: ({node, ...props}: any) => <thead className="bg-zinc-800" {...props} />,
-    tbody: ({node, ...props}: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
-    tr: ({node, ...props}: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
-    th: ({node, ...props}: any) => (
+    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({ node, ...props }: any) => (
       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider" {...props} />
     ),
-    td: ({node, ...props}: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
+    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
 
     // Text & Lists
-    p: ({node, ...props}: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-    a: ({node, ...props}: any) => (
+    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({ node, ...props }: any) => (
       <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
     ),
-    ul: ({node, ...props}: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
-    ol: ({node, ...props}: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
-    li: ({node, ...props}: any) => <li className="pl-2" {...props} />,
-    blockquote: ({node, ...props}: any) => (
+    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({ node, ...props }: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
+    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
+    blockquote: ({ node, ...props }: any) => (
       <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
     ),
-    hr: ({node, ...props}: any) => <hr className="my-6 border-zinc-700" {...props} />,
+    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
 
     // Code
-    code: ({node, inline, className, children, ...props}: any) => {
+    code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
         <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
@@ -554,11 +533,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
-                currentSessionId === session.id
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-              }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
+                ? 'bg-zinc-800 text-white'
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
               <div className="flex-shrink-0">
@@ -621,9 +599,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${
-                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-              }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+                }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -664,9 +641,8 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                  }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                    }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -675,11 +651,10 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-tr-none'
-                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                  }`}>
+                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                    }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {/* Render User Images if present */}
                     {(msg as any).images?.map((img: string, i: number) => (
