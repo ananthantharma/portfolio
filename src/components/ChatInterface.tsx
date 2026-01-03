@@ -1,8 +1,13 @@
 import { Bot, FilePenLine, Loader2, PlusCircle, Send, Trash2, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { getChatResponse } from '../lib/gemini';
+
+const plugins = [remarkGfm];
+
+const DEFAULT_SYSTEM_INSTRUCTION = `Do not use LaTeX or math symbols (like $ or \\mathbf) for simple numbers or tables. Use plain text and standard Markdown tables only. Each row must be on a new line.`;
 
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
@@ -50,7 +55,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       id: Date.now().toString(),
       title: 'New Chat',
       messages: [],
-      systemInstruction: undefined,
+      systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
       activeGem: null,
       createdAt: Date.now(),
     },
@@ -110,7 +115,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       id: Date.now().toString(),
       title: overrides?.title || 'New Chat',
       messages: [],
-      systemInstruction: undefined,
+      systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
       activeGem: null,
       createdAt: Date.now(),
       ...overrides,
@@ -214,6 +219,85 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const preprocessMarkdown = (content: string) => {
+    if (!content) return '';
+
+    // DEBUG: Inspect raw content (remove in prod)
+    if (content.includes('|')) console.log('Markdown Content:', JSON.stringify(content));
+
+    let processed = content;
+
+    // 1. Ensure newlines before code blocks
+    processed = processed.replace(/([^\n])\n(```)/g, '$1\n\n$2');
+
+    // 2. Split text from start of table (e.g. "Table 1 | Header |")
+    processed = processed.replace(/(^|\n)([^|\n]+)(\|)/g, '$1$2\n\n$3');
+
+    // 3. Fix compressed tables: Replace "| |" with "|\n|" globally
+    // This catches "Header | |---" and "Cell | | NextRowCell"
+    // Validated to handle LaTeX cells and generic content.
+    processed = processed.replace(/\| *(\| *[^ |])/g, '|\n$1');
+
+    return processed;
+  };
+
+  const markdownComponents: any = {
+    // Tables - Gemini-like styling (Clean, lighter borders)
+    table: ({ node, ...props }: any) => (
+      <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
+        <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
+      </div>
+    ),
+    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({ node, ...props }: any) => (
+      <th
+        className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider"
+        {...props}
+      />
+    ),
+    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
+
+    // Text & Lists
+    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({ node, ...props }: any) => (
+      <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
+    ),
+    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({ node, ...props }: any) => (
+      <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />
+    ),
+    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
+    blockquote: ({ node, ...props }: any) => (
+      <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
+    ),
+    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
+
+    // Code
+    code: ({ node, inline, className, children, ...props }: any) => {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
+          <div className="bg-zinc-800/50 px-4 py-2 text-xs text-zinc-500 border-b border-zinc-700/50 font-mono uppercase tracking-wider flex justify-between">
+            <span>{match[1]}</span>
+          </div>
+          <div className="p-4 overflow-x-auto">
+            <pre className="!m-0 !bg-transparent !p-0">
+              <code className={className} {...props}>
+                {children}
+              </code>
+            </pre>
+          </div>
+        </div>
+      ) : (
+        <code className="bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-pink-400" {...props}>
+          {children}
+        </code>
+      );
+    },
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -364,7 +448,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                     : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
                     }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
-                    <ReactMarkdown>{msg.parts}</ReactMarkdown>
+                    <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
+                      {preprocessMarkdown(msg.parts)}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </div>
