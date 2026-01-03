@@ -271,6 +271,19 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     }
   };
 
+  // Utilities
+  const preprocessMarkdown = (content: string) => {
+    if (!content) return '';
+
+    // Ensure newlines before tables (lines starting with |) if not present
+    let processed = content.replace(/([^\n])\n(\|.*\|)/g, '$1\n\n$2');
+
+    // Ensure newlines before code blocks if not present
+    processed = processed.replace(/([^\n])\n(```)/g, '$1\n\n$2');
+
+    return processed;
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
