@@ -295,33 +295,78 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             continue;
           }
 
-          // 2. Documents (PDF, Word, Excel, Text) - Upload to Oracle
-          // We upload to Oracle to bypass Vercel payload limits
-          try {
-            // For generic docs, we get a URL.
-            // If it's a DOCX/XLSX we might still want to extract text client-side if small enough?
-            // But for consistency let's try to upload everything or stick to client side for small, server for large?
-            // User wants to solve 413.
-            // Let's upload all non-images to Oracle.
-            // BUT wait, my backend for DOCX/XLSX currently expects 'text' content extracted client side in the 'text' type attachment behavior?
-            // If I change to URL, backend needs to fetch content.
-            // Mammoth runs on nodejs (backend) too.
-            // So I can just send URL.
-
-            const url = await uploadToOracle(file);
-            let type: 'pdf' | 'text' = 'text';
-            if (file.type === 'application/pdf') type = 'pdf';
-
-            newAttachments.push({
-              type,
-              url, // Store URL instead of content for backend to fetch
-              name: file.name,
-              mimeType: file.type || 'application/octet-stream',
-            });
-          } catch (uploadError) {
-            console.error("Upload failed", uploadError);
-            alert(`Failed to upload ${file.name} to storage.`);
+          // 2. PDF (Upload to Oracle)
+          if (file.type === 'application/pdf') {
+            try {
+              const url = await uploadToOracle(file);
+              newAttachments.push({
+                type: 'pdf',
+                url,
+                name: file.name,
+                mimeType: 'application/pdf',
+              });
+            } catch (err) {
+              console.error("PDF Upload failed", err);
+              alert(`Failed to upload ${file.name}`);
+            }
+            continue;
           }
+
+          // 3. Word (Extract Text Client-Side)
+          if (file.name.endsWith('.docx')) {
+            const reader = new FileReader();
+            await new Promise<void>((resolve, reject) => {
+              reader.onload = async e => {
+                try {
+                  const arrayBuffer = e.target?.result as ArrayBuffer;
+                  const result = await mammoth.extractRawText({ arrayBuffer });
+                  newAttachments.push({
+                    type: 'text',
+                    content: result.value, // Text is small, safe to send inline
+                    name: file.name,
+                  });
+                  resolve();
+                } catch (err) {
+                  reject(err);
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            });
+            continue;
+          }
+
+          // 4. Excel (Extract CSV Client-Side)
+          if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv')) {
+            const reader = new FileReader();
+            await new Promise<void>((resolve, reject) => {
+              reader.onload = e => {
+                try {
+                  const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                  const workbook = XLSX.read(data, { type: 'array' });
+                  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                  const csv = XLSX.utils.sheet_to_csv(firstSheet);
+                  newAttachments.push({
+                    type: 'text',
+                    content: csv, // Text is small, safe to send inline
+                    name: file.name,
+                  });
+                  resolve();
+                } catch (err) {
+                  reject(err);
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            });
+            continue;
+          }
+
+          // 5. Plain Text
+          const text = await file.text();
+          newAttachments.push({
+            type: 'text',
+            content: text,
+            name: file.name,
+          });
 
         } catch (error) {
           console.error('Error processing file:', file.name, error);
