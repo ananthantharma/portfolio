@@ -16,6 +16,9 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
   const [directness, setDirectness] = useState(5);
   const [warmth, setWarmth] = useState(5);
   const [length, setLength] = useState(5);
+  const [confidence, setConfidence] = useState(5);
+  const [urgency, setUrgency] = useState(5);
+  const [technicalDensity, setTechnicalDensity] = useState(5);
 
   // Dropdown
   const [audience, setAudience] = useState<'Peer' | 'Senior Leadership' | 'External Vendor'>('Peer');
@@ -24,6 +27,7 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
   const [noBulletPoints, setNoBulletPoints] = useState(false);
   const [noGreetings, setNoGreetings] = useState(false);
   const [noSemicolons, setNoSemicolons] = useState(false);
+  const [negotiationPivot, setNegotiationPivot] = useState(false);
 
   // Result
   const [isGenerating, setIsGenerating] = useState(false);
@@ -31,9 +35,10 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
 
   const constructAIPrompt = () => {
     let constraints = '';
-    if (noBulletPoints) constraints += '- Do not use bullet points.\\n';
-    if (noGreetings) constraints += '- Start immediately without intro phrases (e.g., no "Hi", "Dear Team").\\n';
-    if (noSemicolons) constraints += '- Do not use semicolons (;) or em-dashes (—).\\n';
+    if (noBulletPoints) constraints += '- Do not use bullet points.\n';
+    if (noGreetings) constraints += '- Start immediately without intro phrases (e.g., no "Hi", "Dear Team").\n';
+    if (noSemicolons) constraints += '- Do not use semicolons (;) or em-dashes (—).\n';
+    if (negotiationPivot) constraints += '- Negotiation Pivot: Rewrite any firm demands into "collaborative requests" to maintain vendor relationships.\n';
 
     return `System: You are a strict text rewriting engine.
 Return ONLY the rewritten text.
@@ -47,6 +52,9 @@ Professionalism: ${professionalism}/10
 Directness: ${directness}/10
 Warmth: ${warmth}/10
 Length: ${length}/10
+Confidence: ${confidence}/10 (1="Tentative/Unsure: It seems like...", 10="Assertive/Definitive: We have identified...")
+Urgency: ${urgency}/10 (1="Relaxed", 10="Critical/Immediate")
+Technical Density: ${technicalDensity}/10 (1="Layman/Simple", 10="Expert/Dense")
 
 Mandatory Constraints:
 ${constraints}
@@ -119,7 +127,7 @@ Text to rewrite:
               leave="ease-in duration-200"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="w-full max-w-5xl transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-7xl transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6 border-b pb-4">
                   <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -146,6 +154,9 @@ Text to rewrite:
                       { label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt' },
                       { label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly' },
                       { label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index' },
+                      { label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive' },
+                      { label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical' },
+                      { label: 'Tech Density', val: technicalDensity, set: setTechnicalDensity, min: 'Layman', max: 'Expert' },
                     ].map(s => (
                       <div key={s.label}>
                         <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
@@ -190,6 +201,7 @@ Text to rewrite:
                           { label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints },
                           { label: 'No Greetings', checked: noGreetings, set: setNoGreetings },
                           { label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons },
+                          { label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot },
                         ].map(c => (
                           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer" key={c.label}>
                             <input
