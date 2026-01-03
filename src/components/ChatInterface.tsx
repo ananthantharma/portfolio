@@ -151,7 +151,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
   useEffect(() => {
@@ -596,7 +596,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   if (!currentSession) return null;
 
   return (
-    <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden relative">
+    <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
       {/* Sidebar */}
       <div
         className={`w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-300 absolute md:relative z-50 h-full ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
@@ -681,7 +681,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-3">
+          {/* Mr-12 on mobile to clear the fixed hamburger menu */}
+          <div className="flex items-center gap-3 mr-12 md:mr-0">
             {currentSession.activeGem && (
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs font-medium">
                 <FilePenLine className="w-3 h-3" />

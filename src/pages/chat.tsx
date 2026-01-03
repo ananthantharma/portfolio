@@ -44,7 +44,13 @@ export default function ChatPage() {
   return (
     <Page description="Chat with Gemini" title="Ananthan's AI Chat">
       <Header />
-      <div className="pt-24 h-screen box-border">
+      {/* 
+        Adaptive Padding:
+        - Mobile (<640px): Header hidden -> pt-0
+        - Tablet/Laptop (640px - 1280px): Header likely wraps (2 rows) -> pt-32 (128px)
+        - Desktop (>1280px): Header single line -> pt-20 (80px)
+       */}
+      <div className="pt-0 sm:pt-32 xl:pt-20 h-screen box-border">
         {!apiKey ? (
           <ApiKeyInput onApiKeySubmit={handleApiKeySubmit} />
         ) : (
