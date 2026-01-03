@@ -284,8 +284,8 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
     // 1. Ensure newlines before code blocks
     processed = processed.replace(/([^\n])\n(```)/g, '$1\n\n$2');
 
-    // 2. Ensure newlines before table start (first pipe after newline)
-    processed = processed.replace(/([^\n])\n(\|)/g, '$1\n\n$2');
+    // 2. Split text from start of table (e.g. "Table 1 | Header |")
+    processed = processed.replace(/(^|\n)([^|\n]+)(\|)/g, '$1$2\n\n$3');
 
     // 3. Fix compressed tables: Replace "| |" with "|\n|" globally
     // This catches "Header ||---" and "Cell || NextRowCell" (zero or more spaces)
