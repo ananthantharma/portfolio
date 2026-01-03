@@ -224,7 +224,7 @@ export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
           // If original was PNG with transparency, this turns background black.
           // To keep transparency we might need png, but it doesn't support quality setting well in all browsers.
           // For chat attachments, usually JPEG is fine, but let's check input type.
-          const outputType = file.type === 'image/png' || file.type === 'image/webp' ? file.type : 'image/jpeg';
+          // Using JPEG quality 0.6 for significant compression
 
           // Actually, 'image/png' in toDataURL argument 2 (quality) is generally ignored by browsers.
           // So if we want compression we largely must use jpeg or webp.
