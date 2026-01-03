@@ -666,17 +666,17 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               <span className="hidden sm:inline">Refine Email</span>
             </button>
 
-            {/* Mobile New Chat Button */}
-            <div className="md:hidden h-4 w-px bg-zinc-700"></div>
+            {/* New Chat Button (Always Visible) */}
+            <div className="h-4 w-px bg-zinc-700"></div>
             <button
-              className="md:hidden text-sm text-zinc-400 hover:text-blue-400 transition-colors flex items-center gap-2"
+              className="text-sm text-zinc-400 hover:text-blue-400 transition-colors flex items-center gap-2"
               onClick={handleNewChat}
               title="Start New Chat">
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-5 h-5" />
             </button>
 
-            {/* Hidden OnClearKey for mobile in header? No, it was there before. */}
-            <div className="md:hidden h-4 w-px bg-zinc-700"></div>
+            {/* Clear API Key */}
+            <div className="h-4 w-px bg-zinc-700"></div>
             <button
               className="md:hidden text-sm text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-2"
               onClick={onClearKey}
@@ -830,23 +830,15 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
               <div className="chat-marquee">
                 <ul>
-                  <li onClick={() => setInput("Create an image")}>Create an image</li>
-                  <li onClick={() => setInput("Give me ideas")}>Give me ideas</li>
-                  <li onClick={() => setInput("Write a text")}>Write a text</li>
-                  <li onClick={() => setInput("Create a chart")}>Create a chart</li>
-                  <li onClick={() => setInput("Plan a trip")}>Plan a trip</li>
-                  <li onClick={() => setInput("Help me pick")}>Help me pick</li>
-                  <li onClick={() => setInput("Write a Python script")}>Write a Python script</li>
+                  <li onClick={() => setInput("Summerize this")}>Summerize this for me</li>
+                  <li onClick={() => setInput("Rewrite this - Casual")}>Rewrite this - Casual</li>
+                  <li onClick={() => setInput("Rewrite this - Professional")}>Rewrite this - Professional</li>
                 </ul>
                 {/* Duplicated for smooth marquee */}
                 <ul>
-                  <li onClick={() => setInput("Create an image")}>Create an image</li>
-                  <li onClick={() => setInput("Give me ideas")}>Give me ideas</li>
-                  <li onClick={() => setInput("Write a text")}>Write a text</li>
-                  <li onClick={() => setInput("Create a chart")}>Create a chart</li>
-                  <li onClick={() => setInput("Plan a trip")}>Plan a trip</li>
-                  <li onClick={() => setInput("Help me pick")}>Help me pick</li>
-                  <li onClick={() => setInput("Write a Python script")}>Write a Python script</li>
+                  <li onClick={() => setInput("Summerize this")}>Summerize this</li>
+                  <li onClick={() => setInput("Rewrite this - Casual")}>Rewrite this - Casual</li>
+                  <li onClick={() => setInput("Rewrite this - Professional")}>Rewrite this - Professional</li>
                 </ul>
               </div>
 

@@ -9,7 +9,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     let { apiKey } = body;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { prompt, history, model: requestedModel, systemInstruction, attachments } = body;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { prompt, history, model: requestedModel, systemInstruction, attachments, useSearch } = body;
 
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
@@ -49,6 +50,11 @@ export async function POST(req: Request) {
     const modelParams: any = { model: modelToUse };
     if (systemInstruction) {
       modelParams.systemInstruction = systemInstruction;
+    }
+
+    // Tools: Google Search
+    if (useSearch) {
+      modelParams.tools = [{ googleSearch: {} }];
     }
 
     const model = genAI.getGenerativeModel(modelParams);
