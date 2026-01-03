@@ -340,7 +340,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       return (
         <div className="prose prose-invert max-w-none">
           <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
-            {content}
+            {preprocessMarkdown(content)}
           </ReactMarkdown>
         </div>
       );
@@ -362,7 +362,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
             return (
               <div key={index} className="prose prose-invert max-w-none">
                 <ReactMarkdown components={markdownComponents} remarkPlugins={plugins}>
-                  {part.text}
+                  {preprocessMarkdown(part.text)}
                 </ReactMarkdown>
               </div>
             );
@@ -392,8 +392,8 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
           {sessions.map(session => (
             <div
               className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                  ? 'bg-zinc-800 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                ? 'bg-zinc-800 text-white'
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
                 }`}
               key={session.id}
               onClick={() => setCurrentSessionId(session.id)}>
@@ -490,8 +490,8 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
 
                 <div
                   className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-tr-none'
-                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                    ? 'bg-blue-600 text-white rounded-tr-none'
+                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
                     }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {renderMessageContent(msg.content)}
