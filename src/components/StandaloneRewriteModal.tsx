@@ -1,6 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { Fragment, memo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface StandaloneRewriteModalProps {
   isOpen: boolean;
@@ -261,8 +263,34 @@ Text to rewrite:
                             <span className="font-medium animate-pulse">Polishing your text...</span>
                           </div>
                         ) : (
-                          <div className="whitespace-pre-wrap leading-relaxed">
-                            {rewrittenText || <span className="text-gray-400 italic">Result will appear here...</span>}
+                          <div className="prose prose-sm max-w-none prose-purple">
+                            {rewrittenText ? (
+                              <ReactMarkdown
+                                components={{
+                                  table: ({ children }) => (
+                                    <table className="border-collapse table-auto w-full text-sm my-4 border border-gray-300">
+                                      {children}
+                                    </table>
+                                  ),
+                                  thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
+                                  th: ({ children }) => (
+                                    <th className="border border-gray-300 px-4 py-2 font-bold text-left text-gray-700">
+                                      {children}
+                                    </th>
+                                  ),
+                                  td: ({ children }) => (
+                                    <td className="border border-gray-300 px-4 py-2 text-gray-700">{children}</td>
+                                  ),
+                                  ul: ({ children }) => <ul className="list-disc ml-4 my-2">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
+                                  li: ({ children }) => <li className="mb-1">{children}</li>,
+                                }}
+                                remarkPlugins={[remarkGfm]}>
+                                {rewrittenText}
+                              </ReactMarkdown>
+                            ) : (
+                              <span className="text-gray-400 italic">Result will appear here...</span>
+                            )}
                           </div>
                         )}
                       </div>
