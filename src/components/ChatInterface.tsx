@@ -102,43 +102,66 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
 
-  // Load settings from local storage
+  // Load settings from DB
   useEffect(() => {
-    const stored = localStorage.getItem('custom_system_instruction');
-    if (stored) {
-      setCustomInstruction(stored);
-      // Update the initial empty session if it exists and hasn't been modified
-      setSessions(prev => {
-        if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
-          return [{ ...prev[0], systemInstruction: stored }];
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/user/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.systemInstruction) {
+            setCustomInstruction(data.systemInstruction);
+            // Update the initial empty session
+            setSessions(prev => {
+              if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
+                return [{ ...prev[0], systemInstruction: data.systemInstruction }];
+              }
+              return prev;
+            });
+          }
         }
-        return prev;
-      });
-    }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    };
+    fetchSettings();
   }, []);
 
   // Save settings
-  const handleSaveSettings = () => {
-    localStorage.setItem('custom_system_instruction', customInstruction);
-    setShowSettings(false);
-    // Optionally update current session if it's empty/new
-    if (currentSession?.messages.length === 0) {
-      updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemInstruction: customInstruction }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+
+      setShowSettings(false);
+      // Optionally update current session if it's empty/new
+      if (currentSession?.messages.length === 0) {
+        updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+      }
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings. Please try again.');
     }
   };
-
-  // Hardcoded models to avoid fetch failure on load
 
   // Hardcoded models to avoid fetch failure on load
   useEffect(() => {
     // We only care about Flash and Pro for now
     const models = [
-      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
-      { id: 'gemini-pro-latest', label: 'Gemini Pro Latest' },
-      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest' },
+      { id: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash Exp' },
+      { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+      { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
     ];
     setAvailableModels(models);
-    setSelectedModel('gemini-flash-latest');
+    setSelectedModel('gemini-2.0-flash-exp');
   }, []);
 
   // Initialize currentSessionId
