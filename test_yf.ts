@@ -11,7 +11,7 @@ try {
     const instance = new def();
     console.log('Successfully instantiated default export.');
     instance.quote('AAPL').then((q: any) => console.log('Quote from new instance:', q.regularMarketPrice));
-} catch (e) {
+} catch (e: any) {
     console.log('Default export is NOT a constructor:', e.message);
 }
 
