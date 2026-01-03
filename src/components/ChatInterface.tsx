@@ -10,6 +10,7 @@ import {
   Settings,
   X,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -72,6 +73,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
+  const { data: session } = useSession();
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -102,54 +104,74 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
 
-  // Load settings from DB
+  // Load settings (Hybrid: DB or LocalStorage)
   useEffect(() => {
     const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/user/settings');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.systemInstruction) {
-            setCustomInstruction(data.systemInstruction);
-            // Update the initial empty session
-            setSessions(prev => {
-              if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
-                return [{ ...prev[0], systemInstruction: data.systemInstruction }];
-              }
-              return prev;
-            });
+      // 1. Try DB if logged in
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/user/settings');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.systemInstruction) {
+              setCustomInstruction(data.systemInstruction);
+              updateInitialSession(data.systemInstruction);
+              return;
+            }
           }
+        } catch (error) {
+          console.error('Failed to fetch DB settings:', error);
         }
-      } catch (error) {
-        console.error('Failed to fetch settings:', error);
+      }
+
+      // 2. Fallback to LocalStorage (Guest or DB empty)
+      const stored = localStorage.getItem('custom_system_instruction');
+      if (stored) {
+        setCustomInstruction(stored);
+        updateInitialSession(stored);
       }
     };
+
     fetchSettings();
-  }, []);
+  }, [session]);
 
-  // Save settings
+  const updateInitialSession = (instruction: string) => {
+    setSessions(prev => {
+      if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
+        return [{ ...prev[0], systemInstruction: instruction }];
+      }
+      return prev;
+    });
+  };
+
+  // Save settings (Hybrid)
   const handleSaveSettings = async () => {
-    try {
-      const response = await fetch('/api/user/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ systemInstruction: customInstruction }),
-      });
+    // 1. Always save to LocalStorage (as backup/guest)
+    localStorage.setItem('custom_system_instruction', customInstruction);
 
-      if (!response.ok) {
-        throw new Error('Failed to save settings');
-      }
+    // 2. If logged in, also save to DB
+    if (session?.user) {
+      try {
+        const response = await fetch('/api/user/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ systemInstruction: customInstruction }),
+        });
 
-      setShowSettings(false);
-      // Optionally update current session if it's empty/new
-      if (currentSession?.messages.length === 0) {
-        updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+        if (!response.ok) throw new Error('Failed to save to DB');
+      } catch (error) {
+        console.error('Error saving to DB:', error);
+        // Don't alert error if local save worked, just log it.
+        // Or alert user? "Saved locally, but sync failed." 
+        // Let's keep it silent for smoother UX unless critical.
       }
-      alert('Settings saved successfully!');
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
     }
+
+    setShowSettings(false);
+    if (currentSession?.messages.length === 0) {
+      updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+    }
+    alert('Settings saved!');
   };
 
   // Hardcoded models to avoid fetch failure on load
