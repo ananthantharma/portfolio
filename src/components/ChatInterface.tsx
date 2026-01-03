@@ -1,11 +1,11 @@
-import {
-  Bot,
+Bot,
   FileText,
   Loader2,
   FilePenLine,
   PlusCircle,
   Trash2,
   User,
+  Menu,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -86,6 +86,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [useSearch, setUseSearch] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false); // Mobile sidebar toggle
   const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
@@ -563,9 +564,11 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   if (!currentSession) return null;
 
   return (
-    <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
+    <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden relative">
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900/50 hidden md:flex">
+      <div
+        className={`w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-300 absolute md:relative z-50 h-full ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}>
         <div className="p-4 border-b border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
@@ -583,7 +586,10 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
                 }`}
               key={session.id}
-              onClick={() => setCurrentSessionId(session.id)}>
+              onClick={() => {
+                setCurrentSessionId(session.id);
+                setShowSidebar(false);
+              }}>
               <div className="flex-shrink-0">
                 {/* Using generic icon for session list */}
                 <Bot className="w-4 h-4" />
@@ -621,6 +627,13 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       <div className="flex-1 flex flex-col h-full min-w-0">
         <header className="flex items-center justify-between px-6 py-4 bg-zinc-800 border-b border-zinc-700">
           <div className="flex items-center gap-4">
+            {/* Mobile Menu Toggle */}
+            <button
+              className="md:hidden p-1 text-zinc-400 hover:text-white"
+              onClick={() => setShowSidebar(!showSidebar)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
             <div className="flex items-center gap-2">
               <Bot className="w-6 h-6 text-blue-400" />
               <h1 className="text-lg font-semibold hidden sm:block">Ananthan's AI</h1>
