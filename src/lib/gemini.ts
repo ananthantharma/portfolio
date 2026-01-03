@@ -11,6 +11,7 @@ export const getChatResponse = async (
   modelName: string = 'gemini-flash-latest',
   systemInstruction?: string,
   attachments: { type: 'image' | 'pdf' | 'text'; content?: string; url?: string; name: string; mimeType?: string }[] = [],
+  useSearch: boolean = false,
 ) => {
   /*
    * Use Server-Side Generation Route (similar to OpenAI implementation)
@@ -28,7 +29,8 @@ export const getChatResponse = async (
         history, // Pass history to server
         model: modelName,
         systemInstruction,
-        attachments, // Updated from images
+        attachments,
+        useSearch,
       }),
     });
 

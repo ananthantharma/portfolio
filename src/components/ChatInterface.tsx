@@ -1,15 +1,10 @@
-import {
-  Bot,
-  File as FileIcon,
-  FilePenLine,
+Bot,
   FileText,
   Loader2,
-  Paperclip,
+  FilePenLine,
   PlusCircle,
-  Send,
   Trash2,
   User,
-  X,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -18,6 +13,7 @@ import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
 import { getChatResponse } from '../lib/gemini';
+import './ChatInterface.css';
 
 const plugins = [remarkGfm];
 
@@ -88,6 +84,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // UI State
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [useSearch, setUseSearch] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
@@ -96,6 +93,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imagesInputRef = useRef<HTMLInputElement>(null);
 
   // Hardcoded models to avoid fetch failure on load
   useEffect(() => {
@@ -455,6 +453,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         selectedModel,
         systemInstruction,
         currentAttachments,
+        useSearch,
       );
 
       updateCurrentSession(s => ({
@@ -733,78 +732,253 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-zinc-900 border-t border-zinc-800">
-          <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
-            {/* Image Preview Area */}
-            {attachments.length > 0 && (
-              <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
-                {attachments.map((att, idx) => (
-                  <div className="relative group flex-shrink-0" key={idx}>
-                    {att.type === 'image' ? (
-                      <img
-                        alt="Preview"
-                        className="h-16 w-16 object-cover rounded-lg border border-zinc-700"
-                        src={att.content}
-                      />
-                    ) : (
-                      <div
-                        className="h-16 w-16 bg-zinc-800 rounded-lg border border-zinc-700 flex flex-col items-center justify-center p-1"
-                        title={att.name}>
-                        {att.type === 'pdf' ? (
-                          <FileIcon className="w-8 h-8 text-red-500" />
-                        ) : (
-                          <FileText className="w-8 h-8 text-blue-500" />
-                        )}
-                        <span className="text-[8px] text-zinc-400 mt-1 truncate w-full text-center">{att.name}</span>
-                      </div>
-                    )}
-                    <button
-                      className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeAttachment(idx)}
-                      type="button">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="relative flex-1 flex gap-2 items-end">
+        <div className="p-4 bg-zinc-900 border-t border-zinc-800 flex justify-center">
+          <form onSubmit={handleSubmit} className="w-full flex justify-center">
+            <div className="AI-Input">
+              {/* Hidden Inputs */}
               <input
-                accept="image/*,.pdf,.docx,.xlsx,.xls,.csv,.txt,.md,.js,.ts,.tsx,.py"
+                type="file"
+                id="photos"
+                accept="image/*"
+                ref={imagesInputRef}
+                onChange={handleFileSelect}
                 className="hidden"
                 multiple
-                onChange={handleFileSelect}
-                ref={fileInputRef}
+              />
+              <input
                 type="file"
+                id="files"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                multiple
               />
 
-              <button
-                className="p-3 text-zinc-400 hover:text-blue-400 transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-xl border border-zinc-700"
-                onClick={() => fileInputRef.current?.click()}
-                title="Upload File"
-                type="button">
-                <Paperclip className="w-5 h-5" />
-              </button>
+              {/* Search Toggle */}
+              <input
+                id="search"
+                type="checkbox"
+                checked={useSearch}
+                onChange={(e) => setUseSearch(e.target.checked)}
+              />
 
-              <div className="relative flex-1">
-                <textarea
-                  className="w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]"
-                  disabled={isLoading}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onPaste={handlePaste}
-                  placeholder="Message Gemini..."
-                  ref={textareaRef}
-                  rows={1}
-                  value={input}
-                />
-                <button
-                  className="absolute right-2 bottom-2 p-2 text-zinc-400 hover:text-blue-400 disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors"
-                  disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                  type="submit">
-                  <Send className="w-5 h-5" />
-                </button>
+              {/* Note: Camera removed as requested */}
+              {/* <input type="file" id="camera" accept="image/*" capture="environment" /> */}
+
+              <input id="voice" type="checkbox" />
+              <label htmlFor="voice">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="30"
+                  height="30"
+                  fill="var(--neutral-color)"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                  ></path>
+                </svg>
+              </label>
+
+              {/* Voice/Mic (Visual only for now unless wired) */}
+              <input id="mic" type="checkbox" />
+              <label htmlFor="mic">
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="var(--neutral-color)"
+                  height="30"
+                  width="30"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"
+                  ></path>
+                  <path
+                    d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"
+                  ></path>
+                </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="30"
+                  height="30"
+                  fill="var(--neutral-color)"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3"
+                  ></path>
+                  <path
+                    d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z"
+                  ></path>
+                </svg>
+              </label>
+
+              <div className="chat-marquee">
+                <ul>
+                  <li onClick={() => setInput("Create an image")}>Create an image</li>
+                  <li onClick={() => setInput("Give me ideas")}>Give me ideas</li>
+                  <li onClick={() => setInput("Write a text")}>Write a text</li>
+                  <li onClick={() => setInput("Create a chart")}>Create a chart</li>
+                  <li onClick={() => setInput("Plan a trip")}>Plan a trip</li>
+                  <li onClick={() => setInput("Help me pick")}>Help me pick</li>
+                  <li onClick={() => setInput("Write a Python script")}>Write a Python script</li>
+                </ul>
+                {/* Duplicated for smooth marquee */}
+                <ul>
+                  <li onClick={() => setInput("Create an image")}>Create an image</li>
+                  <li onClick={() => setInput("Give me ideas")}>Give me ideas</li>
+                  <li onClick={() => setInput("Write a text")}>Write a text</li>
+                  <li onClick={() => setInput("Create a chart")}>Create a chart</li>
+                  <li onClick={() => setInput("Plan a trip")}>Plan a trip</li>
+                  <li onClick={() => setInput("Help me pick")}>Help me pick</li>
+                  <li onClick={() => setInput("Write a Python script")}>Write a Python script</li>
+                </ul>
+              </div>
+
+              <div className="chat-container">
+                <label htmlFor="chat-input" className="chat-wrapper">
+                  {/* Attachments Preview inside text area wrapper? Or above? User didn't specify. Keeping them above might be safer but user's UI has limited space.
+                     I'll render them inside the wrapper above the textarea for now using the existing logic adapted.
+                 */}
+                  {attachments.length > 0 && (
+                    <div className="flex gap-2 mb-2 w-full overflow-x-auto">
+                      {attachments.map((att, idx) => (
+                        <div key={idx} className="relative group">
+                          {att.type === 'image' ? (
+                            <img src={att.content} className="h-10 w-10 rounded object-cover" />
+                          ) : (
+                            <div className="h-10 w-10 bg-zinc-700 rounded flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                          <button onClick={(e) => { e.preventDefault(); removeAttachment(idx); }} className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 w-4 h-4 flex items-center justify-center text-[10px] text-white">x</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <textarea
+                    id="chat-input"
+                    placeholder="Ask anything"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    ref={textareaRef}
+                  ></textarea>
+
+                  <div className="button-bar">
+                    <div className="left-buttons">
+                      <input id="appendix" type="checkbox" />
+                      <label htmlFor="appendix">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="var(--neutral-color)"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"
+                          ></path>
+                        </svg>
+                      </label>
+                      <div id="appendix-bar">
+                        <label htmlFor="appendix">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="30"
+                            height="30"
+                            fill="var(--primary-color)"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
+                            ></path>
+                          </svg>
+                        </label>
+                        {/* Camera removed */}
+                        {/* Photos - Trigger file input */}
+                        <label htmlFor="photos">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="30"
+                            height="30"
+                            fill="var(--primary-color)"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path>
+                            <path
+                              d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z"
+                            ></path>
+                          </svg>
+                        </label>
+                        {/* Files - Trigger file input */}
+                        <label htmlFor="files">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="30"
+                            height="30"
+                            fill="var(--primary-color)"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z"
+                            ></path>
+                          </svg>
+                        </label>
+                      </div>
+
+                      {/* Search Checkbox */}
+                      <input id="search" type="checkbox" checked={useSearch} onChange={(e) => setUseSearch(e.target.checked)} />
+                      <label htmlFor="search" title="Enable Internet Search">
+                        <svg
+                          viewBox="0 0 16 16"
+                          fill="var(--neutral-color)"
+                          height="20"
+                          width="20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z"
+                          ></path>
+                        </svg>
+                      </label>
+                    </div>
+
+                    <div className="right-buttons">
+                      <label htmlFor="voice">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="var(--neutral-color)"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"
+                          ></path>
+                          <path
+                            d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"
+                          ></path>
+                        </svg>
+                      </label>
+                      <button type="submit" disabled={(!input.trim() && attachments.length === 0) || isLoading}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="30"
+                          height="30"
+                          fill="var(--neutral-color)"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </label>
               </div>
             </div>
           </form>
