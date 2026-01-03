@@ -50,7 +50,8 @@
     "tailwind-merge": "^3.4.0",
     "ts-pattern": "^5.0.4",
     "with": "^7.0.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "yahoo-finance2": "^3.11.2"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.4.12",
