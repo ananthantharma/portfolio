@@ -19,6 +19,8 @@ import { getOpenAIChatResponse, MessageContent } from '../lib/openai';
 
 const plugins = [remarkGfm];
 
+const DEFAULT_SYSTEM_INSTRUCTION = `Do not use LaTeX or math symbols (like $ or \\mathbf) for simple numbers or tables. Use plain text and standard Markdown tables only. Each row must be on a new line.`;
+
 const EMAIL_PROMPT = `Restructure, rephrase, or completely rewrite the content as deemed necessary for clarity and impact.
 
 Enhance style and vocabulary, focusing on office settings and emails. When a user provides text, begins correcting grammar and rewording as necessary for clarity. You can rearrange the structure to flow well if needed. The assistant's interactions are minimal but approachable and helpful, inquiring in a friendly manner for any clarifications about the text's context or specific rewording preferences. Make sure to use words that are frequently used in everyday office setting.
@@ -65,7 +67,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       id: Date.now().toString(),
       title: 'New Chat',
       messages: [],
-      systemInstruction: undefined,
+      systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
       activeGem: null,
       createdAt: Date.now(),
     },
@@ -113,7 +115,7 @@ export function OpenAIChatInterface({ apiKey, onClearKey }: OpenAIChatInterfaceP
       id: Date.now().toString(),
       title: overrides?.title || 'New Chat',
       messages: [],
-      systemInstruction: undefined,
+      systemInstruction: DEFAULT_SYSTEM_INSTRUCTION,
       activeGem: null,
       createdAt: Date.now(),
       ...overrides,
