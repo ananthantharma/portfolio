@@ -178,12 +178,12 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   useEffect(() => {
     // We only care about Flash and Pro for now
     const models = [
-      { id: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash Exp' },
-      { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-      { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
+      { id: 'gemini-pro-latest', label: 'Gemini Pro Latest' },
+      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest' },
     ];
     setAvailableModels(models);
-    setSelectedModel('gemini-2.0-flash-exp');
+    setSelectedModel('gemini-flash-latest');
   }, []);
 
   // Initialize currentSessionId
