@@ -1,13 +1,13 @@
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
-import {heroEducation, heroTimeline, socialLinks} from '../data/data';
-import {TimelineItem} from '../data/dataDef';
+import { heroEducation, heroTimeline, socialLinks } from '../data/data';
+import { TimelineItem } from '../data/dataDef';
 
 /* eslint-disable react/jsx-sort-props */
 /* --- 2. HELPERS --- */
 
 // The "Hacker" Text Effect
-const ScrambledText = memo(({delay = 0, text}: {delay?: number; text: string}) => {
+const ScrambledText = memo(({ delay = 0, text }: { delay?: number; text: string }) => {
   const [displayText, setDisplayText] = useState('');
   const chars = "#.^^{-!#$_№:0#{+.@}-??{4@%=.,^!?2@%\\;1}]?{%:%|{f[4{4%0%'1_0<{0%]>'42";
   const requestRef = useRef<number>();
@@ -42,7 +42,7 @@ ScrambledText.displayName = 'ScrambledText';
 
 // The Card rendered inside SVG
 const SvgCard = memo(
-  ({align = 'left', item, x, y}: {align?: 'left' | 'right'; item: TimelineItem; x: number; y: number}) => {
+  ({ align = 'left', item, x, y }: { align?: 'left' | 'right'; item: TimelineItem; x: number; y: number }) => {
     const isLeft = align === 'left';
 
     // Handle StaticImageData or string path for image
@@ -51,7 +51,7 @@ const SvgCard = memo(
 
     return (
       // Reduced height to 80px for tighter packing
-      <foreignObject height="80" style={{overflow: 'visible'}} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
+      <foreignObject height="80" style={{ overflow: 'visible' }} width="500" x={isLeft ? x - 500 : x} y={y - 40}>
         <div className={`flex w-full h-full items-center ${isLeft ? 'justify-end pr-6' : 'justify-start pl-6'}`}>
           {/* THE CARD 
                    Reduced Scale
@@ -119,7 +119,7 @@ const UnifiedCircuitSection = memo(() => {
   const centerY = svgHeight / 2;
   // Larger Chip (UNCHANGED)
   const chipWidth = 320;
-  const chipHeight = 200;
+  const chipHeight = 260; // Increased to fit the 250px space card
 
   // Pin logic
   const pinSpacing = 25; // More space between pins on the chip
@@ -178,7 +178,7 @@ const UnifiedCircuitSection = memo(() => {
               <g
                 key={`work-${i}`}
                 onClick={() => setActiveId(isActive ? null : `work-${i}`)}
-                style={{cursor: 'pointer'}}>
+                style={{ cursor: 'pointer' }}>
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
@@ -186,7 +186,7 @@ const UnifiedCircuitSection = memo(() => {
                   filter="url(#wiggle)" // Apply wiggle to the wire structure
                   stroke="#333"
                   strokeWidth={isActive ? 4 : 3}
-                  style={{transition: 'stroke-width 0.3s ease'}}
+                  style={{ transition: 'stroke-width 0.3s ease' }}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
@@ -228,7 +228,7 @@ const UnifiedCircuitSection = memo(() => {
             const strokeColor = isActive ? '#FFFFFF' : colors[i % colors.length];
 
             return (
-              <g key={`edu-${i}`} onClick={() => setActiveId(isActive ? null : `edu-${i}`)} style={{cursor: 'pointer'}}>
+              <g key={`edu-${i}`} onClick={() => setActiveId(isActive ? null : `edu-${i}`)} style={{ cursor: 'pointer' }}>
                 {/* The Trace Line (Background) */}
                 <path
                   d={`M${pinX} ${pinY} H${midX} V${cardY} H${cardEdgeX}`}
@@ -236,7 +236,7 @@ const UnifiedCircuitSection = memo(() => {
                   filter="url(#wiggle)"
                   stroke="#333"
                   strokeWidth={isActive ? 4 : 3}
-                  style={{transition: 'stroke-width 0.3s ease'}}
+                  style={{ transition: 'stroke-width 0.3s ease' }}
                 />
                 {/* The Trace Line (Active Flow) */}
                 <path
@@ -265,31 +265,37 @@ const UnifiedCircuitSection = memo(() => {
               <rect fill="url(#chipGradient)" filter="drop-shadow(0 0 20px rgba(0,0,0,0.8))" height={chipHeight} rx="30" stroke="#222" strokeWidth="4" width={chipWidth} />
           */}
 
-          <foreignObject height={chipHeight} width={chipWidth} x="0" y="0">
-            {/* Glassmorphism Container with Pulse Power Source */}
-            <div className="relative w-full h-full flex flex-col items-center justify-center gap-y-4 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(0,255,65,0.1)]">
-              {/* Pulse Ring */}
-              <div className="absolute inset-0 -z-10 rounded-3xl border-2 border-[#00FF41] opacity-0 animate-pulse-ring" />
+          <foreignObject height={chipHeight} style={{ overflow: 'visible' }} width={chipWidth} x="0" y="0">
+            {/* Space Card Structure */}
+            <div className="outer">
+              <div className="dot"></div>
+              <div className="card">
+                <div className="ray"></div>
+                <div className="text text-center">
+                  <ScrambledText delay={200} text="Ananthan" />
+                  <br />
+                  <ScrambledText delay={800} text="Tharmavelautham" />
+                </div>
 
-              <div className="text-2xl font-mono font-bold text-[#00FF41] text-center leading-tight drop-shadow-[0_0_10px_rgba(0,255,65,0.8)]">
-                <ScrambledText delay={200} text="Ananthan" />
-                <br />
-                <ScrambledText delay={800} text="Tharmavelautham" />
-              </div>
+                {/* Social Icons within Card */}
+                <div className="flex gap-x-4 mt-4 z-10">
+                  {socialLinks.map(({ label, Icon, href }) => (
+                    <a
+                      aria-label={label}
+                      className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110"
+                      href={href}
+                      key={label}
+                      rel="noopener noreferrer"
+                      target="_blank">
+                      <Icon className="h-5 w-5" />
+                    </a>
+                  ))}
+                </div>
 
-              {/* Social Icons */}
-              <div className="flex gap-x-4">
-                {socialLinks.map(({label, Icon, href}) => (
-                  <a
-                    aria-label={label}
-                    className="text-gray-400 transition-all duration-300 hover:text-[#00FF41] hover:scale-110"
-                    href={href}
-                    key={label}
-                    rel="noopener noreferrer"
-                    target="_blank">
-                    <Icon className="h-6 w-6" />
-                  </a>
-                ))}
+                <div className="line topl"></div>
+                <div className="line leftl"></div>
+                <div className="line bottoml"></div>
+                <div className="line rightl"></div>
               </div>
             </div>
           </foreignObject>
@@ -297,6 +303,114 @@ const UnifiedCircuitSection = memo(() => {
       </svg>
 
       <style jsx>{`
+        .outer {
+          width: 100%;
+          height: 100%;
+          border-radius: 10px;
+          padding: 1px;
+          background: radial-gradient(circle 230px at 0% 0%, #ffffff, #0c0d0d);
+          position: relative;
+        }
+
+        .dot {
+          width: 5px;
+          aspect-ratio: 1;
+          position: absolute;
+          background-color: #fff;
+          box-shadow: 0 0 10px #ffffff;
+          border-radius: 100px;
+          z-index: 2;
+          right: 10%;
+          top: 10%;
+          animation: moveDot 6s linear infinite;
+        }
+
+        @keyframes moveDot {
+          0%,
+          100% {
+            top: 10%;
+            right: 10%;
+          }
+          25% {
+            top: 10%;
+            right: calc(100% - 35px);
+          }
+          50% {
+            top: calc(100% - 30px);
+            right: calc(100% - 35px);
+          }
+          75% {
+            top: calc(100% - 30px);
+            right: 10%;
+          }
+        }
+
+        .card {
+          z-index: 1;
+          width: 100%;
+          height: 100%;
+          border-radius: 9px;
+          border: solid 1px #202222;
+          background-size: 20px 20px;
+          background: radial-gradient(circle 280px at 0% 0%, #444444, #0c0d0d);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          flex-direction: column;
+          color: #fff;
+        }
+
+        .ray {
+          width: 220px;
+          height: 45px;
+          border-radius: 100px;
+          position: absolute;
+          background-color: #c7c7c7;
+          opacity: 0.4;
+          box-shadow: 0 0 50px #fff;
+          filter: blur(10px);
+          transform-origin: 10%;
+          top: 0%;
+          left: 0;
+          transform: rotate(40deg);
+        }
+
+        .text {
+          font-weight: bolder;
+          font-size: 1.8rem; /* Adjusted from 4rem for long name */
+          background: linear-gradient(45deg, #ffffff 0%, #bbbbbb 50%, #ffffff 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          line-height: 1.2;
+        }
+
+        .line {
+          width: 100%;
+          height: 1px;
+          position: absolute;
+          background-color: #2c2c2c;
+        }
+        .topl {
+          top: 10%;
+          background: linear-gradient(90deg, #888888 30%, #1d1f1f 70%);
+        }
+        .bottoml {
+          bottom: 10%;
+        }
+        .leftl {
+          left: 10%;
+          width: 1px;
+          height: 100%;
+          background: linear-gradient(180deg, #747474 30%, #222424 70%);
+        }
+        .rightl {
+          right: 10%;
+          width: 1px;
+          height: 100%;
+        }
+
         .animate-flow {
           stroke-dasharray: 40 400;
           stroke-dashoffset: 440;
@@ -305,24 +419,6 @@ const UnifiedCircuitSection = memo(() => {
         @keyframes flow {
           to {
             stroke-dashoffset: 0;
-          }
-        }
-        .animate-pulse-ring {
-          animation: pulseRing 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        @keyframes pulseRing {
-          0% {
-            transform: scale(0.95);
-            opacity: 0.5;
-            border-width: 2px;
-          }
-          50% {
-            opacity: 0.3;
-          }
-          100% {
-            transform: scale(1.4);
-            opacity: 0;
-            border-width: 0px;
           }
         }
       `}</style>
