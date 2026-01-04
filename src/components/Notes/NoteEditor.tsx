@@ -34,49 +34,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
 
-const ORGANIZE_PROMPT = `
-Role: Act as a specialized Executive Assistant for a Senior Procurement Manager.
 
-Task: I will provide raw, unorganized notes. Organize them into a polished document strictly optimized for a Quill JS editor.
-
-Quill JS Formatting Rules (STRICT):
-
-Standard Font Size: Do NOT use # or ## headers. All text must be the same size.
-
-Headings: Use Bold Text for section headings. Do not use all caps.
-
-Indented Bullets: Every bullet point must start with four spaces followed by a bullet symbol (e.g., •). This ensures they appear "tabbed" in the editor.
-
-The "Double Break" Rule: You must hit the "Enter" key three times between every section. This creates a visible empty line in Quill.
-
-No HTML/Code: Do not use <br>, \\n, or backticks. Use only plain text and bolding.
-
-The Emoji Map (Apply directly to text):
-
-🏢 Vendors/Suppliers: (e.g., 🏢 Hexagon)
-
-👤 People/Stakeholders: (e.g., 👤 Chris Woodcock)
-
-💰 Financials/Costs/Savings: (e.g., 💰 $3M)
-
-⚠️ Risks/Warnings: (e.g., ⚠️ Support ending)
-
-🛑 Critical Blockers: (e.g., 🛑 Integration failed)
-
-📅 Deadlines/Dates: (e.g., 📅 December 26)
-
-💡 Ideas/Opportunities: (e.g., 💡 Lessons learned)
-
-📜 Policy/Contract: (e.g., 📜 Master Agreement)
-
-Document Structure:
-
-Executive Summary: A 1-2 sentence "Bottom Line Up Front" (BLUF).
-
-Thematic Sections: Group points logically (e.g., Project Context, Financial Impact).
-
-Next Steps / Action Items: End every task with the string: 🔴‼️💥ACTION💥‼️🔴
-`;
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
@@ -107,6 +65,28 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
+
+  // Missing State Definitions
+  const [isFlagged, setIsFlagged] = useState(false);
+  const [isImportant, setIsImportant] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedText, setGeneratedText] = useState('');
+  const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
+  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
+
+  const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
+  const [rewriteSelectedText, setRewriteSelectedText] = useState('');
+
+  const [isPromptEditorOpen, setIsPromptEditorOpen] = useState(false);
+  const [organizePrompt, setOrganizePrompt] = useState('');
+
+  const [isToDoOpen, setIsToDoOpen] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const quillRef = useRef<any>(null);
 
   // Sync contentRef with editorContent
   const contentRef = useRef(''); // Assuming contentRef is meant to be defined here
@@ -210,14 +190,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsDirty(true);
   };
 
-  const handleTabColorChange = (tabId: string, newColor: string) => {
-    const newTabs = tabs.map(t => {
-      if (t._id === tabId || t.title === tabId) return { ...t, color: newColor };
-      return t;
-    });
-    setTabs(newTabs);
-    setIsDirty(true);
-  };
+
 
   // Upated Save Handler
   const handleSave = () => {
