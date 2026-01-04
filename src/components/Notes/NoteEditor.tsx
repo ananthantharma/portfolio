@@ -183,19 +183,23 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
   const handleRenameTab = (tabId: string, newTitle: string) => {
     const newTabs = tabs.map(t => {
-      if (t._id === tabId || t.title === tabId) return { ...t, title: newTitle };
+      // Compare by ID first, then title if ID is missing (legacy safety)
+      if (t._id === tabId || (!t._id && t.title === tabId)) {
+        return { ...t, title: newTitle };
+      }
       return t;
     });
     setTabs(newTabs);
+    // If we were relying on title as ID (bad practice but possible in legacy), we might need to update activeTabId?
+    // Current logic uses _id primarily. If we rename, _id doesn't change, so activeTabId stays valid.
+    // The issue was likely relying on title as a fallback in 'find' logic.
     setIsDirty(true);
   };
-
-
 
   // Upated Save Handler
   const handleSave = () => {
     if (page) {
-      // Ensure current editor content is synced to the active tab before saving
+      // 1. Sync current editor content to the active tab object in state
       const currentTabs = tabs.map(t => {
         if (t._id === activeTabId || t.title === activeTabId) {
           return { ...t, content: editorContent };
@@ -203,23 +207,21 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         return t;
       });
 
-      // We need to pass the tabs array. 
-      // The onSave prop expects (id, content). We need to change the parent or overload "content" to pass full object?
-      // Or we assume onSave handles partial updates if we pass an object?
-      // Inspecting NotesLayout: handleSavePageContent calls axios.put with {content}.
-      // We should probably MODIFY NoteEditorProps to accept `onSave` that takes an object, or just cast it.
-      // Ideally, we pass `{ tabs: currentTabs }` as the second arg.
+      // 2. Prepare payload for Server
+      // We must strip strictly client-side IDs (like 'new-...' or 'default-tab') so Mongoose generates real ObjectIds.
+      // We KEEP real ObjectIds (hex strings) so Mongoose updates existing subdocs.
+      const sanitizedTabs = currentTabs.map(t => {
+        // If ID looks like a temp ID, remove it from the payload
+        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab')) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { _id, ...rest } = t;
+          return rest;
+        }
+        return t;
+      });
 
-      // Let's modify the onSave call to pass the *tabs* instead of just string content.
-      // But we need to update the Parent to accept this.
-      // For now, I will assume onSave can take 'any' or I need to refactor it.
-      // The prop is `(id: string, content: string) => void`. 
-      // I will cheat and pass `currentTabs as any` or JSON.stringify? No, backend expects JSON body.
-      // The parent `handleSavePageContent` does `axios.put(url, {content})`.
-      // I should update parent to accept `data` instead of `content`.
-
-      // I will update onSave logic here first.
-      onSave(page._id as string, currentTabs as any);
+      // 3. Send to Parent
+      onSave(page._id as string, sanitizedTabs as any);
       setIsDirty(false);
     }
   };
