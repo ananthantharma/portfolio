@@ -1010,7 +1010,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         originalText={rewriteSelectedText}
       />
 
-      <ToDoModal initialTitle={page.title} isOpen={isToDoOpen} onClose={handleCloseToDo} onSave={handleSaveToDo} />
+      <ToDoModal
+        initialTitle={
+          tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.title || page?.title || ''
+        }
+        isOpen={isToDoOpen}
+        onClose={handleCloseToDo}
+        onSave={handleSaveToDo}
+      />
 
       <PromptEditorModal
         isOpen={isPromptEditorOpen}
