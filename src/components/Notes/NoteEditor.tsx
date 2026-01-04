@@ -149,15 +149,27 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
   // Handlers for Tabs
   const handleAddTab = () => {
+    // 1. Sync current content to active tab before adding new one
+    const updatedTabs = tabs.map(t => {
+      if (t._id === activeTabId || t.title === activeTabId) {
+        return { ...t, content: editorContent };
+      }
+      return t;
+    });
+
     const newTab = {
-      title: `Tab ${tabs.length + 1}`,
-      content: '',
+      title: `Tab ${updatedTabs.length + 1}`,
+      content: '', // New tab starts empty
       color: '#ffffff',
-      order: tabs.length,
+      order: updatedTabs.length,
       _id: `new-${Date.now()}`,
     };
-    const newTabs = [...tabs, newTab];
+
+    // 2. Add new tab
+    const newTabs = [...updatedTabs, newTab];
     setTabs(newTabs);
+
+    // 3. Switch to new tab
     setActiveTabId(newTab._id);
     setEditorContent('');
     setIsDirty(true);
@@ -170,7 +182,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
     if (!confirm('Are you sure you want to delete this tab?')) return;
 
-    const newTabs = tabs.filter(t => t._id !== tabId && t.title !== tabId);
+    // Sync current content before modifying tabs array (important if deleting a *background* tab while typing in active)
+    const currentSyncedTabs = tabs.map(t => {
+      if (t._id === activeTabId || t.title === activeTabId) {
+        return { ...t, content: editorContent };
+      }
+      return t;
+    });
+
+    const newTabs = currentSyncedTabs.filter(t => t._id !== tabId && t.title !== tabId);
     setTabs(newTabs);
 
     // Switch to first tab if active was deleted
@@ -182,17 +202,24 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   };
 
   const handleRenameTab = (tabId: string, newTitle: string) => {
+    // Sync active content first (in case we run this while typing?)
+    // Actually input `onChange` runs separate from editor `onChange`.
+    // But safely syncing is better.
+
     const newTabs = tabs.map(t => {
-      // Compare by ID first, then title if ID is missing (legacy safety)
-      if (t._id === tabId || (!t._id && t.title === tabId)) {
-        return { ...t, title: newTitle };
+      // Create a base object that has the latest content if it's the active tab
+      let updatedTab = t;
+      if (t._id === activeTabId || t.title === activeTabId) {
+        updatedTab = { ...t, content: editorContent };
       }
-      return t;
+
+      // Now apply rename if it matches target
+      if (updatedTab._id === tabId || (!updatedTab._id && updatedTab.title === tabId)) {
+        return { ...updatedTab, title: newTitle };
+      }
+      return updatedTab;
     });
     setTabs(newTabs);
-    // If we were relying on title as ID (bad practice but possible in legacy), we might need to update activeTabId?
-    // Current logic uses _id primarily. If we rename, _id doesn't change, so activeTabId stays valid.
-    // The issue was likely relying on title as a fallback in 'find' logic.
     setIsDirty(true);
   };
 
@@ -670,6 +697,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                 : 'border-transparent bg-transparent text-gray-500 hover:bg-gray-200'
                 }`}
               onClick={() => {
+                // Sync current editor content to the active tab before switching
+                const updatedTabs = tabs.map(t => {
+                  if (t._id === activeTabId || t.title === activeTabId) {
+                    return { ...t, content: editorContent };
+                  }
+                  return t;
+                });
+                setTabs(updatedTabs);
+
                 setActiveTabId(tab._id || tab.title);
                 setEditorContent(tab.content);
               }}
