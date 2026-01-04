@@ -13,12 +13,12 @@ import {
   PhotoIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
-import {useSession} from 'next-auth/react';
-import React, {useCallback, useEffect, useState} from 'react';
+import { useSession } from 'next-auth/react';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
-import {INotePage} from '@/models/NotePage';
-import {INoteSection} from '@/models/NoteSection';
+import { INoteCategory } from '@/models/NoteCategory';
+import { INotePage } from '@/models/NotePage';
+import { INoteSection } from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
@@ -278,7 +278,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
+      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -288,7 +288,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
+        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -314,7 +314,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
+        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -346,7 +346,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
+        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -373,7 +373,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
+          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -407,7 +407,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
+        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -429,9 +429,10 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedPageId],
   );
 
-  const handleSavePageContent = useCallback(async (id: string, content: string) => {
+  const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {content});
+      // data coming from NoteEditor is now the 'tabs' array
+      const response = await axios.put(`/api/notes/pages/${id}`, { tabs: data });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -443,7 +444,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -455,7 +456,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
     try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {[field]: value});
+      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error toggling flag', error);
@@ -495,7 +496,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
-  const {data: session} = useSession();
+  const { data: session } = useSession();
 
   // Image Extraction Modal
   const [isImageExtractOpen, setIsImageExtractOpen] = useState(false);
@@ -654,7 +655,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Column 1: Categories */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
-          style={{width: isCategoryCollapsed ? 56 : categoryWidth}}>
+          style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
           <CategoryList
             categories={categories}
             isCollapsed={isCategoryCollapsed}
@@ -678,7 +679,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Column 2: Sections */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
-          style={{width: isSectionCollapsed ? 56 : sectionWidth}}>
+          style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
           <SectionList
             isCollapsed={isSectionCollapsed}
             loading={loadingSections}
@@ -702,7 +703,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Column 3: Pages */}
         <div
           className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
-          style={{width: isPageCollapsed ? 56 : pageWidth}}>
+          style={{ width: isPageCollapsed ? 56 : pageWidth }}>
           <PageList
             isCollapsed={isPageCollapsed}
             loading={loadingPages}

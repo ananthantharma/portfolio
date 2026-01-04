@@ -13,6 +13,7 @@ import {
   WrenchIcon,
   QueueListIcon,
   XMarkIcon,
+  PlusIcon,
   FaceSmileIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -660,52 +661,83 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
-            if(response.ok) {
-              // Ideally show a success notification
-              // Auto-save logic updated: we need to pass the LATEST tabs state, not just content string.
-              // Ref for tabs to access in cleanup
-              const tabsRef = useRef(tabs);
-              useEffect(() => {
-  tabsRef.current = tabs;
-}, [tabs]);
+          }),
+        });
 
-useEffect(() => {
-  const currentId = page?._id;
-  return () => {
-    if (currentId && isDirtyRef.current) {
-      console.log(`Auto-saving note ${currentId}`);
-      // We must ensure the current editor content is merged into the tabsRef before saving?
-      // Actually handleContentChange updates 'tabs' state, so tabsRef should be reasonably up to date 
-      // if we updated tabsRef in an effect.
-      onSaveRef.current(currentId, tabsRef.current);
-    }
-  };
-}, [page?._id]);
-
-alert('To Do created successfully!');
+        if (response.ok) {
+          // Ideally show a success notification
+          alert('To Do created successfully!');
         } else {
-  alert('Failed to create To Do.');
-}
+          alert('Failed to create To Do.');
+        }
       } catch (error) {
-  console.error('Error creating To Do:', error);
-  alert('Error creating To Do.');
-}
+        console.error('Error creating To Do:', error);
+        alert('Error creating To Do.');
+      }
     },
-[page],
+    [page],
   );
 
-if (!page) {
-  return (
-    <div className="flex h-full items-center justify-center bg-white text-gray-400">
-      Select a page to start editing
+  if (!page) {
+    return (
+      <div className="flex h-full items-center justify-center bg-white text-gray-400">
+        Select a page to start editing
+      </div>
+    );
+  }
+
+  const isAuthorizedFull = session?.user?.email === 'lankanprinze@gmail.com';
+
+  return <div className="flex h-full flex-col bg-white text-gray-900">
+    {/* Tab Bar */}
+    <div className="flex items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 pt-2">
+      {tabs.map(tab => {
+        const isActive = tab._id === activeTabId || tab.title === activeTabId;
+        return (
+          <div
+            key={tab._id || tab.title}
+            className={`group relative flex min-w-[120px] max-w-[200px] cursor-pointer items-center justify-between rounded-t-lg border-x border-t px-3 py-2 text-sm transition-all ${isActive
+              ? 'border-gray-300 bg-white font-medium text-gray-900 shadow-[0_2px_0_white]' // shadow covers bottom border
+              : 'border-transparent bg-transparent text-gray-500 hover:bg-gray-200'
+              }`}
+            onClick={() => {
+              setActiveTabId(tab._id || tab.title);
+              setEditorContent(tab.content);
+            }}
+            style={{ borderTopColor: tab.color !== '#ffffff' ? tab.color : undefined, borderTopWidth: tab.color !== '#ffffff' ? 3 : 1 }}
+          >
+            {/* Editable Title */}
+            <input
+              className={`bg-transparent focus:outline-none ${isActive ? 'w-full' : 'pointer-events-none w-full'}`}
+              onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
+              onClick={(e) => e.stopPropagation()} // Allow clicking input without triggering tab switch (though tab switch happens on parent)
+              value={tab.title}
+            />
+
+            {/* Delete Button (Hover) */}
+            <button
+              className={`ml-2 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteTab(tab._id || tab.title);
+              }}
+            >
+              <XMarkIcon className="h-3 w-3" />
+            </button>
+          </div>
+        );
+      })}
+
+      {/* Add Tab Button */}
+      <button
+        className="mb-1 ml-1 rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
+        onClick={handleAddTab}
+        title="Add Tab"
+      >
+        <PlusIcon className="h-4 w-4" />
+      </button>
     </div>
-  );
-}
 
-const isAuthorizedFull = session?.user?.email === 'lankanprinze@gmail.com';
-
-return (
-  <div className="flex h-full flex-col bg-white text-gray-900">
     <div className="flex items-center justify-between border-b border-gray-200 p-4">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
