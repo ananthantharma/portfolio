@@ -577,8 +577,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     setIsModalOpen(false);
   }, []);
 
-  // To Do Modal State
-  const [isToDoOpen, setIsToDoOpen] = useState(false);
 
   const handleOpenToDo = useCallback(() => {
     setIsToDoOpen(true);
