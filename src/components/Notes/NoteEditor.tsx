@@ -783,6 +783,39 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
             </Transition>
           </Menu>
 
+          {/* Recover Legacy Content Button - Only show if legacy content exists */}
+          {page.content && page.content.trim().length > 0 && (
+            <button
+              onClick={() => {
+                const legacyTab = {
+                  title: 'Recovered Legacy',
+                  content: page.content,
+                  color: '#fee2e2', // Light red/pink to stand out
+                  order: tabs.length,
+                  _id: `recovered-${Date.now()}`,
+                };
+                // Sync current state first!
+                const updatedTabs = tabs.map(t => {
+                  if (t._id === activeTabId || t.title === activeTabId) {
+                    return { ...t, content: editorContent };
+                  }
+                  return t;
+                });
+                const newTabs = [...updatedTabs, legacyTab];
+                setTabs(newTabs);
+                setActiveTabId(legacyTab._id);
+                setEditorContent(legacyTab.content);
+                setIsDirty(true);
+                alert('Legacy content has been recovered into a new tab. Please save to persist it.');
+              }}
+              className="mr-2 flex items-center gap-1 rounded bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 hover:bg-yellow-200"
+              title="Found content from before tabs were implemented. Click to recover."
+            >
+              <ExclamationTriangleIconSolid className="h-3 w-3" />
+              Recover Legacy Content
+            </button>
+          )}
+
           {/* Organize Button */}
           <button
             className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
