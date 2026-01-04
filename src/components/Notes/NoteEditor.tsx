@@ -688,281 +688,282 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
   const isAuthorizedFull = session?.user?.email === 'lankanprinze@gmail.com';
 
-  return <div className="flex h-full flex-col bg-white text-gray-900">
-    {/* Tab Bar */}
-    <div className="flex items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 pt-2">
-      {tabs.map(tab => {
-        const isActive = tab._id === activeTabId || tab.title === activeTabId;
-        return (
-          <div
-            key={tab._id || tab.title}
-            className={`group relative flex min-w-[120px] max-w-[200px] cursor-pointer items-center justify-between rounded-t-lg border-x border-t px-3 py-2 text-sm transition-all ${isActive
-              ? 'border-gray-300 bg-white font-medium text-gray-900 shadow-[0_2px_0_white]' // shadow covers bottom border
-              : 'border-transparent bg-transparent text-gray-500 hover:bg-gray-200'
-              }`}
-            onClick={() => {
-              setActiveTabId(tab._id || tab.title);
-              setEditorContent(tab.content);
-            }}
-            style={{ borderTopColor: tab.color !== '#ffffff' ? tab.color : undefined, borderTopWidth: tab.color !== '#ffffff' ? 3 : 1 }}
-          >
-            {/* Editable Title */}
-            <input
-              className={`bg-transparent focus:outline-none ${isActive ? 'w-full' : 'pointer-events-none w-full'}`}
-              onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
-              onClick={(e) => e.stopPropagation()} // Allow clicking input without triggering tab switch (though tab switch happens on parent)
-              value={tab.title}
-            />
-
-            {/* Delete Button (Hover) */}
-            <button
-              className={`ml-2 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteTab(tab._id || tab.title);
+  return (
+    <div className="flex h-full flex-col bg-white text-gray-900">
+      {/* Tab Bar */}
+      <div className="flex items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 pt-2">
+        {tabs.map(tab => {
+          const isActive = tab._id === activeTabId || tab.title === activeTabId;
+          return (
+            <div
+              key={tab._id || tab.title}
+              className={`group relative flex min-w-[120px] max-w-[200px] cursor-pointer items-center justify-between rounded-t-lg border-x border-t px-3 py-2 text-sm transition-all ${isActive
+                ? 'border-gray-300 bg-white font-medium text-gray-900 shadow-[0_2px_0_white]' // shadow covers bottom border
+                : 'border-transparent bg-transparent text-gray-500 hover:bg-gray-200'
+                }`}
+              onClick={() => {
+                setActiveTabId(tab._id || tab.title);
+                setEditorContent(tab.content);
               }}
+              style={{ borderTopColor: tab.color !== '#ffffff' ? tab.color : undefined, borderTopWidth: tab.color !== '#ffffff' ? 3 : 1 }}
             >
-              <XMarkIcon className="h-3 w-3" />
-            </button>
-          </div>
-        );
-      })}
+              {/* Editable Title */}
+              <input
+                className={`bg-transparent focus:outline-none ${isActive ? 'w-full' : 'pointer-events-none w-full'}`}
+                onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
+                onClick={(e) => e.stopPropagation()} // Allow clicking input without triggering tab switch (though tab switch happens on parent)
+                value={tab.title}
+              />
 
-      {/* Add Tab Button */}
-      <button
-        className="mb-1 ml-1 rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
-        onClick={handleAddTab}
-        title="Add Tab"
-      >
-        <PlusIcon className="h-4 w-4" />
-      </button>
-    </div>
+              {/* Delete Button (Hover) */}
+              <button
+                className={`ml-2 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteTab(tab._id || tab.title);
+                }}
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
+            </div>
+          );
+        })}
 
-    <div className="flex items-center justify-between border-b border-gray-200 p-4">
-      <div className="flex flex-col">
-        <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
-        <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
-      </div>
-      <div className="flex gap-2">
-        {/* Symbol Toolbar */}
-
-        {/* Symbol Toolbar - Dropdown */}
-        <Menu as="div" className="relative text-left">
-          <Menu.Button className="flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
-            <FaceSmileIcon className="h-4 w-4" />
-          </Menu.Button>
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95">
-            <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
-              {SYMBOLS.map(s => (
-                <Menu.Item key={s.char}>
-                  {({ active }) => (
-                    <button
-                      type="button"
-                      className={`${active ? 'bg-gray-100' : ''
-                        } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
-                      onClick={() => handleInsertSymbol(s.char)}
-                      title={s.tooltip}>
-                      {s.char}
-                    </button>
-                  )}
-                </Menu.Item>
-              ))}
-            </Menu.Items>
-          </Transition>
-        </Menu>
-
-        {/* Organize Button */}
+        {/* Add Tab Button */}
         <button
-          className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-          onClick={handleOrganizeAI}
-          title="Organize Content"
-          type="button">
-          <QueueListIcon className="h-4 w-4" />
-          Organize
+          className="mb-1 ml-1 rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
+          onClick={handleAddTab}
+          title="Add Tab"
+        >
+          <PlusIcon className="h-4 w-4" />
         </button>
+      </div>
 
-        {/* REWRITE AI BUTTON - Restricted Access */}
-        {isAuthorizedFull && (
+      <div className="flex items-center justify-between border-b border-gray-200 p-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
+          <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
+        </div>
+        <div className="flex gap-2">
+          {/* Symbol Toolbar */}
+
+          {/* Symbol Toolbar - Dropdown */}
+          <Menu as="div" className="relative text-left">
+            <Menu.Button className="flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
+              <FaceSmileIcon className="h-4 w-4" />
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95">
+              <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
+                {SYMBOLS.map(s => (
+                  <Menu.Item key={s.char}>
+                    {({ active }) => (
+                      <button
+                        type="button"
+                        className={`${active ? 'bg-gray-100' : ''
+                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
+                        onClick={() => handleInsertSymbol(s.char)}
+                        title={s.tooltip}>
+                        {s.char}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </Menu.Items>
+            </Transition>
+          </Menu>
+
+          {/* Organize Button */}
           <button
             className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-            onClick={handleOpenRewrite}
-            title="Advanced AI Rewrite"
+            onClick={handleOrganizeAI}
+            title="Organize Content"
             type="button">
-            <CodeBracketIcon className="h-4 w-4" />
-            Rewrite
+            <QueueListIcon className="h-4 w-4" />
+            Organize
           </button>
-        )}
 
-        <button
-          className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-          onClick={handleRefineAI}
-          type="button">
-          <WrenchIcon className="h-3 w-3" />
-          Refine
-        </button>
-        <button
-          className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-          onClick={handleGenerateAI}
-          title="Question">
-          <SparklesIcon className="h-3 w-3" />
-          Question
-        </button>
-
-        {/* To Do Button */}
-        <button
-          className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
-          onClick={handleOpenToDo}
-          title="Create To Do">
-          {/* Using ClipboardDocumentListIcon represented as generic SVG here if import fails, but I will import it properly */}
-          <ClipboardDocumentListIcon className="h-3 w-3" />
-          To Do
-        </button>
-
-        <button
-          className={`rounded-full p-2 transition-colors ${isImportant
-            ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-            : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-            }`}
-          onClick={handleToggleImportant}
-          title={isImportant ? 'Mark as not important' : 'Mark as important'}>
-          {isImportant ? (
-            <ExclamationTriangleIconSolid className="h-6 w-6" />
-          ) : (
-            <ExclamationTriangleIcon className="h-6 w-6" />
+          {/* REWRITE AI BUTTON - Restricted Access */}
+          {isAuthorizedFull && (
+            <button
+              className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
+              onClick={handleOpenRewrite}
+              title="Advanced AI Rewrite"
+              type="button">
+              <CodeBracketIcon className="h-4 w-4" />
+              Rewrite
+            </button>
           )}
-        </button>
-        <button
-          className={`rounded-full p-2 transition-colors ${isFlagged
-            ? 'text-red-500 bg-red-50 hover:bg-red-100'
-            : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-            }`}
-          onClick={handleToggleFlagged}
-          title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
-          {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
-        </button>
-        <button
-          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          disabled={!isDirty}
-          onClick={handleSave}>
-          Save
-        </button>
-      </div>
-    </div>
-    <div className="flex-1 overflow-hidden p-4">
-      <RichTextEditor
-        onChange={handleContentChange}
-        placeholder="Start typing your notes here..."
-        ref={quillRef}
-        value={editorContent}
-      />
-    </div>
 
-    {/* Gemini Result Modal */}
-    <Transition appear={true} as={Fragment} show={isModalOpen}>
-      <Dialog className="relative z-50" onClose={handleCloseModal}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0">
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
+          <button
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
+            onClick={handleRefineAI}
+            type="button">
+            <WrenchIcon className="h-3 w-3" />
+            Refine
+          </button>
+          <button
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
+            onClick={handleGenerateAI}
+            title="Question">
+            <SparklesIcon className="h-3 w-3" />
+            Question
+          </button>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95">
-              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title
-                  as="h3"
-                  className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <SparklesIcon className="h-5 w-5 text-purple-600" />
-                    Gemini Suggestion
-                  </div>
-                  {!isGenerating && (
-                    <button className="text-gray-400 hover:text-gray-500" onClick={handleCloseModal}>
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                </Dialog.Title>
-                <div className="mt-4">
-                  {isGenerating ? (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <ArrowPathIcon className="h-8 w-8 animate-spin text-purple-600" />
-                      <p className="mt-2 text-sm text-gray-500">Thinking...</p>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-60 overflow-y-auto w-full">
-                      {isMarkdownResponse ? (
-                        <div className="prose prose-sm w-full max-w-none">
-                          <ReactMarkdown>{generatedText}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        <div className="whitespace-pre-wrap text-sm text-gray-800">{generatedText}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+          {/* To Do Button */}
+          <button
+            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
+            onClick={handleOpenToDo}
+            title="Create To Do">
+            {/* Using ClipboardDocumentListIcon represented as generic SVG here if import fails, but I will import it properly */}
+            <ClipboardDocumentListIcon className="h-3 w-3" />
+            To Do
+          </button>
 
-                {!isGenerating && (
-                  <div className="mt-6 flex justify-end gap-3">
-                    <button
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
-                      onClick={handleCloseModal}>
-                      Cancel
-                    </button>
-                    <button
-                      className="inline-flex justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 gap-2 items-center"
-                      onClick={handleInsertAI}>
-                      <CheckIcon className="h-4 w-4" />
-                      Insert
-                    </button>
-                  </div>
-                )}
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+          <button
+            className={`rounded-full p-2 transition-colors ${isImportant
+              ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+              }`}
+            onClick={handleToggleImportant}
+            title={isImportant ? 'Mark as not important' : 'Mark as important'}>
+            {isImportant ? (
+              <ExclamationTriangleIconSolid className="h-6 w-6" />
+            ) : (
+              <ExclamationTriangleIcon className="h-6 w-6" />
+            )}
+          </button>
+          <button
+            className={`rounded-full p-2 transition-colors ${isFlagged
+              ? 'text-red-500 bg-red-50 hover:bg-red-100'
+              : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+              }`}
+            onClick={handleToggleFlagged}
+            title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
+            {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
+          </button>
+          <button
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            disabled={!isDirty}
+            onClick={handleSave}>
+            Save
+          </button>
         </div>
-      </Dialog>
-    </Transition>
+      </div>
+      <div className="flex-1 overflow-hidden p-4">
+        <RichTextEditor
+          onChange={handleContentChange}
+          placeholder="Start typing your notes here..."
+          ref={quillRef}
+          value={editorContent}
+        />
+      </div>
 
-    <RewriteModal
-      isOpen={isRewriteModalOpen}
-      onClose={handleCloseRewriteModal}
-      onInsert={handleRewrittenInsertMemo}
-      originalText={rewriteSelectedText}
-    />
+      {/* Gemini Result Modal */}
+      <Transition appear={true} as={Fragment} show={isModalOpen}>
+        <Dialog className="relative z-50" onClose={handleCloseModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
 
-    <ToDoModal initialTitle={page.title} isOpen={isToDoOpen} onClose={handleCloseToDo} onSave={handleSaveToDo} />
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <SparklesIcon className="h-5 w-5 text-purple-600" />
+                      Gemini Suggestion
+                    </div>
+                    {!isGenerating && (
+                      <button className="text-gray-400 hover:text-gray-500" onClick={handleCloseModal}>
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                  </Dialog.Title>
+                  <div className="mt-4">
+                    {isGenerating ? (
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <ArrowPathIcon className="h-8 w-8 animate-spin text-purple-600" />
+                        <p className="mt-2 text-sm text-gray-500">Thinking...</p>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-60 overflow-y-auto w-full">
+                        {isMarkdownResponse ? (
+                          <div className="prose prose-sm w-full max-w-none">
+                            <ReactMarkdown>{generatedText}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <div className="whitespace-pre-wrap text-sm text-gray-800">{generatedText}</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-    <PromptEditorModal
-      isOpen={isPromptEditorOpen}
-      onClose={() => setIsPromptEditorOpen(false)}
-      onSaveAndRun={handleRunOrganize}
-      initialPrompt={organizePrompt}
-    />
+                  {!isGenerating && (
+                    <div className="mt-6 flex justify-end gap-3">
+                      <button
+                        className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                        onClick={handleCloseModal}>
+                        Cancel
+                      </button>
+                      <button
+                        className="inline-flex justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 gap-2 items-center"
+                        onClick={handleInsertAI}>
+                        <CheckIcon className="h-4 w-4" />
+                        Insert
+                      </button>
+                    </div>
+                  )}
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
 
-    {/* Attachments Section */}
-    <AttachmentManager pageId={page._id as string} />
-  </div>
+      <RewriteModal
+        isOpen={isRewriteModalOpen}
+        onClose={handleCloseRewriteModal}
+        onInsert={handleRewrittenInsertMemo}
+        originalText={rewriteSelectedText}
+      />
+
+      <ToDoModal initialTitle={page.title} isOpen={isToDoOpen} onClose={handleCloseToDo} onSave={handleSaveToDo} />
+
+      <PromptEditorModal
+        isOpen={isPromptEditorOpen}
+        onClose={() => setIsPromptEditorOpen(false)}
+        onSaveAndRun={handleRunOrganize}
+        initialPrompt={organizePrompt}
+      />
+
+      {/* Attachments Section */}
+      <AttachmentManager pageId={page._id as string} />
+    </div>
   );
 });
 
