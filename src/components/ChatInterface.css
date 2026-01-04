@@ -18,31 +18,31 @@
   display: none;
 }
 
-#voice + label {
+#voice+label {
   margin-right: 5rem;
   transition: all 0.2s ease-in-out;
 }
 
-#voice:checked ~ label {
+#voice:checked~label {
   opacity: 1;
   transform: translateY(0);
   pointer-events: all;
 }
 
-#voice:checked ~ label:first-of-type {
+#voice:checked~label:first-of-type {
   transition: all 0.2s 0.2s ease-in-out;
 }
 
-#voice:checked ~ label:last-of-type {
+#voice:checked~label:last-of-type {
   transition: all 0.2s 0.1s ease-in-out;
 }
 
-#voice:checked ~ .chat-marquee {
+#voice:checked~.chat-marquee {
   opacity: 0;
   transform: translateY(-300%) scale(0.9);
 }
 
-#voice:checked ~ .chat-container {
+#voice:checked~.chat-container {
   width: 10rem;
   height: 10rem;
   top: -6em;
@@ -50,12 +50,12 @@
   animation: rotate 10s 0.2s linear infinite;
 }
 
-#voice:checked ~ .chat-container > .chat-wrapper {
+#voice:checked~.chat-container>.chat-wrapper {
   opacity: 0;
   pointer-events: none;
 }
 
-#voice:checked ~ .chat-container:active {
+#voice:checked~.chat-container:active {
   scale: 0.9;
 }
 
@@ -64,41 +64,41 @@
   display: none;
 }
 
-#mic + label {
+#mic+label {
   margin-left: 5rem;
   width: 62px;
   aspect-ratio: 1 / 1;
   transition: all 0.2s ease-in-out;
 }
 
-#mic + label > svg {
+#mic+label>svg {
   position: absolute;
   transition: all 0.2s ease-in-out;
 }
 
-#mic + label > svg:first-of-type {
+#mic+label>svg:first-of-type {
   opacity: 1;
 }
 
-#mic + label > svg:last-of-type {
+#mic+label>svg:last-of-type {
   opacity: 0;
   fill: rgba(255, 0, 0, 0.5);
 }
 
-#mic:checked + label {
+#mic:checked+label {
   background-color: rgba(255, 0, 0, 0.1);
 }
 
-#mic:checked + label > :first-child {
+#mic:checked+label> :first-child {
   opacity: 0;
 }
 
-#mic:checked + label > :last-child {
+#mic:checked+label> :last-child {
   opacity: 1;
 }
 
-#voice + label,
-#mic + label {
+#voice+label,
+#mic+label {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -119,18 +119,16 @@
   gap: var(--gap);
   margin-bottom: 1rem;
   width: 100%;
-  mask-image: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0),
-    rgba(0, 0, 0, 1) 20%,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0)
-  );
+  mask-image: linear-gradient(to right,
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 1) 20%,
+      rgba(0, 0, 0, 1) 80%,
+      rgba(0, 0, 0, 0));
   overflow: hidden;
   transition: all 0.2s ease-in-out;
 }
 
-.chat-marquee > ul {
+.chat-marquee>ul {
   display: flex;
   gap: var(--gap);
   flex-shrink: 0;
@@ -139,7 +137,7 @@
   animation: scroll-marquee-left 30s linear infinite;
 }
 
-.chat-marquee > ul > li {
+.chat-marquee>ul>li {
   padding: 0.5rem 1rem;
   background-color: var(--primary-color);
   border: 2px solid var(--primary-color);
@@ -152,16 +150,16 @@
     transform 0.1s ease-in-out;
 }
 
-.chat-marquee > ul > li:hover {
+.chat-marquee>ul>li:hover {
   background-color: var(--neutral-color);
   color: var(--primary-color);
 }
 
-.chat-marquee > ul > li:active {
+.chat-marquee>ul>li:active {
   transform: scale(0.9);
 }
 
-.chat-marquee:hover > ul {
+.chat-marquee:hover>ul {
   animation-play-state: paused !important;
 }
 
@@ -169,7 +167,7 @@
   position: relative;
   top: 0;
   width: 100%;
-  background: var(--primary-color);
+  background: transparent;
   border: 0.2rem solid rgba(255, 255, 255, 0.3);
   border-radius: 1rem;
   overflow: hidden;
@@ -184,12 +182,10 @@
   left: -6rem;
   width: 15rem;
   height: 15rem;
-  background: radial-gradient(
-    circle,
-    #fff 10%,
-    rgba(255, 255, 255, 0.1) 20%,
-    var(--primary-color) 100%
-  );
+  background: radial-gradient(circle,
+      #fff 10%,
+      rgba(255, 255, 255, 0.1) 20%,
+      var(--primary-color) 100%);
   filter: blur(10px);
   border-radius: 50%;
   z-index: -1;
@@ -259,7 +255,7 @@
   gap: 0.5rem;
 }
 
-.left-buttons > label {
+.left-buttons>label {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -273,11 +269,11 @@
     transform 0.1s ease-in-out;
 }
 
-.left-buttons > label:hover {
+.left-buttons>label:hover {
   box-shadow: 0.2rem 0.2rem 0.5rem 0.2rem rgba(0, 0, 0, 0.2);
 }
 
-.left-buttons > label:active {
+.left-buttons>label:active {
   transform: scale(0.9);
 }
 
@@ -288,15 +284,15 @@
   display: none;
 }
 
-#appendix:checked ~ #appendix-bar {
+#appendix:checked~#appendix-bar {
   background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
   pointer-events: all;
   transition: all 0.2s ease-in-out;
 }
 
-#appendix:checked ~ #appendix-bar > label,
-#appendix:checked ~ #appendix-bar > button {
+#appendix:checked~#appendix-bar>label,
+#appendix:checked~#appendix-bar>button {
   opacity: 1;
   transform: translate(0);
 }
@@ -318,7 +314,7 @@
   transition: all 0.2s 0.4s ease-in-out;
 }
 
-#appendix-bar > label {
+#appendix-bar>label {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -331,19 +327,19 @@
   transform: translate(-50%, 200%);
 }
 
-#appendix-bar > :nth-child(1) {
+#appendix-bar> :nth-child(1) {
   transition-delay: 0.1s;
 }
 
-#appendix-bar > :nth-child(2) {
+#appendix-bar> :nth-child(2) {
   transition-delay: 0.2s;
 }
 
-#appendix-bar > :nth-child(3) {
+#appendix-bar> :nth-child(3) {
   transition-delay: 0.3s;
 }
 
-#appendix-bar > :nth-child(4) {
+#appendix-bar> :nth-child(4) {
   transition-delay: 0.4s;
 }
 
@@ -351,11 +347,11 @@
   display: none;
 }
 
-#search:checked + label {
+#search:checked+label {
   border: 2px solid lightskyblue;
 }
 
-#search:checked + label > svg {
+#search:checked+label>svg {
   fill: lightskyblue;
 }
 
@@ -364,8 +360,8 @@
   gap: 1rem;
 }
 
-.right-buttons > label,
-.right-buttons > button {
+.right-buttons>label,
+.right-buttons>button {
   position: relative;
   background: none;
   border: none;
@@ -373,12 +369,12 @@
   transition: all 0.2s ease-in-out;
 }
 
-.right-buttons > label:hover,
-.right-buttons > button:hover {
+.right-buttons>label:hover,
+.right-buttons>button:hover {
   transform: translateY(-10%) scale(1.1);
 }
 
-.right-buttons > label {
+.right-buttons>label {
   top: 0.5rem;
 }
 
