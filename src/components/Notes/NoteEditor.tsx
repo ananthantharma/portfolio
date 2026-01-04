@@ -251,12 +251,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     }
   };
 
-  const handleSave = () => {
-    if (page) {
-      onSave(page._id as string, content);
-      setIsDirty(false);
-    }
-  };
+
 
   const handleToggleFlagged = () => {
     if (page) {
