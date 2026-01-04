@@ -963,7 +963,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     {/* Attachments Section */}
     <AttachmentManager pageId={page._id as string} />
   </div>
-);
+  );
 });
 
 NoteEditor.displayName = 'NoteEditor';
