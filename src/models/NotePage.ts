@@ -1,8 +1,17 @@
-import mongoose, {Document, Model, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
+export interface INoteTab {
+  _id?: string;
+  title: string;
+  content: string;
+  color?: string;
+  order: number;
+}
 
 export interface INotePage extends Document {
   title: string;
-  content: string;
+  content: string; // Deprecated but kept for migration
+  tabs: INoteTab[];
   color?: string;
   icon?: string;
   image?: string | null;
@@ -31,6 +40,14 @@ const NotePageSchema: Schema = new Schema(
       type: String,
       default: '',
     },
+    tabs: [
+      {
+        title: { type: String, required: true },
+        content: { type: String, default: '' },
+        color: { type: String, default: '#ffffff' },
+        order: { type: Number, default: 0 },
+      },
+    ],
     color: {
       type: String,
       default: '#000000',
