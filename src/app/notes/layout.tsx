@@ -1,13 +1,13 @@
 'use client';
 
-import {DocumentTextIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
+import { DocumentTextIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useSession} from 'next-auth/react';
-import {useEffect} from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-export default function NotesLayout({children}: {children: React.ReactNode}) {
-  const {status} = useSession();
+export default function NotesLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function NotesLayout({children}: {children: React.ReactNode}) {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <span className="text-xl font-bold text-orange-500">Notes App</span>
+                <span className="text-xl font-bold text-orange-500">Ananthan's Notes</span>
               </div>
               <div className="hidden md:block">
                 <div className="ml-10 flex items-baseline space-x-4">
