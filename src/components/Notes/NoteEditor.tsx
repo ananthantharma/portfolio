@@ -56,9 +56,10 @@ interface NoteEditorProps {
   onSave: (id: string, data: any) => void;
   onToggleFlag: (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => void;
   page: INotePage | null;
+  initialTabId?: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page, initialTabId }) => {
   const { data: session } = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<{ _id?: string; title: string; content: string; color?: string; order: number }[]>([]);
@@ -105,9 +106,25 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         // Sort tabs by order
         const sortedTabs = [...page.tabs].sort((a, b) => (a.order || 0) - (b.order || 0));
         setTabs(sortedTabs);
-        // Set active tab to first one if not set
-        setActiveTabId(prev => (prev && sortedTabs.some(t => t._id === prev || t.title === prev) ? prev : sortedTabs[0]._id || sortedTabs[0].title)); // Use ID or Title as key if ID missing (new tabs)
-        setEditorContent(sortedTabs[0].content || '');
+
+        let targetTabId = sortedTabs[0]._id || sortedTabs[0].title;
+
+        // Use initialTabId if provided and valid
+        if (initialTabId) {
+          const found = sortedTabs.find(t => t._id === initialTabId || t.title === initialTabId);
+          if (found) {
+            targetTabId = found._id || found.title;
+          }
+        } else {
+          // Default to first tab (or keep previous if valid?) - Logic below keeps existing if valid
+          targetTabId = (activeTabId && sortedTabs.some(t => t._id === activeTabId || t.title === activeTabId))
+            ? activeTabId
+            : (sortedTabs[0]._id || sortedTabs[0].title);
+        }
+
+        setActiveTabId(targetTabId);
+        const activeTab = sortedTabs.find(t => (t._id || t.title) === targetTabId);
+        setEditorContent(activeTab?.content || '');
       } else {
         // LEGACY MIGRATION: No tabs, but has content
         const initialContent = page.content || '';
@@ -131,7 +148,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       setIsFlagged(false);
       setIsImportant(false);
     }
-  }, [page]);
+  }, [page, initialTabId]);
 
   // Sync Editor Content when Active Tab Changes
   useEffect(() => {
@@ -650,12 +667,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       try {
         if (!page) return;
 
+        const currentTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId);
+
         const response = await fetch('/api/todos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
+            tabId: currentTab?._id,
+            tabName: currentTab?.title,
           }),
         });
 
@@ -670,7 +691,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
         alert('Error creating To Do.');
       }
     },
-    [page],
+    [page, tabs, activeTabId],
   );
 
   if (!page) {

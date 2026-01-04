@@ -40,6 +40,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [targetTabId, setTargetTabId] = useState<string | undefined>(undefined);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
@@ -230,10 +231,11 @@ const NotesLayout: React.FC = React.memo(() => {
     [],
   );
 
-  const handleJumpToTask = useCallback(async (task: INotePage) => {
+  const handleJumpToTask = useCallback(async (task: INotePage, tabId?: string) => {
     setIsKeyTasksOpen(false);
     setIsImportantOpen(false);
     setIsSearchOpen(false);
+    setIsToDoListOpen(false); // Close ToDo list if open
 
     // Casting to any to access potentially populated fields or special types
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -248,11 +250,13 @@ const NotesLayout: React.FC = React.memo(() => {
         setTimeout(() => {
           setSelectedSectionId(targetSectionId);
           setSelectedPageId(null);
+          setTargetTabId(undefined);
         }, 150);
       } else {
         setTimeout(() => {
           setSelectedSectionId(null);
           setSelectedPageId(null);
+          setTargetTabId(undefined);
         }, 150);
       }
     } else {
@@ -269,6 +273,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setTimeout(() => {
         setSelectedSectionId(targetSectionId);
         setTimeout(() => {
+          setTargetTabId(tabId); // Set target tab BEFORE page selection triggers editor load
           setSelectedPageId(targetPageId);
         }, 150);
       }, 150);
@@ -711,7 +716,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onDeletePage={handleDeletePage}
             onRenamePage={handleRenamePage}
             onReorderPages={handleReorderPages}
-            onSelectPage={setSelectedPageId}
+            onSelectPage={(id) => { setSelectedPageId(id); setTargetTabId(undefined); }}
             onToggleCollapse={handleTogglePageCollapse}
             pages={pages}
             selectedPageId={selectedPageId}
@@ -726,7 +731,12 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* Column 4: Editor */}
         <div className="flex-1 overflow-hidden bg-white shadow-xl z-30 m-4 rounded-xl border border-gray-100">
-          <NoteEditor onSave={handleSavePageContent} onToggleFlag={handleToggleFlag} page={selectedPage} />
+          <NoteEditor
+            initialTabId={targetTabId}
+            onSave={handleSavePageContent}
+            onToggleFlag={handleToggleFlag}
+            page={selectedPage}
+          />
         </div>
       </div>
 
