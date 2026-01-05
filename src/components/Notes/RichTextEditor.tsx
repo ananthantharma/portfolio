@@ -2,14 +2,14 @@ import 'quill/dist/quill.snow.css';
 import 'quill-better-table/dist/quill-better-table.css';
 
 import dynamic from 'next/dynamic';
-import React, {forwardRef, useImperativeHandle, useRef} from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 
 /* eslint-disable react-memo/require-memo */
 const ReactQuill = dynamic(
   async () => {
-    const {default: RQ, Quill} = await import('react-quill-new');
-    const {default: BlotFormatter} = await import('quill-blot-formatter');
-    const {default: QuillBetterTable} = await import('quill-better-table');
+    const { default: RQ, Quill } = await import('react-quill-new');
+    const { default: BlotFormatter } = await import('quill-blot-formatter');
+    const { default: QuillBetterTable } = await import('quill-better-table');
 
     // Register modules with the Quill instance
     if (Quill) {
@@ -22,7 +22,7 @@ const ReactQuill = dynamic(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ({forwardedRef, ...props}: any) => <RQ ref={forwardedRef} {...props} />;
+    return ({ forwardedRef, ...props }: any) => <RQ ref={forwardedRef} {...props} />;
   },
   {
     loading: () => <div className="h-64 w-full animate-pulse bg-gray-100" />,
@@ -32,7 +32,8 @@ const ReactQuill = dynamic(
 /* eslint-enable react-memo/require-memo */
 
 export interface RichTextEditorProps {
-  onChange: (value: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onChange: (value: string, delta: any, source: string, editor: any) => void;
   onBlur?: () => void;
   placeholder?: string;
   value: string;
@@ -40,12 +41,12 @@ export interface RichTextEditorProps {
 
 const modules = {
   toolbar: [
-    [{header: [1, 2, 3, false]}],
-    [{font: []}],
+    [{ header: [1, 2, 3, false] }],
+    [{ font: [] }],
     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-    [{color: []}, {background: []}],
-    [{list: 'ordered'}, {list: 'bullet'}, {indent: '-1'}, {indent: '+1'}],
-    [{align: []}],
+    [{ color: [] }, { background: [] }],
+    [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+    [{ align: [] }],
     ['link', 'image'],
     ['clean'],
   ],
@@ -64,7 +65,7 @@ const modules = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RichTextEditor = React.memo(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  forwardRef<any, RichTextEditorProps>(({onChange, onBlur, placeholder, value}, ref) => {
+  forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillRef = useRef<any>(null);
 
