@@ -30,6 +30,7 @@ import RichTextEditor from './RichTextEditor';
 import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
@@ -1190,10 +1191,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                         <p className="mt-2 text-sm text-gray-500">Thinking...</p>
                       </div>
                     ) : (
-                      <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-60 overflow-y-auto w-full">
+                      <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-6 max-h-[60vh] overflow-y-auto w-full">
                         {isMarkdownResponse ? (
-                          <div className="prose prose-sm w-full max-w-none">
-                            <ReactMarkdown>{generatedText}</ReactMarkdown>
+                          <div className="prose prose-indigo max-w-none prose-sm leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>
                           </div>
                         ) : (
                           <div className="whitespace-pre-wrap text-sm text-gray-800">{generatedText}</div>
