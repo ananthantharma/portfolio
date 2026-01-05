@@ -1043,11 +1043,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 setIsDirty(true);
                 alert('Legacy content has been recovered into a new tab. Please save to persist it.');
               }}
-              className="mr-2 flex items-center gap-1 rounded bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 hover:bg-yellow-200"
+              className={`flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-yellow-600 transition-colors hover:bg-gray-200 hover:text-yellow-700 disabled:opacity-50 disabled:cursor-wait`}
+              disabled={isSaving}
               title="Found content from before tabs were implemented. Click to recover."
             >
-              <ExclamationTriangleIconSolid className="h-3 w-3" />
-              Recover Legacy Content
+              <ExclamationTriangleIconSolid className="h-4 w-4" />
             </button>
           )}
 
