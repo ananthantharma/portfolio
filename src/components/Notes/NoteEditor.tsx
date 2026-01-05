@@ -221,13 +221,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       const activeTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId); // Match ID or Title
       if (activeTab) {
         setEditorContent(activeTab.content);
-        // Reset dirty state for content sync? No, keep it if global dirty. 
-        // Actually, switching tabs shouldn't trigger save unless we want to autosave previous tab.
-        // Current architecture: Global onSave saves EITHER whole page or specific fields.
-        // We will make handleSave save the ENTIRE tabs array.
+        // Note: Removed 'tabs' from dependency to avoid resetting editor content on every keystroke
+        // (since typing updates 'tabs' state).
       }
     }
-  }, [activeTabId, tabs]); // Be careful with tabs dependency loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
 
   // Handlers for Tabs
   // Update Tab Indicator Position
