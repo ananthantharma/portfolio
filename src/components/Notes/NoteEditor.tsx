@@ -708,16 +708,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
     <div className="flex h-full flex-col bg-white text-gray-900">
       {/* Tab Bar */}
       {/* Tab Bar Container - Segmented Control Style */}
-      <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2 bg-white">
-        <div className="inline-flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+      {/* Tab Bar Container - Segmented Control Style */}
+      <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3 bg-white">
+        <div className="inline-flex items-center bg-gray-100/80 rounded-lg p-1 gap-1">
           {tabs.map(tab => {
             const isActive = tab._id === activeTabId || tab.title === activeTabId;
             return (
               <div
                 key={tab._id || tab.title}
-                className={`group relative flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-all ${isActive
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                className={`group relative flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-out ${isActive
+                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
+                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
                   }`}
                 onClick={() => {
                   // Sync current editor content to the active tab before switching
@@ -744,7 +745,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
                 {/* Delete Button (Hover) */}
                 <button
-                  className={`ml-1 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
+                  className={`ml-1.5 hidden rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 group-hover:block transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteTab(tab._id || tab.title);
@@ -757,7 +758,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           })}
         </div>
 
-        {/* Add Tab Button - Outside the container or inside? usually outside for this style */}
+        {/* Add Tab Button */}
         <button
           className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
           onClick={handleAddTab}
