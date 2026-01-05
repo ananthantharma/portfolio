@@ -267,7 +267,22 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // 3. Switch to new tab
     setActiveTabId(newTab._id);
     setEditorContent('');
-    setIsDirty(true);
+
+    // 4. Immediate Save (Prevents data loss/ID mismatch issues)
+    if (page) {
+      const sanitizedTabs = newTabs.map(t => {
+        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { _id, ...rest } = t;
+          return rest;
+        }
+        return t;
+      });
+      onSave(page._id as string, sanitizedTabs as any);
+      setIsDirty(false);
+    } else {
+      setIsDirty(true);
+    }
   };
 
   const handleDeleteTab = (tabId: string) => {
@@ -277,7 +292,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     }
     if (!confirm('Are you sure you want to delete this tab?')) return;
 
-    // Sync current content before modifying tabs array (important if deleting a *background* tab while typing in active)
+    // Sync current content before modifying tabs array
     const currentSyncedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
         return { ...t, content: editorContent };
@@ -293,7 +308,22 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       setActiveTabId(newTabs[0]._id || newTabs[0].title);
       setEditorContent(newTabs[0].content);
     }
-    setIsDirty(true);
+
+    // Immediate Save
+    if (page) {
+      const sanitizedTabs = newTabs.map(t => {
+        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { _id, ...rest } = t;
+          return rest;
+        }
+        return t;
+      });
+      onSave(page._id as string, sanitizedTabs as any);
+      setIsDirty(false);
+    } else {
+      setIsDirty(true);
+    }
   };
 
   const handleRenameTab = (tabId: string, newTitle: string) => {
