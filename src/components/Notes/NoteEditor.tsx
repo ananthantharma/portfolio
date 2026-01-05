@@ -747,7 +747,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2.5 pr-6 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-1.5 pr-6 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
                   ? 'text-gray-900'
                   : 'text-gray-500 hover:text-gray-900'
                   }`}
@@ -763,6 +763,21 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                   setEditorContent(tab.content);
                 }}
               >
+                {/* Color Picker - Always Visible, Left Side */}
+                <div className="relative z-20 w-3 h-3 mr-1.5 flex-shrink-0 overflow-hidden rounded-full hover:scale-110 transition-transform">
+                  <input
+                    type="color"
+                    className="absolute -top-1 -left-1 w-6 h-6 border-none p-0 cursor-pointer opacity-0"
+                    value={tab.color || '#ffffff'}
+                    onChange={(e) => {
+                      const newColor = e.target.value;
+                      setTabs(tabs.map(t => (t._id === tab._id && t.title === tab.title) ? { ...t, color: newColor } : t));
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="w-full h-full rounded-full border border-gray-300" style={{ backgroundColor: tab.color || '#ffffff' }}></div>
+                </div>
+
                 {/* Auto-width Container: Grid stack with invisible span and absolute input */}
                 <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
                   {/* Invisible sizing span - dictates width */}
@@ -785,23 +800,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                   />
                 </div>
 
-                {/* Tab Controls (Color Picker + Delete) */}
-                <div className={`absolute right-1 top-1/2 -translate-y-1/2 z-20 items-center gap-1 bg-inherit rounded-full pl-1 ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
-                  {/* Color Picker */}
-                  <div className={`relative w-3 h-3 overflow-hidden rounded-full hover:scale-110 transition-transform`}>
-                    <input
-                      type="color"
-                      className="absolute -top-1 -left-1 w-6 h-6 border-none p-0 cursor-pointer opacity-0"
-                      value={tab.color || '#ffffff'}
-                      onChange={(e) => {
-                        const newColor = e.target.value;
-                        setTabs(tabs.map(t => (t._id === tab._id && t.title === tab.title) ? { ...t, color: newColor } : t));
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div className="w-full h-full rounded-full border border-gray-300" style={{ backgroundColor: tab.color || '#ffffff' }}></div>
-                  </div>
-
+                {/* Tab Controls (Delete Only) */}
+                <div className={`absolute right-1 top-1/2 -translate-y-1/2 z-20 items-center justify-center bg-inherit rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
                   {/* Delete Button */}
                   <button
                     className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
