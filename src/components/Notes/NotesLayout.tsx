@@ -49,7 +49,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
-  const [badgeCounts, setBadgeCounts] = useState<{ pages: Record<string, number>; sections: Record<string, number>; categories: Record<string, number> }>({ pages: {}, sections: {}, categories: {} });
+  const [badgeCounts, setBadgeCounts] = useState<{
+    pages: Record<string, { todo: number; important: number; flagged: number }>;
+    sections: Record<string, { todo: number; important: number; flagged: number }>;
+    categories: Record<string, { todo: number; important: number; flagged: number }>;
+  }>({ pages: {}, sections: {}, categories: {} });
 
 
   // Resizable Sidebar State

@@ -38,7 +38,7 @@ interface PageListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, number>;
+  badgeCounts?: Record<string, { todo: number; important: number; flagged: number }>;
 }
 
 const PageItem = React.memo<{
@@ -48,8 +48,8 @@ const PageItem = React.memo<{
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeCount?: number;
-}>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeCount }) => {
+  badgeStats?: { todo: number; important: number; flagged: number };
+}>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
   const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
 
   // ... (useMemo styles tailored to reduce change size, but I will replace the whole component block generally to ensure structure)
@@ -66,6 +66,32 @@ const PageItem = React.memo<{
     }),
     [isSelected, page.color],
   );
+
+  const renderBadges = () => {
+    if (!badgeStats) return null;
+    const { todo, important, flagged } = badgeStats;
+    if (!todo && !important && !flagged) return null;
+
+    return (
+      <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
+        {todo > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-purple-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-pulse">
+            {todo}
+          </span>
+        )}
+        {important > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {important}
+          </span>
+        )}
+        {flagged > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-blue-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {flagged}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   if (isCollapsed) {
     return (
@@ -89,12 +115,7 @@ const PageItem = React.memo<{
           className={`h-5 w-5 ${page.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
           style={collapsedStyle}
         />
-        {/* Collapsed Badge */}
-        {badgeCount !== undefined && badgeCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
-            {badgeCount}
-          </span>
-        )}
+        {renderBadges()}
       </button>
     );
   }
@@ -131,11 +152,7 @@ const PageItem = React.memo<{
           </div>
           <span className="truncate flex-1">{page.title || 'Untitled'}</span>
 
-          {badgeCount !== undefined && badgeCount > 0 && (
-            <span className="flex-shrink-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-1 ring-white">
-              {badgeCount}
-            </span>
-          )}
+          {renderBadges()}
 
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0">
             <button
@@ -405,7 +422,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                       onEdit={startEditing}
                       onSelect={onSelectPage}
                       page={page}
-                      badgeCount={badgeCounts?.[page._id as string] || 0}
+                      badgeStats={badgeCounts?.[page._id as string]}
                     />
                   );
                 })}

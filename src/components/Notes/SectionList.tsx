@@ -21,16 +21,17 @@ interface SectionListProps {
   sections: INoteSection[];
   selectedSectionId: string | null;
   onSelectSection: (id: string) => void;
-  onAddSection: (name: string, color?: string, icon?: string, image?: string | null) => void;
-  onRenameSection: (id: string, name: string, color?: string, icon?: string, image?: string | null) => void;
-  onDeleteSection: (id: string) => void;
+  onAddSection: (name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onRenameSection: (id: string, name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onDeleteSection: (id: string) => Promise<void>;
   onReorderSections: (newOrder: INoteSection[]) => void;
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, number>;
+  badgeCounts?: Record<string, { todo: number; important: number; flagged: number }>;
 }
 
+// Extracted Item Component
 const SectionItem = React.memo<{
   section: INoteSection;
   isSelected: boolean;
@@ -38,8 +39,8 @@ const SectionItem = React.memo<{
   onEdit: (section: INoteSection) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeCount?: number;
-}>(({ section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeCount }) => {
+  badgeStats?: { todo: number; important: number; flagged: number };
+}>(({ section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
   const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
 
   const style = useMemo(
@@ -55,6 +56,32 @@ const SectionItem = React.memo<{
     }),
     [isSelected, section.color],
   );
+
+  const renderBadges = () => {
+    if (!badgeStats) return null;
+    const { todo, important, flagged } = badgeStats;
+    if (!todo && !important && !flagged) return null;
+
+    return (
+      <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'ml-auto mr-2'}`}>
+        {todo > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-purple-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-pulse">
+            {todo}
+          </span>
+        )}
+        {important > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {important}
+          </span>
+        )}
+        {flagged > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-blue-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {flagged}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   if (isCollapsed) {
     return (
@@ -78,12 +105,7 @@ const SectionItem = React.memo<{
           className={`h-5 w-5 ${section.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
           style={collapsedStyle}
         />
-        {/* Collapsed Badge */}
-        {badgeCount !== undefined && badgeCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
-            {badgeCount}
-          </span>
-        )}
+        {renderBadges()}
       </button>
     );
   }
@@ -97,11 +119,9 @@ const SectionItem = React.memo<{
           }`}
         onClick={() => onSelect(section._id as string)}>
         {/* Accent Bar */}
-        {isSelected && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-md bg-blue-500"></div>
-        )}
+        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-blue-500" />}
 
-        <div className="flex items-center gap-3 truncate pl-2">
+        <div className="flex items-center gap-3 overflow-hidden">
           {section.image ? (
             <img
               alt={section.name}
@@ -121,31 +141,8 @@ const SectionItem = React.memo<{
           <span className="truncate">{section.name}</span>
         </div>
 
-        <div className="ml-auto mr-2 flex items-center gap-1">
-          {badgeCount !== undefined && badgeCount > 0 && (
-            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-1 ring-white">
-              {badgeCount}
-            </span>
-          )}
-          {section.todoCount !== undefined && section.todoCount > 0 && (
-            <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
-              <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-purple-600 shadow-sm ring-1 ring-purple-200">
-                {section.todoCount}
-              </span>
-            </div>
-          )}
-          {section.flaggedCount !== undefined && section.flaggedCount > 0 && (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-              {section.flaggedCount}
-            </span>
-          )}
-          {section.importantCount !== undefined && section.importantCount > 0 && (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-              {section.importantCount}
-            </span>
-          )}
-        </div>
+        {renderBadges()}
+
 
         <div className="hidden space-x-1 group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -168,7 +165,7 @@ const SectionItem = React.memo<{
           </button>
         </div>
       </div>
-    </SortableItem>
+    </SortableItem >
   );
 });
 
@@ -410,7 +407,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                           onEdit={startEditing}
                           onSelect={onSelectSection}
                           section={section}
-                          badgeCount={badgeCounts?.[section._id as string] || 0}
+                          badgeStats={badgeCounts?.[section._id as string]}
                         />
                       );
                     })}
@@ -430,7 +427,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
                 onEdit={startEditing}
                 onSelect={onSelectSection}
                 section={section}
-                badgeCount={badgeCounts?.[section._id as string] || 0}
+                badgeStats={badgeCounts?.[section._id as string]}
               />
             ))}
           </div>

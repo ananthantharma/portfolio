@@ -57,22 +57,26 @@ export async function GET(_req: Request) {
             }
         ]);
 
-        // Process ToDo Counts
+        // Helper to init/get stats object
+        const getStats = (obj: any, id: string) => {
+            if (!obj[id]) obj[id] = { todo: 0, important: 0, flagged: 0 };
+            return obj[id];
+        };
+
         const counts = {
-            pages: {} as Record<string, number>,
-            sections: {} as Record<string, number>,
-            categories: {} as Record<string, number>,
+            pages: {} as Record<string, { todo: number; important: number; flagged: number }>,
+            sections: {} as Record<string, { todo: number; important: number; flagged: number }>,
+            categories: {} as Record<string, { todo: number; important: number; flagged: number }>,
         };
 
         if (todoStats.length > 0) {
             const stats = todoStats[0];
-            stats.pages.forEach((id: any) => { counts.pages[id] = (counts.pages[id] || 0) + 1; });
-            stats.sections.forEach((id: any) => { counts.sections[id] = (counts.sections[id] || 0) + 1; });
-            stats.categories.forEach((id: any) => { counts.categories[id] = (counts.categories[id] || 0) + 1; });
+            stats.pages.forEach((id: any) => { getStats(counts.pages, id).todo++; });
+            stats.sections.forEach((id: any) => { getStats(counts.sections, id).todo++; });
+            stats.categories.forEach((id: any) => { getStats(counts.categories, id).todo++; });
         }
 
         // 2. Aggregate Important/Flagged Tabs
-        // Unwind tabs, match flags.
         const tabStats = await NotePage.aggregate([
             { $match: { userEmail } },
             { $unwind: '$tabs' },
@@ -99,24 +103,24 @@ export async function GET(_req: Request) {
                     pageId: '$_id',
                     sectionId: '$section._id',
                     categoryId: '$section.categoryId',
-                    flags: {
-                        $add: [
-                            { $cond: [{ $eq: ['$tabs.isImportant', true] }, 1, 0] },
-                            { $cond: [{ $eq: ['$tabs.isFlagged', true] }, 1, 0] }
-                        ]
-                    }
+                    isImportant: { $cond: [{ $eq: ['$tabs.isImportant', true] }, 1, 0] },
+                    isFlagged: { $cond: [{ $eq: ['$tabs.isFlagged', true] }, 1, 0] }
                 }
             }
         ]);
 
         // Sum up flags
         tabStats.forEach(item => {
-            // item.flags is the count for THAT tab.
-            // We assume simple summation.
-            const inc = item.flags;
-            counts.pages[item.pageId] = (counts.pages[item.pageId] || 0) + inc;
-            counts.sections[item.sectionId] = (counts.sections[item.sectionId] || 0) + inc;
-            counts.categories[item.categoryId] = (counts.categories[item.categoryId] || 0) + inc;
+            if (item.isImportant) {
+                getStats(counts.pages, item.pageId).important += item.isImportant;
+                getStats(counts.sections, item.sectionId).important += item.isImportant;
+                getStats(counts.categories, item.categoryId).important += item.isImportant;
+            }
+            if (item.isFlagged) {
+                getStats(counts.pages, item.pageId).flagged += item.isFlagged;
+                getStats(counts.sections, item.sectionId).flagged += item.isFlagged;
+                getStats(counts.categories, item.categoryId).flagged += item.isFlagged;
+            }
         });
 
         return NextResponse.json({ success: true, data: counts });

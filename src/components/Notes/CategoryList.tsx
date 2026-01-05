@@ -28,7 +28,7 @@ interface CategoryListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, number>;
+  badgeCounts?: Record<string, { todo: number; important: number; flagged: number }>;
 }
 
 // Extracted Item Component to handle memoization
@@ -39,8 +39,8 @@ const CategoryItem = React.memo<{
   onEdit: (category: INoteCategory) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeCount?: number;
-}>(({ category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeCount }) => {
+  badgeStats?: { todo: number; important: number; flagged: number };
+}>(({ category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
   const CategoryIcon = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options.Folder;
 
   const style = useMemo(
@@ -56,6 +56,32 @@ const CategoryItem = React.memo<{
     }),
     [isSelected, category.color],
   );
+
+  const renderBadges = () => {
+    if (!badgeStats) return null;
+    const { todo, important, flagged } = badgeStats;
+    if (!todo && !important && !flagged) return null;
+
+    return (
+      <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
+        {todo > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-purple-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-pulse">
+            {todo}
+          </span>
+        )}
+        {important > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {important}
+          </span>
+        )}
+        {flagged > 0 && (
+          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-blue-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
+            {flagged}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   if (isCollapsed) {
     return (
@@ -79,12 +105,7 @@ const CategoryItem = React.memo<{
           className={`h-5 w-5 ${category.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
           style={collapsedStyle}
         />
-        {/* Collapsed Badge */}
-        {badgeCount !== undefined && badgeCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
-            {badgeCount}
-          </span>
-        )}
+        {renderBadges()}
       </button>
     );
   }
@@ -120,33 +141,28 @@ const CategoryItem = React.memo<{
           <span className="truncate">{category.name}</span>
         </div>
 
-        <div className="ml-auto mr-2 flex items-center gap-1">
-          {badgeCount !== undefined && badgeCount > 0 && (
-            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-1 ring-white">
-              {badgeCount}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-            onClick={e => {
-              e.stopPropagation();
-              onEdit(category);
-            }}>
-            <PencilIcon className="h-3.5 w-3.5" />
-          </button>
-          <button
-            className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
-            onClick={e => {
-              e.stopPropagation();
-              if (confirm('Are you sure you want to delete this notebook?')) {
-                onDelete(category._id as string);
-              }
-            }}>
-            <TrashIcon className="h-3.5 w-3.5" />
-          </button>
+        <div className="ml-auto flex items-center gap-1">
+          {renderBadges()}
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+              onClick={e => {
+                e.stopPropagation();
+                onEdit(category);
+              }}>
+              <PencilIcon className="h-3.5 w-3.5" />
+            </button>
+            <button
+              className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+              onClick={e => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this notebook?')) {
+                  onDelete(category._id as string);
+                }
+              }}>
+              <TrashIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </SortableItem>
@@ -402,7 +418,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                           onDelete={onDeleteCategory}
                           onEdit={startEditing}
                           onSelect={onSelectCategory}
-                          badgeCount={badgeCounts?.[category._id as string] || 0}
+                          badgeStats={badgeCounts?.[category._id as string]}
                         />
                       );
                     })}
@@ -422,7 +438,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 onDelete={onDeleteCategory}
                 onEdit={startEditing}
                 onSelect={onSelectCategory}
-                badgeCount={badgeCounts?.[category._id as string] || 0}
+                badgeStats={badgeCounts?.[category._id as string]}
               />
             ))}
           </div>
