@@ -50,9 +50,9 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
   const [badgeCounts, setBadgeCounts] = useState<{
-    pages: Record<string, { todo: number; important: number; flagged: number }>;
-    sections: Record<string, { todo: number; important: number; flagged: number }>;
-    categories: Record<string, { todo: number; important: number; flagged: number }>;
+    pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+    sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+    categories: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
   }>({ pages: {}, sections: {}, categories: {} });
 
 

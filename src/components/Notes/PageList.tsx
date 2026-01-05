@@ -38,7 +38,7 @@ interface PageListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, { todo: number; important: number; flagged: number }>;
+  badgeCounts?: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
 }
 
 const PageItem = React.memo<{
@@ -48,7 +48,7 @@ const PageItem = React.memo<{
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeStats?: { todo: number; important: number; flagged: number };
+  badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
 }>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
   const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
 
@@ -70,15 +70,32 @@ const PageItem = React.memo<{
   const renderBadges = () => {
     if (!badgeStats) return null;
     const { todo } = badgeStats;
-    if (!todo) return null;
+    if (!todo || todo.count === 0) return null;
+
+    let badgeClass = 'bg-purple-500'; // Default
+    let animateClass = '';
+
+    if (todo.minDays !== null) {
+      if (todo.minDays <= 3) {
+        badgeClass = 'bg-red-500';
+        animateClass = 'animate-ping'; // Fast pulse
+      } else if (todo.minDays <= 7) {
+        badgeClass = 'bg-red-500';
+        animateClass = 'animate-pulse';
+      } else if (todo.minDays <= 14) {
+        badgeClass = 'bg-orange-500';
+      } else if (todo.minDays <= 21) {
+        badgeClass = 'bg-purple-500';
+      } else {
+        badgeClass = 'bg-green-500'; // > 21 days
+      }
+    }
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
-        {todo > 0 && (
-          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-purple-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-pulse">
-            {todo}
-          </span>
-        )}
+        <span className={`flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white ${badgeClass} ${animateClass}`}>
+          {todo.count}
+        </span>
       </div>
     );
   };

@@ -783,8 +783,37 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             const tabTasks = pageTodos.filter((todo: any) =>
               !todo.isCompleted && (todo.tabId === tab._id || (tab._id?.startsWith('new-') && todo.tabName === tab.title))
             );
-            const flagCount = (tab.isImportant ? 1 : 0) + (tab.isFlagged ? 1 : 0);
-            const badgeTotal = tabTasks.length + flagCount;
+
+            let minDays: number | null = null;
+            if (tabTasks.length > 0) {
+              const dates = tabTasks
+                .map((t: any) => t.dueDate ? new Date(t.dueDate).getTime() : null)
+                .filter((d: number | null) => d !== null) as number[];
+
+              if (dates.length > 0) {
+                const minDate = Math.min(...dates);
+                minDays = Math.ceil((minDate - Date.now()) / (1000 * 60 * 60 * 24));
+              }
+            }
+
+            let badgeClass = 'bg-purple-500';
+            let animateClass = '';
+
+            if (minDays !== null) {
+              if (minDays <= 3) {
+                badgeClass = 'bg-red-500';
+                animateClass = 'animate-ping';
+              } else if (minDays <= 7) {
+                badgeClass = 'bg-red-500';
+                animateClass = 'animate-pulse';
+              } else if (minDays <= 14) {
+                badgeClass = 'bg-orange-500';
+              } else if (minDays <= 21) {
+                badgeClass = 'bg-purple-500';
+              } else {
+                badgeClass = 'bg-green-500';
+              }
+            }
 
             return (
               <div
@@ -807,9 +836,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 }}
               >
                 {/* Badge Notification */}
-                {badgeTotal > 0 && (
-                  <span className="absolute -top-1.5 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white z-30">
-                    {badgeTotal}
+                {tabTasks.length > 0 && (
+                  <span className={`absolute -top-1.5 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] font-bold text-white ring-1 ring-white z-30 ${badgeClass} ${animateClass}`}>
+                    {tabTasks.length}
                   </span>
                 )}
 

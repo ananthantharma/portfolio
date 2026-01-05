@@ -19,14 +19,26 @@ export async function GET(_req: Request) {
         await dbConnect();
         const userEmail = session.user.email;
 
-        // 1. Aggregate Active ToDos
-        // ToDos have `sourcePageId`. We need to group by Page, and also look up Section -> Category.
-        // However, ToDos only store `sourcePageId`. We need to populate/lookup to get hierarchy.
-        // Aggregation pipeline is best.
+
+
+        // Helper to init/get stats object
+        const getStats = (obj: any, id: string) => {
+            if (!obj[id]) obj[id] = {
+                todo: { count: 0, minDays: null as number | null },
+                important: 0,
+                flagged: 0
+            };
+            return obj[id];
+        };
+
+        const counts = {
+            pages: {} as Record<string, { todo: { count: number, minDays: number | null }; important: number; flagged: number }>,
+            sections: {} as Record<string, { todo: { count: number, minDays: number | null }; important: number; flagged: number }>,
+            categories: {} as Record<string, { todo: { count: number, minDays: number | null }; important: number; flagged: number }>,
+        };
 
         const todoStats = await ToDo.aggregate([
             { $match: { userEmail, isCompleted: false } },
-            // Lookup Page to get SectionId
             {
                 $lookup: {
                     from: 'notepages',
@@ -36,7 +48,6 @@ export async function GET(_req: Request) {
                 }
             },
             { $unwind: '$page' },
-            // Lookup Section to get CategoryId
             {
                 $lookup: {
                     from: 'notesections',
@@ -46,35 +57,51 @@ export async function GET(_req: Request) {
                 }
             },
             { $unwind: '$section' },
-            // Now we have page._id, section._id, section.categoryId
             {
                 $group: {
-                    _id: null,
-                    pages: { $push: '$page._id' },
-                    sections: { $push: '$section._id' },
-                    categories: { $push: '$section.categoryId' }
+                    _id: '$page._id',
+                    sectionId: { $first: '$section._id' },
+                    categoryId: { $first: '$section.categoryId' },
+                    count: { $sum: 1 },
+                    minDate: { $min: '$dueDate' }
                 }
             }
         ]);
 
-        // Helper to init/get stats object
-        const getStats = (obj: any, id: string) => {
-            if (!obj[id]) obj[id] = { todo: 0, important: 0, flagged: 0 };
-            return obj[id];
+        const updateMinDays = (currentMin: number | null, newDate: Date | null) => {
+            if (!newDate) return currentMin;
+            // Calculate days diff: (Target - Now) in days
+            // If negative, it's overdue (urgent).
+            const days = Math.ceil((new Date(newDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            if (currentMin === null) return days;
+            return Math.min(currentMin, days);
         };
 
-        const counts = {
-            pages: {} as Record<string, { todo: number; important: number; flagged: number }>,
-            sections: {} as Record<string, { todo: number; important: number; flagged: number }>,
-            categories: {} as Record<string, { todo: number; important: number; flagged: number }>,
-        };
+        // Loop through aggregated pages (todoStats is now an array of page summaries)
+        todoStats.forEach((page: any) => {
+            const pageId = page._id.toString();
+            const sectionId = page.sectionId.toString();
+            const categoryId = page.categoryId.toString();
 
-        if (todoStats.length > 0) {
-            const stats = todoStats[0];
-            stats.pages.forEach((id: any) => { getStats(counts.pages, id).todo++; });
-            stats.sections.forEach((id: any) => { getStats(counts.sections, id).todo++; });
-            stats.categories.forEach((id: any) => { getStats(counts.categories, id).todo++; });
-        }
+            const minDays = updateMinDays(null, page.minDate);
+
+            // Update Page
+            const pStats = getStats(counts.pages, pageId);
+            pStats.todo.count += page.count;
+            pStats.todo.minDays = minDays; // For a single page group, minDate is absolute min
+
+            // Update Section
+            const sStats = getStats(counts.sections, sectionId);
+            sStats.todo.count += page.count;
+            sStats.todo.minDays = sStats.todo.minDays === null ? minDays : Math.min(sStats.todo.minDays, minDays ?? 9999);
+            if (sStats.todo.minDays === 9999 && minDays === null) sStats.todo.minDays = null; // Revert if both null
+
+            // Update Category
+            const cStats = getStats(counts.categories, categoryId);
+            cStats.todo.count += page.count;
+            cStats.todo.minDays = cStats.todo.minDays === null ? minDays : Math.min(cStats.todo.minDays, minDays ?? 9999);
+            if (cStats.todo.minDays === 9999 && minDays === null) cStats.todo.minDays = null;
+        });
 
         // 2. Aggregate Important/Flagged Tabs
         const tabStats = await NotePage.aggregate([
