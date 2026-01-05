@@ -728,15 +728,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       {/* Tab Bar Container - Segmented Control Style */}
       {/* Tab Bar Container - Segmented Control Style */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3 bg-white">
-        <div className="relative inline-flex items-center rounded-[9px] p-[2px] gap-1 bg-[#dadadb]">
+        {/* Sliding Tab Bar */}
+        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-1 gap-1">
           {/* Sliding Indicator */}
           <div
-            className="absolute top-[2px] bottom-[2px] bg-white rounded-[7px] transition-all duration-200 ease-out z-0"
+            className="absolute top-1 bottom-1 bg-white rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
               opacity: indicatorStyle.width > 0 ? 1 : 0,
-              boxShadow: '0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04)'
             }}
           />
 
@@ -746,12 +746,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${isActive
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${isActive
                   ? 'text-gray-900'
                   : 'text-gray-500 hover:text-gray-900'
                   }`}
                 onClick={() => {
-                  // Sync current editor content to the active tab before switching
                   const updatedTabs = tabs.map(t => {
                     if (t._id === activeTabId || t.title === activeTabId) {
                       return { ...t, content: editorContent };
@@ -759,21 +758,32 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                     return t;
                   });
                   setTabs(updatedTabs);
-
                   setActiveTabId(tab._id || tab.title);
                   setEditorContent(tab.content);
                 }}
               >
-                {/* Editable Title */}
-                <input
-                  className={`bg-transparent focus:outline-none min-w-[60px] max-w-[120px] text-center ${isActive ? '' : 'pointer-events-none'}`}
-                  onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  value={tab.title}
-                  style={{ width: `${Math.max(tab.title.length * 8, 60)}px` }} // dynamic width
-                />
+                {/* Auto-width Container: Grid stack with invisible span and absolute input */}
+                <div className="grid place-items-center">
+                  <span className="invisible pointer-events-none px-1 h-0 overflow-hidden md:h-auto md:overflow-visible opacity-0 md:opacity-0" aria-hidden="true">
+                    {tab.title}
+                  </span>
+                  {/* Visible Span for text (to ensure perfect width match) */}
+                  <span className={`opacity-0 ${isActive ? 'hidden' : 'block'}`}>{tab.title}</span>
 
-                {/* Delete Button (Hover) */}
+                  {/* Input for editing - sizes to match cell */}
+                  <input
+                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-inherit ${isActive ? '' : 'pointer-events-none'}`}
+                    style={{ minWidth: '2ch' }}
+                    onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    value={tab.title}
+                    size={1} // Helps with min width
+                  />
+                  {/* Duplicate Text for sizing */}
+                  <span className="invisible row-start-1 col-start-1 px-1 whitespace-pre">{tab.title}</span>
+                </div>
+
+                {/* Delete Button */}
                 <button
                   className={`ml-1.5 hidden rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 group-hover:block transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
                   onClick={(e) => {
