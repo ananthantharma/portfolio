@@ -402,7 +402,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleContentChange = useCallback((val: string, delta: any, source: string) => {
+  const handleContentChange = useCallback((val: string, _delta: any, source: string) => {
     // CRITICAL FIX: Only update state if the change comes from the USER.
     // Programmatic changes (e.g. switching tabs loads empty content) trigger 'api' source.
     // If we process 'api' changes, we might overwrite the PREVIOUS tab's content with the NEW tab's empty content
