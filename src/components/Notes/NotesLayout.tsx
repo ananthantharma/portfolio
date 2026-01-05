@@ -477,15 +477,6 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
-  const handleToggleFlag = useCallback(async (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => {
-    try {
-      const response = await axios.put(`/api/notes/pages/${id}`, { [field]: value });
-      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
-    } catch (error) {
-      console.error('Error toggling flag', error);
-    }
-  }, []);
-
   const selectedPage = pages.find(p => p._id === selectedPageId) || null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
@@ -755,7 +746,6 @@ const NotesLayout: React.FC = React.memo(() => {
           <NoteEditor
             initialTabId={targetTabId}
             onSave={handleSavePageContent}
-            onToggleFlag={handleToggleFlag}
             page={selectedPage}
           />
         </div>

@@ -54,12 +54,11 @@ Here is the text to rewrite:`;
 
 interface NoteEditorProps {
   onSave: (id: string, data: any) => void;
-  onToggleFlag: (id: string, field: 'isFlagged' | 'isImportant', value: boolean) => void;
   page: INotePage | null;
   initialTabId?: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page, initialTabId }) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initialTabId }) => {
   const { data: session } = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<{ _id?: string; title: string; content: string; color?: string; isImportant?: boolean; isFlagged?: boolean; order: number }[]>([]);
