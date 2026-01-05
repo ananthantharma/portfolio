@@ -729,7 +729,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       {/* Tab Bar Container - Segmented Control Style */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2 bg-white">
         {/* Sliding Tab Bar */}
-        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-0.5 gap-2">
+        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-0.5 gap-3">
           {/* Sliding Indicator */}
           <div
             className="absolute top-0.5 bottom-0.5 bg-white rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
@@ -746,7 +746,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 text-xs font-medium leading-none transition-colors duration-200 ${isActive
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md px-2.5 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
                   ? 'text-gray-900'
                   : 'text-gray-500 hover:text-gray-900'
                   }`}
@@ -766,7 +766,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                 <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
                   {/* Invisible sizing span - dictates width */}
                   <span
-                    className="invisible opacity-0 px-1 whitespace-pre leading-none py-1 pointer-events-none font-medium text-xs"
+                    className="invisible opacity-0 px-1 whitespace-pre leading-none pointer-events-none font-medium text-xs"
                     style={{ gridArea: 'stack' }}
                     aria-hidden="true"
                   >
