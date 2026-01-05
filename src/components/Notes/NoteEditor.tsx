@@ -763,25 +763,27 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                 }}
               >
                 {/* Auto-width Container: Grid stack with invisible span and absolute input */}
-                <div className="grid place-items-center">
-                  <span className="invisible pointer-events-none px-1 h-0 overflow-hidden md:h-auto md:overflow-visible opacity-0 md:opacity-0" aria-hidden="true">
+                <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
+                  {/* Invisible sizing span - dictates width */}
+                  <span
+                    className="invisible opacity-0 px-1 whitespace-pre leading-none py-1 pointer-events-none font-medium text-xs"
+                    style={{ gridArea: 'stack' }}
+                    aria-hidden="true"
+                  >
                     {tab.title}
                   </span>
-                  {/* Visible Span for text (to ensure perfect width match) */}
-                  <span className={`opacity-0 ${isActive ? 'hidden' : 'block'}`}>{tab.title}</span>
 
-                  {/* Input for editing - sizes to match cell */}
+                  {/* Input for editing - absolute over the span */}
                   <input
-                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-inherit leading-none ${isActive ? '' : 'pointer-events-none'}`}
-                    style={{ minWidth: '2ch' }}
+                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${isActive ? '' : 'pointer-events-none'}`}
+                    style={{ gridArea: 'stack', minWidth: '2ch' }}
                     onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
                     value={tab.title}
-                    size={1} // Helps with min width
+                    size={1}
                   />
-                  {/* Duplicate Text for sizing */}
-                  <span className="invisible row-start-1 col-start-1 px-1 whitespace-pre leading-none">{tab.title}</span>
                 </div>
+
 
                 {/* Delete Button */}
                 <button
