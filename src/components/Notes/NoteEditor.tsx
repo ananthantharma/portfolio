@@ -707,62 +707,67 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   return (
     <div className="flex h-full flex-col bg-white text-gray-900">
       {/* Tab Bar */}
-      <div className="flex items-end gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 pt-2">
-        {tabs.map(tab => {
-          const isActive = tab._id === activeTabId || tab.title === activeTabId;
-          return (
-            <div
-              key={tab._id || tab.title}
-              className={`group relative flex min-w-[120px] max-w-[200px] cursor-pointer items-center justify-between rounded-t-lg border-x border-t px-3 py-2 text-sm transition-all ${isActive
-                ? 'border-gray-300 bg-white font-medium text-gray-900 shadow-[0_2px_0_white]' // shadow covers bottom border
-                : 'border-transparent bg-transparent text-gray-500 hover:bg-gray-200'
-                }`}
-              onClick={() => {
-                // Sync current editor content to the active tab before switching
-                const updatedTabs = tabs.map(t => {
-                  if (t._id === activeTabId || t.title === activeTabId) {
-                    return { ...t, content: editorContent };
-                  }
-                  return t;
-                });
-                setTabs(updatedTabs);
+      {/* Tab Bar Container - Segmented Control Style */}
+      <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2 bg-white">
+        <div className="inline-flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+          {tabs.map(tab => {
+            const isActive = tab._id === activeTabId || tab.title === activeTabId;
+            return (
+              <div
+                key={tab._id || tab.title}
+                className={`group relative flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-all ${isActive
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                  }`}
+                onClick={() => {
+                  // Sync current editor content to the active tab before switching
+                  const updatedTabs = tabs.map(t => {
+                    if (t._id === activeTabId || t.title === activeTabId) {
+                      return { ...t, content: editorContent };
+                    }
+                    return t;
+                  });
+                  setTabs(updatedTabs);
 
-                setActiveTabId(tab._id || tab.title);
-                setEditorContent(tab.content);
-              }}
-              style={{ borderTopColor: tab.color !== '#ffffff' ? tab.color : undefined, borderTopWidth: tab.color !== '#ffffff' ? 3 : 1 }}
-            >
-              {/* Editable Title */}
-              <input
-                className={`bg-transparent focus:outline-none ${isActive ? 'w-full' : 'pointer-events-none w-full'}`}
-                onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
-                onClick={(e) => e.stopPropagation()} // Allow clicking input without triggering tab switch (though tab switch happens on parent)
-                value={tab.title}
-              />
-
-              {/* Delete Button (Hover) */}
-              <button
-                className={`ml-2 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteTab(tab._id || tab.title);
+                  setActiveTabId(tab._id || tab.title);
+                  setEditorContent(tab.content);
                 }}
               >
-                <XMarkIcon className="h-3 w-3" />
-              </button>
-            </div>
-          );
-        })}
+                {/* Editable Title */}
+                <input
+                  className={`bg-transparent focus:outline-none min-w-[60px] max-w-[120px] text-center ${isActive ? '' : 'pointer-events-none'}`}
+                  onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  value={tab.title}
+                  style={{ width: `${Math.max(tab.title.length * 8, 60)}px` }} // dynamic width
+                />
 
-        {/* Add Tab Button */}
+                {/* Delete Button (Hover) */}
+                <button
+                  className={`ml-1 hidden rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 group-hover:block ${tabs.length <= 1 ? '!hidden' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTab(tab._id || tab.title);
+                  }}
+                >
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add Tab Button - Outside the container or inside? usually outside for this style */}
         <button
-          className="mb-1 ml-1 rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
+          className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
           onClick={handleAddTab}
           title="Add Tab"
         >
           <PlusIcon className="h-4 w-4" />
         </button>
       </div>
+
+
 
       <div className="flex items-center justify-between border-b border-gray-200 p-4">
         <div className="flex flex-col">
@@ -1028,7 +1033,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
       {/* Attachments Section */}
       <AttachmentManager pageId={page._id as string} />
-    </div>
+    </div >
   );
 });
 
