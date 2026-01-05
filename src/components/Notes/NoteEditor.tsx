@@ -86,6 +86,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
   const [isToDoOpen, setIsToDoOpen] = useState(false);
 
+  // Tab Indicator State
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const tabsRef = useRef<(HTMLDivElement | null)[]>([]);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillRef = useRef<any>(null);
 
@@ -165,6 +169,20 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   }, [activeTabId, tabs]); // Be careful with tabs dependency loops
 
   // Handlers for Tabs
+  // Update Tab Indicator Position
+  useEffect(() => {
+    const activeTabIndex = tabs.findIndex(t => t._id === activeTabId || t.title === activeTabId);
+    if (activeTabIndex !== -1 && tabsRef.current[activeTabIndex]) {
+      const activeElement = tabsRef.current[activeTabIndex];
+      if (activeElement) {
+        setIndicatorStyle({
+          left: activeElement.offsetLeft,
+          width: activeElement.offsetWidth,
+        });
+      }
+    }
+  }, [activeTabId, tabs]);
+
   const handleAddTab = () => {
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
@@ -710,15 +728,26 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       {/* Tab Bar Container - Segmented Control Style */}
       {/* Tab Bar Container - Segmented Control Style */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3 bg-white">
-        <div className="inline-flex items-center bg-gray-100/80 rounded-lg p-1 gap-1">
-          {tabs.map(tab => {
+        <div className="relative inline-flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+          {/* Sliding Indicator */}
+          <div
+            className="absolute top-1 bottom-1 bg-white rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
+            style={{
+              left: indicatorStyle.left,
+              width: indicatorStyle.width,
+              opacity: indicatorStyle.width > 0 ? 1 : 0,
+            }}
+          />
+
+          {tabs.map((tab, index) => {
             const isActive = tab._id === activeTabId || tab.title === activeTabId;
             return (
               <div
                 key={tab._id || tab.title}
-                className={`group relative flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-all duration-200 ease-out ${isActive
-                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
+                ref={el => (tabsRef.current[index] = el)}
+                className={`group relative z-10 flex cursor-pointer items-center justify-between rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${isActive
+                  ? 'text-gray-900'
+                  : 'text-gray-500 hover:text-gray-900'
                   }`}
                 onClick={() => {
                   // Sync current editor content to the active tab before switching
