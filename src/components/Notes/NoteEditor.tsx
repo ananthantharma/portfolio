@@ -728,14 +728,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       {/* Tab Bar Container - Segmented Control Style */}
       {/* Tab Bar Container - Segmented Control Style */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3 bg-white">
-        <div className="relative inline-flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+        <div className="relative inline-flex items-center rounded-[9px] p-[2px] gap-1 bg-[#dadadb]">
           {/* Sliding Indicator */}
           <div
-            className="absolute top-1 bottom-1 bg-white rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
+            className="absolute top-[2px] bottom-[2px] bg-white rounded-[7px] transition-all duration-200 ease-out z-0"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
               opacity: indicatorStyle.width > 0 ? 1 : 0,
+              boxShadow: '0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04)'
             }}
           />
 
