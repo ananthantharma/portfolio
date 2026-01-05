@@ -772,6 +772,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                     onChange={(e) => {
                       const newColor = e.target.value;
                       setTabs(tabs.map(t => (t._id === tab._id && t.title === tab.title) ? { ...t, color: newColor } : t));
+                      setIsDirty(true);
                     }}
                     onClick={(e) => e.stopPropagation()}
                   />
