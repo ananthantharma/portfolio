@@ -747,7 +747,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md px-2.5 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2.5 pr-6 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
                   ? 'text-gray-900'
                   : 'text-gray-500 hover:text-gray-900'
                   }`}
@@ -786,9 +786,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                 </div>
 
                 {/* Tab Controls (Color Picker + Delete) */}
-                <div className="flex items-center ml-1.5 gap-1">
+                <div className={`absolute right-1 top-1/2 -translate-y-1/2 z-20 items-center gap-1 bg-inherit rounded-full pl-1 ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
                   {/* Color Picker */}
-                  <div className={`relative w-3 h-3 overflow-hidden rounded-full hover:scale-110 transition-transform ${tabs.length <= 1 ? 'hidden' : 'hidden group-hover:block'} ${isActive && 'block'}`}>
+                  <div className={`relative w-3 h-3 overflow-hidden rounded-full hover:scale-110 transition-transform`}>
                     <input
                       type="color"
                       className="absolute -top-1 -left-1 w-6 h-6 border-none p-0 cursor-pointer opacity-0"
@@ -804,7 +804,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
                   {/* Delete Button */}
                   <button
-                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 hidden group-hover:block transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
+                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteTab(tab._id || tab.title);
