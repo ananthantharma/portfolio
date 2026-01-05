@@ -820,6 +820,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                   setEditorContent(tab.content);
                 }}
               >
+                {/* Status Badge (Important/Flagged) */}
+                {(tab.isImportant || tab.isFlagged) && (
+                  <span className="absolute -top-1.5 -left-1 flex h-3 w-3 items-center justify-center rounded-full bg-white ring-1 ring-gray-200 z-40 shadow-sm">
+                    {tab.isImportant ? (
+                      <ExclamationTriangleIconSolid className="h-2 w-2 text-red-500" />
+                    ) : (
+                      <FlagIconSolid className="h-2 w-2 text-blue-500" />
+                    )}
+                  </span>
+                )}
+
                 {/* Badge Notification */}
                 {tabTasks.length > 0 && (
                   <span
