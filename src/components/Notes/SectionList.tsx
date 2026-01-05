@@ -59,24 +59,14 @@ const SectionItem = React.memo<{
 
   const renderBadges = () => {
     if (!badgeStats) return null;
-    const { todo, important, flagged } = badgeStats;
-    if (!todo && !important && !flagged) return null;
+    const { todo } = badgeStats;
+    if (!todo) return null;
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'ml-auto mr-2'}`}>
         {todo > 0 && (
           <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-purple-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-pulse">
             {todo}
-          </span>
-        )}
-        {important > 0 && (
-          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
-            {important}
-          </span>
-        )}
-        {flagged > 0 && (
-          <span className="flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-blue-500 px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white">
-            {flagged}
           </span>
         )}
       </div>

@@ -14,7 +14,7 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
@@ -526,6 +526,15 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenAssessment = useCallback(() => setIsAssessmentOpen(true), []);
   const handleCloseAssessment = useCallback(() => setIsAssessmentOpen(false), []);
 
+  // Calculate total important and flagged counts
+  const totalImportant = useMemo(() => {
+    return Object.values(badgeCounts.pages).reduce((acc, curr) => acc + (curr.important || 0), 0);
+  }, [badgeCounts.pages]);
+
+  const totalFlagged = useMemo(() => {
+    return Object.values(badgeCounts.pages).reduce((acc, curr) => acc + (curr.flagged || 0), 0);
+  }, [badgeCounts.pages]);
+
   return (
     <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
       {/* Top Navigation / Breadcrumbs Bar */}
@@ -641,16 +650,32 @@ const NotesLayout: React.FC = React.memo(() => {
 
           <div className="h-4 w-px bg-gray-200"></div>
           <button
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors relative"
             onClick={handleOpenImportant}
             title="Important">
             <ExclamationTriangleIcon className="h-4 w-4" />
+            {totalImportant > 0 && (
+              <>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                  {totalImportant}
+                </span>
+              </>
+            )}
           </button>
           <button
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors relative"
             onClick={handleOpenKeyTasks}
             title="Key Tasks">
             <FlagIcon className="h-4 w-4" />
+            {totalFlagged > 0 && (
+              <>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                  {totalFlagged}
+                </span>
+              </>
+            )}
           </button>
 
           <div className="h-4 w-px bg-gray-200"></div>
