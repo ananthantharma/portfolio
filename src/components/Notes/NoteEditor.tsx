@@ -244,6 +244,31 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     }
   }, [activeTabId, tabs]);
 
+  // Helper to package tabs for saving (Syncs active content + Sanitizes IDs)
+  const prepareTabsPayload = (tabsToSave: typeof tabs) => {
+    return tabsToSave.map(t => {
+      // 1. Sync Active Content (Defensive Check for current edits)
+      let currentContent = t.content;
+      if (t._id === activeTabId || t.title === activeTabId) {
+        currentContent = editorContent;
+      }
+
+      // 2. Prepare Object (Explicit properties to avoid 'rest' spread issues)
+      const isTempId = t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'));
+
+      return {
+        title: t.title,
+        content: currentContent,
+        color: t.color,
+        isImportant: t.isImportant,
+        isFlagged: t.isFlagged,
+        order: t.order,
+        // Only include _id if it's a real server ID
+        ...(!isTempId && t._id ? { _id: t._id } : {})
+      };
+    });
+  };
+
   const handleAddTab = async () => {
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
@@ -273,14 +298,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     if (page) {
       try {
         setIsSaving(true);
-        const sanitizedTabs = newTabs.map(t => {
-          if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { _id, ...rest } = t;
-            return rest;
-          }
-          return t;
-        });
+        const sanitizedTabs = prepareTabsPayload(newTabs);
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
@@ -321,14 +339,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     if (page) {
       try {
         setIsSaving(true);
-        const sanitizedTabs = newTabs.map(t => {
-          if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { _id, ...rest } = t;
-            return rest;
-          }
-          return t;
-        });
+        const sanitizedTabs = prepareTabsPayload(newTabs);
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
@@ -365,30 +376,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   // Upated Save Handler
   // Upated Save Handler
+  // Upated Save Handler
   const handleSave = async () => {
     if (page) {
-      // 1. Sync current editor content to the active tab object in state
-      const currentTabs = tabs.map(t => {
-        if (t._id === activeTabId || t.title === activeTabId) {
-          return { ...t, content: editorContent };
-        }
-        return t;
-      });
+      // Prepare payload (Sync active content + Sanitize)
+      const sanitizedTabs = prepareTabsPayload(tabs);
 
-      // 2. Prepare payload for Server
-      // We must strip strictly client-side IDs (like 'new-...' or 'default-tab') so Mongoose generates real ObjectIds.
-      // We KEEP real ObjectIds (hex strings) so Mongoose updates existing subdocs.
-      const sanitizedTabs = currentTabs.map(t => {
-        // If ID looks like a temp ID, remove it from the payload
-        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab')) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { _id, ...rest } = t;
-          return rest;
-        }
-        return t;
-      });
-
-      // 3. Send to Parent
+      // Send to Parent
       try {
         setIsSaving(true);
         await onSave(page._id as string, sanitizedTabs as any);
