@@ -798,14 +798,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
             let badgeClass = 'bg-purple-500';
             let animateClass = '';
+            let duration = '';
 
             if (minDays !== null) {
               if (minDays <= 3) {
                 badgeClass = 'bg-red-500';
-                animateClass = 'animate-ping';
+                animateClass = 'animate-pulse';
+                duration = '1s';
               } else if (minDays <= 7) {
                 badgeClass = 'bg-red-500';
                 animateClass = 'animate-pulse';
+                duration = '3s';
               } else if (minDays <= 14) {
                 badgeClass = 'bg-orange-500';
               } else if (minDays <= 21) {
@@ -837,7 +840,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               >
                 {/* Badge Notification */}
                 {tabTasks.length > 0 && (
-                  <span className={`absolute -top-1.5 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] font-bold text-white ring-1 ring-white z-30 ${badgeClass} ${animateClass}`}>
+                  <span
+                    className={`absolute -top-1.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold text-white ring-1 ring-white z-30 ${badgeClass} ${animateClass}`}
+                    style={{ animationDuration: duration }}
+                  >
                     {tabTasks.length}
                   </span>
                 )}

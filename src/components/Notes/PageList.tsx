@@ -74,14 +74,17 @@ const PageItem = React.memo<{
 
     let badgeClass = 'bg-purple-500'; // Default
     let animateClass = '';
+    let duration = '';
 
     if (todo.minDays !== null) {
       if (todo.minDays <= 3) {
         badgeClass = 'bg-red-500';
-        animateClass = 'animate-ping'; // Fast pulse
+        animateClass = 'animate-pulse'; // Fast pulse
+        duration = '1s';
       } else if (todo.minDays <= 7) {
         badgeClass = 'bg-red-500';
-        animateClass = 'animate-pulse';
+        animateClass = 'animate-pulse'; // Slow pulse
+        duration = '3s';
       } else if (todo.minDays <= 14) {
         badgeClass = 'bg-orange-500';
       } else if (todo.minDays <= 21) {
@@ -93,7 +96,10 @@ const PageItem = React.memo<{
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
-        <span className={`flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white shadow-sm ring-1 ring-white ${badgeClass} ${animateClass}`}>
+        <span
+          className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${badgeClass} ${animateClass}`}
+          style={{ animationDuration: duration }}
+        >
           {todo.count}
         </span>
       </div>
