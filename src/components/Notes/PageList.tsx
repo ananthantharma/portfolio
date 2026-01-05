@@ -18,7 +18,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { FileText } from 'lucide-react';
+
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
