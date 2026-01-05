@@ -729,14 +729,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       {/* Tab Bar Container - Segmented Control Style */}
       <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2 bg-white">
         {/* Sliding Tab Bar */}
-        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-0.5 gap-3">
+        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-0.5 gap-10">
           {/* Sliding Indicator */}
           <div
-            className="absolute top-0.5 bottom-0.5 bg-white rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
+            className="absolute top-0.5 bottom-0.5 rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
               opacity: indicatorStyle.width > 0 ? 1 : 0,
+              backgroundColor: tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.color || '#ffffff',
             }}
           />
 
@@ -784,17 +785,34 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                   />
                 </div>
 
+                {/* Tab Controls (Color Picker + Delete) */}
+                <div className="flex items-center ml-1.5 gap-1">
+                  {/* Color Picker */}
+                  <div className={`relative w-3 h-3 overflow-hidden rounded-full hover:scale-110 transition-transform ${tabs.length <= 1 ? 'hidden' : 'hidden group-hover:block'} ${isActive && 'block'}`}>
+                    <input
+                      type="color"
+                      className="absolute -top-1 -left-1 w-6 h-6 border-none p-0 cursor-pointer opacity-0"
+                      value={tab.color || '#ffffff'}
+                      onChange={(e) => {
+                        const newColor = e.target.value;
+                        setTabs(tabs.map(t => (t._id === tab._id && t.title === tab.title) ? { ...t, color: newColor } : t));
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="w-full h-full rounded-full border border-gray-300" style={{ backgroundColor: tab.color || '#ffffff' }}></div>
+                  </div>
 
-                {/* Delete Button */}
-                <button
-                  className={`ml-1.5 hidden rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 group-hover:block transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteTab(tab._id || tab.title);
-                  }}
-                >
-                  <XMarkIcon className="h-3 w-3" />
-                </button>
+                  {/* Delete Button */}
+                  <button
+                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 hidden group-hover:block transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTab(tab._id || tab.title);
+                    }}
+                  >
+                    <XMarkIcon className="h-3 w-3" />
+                  </button>
+                </div>
               </div>
             );
           })}
