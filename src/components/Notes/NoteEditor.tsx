@@ -54,7 +54,7 @@ Sentence Flow: Vary lengths, but prioritize short, declarative sentences.
 Here is the text to rewrite:`;
 
 interface NoteEditorProps {
-  onSave: (id: string, data: any) => void;
+  onSave: (id: string, data: any) => Promise<void>;
   page: INotePage | null;
   initialTabId?: string;
 }
@@ -73,6 +73,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [pageTodos, setPageTodos] = useState<any[]>([]);
 
   const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // ... (Modal states)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -243,7 +244,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     }
   }, [activeTabId, tabs]);
 
-  const handleAddTab = () => {
+  const handleAddTab = async () => {
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
@@ -270,22 +271,29 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
     // 4. Immediate Save (Prevents data loss/ID mismatch issues)
     if (page) {
-      const sanitizedTabs = newTabs.map(t => {
-        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { _id, ...rest } = t;
-          return rest;
-        }
-        return t;
-      });
-      onSave(page._id as string, sanitizedTabs as any);
-      setIsDirty(false);
+      try {
+        setIsSaving(true);
+        const sanitizedTabs = newTabs.map(t => {
+          if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, ...rest } = t;
+            return rest;
+          }
+          return t;
+        });
+        await onSave(page._id as string, sanitizedTabs as any);
+        setIsDirty(false);
+      } catch (error) {
+        console.error("Failed to save new tab", error);
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       setIsDirty(true);
     }
   };
 
-  const handleDeleteTab = (tabId: string) => {
+  const handleDeleteTab = async (tabId: string) => {
     if (tabs.length <= 1) {
       alert('Cannot delete the last tab.');
       return;
@@ -311,16 +319,23 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
     // Immediate Save
     if (page) {
-      const sanitizedTabs = newTabs.map(t => {
-        if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { _id, ...rest } = t;
-          return rest;
-        }
-        return t;
-      });
-      onSave(page._id as string, sanitizedTabs as any);
-      setIsDirty(false);
+      try {
+        setIsSaving(true);
+        const sanitizedTabs = newTabs.map(t => {
+          if (t._id && (t._id.startsWith('new-') || t._id === 'default-tab' || t._id.startsWith('recovered-'))) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, ...rest } = t;
+            return rest;
+          }
+          return t;
+        });
+        await onSave(page._id as string, sanitizedTabs as any);
+        setIsDirty(false);
+      } catch (error) {
+        console.error("Failed to save deletion", error);
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       setIsDirty(true);
     }
@@ -349,7 +364,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   };
 
   // Upated Save Handler
-  const handleSave = () => {
+  // Upated Save Handler
+  const handleSave = async () => {
     if (page) {
       // 1. Sync current editor content to the active tab object in state
       const currentTabs = tabs.map(t => {
@@ -373,8 +389,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       });
 
       // 3. Send to Parent
-      onSave(page._id as string, sanitizedTabs as any);
-      setIsDirty(false);
+      try {
+        setIsSaving(true);
+        await onSave(page._id as string, sanitizedTabs as any);
+        setIsDirty(false);
+      } catch (error) {
+        console.error("Failed to save page", error);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -926,7 +949,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 <div className={`absolute right-1 top-1/2 -translate-y-1/2 z-20 items-center justify-center bg-inherit rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
                   {/* Delete Button */}
                   <button
-                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 transition-colors ${tabs.length <= 1 ? '!hidden' : ''}`}
+                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 transition-colors ${tabs.length <= 1 ? '!hidden' : ''} ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    disabled={isSaving}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteTab(tab._id || tab.title);
@@ -942,8 +966,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         {/* Add Tab Button */}
         <button
-          className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          className={`rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
           onClick={handleAddTab}
+          disabled={isSaving}
           title="Add Tab"
         >
           <PlusIcon className="h-4 w-4" />
@@ -1103,10 +1128,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           })()}
           <button
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            disabled={!isDirty}
+              } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+            disabled={!isDirty || isSaving}
             onClick={handleSave}>
-            Save
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
