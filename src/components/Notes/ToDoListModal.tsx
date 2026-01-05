@@ -407,8 +407,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       {(['priority', 'dueDate', 'title', 'category'] as SortField[]).map(field => (
                         <button
                           className={`px-3 py-1 text-xs rounded-full border flex items-center gap-1 capitalize transition-colors ${sortField === field
-                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                             }`}
                           key={field}
                           onClick={() => handleSort(field)}>
@@ -445,8 +445,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       sortedTodos.map(todo => (
                         <div
                           className={`p-2 border rounded-lg transition-colors bg-white shadow-sm group ${todo.isCompleted
-                              ? 'border-gray-100 bg-gray-50 opacity-75'
-                              : 'border-gray-200 hover:border-indigo-200'
+                            ? 'border-gray-100 bg-gray-50 opacity-75'
+                            : 'border-gray-200 hover:border-indigo-200'
                             }`}
                           key={todo._id}>
                           <div className="flex items-center gap-3">
@@ -495,8 +495,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={`flex items-center gap-0.5 transition-colors ${isDrive
-                                                ? 'text-blue-500 hover:text-blue-700'
-                                                : 'text-gray-400 hover:text-indigo-600'
+                                              ? 'text-blue-500 hover:text-blue-700'
+                                              : 'text-gray-400 hover:text-indigo-600'
                                               }`}
                                             title={`${isDrive ? 'Open in Drive' : 'Download'} - ${att.name} (${(
                                               att.size /
@@ -519,7 +519,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                     <button
                                       className="flex items-center gap-1 text-gray-400 hover:text-indigo-600 transition-colors"
                                       onClick={() => {
-                                        onNavigate(todo.sourcePageId as unknown as INotePage);
+                                        // Use tabName if tabId is temporary (starts with 'new-' or 'default-') or missing, otherwise use tabId
+                                        const targetId = (todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-'))
+                                          ? todo.tabId
+                                          : todo.tabName;
+                                        onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
                                         onClose();
                                       }}
                                       title="Go to Note">
