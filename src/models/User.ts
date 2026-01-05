@@ -12,6 +12,25 @@ export interface IUser extends Document {
   invoiceEnabled?: boolean;
   organizePrompt?: string; // Custom prompt for Note Organize feature
   systemInstruction?: string; // Custom prompt for Chat Interface
+  badgeSettings?: {
+    thresholds: {
+      critical: number;
+      urgent: number;
+      upcoming: number;
+      planned: number;
+    };
+    colors: {
+      critical: string;
+      urgent: string;
+      upcoming: string;
+      planned: string;
+      longTerm: string;
+    };
+    animations: {
+      critical: string;
+      urgent: string;
+    };
+  };
   emailVerified?: Date;
   lastLogin?: Date;
   createdAt?: Date;
@@ -32,7 +51,27 @@ const UserSchema: Schema = new Schema(
     financeEnabled: { type: Boolean, default: false },
     invoiceEnabled: { type: Boolean, default: false },
     organizePrompt: { type: String },
+
     systemInstruction: { type: String },
+    badgeSettings: {
+      thresholds: {
+        critical: { type: Number, default: 3 },
+        urgent: { type: Number, default: 7 },
+        upcoming: { type: Number, default: 14 },
+        planned: { type: Number, default: 21 },
+      },
+      colors: {
+        critical: { type: String, default: 'bg-red-500' },
+        urgent: { type: String, default: 'bg-red-500' },
+        upcoming: { type: String, default: 'bg-orange-500' },
+        planned: { type: String, default: 'bg-purple-500' },
+        longTerm: { type: String, default: 'bg-green-500' },
+      },
+      animations: {
+        critical: { type: String, default: '1s' },
+        urgent: { type: String, default: '3s' },
+      },
+    },
   },
   {
     timestamps: true,

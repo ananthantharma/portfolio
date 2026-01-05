@@ -33,6 +33,7 @@ import ReactMarkdown from 'react-markdown';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
+import { useBadgeSettings } from './BadgeSettingsContext'; // Added import
 
 
 
@@ -65,6 +66,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
+  const { getBadgeStyle } = useBadgeSettings(); // Hook
 
   // Badge/ToDo State
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -796,27 +798,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               }
             }
 
-            let badgeClass = 'bg-purple-500';
-            let animateClass = '';
-            let duration = '';
-
-            if (minDays !== null) {
-              if (minDays <= 3) {
-                badgeClass = 'bg-red-500';
-                animateClass = 'animate-pulse';
-                duration = '1s';
-              } else if (minDays <= 7) {
-                badgeClass = 'bg-red-500';
-                animateClass = 'animate-pulse';
-                duration = '3s';
-              } else if (minDays <= 14) {
-                badgeClass = 'bg-orange-500';
-              } else if (minDays <= 21) {
-                badgeClass = 'bg-purple-500';
-              } else {
-                badgeClass = 'bg-green-500';
-              }
-            }
+            const { className, style } = getBadgeStyle(minDays);
 
             return (
               <div
@@ -841,8 +823,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 {/* Badge Notification */}
                 {tabTasks.length > 0 && (
                   <span
-                    className={`absolute -top-1.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold text-white ring-1 ring-white z-30 ${badgeClass} ${animateClass}`}
-                    style={{ animationDuration: duration }}
+                    className={`absolute -top-1.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold text-white ring-1 ring-white z-30 ${className}`}
+                    style={style}
                   >
                     {tabTasks.length}
                   </span>

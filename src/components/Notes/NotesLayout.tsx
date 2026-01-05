@@ -12,6 +12,7 @@ import {
   PencilSquareIcon,
   PhotoIcon,
   UsersIcon,
+  Cog6ToothIcon, // Added for BadgeSettingsModal
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
@@ -32,6 +33,8 @@ import SearchModal from './SearchModal';
 import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
+import { BadgeSettingsProvider } from './BadgeSettingsContext';
+import { BadgeSettingsModal } from './BadgeSettingsModal';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -526,6 +529,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenAssessment = useCallback(() => setIsAssessmentOpen(true), []);
   const handleCloseAssessment = useCallback(() => setIsAssessmentOpen(false), []);
 
+  // Badge Settings Modal
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const handleOpenSettings = useCallback(() => setIsSettingsOpen(true), []);
+  const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
+
   // Calculate total important and flagged counts
   const totalImportant = useMemo(() => {
     return Object.values(badgeCounts.pages).reduce((acc, curr) => acc + (curr.important || 0), 0);
@@ -536,280 +544,293 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [badgeCounts.pages]);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
-      {/* Top Navigation / Breadcrumbs Bar */}
-      <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-50">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <HomeIcon className="h-4 w-4 text-gray-400" />
-          <span className="font-medium">Workspace</span>
-          {currentCategory && (
-            <>
-              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-              <span className="font-medium text-gray-700 flex items-center gap-2">
-                {currentCategory.icon && (
-                  <span className="text-gray-400">
-                    {/* Simple text fallback if icon component lookup is complex here, or just name */}
+    <BadgeSettingsProvider>
+      <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
+        {/* Top Navigation / Breadcrumbs Bar */}
+
+        <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-50">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <HomeIcon className="h-4 w-4 text-gray-400" />
+            <span className="font-medium">Workspace</span>
+            {currentCategory && (
+              <>
+                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+                <span className="font-medium text-gray-700 flex items-center gap-2">
+                  {currentCategory.icon && (
+                    <span className="text-gray-400">
+                      {/* Simple text fallback if icon component lookup is complex here, or just name */}
+                    </span>
+                  )}
+                  {currentCategory.name}
+                </span>
+              </>
+            )}
+            {currentSection && (
+              <>
+                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+                <span className="font-medium text-gray-700">{currentSection.name}</span>
+              </>
+            )}
+            {selectedPage && (
+              <>
+                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
+                <span className="font-medium text-gray-900">{selectedPage.title || 'Untitled'}</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {dbSize && <span className="text-xs text-gray-400 mr-2 font-mono">{dbSize}</span>}
+            <div className="h-4 w-px bg-gray-200"></div>
+
+            <button
+              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-blue-600 transition-all"
+              onClick={handleOpenSearch}>
+              <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+              Search
+            </button>
+            <button
+              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all relative"
+              onClick={handleOpenToDoList}>
+              <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+              Tasks
+              {activeTaskCount > 0 && (
+                <>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                    {activeTaskCount}
                   </span>
-                )}
-                {currentCategory.name}
-              </span>
-            </>
-          )}
-          {currentSection && (
-            <>
-              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-              <span className="font-medium text-gray-700">{currentSection.name}</span>
-            </>
-          )}
-          {selectedPage && (
-            <>
-              <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-              <span className="font-medium text-gray-900">{selectedPage.title || 'Untitled'}</span>
-            </>
-          )}
-        </div>
+                </>
+              )}
+            </button>
+            <button
+              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+              onClick={handleOpenContactList}>
+              <UsersIcon className="h-3.5 w-3.5" />
+              Contacts
+            </button>
 
-        <div className="flex items-center gap-3">
-          {dbSize && <span className="text-xs text-gray-400 mr-2 font-mono">{dbSize}</span>}
-          <div className="h-4 w-px bg-gray-200"></div>
+            <div className="h-4 w-px bg-gray-200"></div>
 
-          <button
-            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-blue-600 transition-all"
-            onClick={handleOpenSearch}>
-            <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-            Search
-          </button>
-          <button
-            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all relative"
-            onClick={handleOpenToDoList}>
-            <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-            Tasks
-            {activeTaskCount > 0 && (
+            {/* Restricted Buttons */}
+            {session?.user?.email === 'lankanprinze@gmail.com' && (
               <>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
-                  {activeTaskCount}
-                </span>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
+                  onClick={handleOpenRewrite}>
+                  <PencilSquareIcon className="h-3.5 w-3.5" />
+                  Rewrite
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                  onClick={handleOpenImageExtract}
+                  title="Extract Text from Image">
+                  <PhotoIcon className="h-3.5 w-3.5" />
+                  OCR
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
+                  onClick={handleOpenAssessment}
+                  title="Document Assessment">
+                  {/* Using ClipboardDocumentListIcon as placeholder or need new icon. DocumentTextIcon is used in modal. */}
+                  {/* Re-using ClipboardDocumentListIcon or importing DocumentTextIcon would be better. */}
+                  {/* Let's use generic PenciSquare logic or Photo. I'll use ClipboardDocumentListIcon for now OR import DocumentTextIcon from outline above. */}
+                  {/* Wait, DocumentTextIcon is NOT imported in NotesLayout. import it? */}
+                  {/* I will use ClipboardDocumentListIcon which IS imported, but it's used for Tasks. */}
+                  {/* Let's verify imports. DocumentTextIcon is NOT in imports. */}
+                  {/* I'll use PhotoIcon temporarily OR I can add DocumentTextIcon to imports. */}
+                  {/* Better to add DocumentTextIcon to imports. */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="h-3.5 w-3.5">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                    />
+                  </svg>
+                  Assessment
+                </button>
               </>
             )}
-          </button>
-          <button
-            className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-            onClick={handleOpenContactList}>
-            <UsersIcon className="h-3.5 w-3.5" />
-            Contacts
-          </button>
 
-          <div className="h-4 w-px bg-gray-200"></div>
+            <div className="h-4 w-px bg-gray-200"></div>
+            <button
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors relative"
+              onClick={handleOpenImportant}
+              title="Important">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              {totalImportant > 0 && (
+                <>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                    {totalImportant}
+                  </span>
+                </>
+              )}
+            </button>
+            <button
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors relative"
+              onClick={handleOpenKeyTasks}
+              title="Key Tasks">
+              <FlagIcon className="h-4 w-4" />
+              {totalFlagged > 0 && (
+                <>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                    {totalFlagged}
+                  </span>
+                </>
+              )}
+            </button>
 
-          {/* Restricted Buttons */}
-          {session?.user?.email === 'lankanprinze@gmail.com' && (
-            <>
-              <button
-                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
-                onClick={handleOpenRewrite}>
-                <PencilSquareIcon className="h-3.5 w-3.5" />
-                Rewrite
-              </button>
-              <button
-                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-                onClick={handleOpenImageExtract}
-                title="Extract Text from Image">
-                <PhotoIcon className="h-3.5 w-3.5" />
-                OCR
-              </button>
-              <button
-                className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
-                onClick={handleOpenAssessment}
-                title="Document Assessment">
-                {/* Using ClipboardDocumentListIcon as placeholder or need new icon. DocumentTextIcon is used in modal. */}
-                {/* Re-using ClipboardDocumentListIcon or importing DocumentTextIcon would be better. */}
-                {/* Let's use generic PenciSquare logic or Photo. I'll use ClipboardDocumentListIcon for now OR import DocumentTextIcon from outline above. */}
-                {/* Wait, DocumentTextIcon is NOT imported in NotesLayout. import it? */}
-                {/* I will use ClipboardDocumentListIcon which IS imported, but it's used for Tasks. */}
-                {/* Let's verify imports. DocumentTextIcon is NOT in imports. */}
-                {/* I'll use PhotoIcon temporarily OR I can add DocumentTextIcon to imports. */}
-                {/* Better to add DocumentTextIcon to imports. */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="h-3.5 w-3.5">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                  />
-                </svg>
-                Assessment
-              </button>
-            </>
-          )}
+            {/* Settings Button */}
+            <button
+              onClick={handleOpenSettings}
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+              title="Badge Settings"
+            >
+              <Cog6ToothIcon className="h-4 w-4" />
+            </button>
 
-          <div className="h-4 w-px bg-gray-200"></div>
-          <button
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors relative"
-            onClick={handleOpenImportant}
-            title="Important">
-            <ExclamationTriangleIcon className="h-4 w-4" />
-            {totalImportant > 0 && (
-              <>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
-                  {totalImportant}
-                </span>
-              </>
-            )}
-          </button>
-          <button
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors relative"
-            onClick={handleOpenKeyTasks}
-            title="Key Tasks">
-            <FlagIcon className="h-4 w-4" />
-            {totalFlagged > 0 && (
-              <>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
-                  {totalFlagged}
-                </span>
-              </>
-            )}
-          </button>
+            <div className="h-4 w-px bg-gray-200"></div>
 
-          <div className="h-4 w-px bg-gray-200"></div>
-
-          {/* User Profile Menu */}
-          <div className="flex items-center">
-            <UserProfileMenu />
+            {/* User Profile Menu */}
+            <div className="flex items-center">
+              <UserProfileMenu />
+            </div>
           </div>
         </div>
+
+        <div
+          className="flex flex-1 overflow-hidden relative"
+          onPointerUp={() => {
+            document.body.style.cursor = 'default';
+          }}>
+          {/* Main Content Area with Glassmorphism Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
+
+          {/* Column 1: Categories */}
+          <div
+            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
+            style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
+            <CategoryList
+              categories={categories}
+              isCollapsed={isCategoryCollapsed}
+              loading={false}
+              onAddCategory={handleAddCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onRenameCategory={handleRenameCategory}
+              onReorderCategories={handleReorderCategories}
+              onSelectCategory={setSelectedCategoryId}
+              onToggleCollapse={handleToggleCategoryCollapse}
+              selectedCategoryId={selectedCategoryId}
+              badgeCounts={badgeCounts.categories}
+            />
+            {!isCategoryCollapsed && (
+              <div
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                onMouseDown={e => startResizing(e, 'category')}
+              />
+            )}
+          </div>
+
+          {/* Column 2: Sections */}
+          <div
+            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
+            style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
+            <SectionList
+              isCollapsed={isSectionCollapsed}
+              loading={loadingSections}
+              onAddSection={handleAddSection}
+              onDeleteSection={handleDeleteSection}
+              onRenameSection={handleRenameSection}
+              onReorderSections={handleReorderSections}
+              onSelectSection={setSelectedSectionId}
+              onToggleCollapse={handleToggleSectionCollapse}
+              sections={sections}
+              selectedSectionId={selectedSectionId}
+              badgeCounts={badgeCounts.sections}
+            />
+            {!isSectionCollapsed && (
+              <div
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                onMouseDown={e => startResizing(e, 'section')}
+              />
+            )}
+          </div>
+
+          {/* Column 3: Pages */}
+          <div
+            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
+            style={{ width: isPageCollapsed ? 56 : pageWidth }}>
+            <PageList
+              isCollapsed={isPageCollapsed}
+              loading={loadingPages}
+              onAddPage={handleAddPage}
+              onDeletePage={handleDeletePage}
+              onRenamePage={handleRenamePage}
+              onReorderPages={handleReorderPages}
+              onSelectPage={(id) => { setSelectedPageId(id); setTargetTabId(undefined); }}
+              onToggleCollapse={handleTogglePageCollapse}
+              pages={pages}
+              selectedPageId={selectedPageId}
+              badgeCounts={badgeCounts.pages}
+            />
+            {!isPageCollapsed && (
+              <div
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                onMouseDown={e => startResizing(e, 'page')}
+              />
+            )}
+          </div>
+
+          {/* Column 4: Editor */}
+          <div className="flex-1 overflow-hidden bg-white shadow-xl z-30 m-4 rounded-xl border border-gray-100">
+            <NoteEditor
+              initialTabId={targetTabId}
+              onSave={handleSavePageContent}
+              page={selectedPage}
+            />
+          </div>
+        </div>
+
+        <FlaggedItemsModal
+          fetchItems={fetchFlaggedTasks}
+          icon="flag"
+          isOpen={isKeyTasksOpen}
+          onClose={handleCloseKeyTasks}
+          onSelectTask={handleJumpToTask}
+          title="Key Tasks"
+        />
+
+        <FlaggedItemsModal
+          fetchItems={fetchImportantTasks}
+          icon="important"
+          isOpen={isImportantOpen}
+          onClose={handleCloseImportant}
+          onSelectTask={handleJumpToTask}
+          title="Important"
+        />
+
+        <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+        <ToDoListModal isOpen={isToDoListOpen} onClose={handleCloseToDoList} onNavigate={handleJumpToTask} />
+        <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
+        <SearchModal
+          fetchItems={fetchSearchResults}
+          isOpen={isSearchOpen}
+          onClose={handleCloseSearch}
+          onSelectTask={handleJumpToTask}
+        />
+        <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
+        <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
+        <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
       </div>
-
-      <div
-        className="flex flex-1 overflow-hidden relative"
-        onPointerUp={() => {
-          document.body.style.cursor = 'default';
-        }}>
-        {/* Main Content Area with Glassmorphism Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
-
-        {/* Column 1: Categories */}
-        <div
-          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
-          style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
-          <CategoryList
-            categories={categories}
-            isCollapsed={isCategoryCollapsed}
-            loading={false}
-            onAddCategory={handleAddCategory}
-            onDeleteCategory={handleDeleteCategory}
-            onRenameCategory={handleRenameCategory}
-            onReorderCategories={handleReorderCategories}
-            onSelectCategory={setSelectedCategoryId}
-            onToggleCollapse={handleToggleCategoryCollapse}
-            selectedCategoryId={selectedCategoryId}
-            badgeCounts={badgeCounts.categories}
-          />
-          {!isCategoryCollapsed && (
-            <div
-              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={e => startResizing(e, 'category')}
-            />
-          )}
-        </div>
-
-        {/* Column 2: Sections */}
-        <div
-          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
-          style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
-          <SectionList
-            isCollapsed={isSectionCollapsed}
-            loading={loadingSections}
-            onAddSection={handleAddSection}
-            onDeleteSection={handleDeleteSection}
-            onRenameSection={handleRenameSection}
-            onReorderSections={handleReorderSections}
-            onSelectSection={setSelectedSectionId}
-            onToggleCollapse={handleToggleSectionCollapse}
-            sections={sections}
-            selectedSectionId={selectedSectionId}
-            badgeCounts={badgeCounts.sections}
-          />
-          {!isSectionCollapsed && (
-            <div
-              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={e => startResizing(e, 'section')}
-            />
-          )}
-        </div>
-
-        {/* Column 3: Pages */}
-        <div
-          className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
-          style={{ width: isPageCollapsed ? 56 : pageWidth }}>
-          <PageList
-            isCollapsed={isPageCollapsed}
-            loading={loadingPages}
-            onAddPage={handleAddPage}
-            onDeletePage={handleDeletePage}
-            onRenamePage={handleRenamePage}
-            onReorderPages={handleReorderPages}
-            onSelectPage={(id) => { setSelectedPageId(id); setTargetTabId(undefined); }}
-            onToggleCollapse={handleTogglePageCollapse}
-            pages={pages}
-            selectedPageId={selectedPageId}
-            badgeCounts={badgeCounts.pages}
-          />
-          {!isPageCollapsed && (
-            <div
-              className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
-              onMouseDown={e => startResizing(e, 'page')}
-            />
-          )}
-        </div>
-
-        {/* Column 4: Editor */}
-        <div className="flex-1 overflow-hidden bg-white shadow-xl z-30 m-4 rounded-xl border border-gray-100">
-          <NoteEditor
-            initialTabId={targetTabId}
-            onSave={handleSavePageContent}
-            page={selectedPage}
-          />
-        </div>
-      </div>
-
-      <FlaggedItemsModal
-        fetchItems={fetchFlaggedTasks}
-        icon="flag"
-        isOpen={isKeyTasksOpen}
-        onClose={handleCloseKeyTasks}
-        onSelectTask={handleJumpToTask}
-        title="Key Tasks"
-      />
-
-      <FlaggedItemsModal
-        fetchItems={fetchImportantTasks}
-        icon="important"
-        isOpen={isImportantOpen}
-        onClose={handleCloseImportant}
-        onSelectTask={handleJumpToTask}
-        title="Important"
-      />
-
-      <ToDoListModal isOpen={isToDoListOpen} onClose={handleCloseToDoList} onNavigate={handleJumpToTask} />
-      <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
-      <SearchModal
-        fetchItems={fetchSearchResults}
-        isOpen={isSearchOpen}
-        onClose={handleCloseSearch}
-        onSelectTask={handleJumpToTask}
-      />
-      <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
-      <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
-      <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
-    </div>
+    </BadgeSettingsProvider>
   );
 });
 

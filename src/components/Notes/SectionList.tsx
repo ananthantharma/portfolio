@@ -13,6 +13,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { INoteSection } from '@/models/NoteSection';
 
+import { useBadgeSettings } from './BadgeSettingsContext';
 import { ColorPicker } from './ColorPicker';
 import { ICON_options, IconPicker } from './IconPicker';
 import { SortableItem } from './SortableItem';
@@ -42,6 +43,7 @@ const SectionItem = React.memo<{
   badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
 }>(({ section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
   const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+  const { getBadgeStyle } = useBadgeSettings(); // Use hook
 
   const style = useMemo(
     () => ({
@@ -62,33 +64,13 @@ const SectionItem = React.memo<{
     const { todo } = badgeStats;
     if (!todo || todo.count === 0) return null;
 
-    let badgeClass = 'bg-purple-500'; // Default
-    let animateClass = '';
-    let duration = '';
-
-    if (todo.minDays !== null) {
-      if (todo.minDays <= 3) {
-        badgeClass = 'bg-red-500';
-        animateClass = 'animate-pulse'; // Fast pulse
-        duration = '1s';
-      } else if (todo.minDays <= 7) {
-        badgeClass = 'bg-red-500';
-        animateClass = 'animate-pulse'; // Slow pulse
-        duration = '3s';
-      } else if (todo.minDays <= 14) {
-        badgeClass = 'bg-orange-500';
-      } else if (todo.minDays <= 21) {
-        badgeClass = 'bg-purple-500';
-      } else {
-        badgeClass = 'bg-green-500'; // > 21 days
-      }
-    }
+    const { className, style } = getBadgeStyle(todo.minDays);
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'ml-auto mr-2'}`}>
         <span
-          className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${badgeClass} ${animateClass}`}
-          style={{ animationDuration: duration }}
+          className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${className}`}
+          style={style}
         >
           {todo.count}
         </span>
