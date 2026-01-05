@@ -103,6 +103,22 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     }
   }, [page?._id]);
 
+  // Fetch Saved Organize Prompt
+  useEffect(() => {
+    const fetchPrompt = async () => {
+      try {
+        const res = await fetch('/api/prompts/organize');
+        const data = await res.json();
+        if (data.prompt) {
+          setOrganizePrompt(data.prompt);
+        }
+      } catch (e) {
+        console.error("Failed to fetch organize prompt", e);
+      }
+    };
+    fetchPrompt();
+  }, []);
+
 
   // Tab Flag Handlers
   const handleToggleImportant = () => {
