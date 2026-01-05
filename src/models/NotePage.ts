@@ -5,6 +5,8 @@ export interface INoteTab {
   title: string;
   content: string;
   color?: string;
+  isImportant?: boolean;
+  isFlagged?: boolean;
   order: number;
 }
 
@@ -45,6 +47,8 @@ const NotePageSchema: Schema = new Schema(
         title: { type: String, required: true },
         content: { type: String, default: '' },
         color: { type: String, default: '#ffffff' },
+        isImportant: { type: Boolean, default: false },
+        isFlagged: { type: Boolean, default: false },
         order: { type: Number, default: 0 },
       },
     ],

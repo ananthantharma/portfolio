@@ -7,27 +7,28 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
-import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
-import React, {useCallback, useMemo, useState} from 'react';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
+import { INoteCategory } from '@/models/NoteCategory';
 
-import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
-import {SortableItem} from './SortableItem';
+import { ColorPicker } from './ColorPicker';
+import { ICON_options, IconPicker } from './IconPicker';
+import { SortableItem } from './SortableItem';
 
 interface CategoryListProps {
   categories: INoteCategory[];
   selectedCategoryId: string | null;
   onSelectCategory: (id: string) => void;
-  onAddCategory: (name: string, color?: string, icon?: string, image?: string | null) => void;
-  onRenameCategory: (id: string, name: string, color?: string, icon?: string, image?: string | null) => void;
-  onDeleteCategory: (id: string) => void;
+  onAddCategory: (name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onRenameCategory: (id: string, name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onDeleteCategory: (id: string) => Promise<void>;
   onReorderCategories: (newOrder: INoteCategory[]) => void;
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  badgeCounts?: Record<string, number>;
 }
 
 // Extracted Item Component to handle memoization
@@ -38,7 +39,8 @@ const CategoryItem = React.memo<{
   onEdit: (category: INoteCategory) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-}>(({category, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
+  badgeCount?: number;
+}>(({ category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeCount }) => {
   const CategoryIcon = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options.Folder;
 
   const style = useMemo(
@@ -58,9 +60,8 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`p-2 rounded-lg transition-all ${
-          isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
-        }`}
+        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+          }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
         {category.image ? (
@@ -78,6 +79,12 @@ const CategoryItem = React.memo<{
           className={`h-5 w-5 ${category.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
           style={collapsedStyle}
         />
+        {/* Collapsed Badge */}
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+            {badgeCount}
+          </span>
+        )}
       </button>
     );
   }
@@ -85,11 +92,10 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
-          isSelected
-            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-            : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
-        }`}
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${isSelected
+          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+          : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+          }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
         {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-blue-500" />}
@@ -107,31 +113,17 @@ const CategoryItem = React.memo<{
             />
           ) : null}
           <CategoryIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${
-              isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-            }`}
+            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+              }`}
             style={style}
           />
           <span className="truncate">{category.name}</span>
         </div>
 
         <div className="ml-auto mr-2 flex items-center gap-1">
-          {category.todoCount !== undefined && category.todoCount > 0 && (
-            <div className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
-              <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-purple-600 shadow-sm ring-1 ring-purple-200">
-                {category.todoCount}
-              </span>
-            </div>
-          )}
-          {category.flaggedCount !== undefined && category.flaggedCount > 0 && (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-              {category.flaggedCount}
-            </span>
-          )}
-          {category.importantCount !== undefined && category.importantCount > 0 && (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-              {category.importantCount}
+          {badgeCount !== undefined && badgeCount > 0 && (
+            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-1 ring-white">
+              {badgeCount}
             </span>
           )}
         </div>
@@ -175,7 +167,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     onSelectCategory,
     onToggleCollapse,
     selectedCategoryId,
+    badgeCounts,
   }) => {
+    // ... (state hooks same)
     const [isAdding, setIsAdding] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [newCategoryColor, setNewCategoryColor] = useState('#000000');
@@ -187,6 +181,14 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     const [editColor, setEditColor] = useState('#000000');
     const [editIcon, setEditIcon] = useState('Folder');
     const [editImage, setEditImage] = useState<string | null>(null);
+
+    // ...
+
+    // (lines 191-260 logic omitted for brevity in replacement search, assuming match on top block)
+    // I will target the top block first.
+
+    // ...
+
 
     const sensors = useSensors(
       useSensor(PointerSensor, {
@@ -201,7 +203,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const {active, over} = event;
+        const { active, over } = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = categories.findIndex(c => c._id === active.id);
@@ -400,6 +402,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                           onDelete={onDeleteCategory}
                           onEdit={startEditing}
                           onSelect={onSelectCategory}
+                          badgeCount={badgeCounts?.[category._id as string] || 0}
                         />
                       );
                     })}
@@ -419,6 +422,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 onDelete={onDeleteCategory}
                 onEdit={startEditing}
                 onSelect={onSelectCategory}
+                badgeCount={badgeCounts?.[category._id as string] || 0}
               />
             ))}
           </div>

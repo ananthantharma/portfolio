@@ -62,18 +62,66 @@ interface NoteEditorProps {
 const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag, page, initialTabId }) => {
   const { data: session } = useSession(); // Get session data
   // Tab State
-  const [tabs, setTabs] = useState<{ _id?: string; title: string; content: string; color?: string; order: number }[]>([]);
+  const [tabs, setTabs] = useState<{ _id?: string; title: string; content: string; color?: string; isImportant?: boolean; isFlagged?: boolean; order: number }[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
 
-  // Missing State Definitions
-  const [isFlagged, setIsFlagged] = useState(false);
-  const [isImportant, setIsImportant] = useState(false);
+  // Badge/ToDo State
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [pageTodos, setPageTodos] = useState<any[]>([]);
+
   const [isDirty, setIsDirty] = useState(false);
 
+  // ... (Modal states)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  // ...
+
+  // Update ToDos for Badge Counts
+  useEffect(() => {
+    if (page?._id) {
+      // Fetch todos for this page
+      const fetchPageTodos = async () => {
+        try {
+          const res = await fetch(`/api/todos?sourcePageId=${page._id}`);
+          const data = await res.json();
+          if (data.success) {
+            setPageTodos(data.data);
+          }
+        } catch (e) {
+          console.error("Failed to fetch page todos", e);
+        }
+      };
+      fetchPageTodos();
+
+      // Poll every 30s to keep badges fresh? Or rely on manual updates?
+      // Let's just fetch once on mount/page change for now.
+    }
+  }, [page?._id]);
+
+
+  // Tab Flag Handlers
+  const handleToggleImportant = () => {
+    setTabs(prev => prev.map(t => {
+      if (t._id === activeTabId || t.title === activeTabId) {
+        return { ...t, isImportant: !t.isImportant };
+      }
+      return t;
+    }));
+    setIsDirty(true);
+  };
+
+  const handleToggleFlagged = () => {
+    setTabs(prev => prev.map(t => {
+      if (t._id === activeTabId || t.title === activeTabId) {
+        return { ...t, isFlagged: !t.isFlagged };
+      }
+      return t;
+    }));
+    setIsDirty(true);
+  };
+
   const [generatedText, setGeneratedText] = useState('');
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
   const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
@@ -102,8 +150,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
   // Migration & Initialization Effect
   useEffect(() => {
     if (page) {
-      setIsFlagged(page.isFlagged || false);
-      setIsImportant(page.isImportant || false);
       setIsDirty(false);
 
       if (page.tabs && page.tabs.length > 0) {
@@ -137,6 +183,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
           title: page.title || 'General', // Use page title for default tab
           content: initialContent,
           color: '#ffffff',
+          isImportant: page.isImportant || false,
+          isFlagged: page.isFlagged || false,
           order: 0,
         };
         setTabs([defaultTab]);
@@ -149,8 +197,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
       setTabs([]);
       setActiveTabId(null);
       setEditorContent('');
-      setIsFlagged(false);
-      setIsImportant(false);
     }
   }, [page, initialTabId]);
 
@@ -290,21 +336,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
 
 
-  const handleToggleFlagged = () => {
-    if (page) {
-      const newFlagState = !isFlagged;
-      setIsFlagged(newFlagState);
-      onToggleFlag(page._id as string, 'isFlagged', newFlagState);
-    }
-  };
 
-  const handleToggleImportant = () => {
-    if (page) {
-      const newImportantState = !isImportant;
-      setIsImportant(newImportantState);
-      onToggleFlag(page._id as string, 'isImportant', newImportantState);
-    }
-  };
+
+
 
   const handleContentChange = useCallback((val: string) => {
     setEditorContent(val);
@@ -743,6 +777,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
 
           {tabs.map((tab, index) => {
             const isActive = tab._id === activeTabId || tab.title === activeTabId;
+
+            // Calculate Badge Count
+            // Match by ID primarily, fallback to Name for robustness (legacy support)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tabTasks = pageTodos.filter((todo: any) =>
+              !todo.isCompleted && (todo.tabId === tab._id || (tab._id?.startsWith('new-') && todo.tabName === tab.title))
+            );
+            const flagCount = (tab.isImportant ? 1 : 0) + (tab.isFlagged ? 1 : 0);
+            const badgeTotal = tabTasks.length + flagCount;
+
             return (
               <div
                 key={tab._id || tab.title}
@@ -763,6 +807,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
                   setEditorContent(tab.content);
                 }}
               >
+                {/* Badge Notification */}
+                {badgeTotal > 0 && (
+                  <span className="absolute -top-1.5 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white z-30">
+                    {badgeTotal}
+                  </span>
+                )}
+
                 {/* Color Picker - Always Visible, Left Side */}
                 <div className="relative z-20 w-3 h-3 mr-1.5 flex-shrink-0 overflow-hidden rounded-full hover:scale-110 transition-transform">
                   <input
@@ -951,28 +1002,35 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, onToggleFlag
             To Do
           </button>
 
-          <button
-            className={`rounded-full p-2 transition-colors ${isImportant
-              ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-              : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
-              }`}
-            onClick={handleToggleImportant}
-            title={isImportant ? 'Mark as not important' : 'Mark as important'}>
-            {isImportant ? (
-              <ExclamationTriangleIconSolid className="h-6 w-6" />
-            ) : (
-              <ExclamationTriangleIcon className="h-6 w-6" />
-            )}
-          </button>
-          <button
-            className={`rounded-full p-2 transition-colors ${isFlagged
-              ? 'text-red-500 bg-red-50 hover:bg-red-100'
-              : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
-              }`}
-            onClick={handleToggleFlagged}
-            title={isFlagged ? 'Unflag task' : 'Flag as key task'}>
-            {isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
-          </button>
+          {(() => {
+            const activeTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId);
+            return (
+              <>
+                <button
+                  className={`rounded-full p-2 transition-colors ${activeTab?.isImportant
+                    ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+                    }`}
+                  onClick={handleToggleImportant}
+                  title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
+                  {activeTab?.isImportant ? (
+                    <ExclamationTriangleIconSolid className="h-6 w-6" />
+                  ) : (
+                    <ExclamationTriangleIcon className="h-6 w-6" />
+                  )}
+                </button>
+                <button
+                  className={`rounded-full p-2 transition-colors ${activeTab?.isFlagged
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+                    }`}
+                  onClick={handleToggleFlagged}
+                  title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
+                  {activeTab?.isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
+                </button>
+              </>
+            );
+          })()}
           <button
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}

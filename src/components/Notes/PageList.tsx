@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import {
   CalendarIcon,
   CheckIcon,
@@ -18,59 +18,104 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import {FileText} from 'lucide-react';
-import React, {useCallback, useMemo, useState} from 'react';
+import { FileText } from 'lucide-react';
+import React, { useCallback, useMemo, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
-import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
-import {SortableItem} from './SortableItem';
+import { ColorPicker } from './ColorPicker';
+import { ICON_options, IconPicker } from './IconPicker';
+import { SortableItem } from './SortableItem';
 
 interface PageListProps {
   pages: INotePage[];
   selectedPageId: string | null;
-  onSelectPage: (id: string) => void;
-  onAddPage: (title: string, color?: string, icon?: string, image?: string | null) => void;
-  onRenamePage: (id: string, title: string, color?: string, icon?: string, image?: string | null) => void;
-  onDeletePage: (id: string) => void;
+  onSelectPage: (id: string, tabId?: string) => void;
+  onAddPage: (title: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onRenamePage: (id: string, title: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onDeletePage: (id: string) => Promise<void>;
   onReorderPages: (newOrder: INotePage[]) => void;
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  badgeCounts?: Record<string, number>;
 }
 
 const PageItem = React.memo<{
-  page: INotePage;
+  page: INotePage & { type?: string };
   isSelected: boolean;
   onSelect: (id: string) => void;
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-}>(({page, isSelected, onSelect, onEdit, onDelete, isCollapsed}) => {
-  const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || FileText;
+  badgeCount?: number;
+}>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeCount }) => {
+  const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
 
+  // ... (useMemo styles tailored to reduce change size, but I will replace the whole component block generally to ensure structure)
   const style = useMemo(
     () => ({
-      backgroundColor: page.color,
+      color: page.color && page.color !== '#000000' ? page.color : undefined,
     }),
     [page.color],
   );
 
+  const collapsedStyle = useMemo(
+    () => ({
+      color: isSelected ? undefined : page.color,
+    }),
+    [isSelected, page.color],
+  );
+
+  if (isCollapsed) {
+    return (
+      <button
+        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+          }`}
+        onClick={() => onSelect(page._id as string)}
+        title={page.title || 'Untitled'}>
+        {page.image ? (
+          <img
+            alt={page.title}
+            className="h-5 w-5 object-contain"
+            onError={e => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+            src={`/api/notes/brandfetch?domain=${page.image}`}
+          />
+        ) : null}
+        <PageIcon
+          className={`h-5 w-5 ${page.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
+          style={collapsedStyle}
+        />
+        {/* Collapsed Badge */}
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+            {badgeCount}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   return (
     <SortableItem id={page._id as string}>
       <div
-        className={`group flex cursor-pointer items-center rounded-md transition-colors ${
-          isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
-        } ${isSelected ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
-        onClick={() => onSelect(page._id as string)}
-        title={page.title}>
-        <div className={`flex items-center overflow-hidden gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-          <div className="flex items-center justify-center flex-shrink-0 relative">
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${isSelected
+          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
+          : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+          }`}
+        onClick={() => onSelect(page._id as string)}>
+        {/* Accent Bar */}
+        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-blue-500" />}
+
+        <div className="flex items-center gap-2 overflow-hidden w-full">
+          <div className="flex-shrink-0">
             {page.image ? (
               <img
                 alt={page.title}
-                className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} object-contain`}
+                className="h-4 w-4 object-contain"
                 onError={e => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove('hidden');
@@ -79,47 +124,22 @@ const PageItem = React.memo<{
               />
             ) : null}
             <PageIcon
-              className={`${isCollapsed ? 'h-5 w-5' : 'h-4 w-4'} ${page.image ? 'hidden' : ''} ${
-                isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
-              }`}
+              className={`h-4 w-4 transition-colors ${page.image ? 'hidden' : ''} ${isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                }`}
+              style={style}
             />
-            {page.color && page.color !== '#000000' && (
-              <span
-                className="absolute -bottom-1 -right-1 block h-2 w-2 rounded-full ring-1 ring-white"
-                style={style}
-              />
-            )}
           </div>
-          {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <div className="flex items-center gap-1.5">
-                <span className="truncate">{page.title}</span>
-                {page.isFlagged && (
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-orange-500 ring-1 ring-white" title="Key Task" />
-                )}
-                {page.isImportant && (
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-red-500 ring-1 ring-white" title="Important" />
-                )}
-                {page.todoCount !== undefined && page.todoCount > 0 && (
-                  <div className="relative flex h-3.5 w-3.5 shrink-0 items-center justify-center ml-0.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75"></span>
-                    <span className="relative inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-100 text-[9px] font-bold text-purple-600 shadow-sm ring-1 ring-purple-200">
-                      {page.todoCount}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span className="truncate text-[10px] text-gray-400 font-normal">
-                {new Date(page.updatedAt).toLocaleDateString()}
-              </span>
-            </div>
-          )}
-        </div>
+          <span className="truncate flex-1">{page.title || 'Untitled'}</span>
 
-        {!isCollapsed && (
-          <div className="hidden space-x-1 group-hover:flex">
+          {badgeCount !== undefined && badgeCount > 0 && (
+            <span className="flex-shrink-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-1 ring-white">
+              {badgeCount}
+            </span>
+          )}
+
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0">
             <button
-              className="text-gray-400 hover:text-blue-600 p-1"
+              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
               onClick={e => {
                 e.stopPropagation();
                 onEdit(page);
@@ -127,7 +147,7 @@ const PageItem = React.memo<{
               <PencilIcon className="h-3.5 w-3.5" />
             </button>
             <button
-              className="text-gray-400 hover:text-red-600 p-1"
+              className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
               onClick={e => {
                 e.stopPropagation();
                 if (confirm('Are you sure you want to delete this page?')) {
@@ -137,11 +157,12 @@ const PageItem = React.memo<{
               <TrashIcon className="h-3.5 w-3.5" />
             </button>
           </div>
-        )}
+        </div>
       </div>
     </SortableItem>
   );
 });
+
 
 PageItem.displayName = 'PageItem';
 
@@ -157,8 +178,10 @@ const PageList: React.FC<PageListProps> = React.memo(
     onToggleCollapse,
     pages,
     selectedPageId,
+    badgeCounts,
   }) => {
     const [isAdding, setIsAdding] = useState(false);
+
     const [newPageTitle, setNewPageTitle] = useState('');
     const [newPageColor, setNewPageColor] = useState('#000000');
     const [newPageIcon, setNewPageIcon] = useState('FileText');
@@ -183,7 +206,7 @@ const PageList: React.FC<PageListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const {active, over} = event;
+        const { active, over } = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = pages.findIndex(p => p._id === active.id);
@@ -210,7 +233,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     }, [newPageTitle, newPageColor, newPageIcon, newPageImage, onAddPage]);
 
     const handleAddToday = useCallback(() => {
-      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       onAddPage(today, '#000000', 'Calendar', null);
     }, [onAddPage]);
 
@@ -382,6 +405,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                       onEdit={startEditing}
                       onSelect={onSelectPage}
                       page={page}
+                      badgeCount={badgeCounts?.[page._id as string] || 0}
                     />
                   );
                 })}

@@ -49,6 +49,8 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<{ pages: Record<string, number>; sections: Record<string, number>; categories: Record<string, number> }>({ pages: {}, sections: {}, categories: {} });
+
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
@@ -159,6 +161,22 @@ const NotesLayout: React.FC = React.memo(() => {
       }
     };
     fetchDbStats();
+
+    const fetchBadgeStats = async () => {
+      try {
+        const response = await axios.get('/api/notes/stats');
+        if (response.data.success) {
+          setBadgeCounts(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching badge stats:', error);
+      }
+    };
+    fetchBadgeStats();
+    // Poll for badges
+    const interval = setInterval(fetchBadgeStats, 30000); // 30s poll
+    return () => clearInterval(interval);
+
   }, []);
 
   const formatBytes = (bytes: number, decimals = 2) => {
@@ -672,6 +690,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onSelectCategory={setSelectedCategoryId}
             onToggleCollapse={handleToggleCategoryCollapse}
             selectedCategoryId={selectedCategoryId}
+            badgeCounts={badgeCounts.categories}
           />
           {!isCategoryCollapsed && (
             <div
@@ -696,6 +715,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onToggleCollapse={handleToggleSectionCollapse}
             sections={sections}
             selectedSectionId={selectedSectionId}
+            badgeCounts={badgeCounts.sections}
           />
           {!isSectionCollapsed && (
             <div
@@ -720,6 +740,7 @@ const NotesLayout: React.FC = React.memo(() => {
             onToggleCollapse={handleTogglePageCollapse}
             pages={pages}
             selectedPageId={selectedPageId}
+            badgeCounts={badgeCounts.pages}
           />
           {!isPageCollapsed && (
             <div
