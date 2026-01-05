@@ -160,17 +160,32 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         let targetTabId = sortedTabs[0]._id || sortedTabs[0].title;
 
-        // Use initialTabId if provided and valid
+        // Smart Restoration Logic: Try to maintain current active tab
+        // If we just saved, the page prop updated. We want to find the tab we were just on.
+        // It might have a new ID (if we just created it), so we fallback to Title match.
+        if (activeTabId) {
+          // 1. Try exact ID match (e.g. editing existing tab)
+          const idMatch = sortedTabs.find(t => t._id === activeTabId || t.title === activeTabId);
+          if (idMatch) {
+            targetTabId = idMatch._id || idMatch.title;
+          } else {
+            // 2. Try Title match (e.g. saving a new tab, ID changed from 'new-...' to real ID)
+            const currentTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId);
+            if (currentTab) {
+              const titleMatch = sortedTabs.find(t => t.title === currentTab.title);
+              if (titleMatch) {
+                targetTabId = titleMatch._id || titleMatch.title;
+              }
+            }
+          }
+        }
+
+        // Override if initialTabId is provided (e.g. deep linking)
         if (initialTabId) {
           const found = sortedTabs.find(t => t._id === initialTabId || t.title === initialTabId);
           if (found) {
             targetTabId = found._id || found.title;
           }
-        } else {
-          // Default to first tab (or keep previous if valid?) - Logic below keeps existing if valid
-          targetTabId = (activeTabId && sortedTabs.some(t => t._id === activeTabId || t.title === activeTabId))
-            ? activeTabId
-            : (sortedTabs[0]._id || sortedTabs[0].title);
         }
 
         setActiveTabId(targetTabId);
@@ -191,14 +206,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         setTabs([defaultTab]);
         setActiveTabId('default-tab');
         setEditorContent(initialContent);
-        // We don't mark as dirty immediately to avoid auto-save on just viewing old pages.
-        // But if they edit, it will save as tabs.
       }
     } else {
       setTabs([]);
       setActiveTabId(null);
       setEditorContent('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, initialTabId]);
 
   // Sync Editor Content when Active Tab Changes
