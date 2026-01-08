@@ -1,6 +1,6 @@
-import {Dialog, Transition} from '@headlessui/react';
-import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, memo, useState} from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import React, { Fragment, memo, useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -9,7 +9,7 @@ interface StandaloneRewriteModalProps {
   onClose: () => void;
 }
 
-const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({isOpen, onClose}) => {
+const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ isOpen, onClose }) => {
   // Input State
   const [inputText, setInputText] = useState('');
 
@@ -30,6 +30,41 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({isO
   const [noGreetings, setNoGreetings] = useState(false);
   const [noSemicolons, setNoSemicolons] = useState(true);
   const [negotiationPivot, setNegotiationPivot] = useState(false);
+  const [noTables, setNoTables] = useState(true); // Default true
+
+  // System Prompt
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
+
+  // Fetch System Prompt on Mount
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/prompts/rewrite')
+        .then(res => res.json())
+        .then(data => {
+          if (data.prompt) setSystemPrompt(data.prompt);
+        })
+        .catch(err => console.error('Failed to fetch prompt:', err));
+    }
+  }, [isOpen]);
+
+  const handleSavePrompt = async () => {
+    setIsSavingPrompt(true);
+    try {
+      await fetch('/api/prompts/rewrite', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: systemPrompt }),
+      });
+      setIsEditingPrompt(false);
+    } catch (e) {
+      console.error('Failed to save prompt:', e);
+      alert('Failed to save prompt.');
+    } finally {
+      setIsSavingPrompt(false);
+    }
+  };
 
   // Result
   const [isGenerating, setIsGenerating] = useState(false);
@@ -40,15 +75,19 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({isO
     if (noBulletPoints) constraints += '- Do not use bullet points.\n';
     if (noGreetings) constraints += '- Start immediately without intro phrases (e.g., no "Hi", "Dear Team").\n';
     if (noSemicolons) constraints += '- Do not use semicolons (;) or em-dashes (—).\n';
+    if (noTables) constraints += '- Do NOT use Markdown tables. Use lists or plain text.\n';
     if (negotiationPivot)
       constraints +=
         '- Negotiation Pivot: Rewrite any firm demands into "collaborative requests" to maintain vendor relationships.\n';
+
+    let tableInstruction = 'For structured data or comparisons, you MUST use Markdown tables.';
+    if (noTables) tableInstruction = 'Do NOT use Markdown tables. Use lists or plain text.';
 
     return `System: You are a strict text rewriting engine.
 Return ONLY the rewritten text.
 Do NOT include any introduction, explanation, summary, or headers.
 Do NOT say "Here is the rewritten text".
-For structured data or comparisons, you MUST use Markdown tables.
+${tableInstruction}
 Just output the result.
 
 Task: Rewrite the following text for a [${audience}].
@@ -80,9 +119,10 @@ Text to rewrite:
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
+          systemInstruction: systemPrompt,
           model: 'gemini-flash-latest',
           apiKey: 'MANAGED',
         }),
@@ -156,11 +196,11 @@ Text to rewrite:
                         min: 'Casual',
                         max: 'Formal',
                       },
-                      {label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt'},
-                      {label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly'},
-                      {label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index'},
-                      {label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive'},
-                      {label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical'},
+                      { label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt' },
+                      { label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly' },
+                      { label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index' },
+                      { label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive' },
+                      { label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical' },
                       {
                         label: 'Tech Density',
                         val: technicalDensity,
@@ -209,10 +249,11 @@ Text to rewrite:
                       <label className="block text-sm font-medium text-gray-700 mb-2">Constraints</label>
                       <div className="space-y-2">
                         {[
-                          {label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints},
-                          {label: 'No Greetings', checked: noGreetings, set: setNoGreetings},
-                          {label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons},
-                          {label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot},
+                          { label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints },
+                          { label: 'No Greetings', checked: noGreetings, set: setNoGreetings },
+                          { label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons },
+                          { label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot },
+                          { label: 'No Tables', checked: noTables, set: setNoTables },
                         ].map(c => (
                           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer" key={c.label}>
                             <input
@@ -225,6 +266,37 @@ Text to rewrite:
                           </label>
                         ))}
                       </div>
+                    </div>
+
+                    {/* System Prompt Editor */}
+                    <div className="bg-gray-50 p-3 rounded-md border border-gray-200 mt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-semibold text-gray-500 uppercase">AI Instruction</span>
+                        <button
+                          onClick={() => {
+                            if (isEditingPrompt) handleSavePrompt();
+                            else setIsEditingPrompt(true);
+                          }}
+                          className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+                          disabled={isSavingPrompt}
+                        >
+                          {isSavingPrompt ? 'Saving...' : (isEditingPrompt ? 'Save' : 'Edit')}
+                          {!isEditingPrompt && <PencilSquareIcon className="h-3 w-3" />}
+                        </button>
+                      </div>
+
+                      {isEditingPrompt ? (
+                        <textarea
+                          className="w-full text-xs p-2 border rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          rows={4}
+                          value={systemPrompt}
+                          onChange={(e) => setSystemPrompt(e.target.value)}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-600 line-clamp-3 italic">
+                          {systemPrompt}
+                        </p>
+                      )}
                     </div>
 
                     <button
@@ -276,29 +348,29 @@ Text to rewrite:
                             {rewrittenText ? (
                               <ReactMarkdown
                                 components={{
-                                  table: ({children}) => (
+                                  table: ({ children }) => (
                                     <table className="border-collapse table-auto w-full text-sm my-4 border border-gray-300">
                                       {children}
                                     </table>
                                   ),
-                                  thead: ({children}) => <thead className="bg-gray-100">{children}</thead>,
-                                  tbody: ({children}) => (
+                                  thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
+                                  tbody: ({ children }) => (
                                     <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>
                                   ),
-                                  tr: ({children}) => (
+                                  tr: ({ children }) => (
                                     <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
                                   ),
-                                  th: ({children}) => (
+                                  th: ({ children }) => (
                                     <th className="border border-gray-300 px-4 py-2 font-bold text-left text-gray-700">
                                       {children}
                                     </th>
                                   ),
-                                  td: ({children}) => (
+                                  td: ({ children }) => (
                                     <td className="border border-gray-300 px-4 py-2 text-gray-700">{children}</td>
                                   ),
-                                  ul: ({children}) => <ul className="list-disc ml-4 my-2">{children}</ul>,
-                                  ol: ({children}) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
-                                  li: ({children}) => <li className="mb-1">{children}</li>,
+                                  ul: ({ children }) => <ul className="list-disc ml-4 my-2">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
+                                  li: ({ children }) => <li className="mb-1">{children}</li>,
                                 }}
                                 remarkPlugins={[remarkGfm]}>
                                 {rewrittenText}
