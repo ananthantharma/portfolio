@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Calendar, ChevronLeft, ChevronRight, X, Edit2, ZoomIn, ZoomOut, CheckSquare, MoreVertical, Settings, Maximize, Save, ArrowDownTrayIcon, GripVertical, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -143,7 +143,6 @@ export default function GanttPage() {
     const [aiInstruction, setAIInstruction] = useState('');
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
-    const timelineRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // DnD Sensors
