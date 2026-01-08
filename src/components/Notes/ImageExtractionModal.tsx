@@ -194,7 +194,7 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
             leave="ease-in duration-200"
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-            <div className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all h-[80vh] flex flex-col">
+            <div className="w-full max-w-7xl transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all h-[80vh] flex flex-col">
               {/* Header */}
               <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <div>
