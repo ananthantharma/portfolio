@@ -1,0 +1,611 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Plus, Trash2, Calendar, ChevronLeft, ChevronRight, X, Edit2, ZoomIn, ZoomOut, CheckSquare, MoreVertical, Settings, Maximize } from 'lucide-react';
+
+// --- Utility Functions ---
+
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+const formatDate = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toISOString().split('T')[0];
+};
+
+const getDaysDiff = (start, end) => {
+  const oneDay = 24 * 60 * 60 * 1000;
+  return Math.round((end - start) / oneDay);
+};
+
+const addDays = (date, days) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+// --- Mock Data (Placeholder) ---
+const INITIAL_TASKS = [
+  { id: '1', name: 'Project Kickoff', start: new Date(2023, 9, 1), end: new Date(2023, 9, 3), progress: 100, category: 'Planning' },
+  { id: '2', name: 'Requirements Gathering', start: new Date(2023, 9, 4), end: new Date(2023, 9, 10), progress: 60, category: 'Planning' },
+  { id: '3', name: 'Design Phase', start: new Date(2023, 9, 11), end: new Date(2023, 9, 25), progress: 20, category: 'Design' },
+  { id: '4', name: 'Development Sprint 1', start: new Date(2023, 9, 20), end: new Date(2023, 10, 5), progress: 0, category: 'Development' },
+  { id: '5', name: 'Client Review', start: new Date(2023, 10, 6), end: new Date(2023, 10, 8), progress: 0, category: 'Review' },
+];
+
+// Hex codes for defaults to support dynamic style injection
+const INITIAL_CATEGORIES = {
+  'Planning': '#6FBE44', // Sushi Green
+  'Design': '#a855f7',    // Purple
+  'Development': '#10b981', // Emerald
+  'Review': '#f59e0b',    // Amber
+  'default': '#404040'    // Tundora
+};
+
+export default function GanttApp() {
+  // --- State ---
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [categoryColors, setCategoryColors] = useState(INITIAL_CATEGORIES);
+  
+  // View State
+  const [viewMode, setViewMode] = useState('Day'); // 'Day', 'Week', 'Month', 'Fit'
+  const [fitColumnWidth, setFitColumnWidth] = useState(50); // Dynamic width for 'Fit' mode
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [currentTask, setCurrentTask] = useState(null);
+  
+  // New Category State
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatColor, setNewCatColor] = useState('#6FBE44');
+
+  const timelineRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // --- Computed Properties ---
+
+  const totalDays = useMemo(() => {
+    if (tasks.length === 0) return 30;
+    const starts = tasks.map(t => t.start.getTime());
+    const ends = tasks.map(t => t.end.getTime());
+    const minStart = new Date(Math.min(...starts));
+    const maxEnd = new Date(Math.max(...ends));
+    
+    const startPadding = 5; 
+    const endPadding = 15;
+    
+    const range = getDaysDiff(minStart, maxEnd) + startPadding + endPadding;
+    return Math.max(range, 30); 
+  }, [tasks]);
+
+  const gridStartDate = useMemo(() => {
+    if (tasks.length === 0) return new Date();
+    const starts = tasks.map(t => t.start.getTime());
+    const minStart = new Date(Math.min(...starts));
+    return addDays(minStart, -5);
+  }, [tasks]);
+
+  // Determine Column Width based on view mode
+  const getColumnWidth = () => {
+    switch (viewMode) {
+      case 'Day': return 50;
+      case 'Week': return 30;
+      case 'Month': return 15;
+      case 'Fit': return fitColumnWidth;
+      default: return 50;
+    }
+  };
+
+  const COLUMN_WIDTH = getColumnWidth();
+  const ROW_HEIGHT = 50;
+
+  // --- Effects ---
+
+  // Handle "Fit to Screen" calculation
+  useEffect(() => {
+    if (viewMode === 'Fit' && containerRef.current) {
+      const availableWidth = containerRef.current.offsetWidth;
+      // Calculate width needed per day to fill the screen
+      // Subtracting a small buffer for scrollbars/borders
+      const newWidth = Math.max((availableWidth / totalDays), 5); // Minimum 5px to prevent crash
+      setFitColumnWidth(newWidth);
+    }
+  }, [viewMode, totalDays, containerRef.current?.offsetWidth]);
+
+  // Re-calculate fit on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (viewMode === 'Fit' && containerRef.current) {
+        const availableWidth = containerRef.current.offsetWidth;
+        const newWidth = Math.max((availableWidth / totalDays), 5);
+        setFitColumnWidth(newWidth);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [viewMode, totalDays]);
+
+
+  // --- Handlers ---
+
+  const handleAddTask = () => {
+    const newTask = {
+      id: generateId(),
+      name: 'New Task',
+      start: new Date(),
+      end: addDays(new Date(), 3),
+      progress: 0,
+      category: Object.keys(categoryColors)[0] || 'default'
+    };
+    setCurrentTask(newTask);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTask = (task) => {
+    setCurrentTask({ 
+      ...task, 
+      startStr: formatDate(task.start),
+      endStr: formatDate(task.end) 
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveTask = (e) => {
+    e.preventDefault();
+    const start = new Date(currentTask.startStr || currentTask.start);
+    const end = new Date(currentTask.endStr || currentTask.end);
+
+    if (end < start) {
+      alert("End date cannot be before start date");
+      return;
+    }
+
+    const taskToSave = {
+      ...currentTask,
+      start,
+      end,
+      progress: Math.min(100, Math.max(0, parseInt(currentTask.progress) || 0))
+    };
+
+    setTasks(prev => {
+      const exists = prev.find(t => t.id === taskToSave.id);
+      if (exists) {
+        return prev.map(t => t.id === taskToSave.id ? taskToSave : t);
+      } else {
+        return [...prev, taskToSave];
+      }
+    });
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteTask = () => {
+    setTasks(prev => prev.filter(t => t.id !== currentTask.id));
+    setIsModalOpen(false);
+  };
+
+  // --- Category Handlers ---
+
+  const handleAddCategory = (e) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    if (categoryColors[newCatName]) {
+      alert('Category already exists!');
+      return;
+    }
+    setCategoryColors(prev => ({
+      ...prev,
+      [newCatName]: newCatColor
+    }));
+    setNewCatName('');
+  };
+
+  const handleDeleteCategory = (catName) => {
+    if (catName === 'default') {
+      alert("Cannot delete default category");
+      return;
+    }
+    const newColors = { ...categoryColors };
+    delete newColors[catName];
+    setCategoryColors(newColors);
+    
+    // Reset tasks with this category to default
+    setTasks(prev => prev.map(t => t.category === catName ? { ...t, category: 'default' } : t));
+  };
+
+  // --- Render Helpers ---
+
+  const renderTimeScale = () => {
+    const headers = [];
+    const numCols = totalDays;
+    
+    // Reduce label density for Fit mode or tight zooms
+    const showDayLabels = COLUMN_WIDTH > 20;
+    const showMonthLabels = COLUMN_WIDTH > 5;
+    
+    for (let i = 0; i < numCols; i++) {
+      const date = addDays(gridStartDate, i);
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      
+      let label = date.getDate();
+      let subLabel = date.toLocaleString('default', { weekday: 'narrow' });
+      
+      // Simplify logic for Month labels
+      const isFirstOfMonth = date.getDate() === 1;
+      const monthLabel = isFirstOfMonth || i === 0 ? date.toLocaleString('default', { month: 'short' }) : '';
+
+      headers.push(
+        <div key={i} className={`flex flex-col items-center justify-end border-r border-slate-200 h-full text-xs ${isWeekend ? 'bg-slate-50' : 'bg-white'}`} style={{ width: COLUMN_WIDTH, minWidth: COLUMN_WIDTH }}>
+          {showMonthLabels && monthLabel && <span className="absolute top-1 font-bold text-[#404040] z-10">{monthLabel}</span>}
+          {showDayLabels && <span className="text-slate-400 mb-1">{subLabel}</span>}
+          {showDayLabels && <span className="font-medium mb-1 text-[#404040]">{label}</span>}
+        </div>
+      );
+    }
+    return headers;
+  };
+
+  const renderGrid = () => {
+    const cols = [];
+    for (let i = 0; i < totalDays; i++) {
+        const date = addDays(gridStartDate, i);
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        cols.push(
+            <div key={i} className={`border-r border-slate-100 h-full ${isWeekend ? 'bg-slate-50/50' : ''}`} style={{ width: COLUMN_WIDTH, minWidth: COLUMN_WIDTH }}></div>
+        );
+    }
+    return cols;
+  };
+
+  const renderBars = () => {
+    return tasks.map(task => {
+      const dayOffset = getDaysDiff(gridStartDate, task.start);
+      const duration = getDaysDiff(task.start, task.end) + 1;
+      
+      const left = dayOffset * COLUMN_WIDTH;
+      const width = Math.max(duration * COLUMN_WIDTH, COLUMN_WIDTH);
+
+      // Get color dynamically
+      const barColor = categoryColors[task.category] || categoryColors['default'];
+
+      return (
+        <div key={task.id} className="relative group" style={{ height: ROW_HEIGHT }}>
+          {/* Bar */}
+          <div 
+            onClick={() => handleEditTask(task)}
+            className={`absolute top-2 h-8 rounded-full shadow-sm cursor-pointer hover:brightness-110 transition-all flex items-center overflow-hidden`}
+            style={{ 
+              left: `${left}px`, 
+              width: `${width - 4}px`,
+              backgroundColor: barColor 
+            }} 
+          >
+             {/* Progress Fill */}
+             <div className="h-full bg-white/20" style={{ width: `${task.progress}%` }}></div>
+             
+             {/* Label inside bar if wide enough */}
+             {width > 60 && <span className="text-white text-xs font-medium px-2 whitespace-nowrap overflow-hidden text-ellipsis drop-shadow-md">{task.name}</span>}
+          </div>
+
+          {/* Label outside if narrow */}
+          {width <= 60 && (
+             <div 
+                className="absolute top-3 text-xs text-[#404040] whitespace-nowrap"
+                style={{ left: `${left + width + 4}px` }}
+             >
+                {task.name}
+             </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-50 font-sans text-[#404040]">
+      {/* Top Navigation */}
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-20">
+        <div className="flex items-center space-x-3">
+            <div className="bg-[#6FBE44] p-2 rounded-lg">
+                <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div>
+                <h1 className="text-xl font-bold text-[#404040]">Project Timeline</h1>
+                <p className="text-xs text-slate-500">Track progress and milestones</p>
+            </div>
+        </div>
+
+        <div className="flex items-center space-x-4">
+             {/* Category Manager Button */}
+            <button
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="flex items-center space-x-2 text-slate-500 hover:text-[#404040] px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors text-sm font-medium"
+            >
+                <Settings className="w-4 h-4" />
+                <span className="hidden md:inline">Categories</span>
+            </button>
+
+            {/* View Mode Switcher */}
+            <div className="bg-slate-100 p-1 rounded-lg flex text-sm">
+                <button 
+                    onClick={() => setViewMode('Day')}
+                    className={`px-3 py-1 rounded-md transition-colors ${viewMode === 'Day' ? 'bg-white shadow-sm text-[#6FBE44] font-medium' : 'text-slate-500 hover:text-[#404040]'}`}
+                >
+                    Day
+                </button>
+                <button 
+                    onClick={() => setViewMode('Week')}
+                    className={`px-3 py-1 rounded-md transition-colors ${viewMode === 'Week' ? 'bg-white shadow-sm text-[#6FBE44] font-medium' : 'text-slate-500 hover:text-[#404040]'}`}
+                >
+                    Week
+                </button>
+                <button 
+                    onClick={() => setViewMode('Fit')}
+                    className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${viewMode === 'Fit' ? 'bg-white shadow-sm text-[#6FBE44] font-medium' : 'text-slate-500 hover:text-[#404040]'}`}
+                >
+                    <Maximize className="w-3 h-3" />
+                    <span>Fit</span>
+                </button>
+            </div>
+
+            <button 
+                onClick={handleAddTask}
+                className="flex items-center space-x-2 bg-[#6FBE44] hover:bg-[#5da33a] text-white px-4 py-2 rounded-lg shadow-sm transition-colors text-sm font-medium"
+            >
+                <Plus className="w-4 h-4" />
+                <span>Add Task</span>
+            </button>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Sidebar (Task List) */}
+        <div className="w-80 bg-white border-r border-slate-200 flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div className="h-[50px] border-b border-slate-200 bg-slate-50/50 flex items-center px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Tasks
+            </div>
+            <div className="overflow-y-auto flex-1 custom-scrollbar">
+                {tasks.map(task => (
+                    <div 
+                        key={task.id} 
+                        onClick={() => handleEditTask(task)}
+                        className="group flex items-center justify-between px-4 h-[50px] border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                    >
+                        <div className="flex items-center space-x-3 overflow-hidden">
+                            <div 
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: categoryColors[task.category] || categoryColors['default'] }}
+                            ></div>
+                            <span className="text-sm font-medium text-[#404040] truncate">{task.name}</span>
+                        </div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Edit2 className="w-3 h-3 text-slate-400" />
+                        </div>
+                    </div>
+                ))}
+                
+                <button 
+                    onClick={handleAddTask}
+                    className="w-full py-3 text-sm text-slate-400 hover:text-[#6FBE44] hover:bg-[#6FBE44]/10 transition-colors flex items-center justify-center space-x-2 border-b border-slate-100 border-dashed"
+                >
+                    <Plus className="w-3 h-3" />
+                    <span>New Item</span>
+                </button>
+            </div>
+        </div>
+
+        {/* Timeline Area */}
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-slate-50" ref={containerRef}>
+            {/* Timeline Header (Dates) */}
+            <div className="h-[50px] bg-white border-b border-slate-200 overflow-hidden flex flex-shrink-0 relative">
+                 <div className="flex absolute left-0 top-0 h-full" style={{ transform: `translateX(0px)` }}>
+                     {renderTimeScale()}
+                 </div>
+            </div>
+
+            {/* Timeline Grid & Bars */}
+            <div className="flex-1 overflow-auto relative custom-scrollbar">
+                <div className="relative min-h-full" style={{ width: `${totalDays * COLUMN_WIDTH}px` }}>
+                    {/* Background Grid */}
+                    <div className="absolute inset-0 flex pointer-events-none">
+                        {renderGrid()}
+                    </div>
+
+                    {/* Bars Container */}
+                    <div className="absolute top-0 left-0 w-full pt-[0px]">
+                        {renderBars()}
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      {/* Task Edit Modal */}
+      {isModalOpen && currentTask && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 className="text-lg font-bold text-[#404040]">
+                        {currentTask.id && tasks.find(t => t.id === currentTask.id) ? 'Edit Task' : 'New Task'}
+                    </h3>
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-[#404040] transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                
+                <form onSubmit={handleSaveTask} className="p-6 space-y-5">
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Task Name</label>
+                        <input 
+                            type="text" 
+                            required
+                            value={currentTask.name}
+                            onChange={e => setCurrentTask({...currentTask, name: e.target.value})}
+                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040]"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Start Date</label>
+                            <input 
+                                type="date" 
+                                required
+                                value={currentTask.startStr || formatDate(currentTask.start)}
+                                onChange={e => setCurrentTask({...currentTask, startStr: e.target.value})}
+                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040]"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">End Date</label>
+                            <input 
+                                type="date" 
+                                required
+                                value={currentTask.endStr || formatDate(currentTask.end)}
+                                onChange={e => setCurrentTask({...currentTask, endStr: e.target.value})}
+                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040]"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                         <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Category</label>
+                            <select
+                                value={currentTask.category}
+                                onChange={e => setCurrentTask({...currentTask, category: e.target.value})}
+                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040]"
+                            >
+                                {Object.keys(categoryColors).map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                         </div>
+                         <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Progress ({currentTask.progress}%)</label>
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={currentTask.progress || 0}
+                                onChange={e => setCurrentTask({...currentTask, progress: e.target.value})}
+                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#6FBE44] mt-2"
+                            />
+                         </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                        {currentTask.id && tasks.find(t => t.id === currentTask.id) ? (
+                             <button 
+                                type="button"
+                                onClick={handleDeleteTask}
+                                className="flex items-center space-x-2 text-red-500 hover:text-red-600 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                <span>Delete</span>
+                            </button>
+                        ) : <div></div>}
+                       
+                        <div className="flex space-x-3">
+                            <button 
+                                type="button"
+                                onClick={() => setIsModalOpen(false)}
+                                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#404040] hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                className="px-6 py-2 text-sm font-medium text-white bg-[#6FBE44] hover:bg-[#5da33a] rounded-lg shadow-sm shadow-green-100 transition-all"
+                            >
+                                Save Task
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
+
+      {/* Category Manager Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 className="text-lg font-bold text-[#404040]">Manage Categories</h3>
+                    <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-[#404040] transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                
+                <div className="p-6">
+                    {/* Add New */}
+                    <form onSubmit={handleAddCategory} className="flex gap-2 mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="flex-1">
+                            <input 
+                                type="text" 
+                                placeholder="New Category Name"
+                                value={newCatName}
+                                onChange={e => setNewCatName(e.target.value)}
+                                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#6FBE44]"
+                            />
+                        </div>
+                        <input 
+                            type="color" 
+                            value={newCatColor}
+                            onChange={e => setNewCatColor(e.target.value)}
+                            className="w-10 h-[38px] rounded cursor-pointer border-0 bg-transparent p-0"
+                        />
+                        <button 
+                            type="submit"
+                            className="bg-[#6FBE44] text-white px-3 py-2 rounded-lg hover:bg-[#5da33a] transition-colors"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+                    </form>
+
+                    {/* List Existing */}
+                    <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                        {Object.entries(categoryColors).map(([name, color]) => (
+                            <div key={name} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg hover:bg-slate-50">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: color }}></div>
+                                    <span className="font-medium text-slate-700">{name}</span>
+                                </div>
+                                {name !== 'default' && (
+                                    <button 
+                                        onClick={() => handleDeleteCategory(name)}
+                                        className="text-slate-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+      
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1;
+          border-radius: 20px;
+          border: 3px solid transparent;
+          background-clip: content-box;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #94a3b8;
+        }
+      `}</style>
+    </div>
+  );
+}
