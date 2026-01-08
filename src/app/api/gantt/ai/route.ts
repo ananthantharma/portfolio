@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-flash-latest',
             systemInstruction: `You are an expert Project Manager and Scheduler.
         Your task is to UPDATE the provided Gantt Chart data based on the USER INSTRUCTION.
         
