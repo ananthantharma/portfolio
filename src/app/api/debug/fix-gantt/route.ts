@@ -6,7 +6,7 @@ import dbConnect from '@/lib/dbConnect';
 import GanttChart from '@/models/GanttChart';
 import mongoose from 'mongoose';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
