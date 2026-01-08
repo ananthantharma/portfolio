@@ -754,6 +754,8 @@ export default function GanttPage() {
                                     setViewMode('Custom');
                                 }}
                             />
+
+                            {/* Slider */}
                             <input
                                 type="range"
                                 min="1"
@@ -766,6 +768,22 @@ export default function GanttPage() {
                                 className="w-24 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#6FBE44]"
                                 title="Zoom Level"
                             />
+
+                            {/* Number Input */}
+                            <input
+                                type="number"
+                                min="1"
+                                max="200"
+                                value={viewMode === 'Custom' ? columnWidth : Math.round(viewMode === 'Day' ? 50 : viewMode === 'Week' ? 30 : viewMode === 'Month' ? 15 : fitColumnWidth)}
+                                onChange={(e) => {
+                                    const val = Math.max(1, Math.min(200, Number(e.target.value)));
+                                    setColumnWidth(val);
+                                    setViewMode('Custom');
+                                }}
+                                className="w-12 h-6 text-xs text-center border border-slate-200 rounded focus:border-[#6FBE44] focus:outline-none text-[#404040]"
+                                title="Precise Zoom"
+                            />
+
                             <ZoomIn
                                 className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
                                 onClick={() => {

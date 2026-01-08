@@ -31,7 +31,10 @@ export async function GET(req: Request) {
         }
     } catch (error) {
         console.error("Error fetching Gantt chart(s):", error);
-        return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : 'Unknown error fetching charts',
+            details: JSON.stringify(error)
+        }, { status: 500 });
     }
 }
 
@@ -70,7 +73,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, chart });
     } catch (error) {
         console.error("Error saving Gantt chart:", error);
-        return NextResponse.json({ error: 'Failed to save chart' }, { status: 500 });
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : 'Unknown error saving chart',
+            details: JSON.stringify(error)
+        }, { status: 500 });
     }
 }
 
