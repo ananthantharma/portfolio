@@ -262,10 +262,12 @@ export default function GanttPage() {
                 loadChartsList();
                 setIsSaveAsModalOpen(false);
                 setNewChartNameInput('');
+            } else {
+                alert(data.error || 'Failed to save copy.');
             }
         } catch (e) {
             console.error("Failed to save copy:", e);
-            alert('Failed to save copy.');
+            alert('Failed to save copy. See console for details.');
         } finally {
             setIsSaving(false);
         }
@@ -748,13 +750,13 @@ export default function GanttPage() {
                             <ZoomOut
                                 className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
                                 onClick={() => {
-                                    setColumnWidth(prev => Math.max(5, prev - 5));
+                                    setColumnWidth(prev => Math.max(1, prev - 5));
                                     setViewMode('Custom');
                                 }}
                             />
                             <input
                                 type="range"
-                                min="5"
+                                min="1"
                                 max="200"
                                 value={viewMode === 'Custom' ? columnWidth : (viewMode === 'Day' ? 50 : viewMode === 'Week' ? 30 : viewMode === 'Month' ? 15 : fitColumnWidth)}
                                 onChange={(e) => {
