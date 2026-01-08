@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -130,7 +130,8 @@ export default function GanttPage() {
     const [savedCharts, setSavedCharts] = useState<any[]>([]);
 
     // View State
-    const [viewMode, setViewMode] = useState<'Day' | 'Week' | 'Month' | 'Fit'>('Day');
+    const [viewMode, setViewMode] = useState<'Day' | 'Week' | 'Month' | 'Fit' | 'Custom'>('Day');
+    const [columnWidth, setColumnWidth] = useState(50); // State for actual width
     const [fitColumnWidth, setFitColumnWidth] = useState(50); // Dynamic width for 'Fit' mode
     const [isSaving, setIsSaving] = useState(false);
 
@@ -367,6 +368,7 @@ export default function GanttPage() {
             case 'Week': return 30;
             case 'Month': return 15;
             case 'Fit': return fitColumnWidth;
+            case 'Custom': return columnWidth;
             default: return 50;
         }
     };
@@ -740,6 +742,36 @@ export default function GanttPage() {
                         </button>
 
                         <div className="h-6 w-px bg-slate-200 mx-1"></div>
+
+                        {/* Zoom Controls */}
+                        <div className="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                            <ZoomOut
+                                className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
+                                onClick={() => {
+                                    setColumnWidth(prev => Math.max(5, prev - 5));
+                                    setViewMode('Custom');
+                                }}
+                            />
+                            <input
+                                type="range"
+                                min="5"
+                                max="200"
+                                value={viewMode === 'Custom' ? columnWidth : (viewMode === 'Day' ? 50 : viewMode === 'Week' ? 30 : viewMode === 'Month' ? 15 : fitColumnWidth)}
+                                onChange={(e) => {
+                                    setColumnWidth(Number(e.target.value));
+                                    setViewMode('Custom');
+                                }}
+                                className="w-24 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#6FBE44]"
+                                title="Zoom Level"
+                            />
+                            <ZoomIn
+                                className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
+                                onClick={() => {
+                                    setColumnWidth(prev => Math.min(200, prev + 5));
+                                    setViewMode('Custom');
+                                }}
+                            />
+                        </div>
 
                         {/* Category Manager Button */}
                         <button
