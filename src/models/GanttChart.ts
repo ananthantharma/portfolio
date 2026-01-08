@@ -11,6 +11,7 @@ export interface ITask {
 
 interface IGanttChart extends Document {
     userId: string;
+    name: string;
     tasks: ITask[];
     categoryColors: Record<string, string>;
     lastUpdated: Date;
@@ -26,7 +27,8 @@ const TaskSchema = new Schema<ITask>({
 });
 
 const GanttChartSchema = new Schema<IGanttChart>({
-    userId: { type: String, required: true, unique: true }, // One chart per user for now
+    userId: { type: String, required: true }, // Removed unique: true to allow multiple charts
+    name: { type: String, required: true, default: 'Untitled Project' },
     tasks: [TaskSchema],
     categoryColors: { type: Map, of: String, default: {} },
     lastUpdated: { type: Date, default: Date.now },

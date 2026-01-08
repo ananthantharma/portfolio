@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -123,6 +123,12 @@ export default function GanttPage() {
     const [categoryColors, setCategoryColors] = useState(INITIAL_CATEGORIES);
     const [activeId, setActiveId] = useState<string | null>(null); // For drag overlay
 
+    // Multi-Chart State
+    const [chartId, setChartId] = useState<string | null>(null);
+    const [chartName, setChartName] = useState('Untitled Project');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [savedCharts, setSavedCharts] = useState<any[]>([]);
+
     // View State
     const [viewMode, setViewMode] = useState<'Day' | 'Week' | 'Month' | 'Fit'>('Day');
     const [fitColumnWidth, setFitColumnWidth] = useState(50); // Dynamic width for 'Fit' mode
@@ -132,6 +138,10 @@ export default function GanttPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+    const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false);
+    const [newChartNameInput, setNewChartNameInput] = useState('');
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [currentTask, setCurrentTask] = useState<any>(null);
 
@@ -155,43 +165,134 @@ export default function GanttPage() {
 
     // --- Persistence ---
 
+    // --- Persistence ---
+
     useEffect(() => {
-        // Load chart on mount
-        fetch('/api/gantt')
-            .then(res => res.json())
-            .then(data => {
-                if (data.chart) {
-                    // Parse dates back from strings
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const loadedTasks = data.chart.tasks.map((t: any) => ({
-                        ...t,
-                        start: new Date(t.start),
-                        end: new Date(t.end)
-                    }));
-                    setTasks(loadedTasks);
-                    if (data.chart.categoryColors) {
-                        setCategoryColors(data.chart.categoryColors);
-                    }
-                }
-            })
-            .catch(err => console.error("Failed to load Gantt:", err));
+        // Load default list on mount
+        loadChartsList();
+
+        // Check URL for ID? (Optional deep linking support later)
     }, []);
+
+    const loadChartsList = async () => {
+        try {
+            const res = await fetch('/api/gantt');
+            const data = await res.json();
+            if (data.charts) {
+                setSavedCharts(data.charts);
+                // If we have saved charts but no current chart, maybe load the most recent?
+                // Or just start with clean slate. for now, clean slate unless loaded.
+            }
+        } catch (e) {
+            console.error("Failed to load charts list:", e);
+        }
+    };
+
+    const handleLoadChart = async (id: string) => {
+        try {
+            const res = await fetch(`/api/gantt?id=${id}`);
+            const data = await res.json();
+            if (data.chart) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const loadedTasks = data.chart.tasks.map((t: any) => ({
+                    ...t,
+                    start: new Date(t.start),
+                    end: new Date(t.end)
+                }));
+                setTasks(loadedTasks);
+                if (data.chart.categoryColors) {
+                    setCategoryColors(data.chart.categoryColors);
+                }
+                setChartId(data.chart._id);
+                setChartName(data.chart.name);
+                setIsLoadModalOpen(false);
+            }
+        } catch (e) {
+            console.error("Failed to load chart:", e);
+            alert("Failed to load chart.");
+        }
+    };
 
     const handleSaveChart = async () => {
         setIsSaving(true);
         try {
-            await fetch('/api/gantt', {
+            const res = await fetch('/api/gantt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tasks, categoryColors })
+                body: JSON.stringify({
+                    id: chartId,
+                    name: chartName,
+                    tasks,
+                    categoryColors
+                })
             });
-            alert('Chart saved!');
+            const data = await res.json();
+            if (data.success && data.chart) {
+                setChartId(data.chart._id);
+                alert('Chart saved!');
+                loadChartsList(); // Refresh list
+            }
         } catch (e) {
             console.error("Failed to save:", e);
             alert('Failed to save chart.');
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleSaveAs = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSaving(true);
+        try {
+            const res = await fetch('/api/gantt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: newChartNameInput, // New Name means New Chart
+                    tasks,
+                    categoryColors
+                })
+            });
+            const data = await res.json();
+            if (data.success && data.chart) {
+                setChartId(data.chart._id);
+                setChartName(data.chart.name);
+                alert('Project saved as new chart!');
+                loadChartsList();
+                setIsSaveAsModalOpen(false);
+                setNewChartNameInput('');
+            }
+        } catch (e) {
+            console.error("Failed to save copy:", e);
+            alert('Failed to save copy.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeleteChart = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this project permanently?")) return;
+        try {
+            const res = await fetch(`/api/gantt?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setSavedCharts(prev => prev.filter(c => c._id !== id));
+                if (chartId === id) {
+                    handleClearChart(); // Reset if deleted current
+                }
+            }
+        } catch (e) {
+            console.error("Failed to delete:", e);
+            alert("Failed to delete chart.");
+        }
+    };
+
+    const handleClearChart = () => {
+        if (tasks.length > 0 && !confirm("Clear current chart? Unsaved changes will be lost.")) return;
+
+        setTasks([]);
+        setCategoryColors(INITIAL_CATEGORIES);
+        setChartId(null);
+        setChartName('Untitled Project');
     };
 
     const handleRunAI = async (e: React.FormEvent) => {
@@ -574,8 +675,8 @@ export default function GanttPage() {
                             <Calendar className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-[#404040] tracking-tight">Project Timeline</h1>
-                            <p className="text-xs text-slate-500 font-medium">Q3 2023 Roadmap</p>
+                            <h1 className="text-xl font-bold text-[#404040] tracking-tight">{chartName}</h1>
+                            <p className="text-xs text-slate-500 font-medium">Project Timeline</p>
                         </div>
                     </div>
 
@@ -589,18 +690,56 @@ export default function GanttPage() {
                             <span className="hidden md:inline">AI Update</span>
                         </button>
 
+                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
+
+                        {/* Load Button */}
+                        <button
+                            onClick={() => {
+                                loadChartsList();
+                                setIsLoadModalOpen(true);
+                            }}
+                            className="flex items-center space-x-2 text-slate-600 hover:text-[#6FBE44] px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold"
+                            title="Load Project"
+                        >
+                            <FolderOpen className="w-4 h-4" />
+                            <span className="hidden md:inline">Load</span>
+                        </button>
+
+                        {/* Save Button */}
                         <button
                             onClick={handleSaveChart}
                             className="flex items-center space-x-2 text-slate-600 hover:text-[#6FBE44] px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold"
                             disabled={isSaving}
+                            title="Save Project"
                         >
                             {isSaving ? (
                                 <span className="w-4 h-4 border-2 border-[#6FBE44] border-t-transparent rounded-full animate-spin" />
                             ) : (
                                 <Save className="w-4 h-4" />
                             )}
-                            <span>{isSaving ? 'Saving...' : 'Save'}</span>
+                            <span className="hidden md:inline">{isSaving ? 'Saving...' : 'Save'}</span>
                         </button>
+
+                        {/* Save As Button */}
+                        <button
+                            onClick={() => setIsSaveAsModalOpen(true)}
+                            className="flex items-center space-x-2 text-slate-600 hover:text-[#6FBE44] px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm font-semibold"
+                            title="Save As..."
+                        >
+                            <Save className="w-4 h-4" />
+                            <span className="hidden md:inline">Save As</span>
+                        </button>
+
+                        {/* Clear Button */}
+                        <button
+                            onClick={handleClearChart}
+                            className="flex items-center space-x-2 text-slate-400 hover:text-red-500 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors text-sm font-semibold"
+                            title="Clear Chart"
+                        >
+                            <RotateCcw className="w-4 h-4" />
+                        </button>
+
+                        <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
                         {/* Category Manager Button */}
                         <button
@@ -890,6 +1029,90 @@ export default function GanttPage() {
                                                 Generate Updates
                                             </>
                                         )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Load Chart Modal */}
+                {isLoadModalOpen && (
+                    <div className="fixed inset-0 bg-[#404040]/30 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h3 className="text-lg font-bold text-[#404040] flex items-center gap-2">
+                                    <FolderOpen className="w-5 h-5 text-[#6FBE44]" />
+                                    Load Project
+                                </h3>
+                                <button onClick={() => setIsLoadModalOpen(false)} className="text-slate-400 hover:text-[#404040] transition-colors hover:rotate-90 duration-200">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="p-6">
+                                {savedCharts.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-400 text-sm">
+                                        No saved projects found.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                                        {savedCharts.map((chart) => (
+                                            <div key={chart._id} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl hover:bg-slate-50 hover:border-[#6FBE44]/30 transition-all group cursor-pointer" onClick={() => handleLoadChart(chart._id)}>
+                                                <div>
+                                                    <div className="font-bold text-[#404040] group-hover:text-[#6FBE44] transition-colors">{chart.name}</div>
+                                                    <div className="text-xs text-slate-400">Last updated: {new Date(chart.lastUpdated).toLocaleDateString()}</div>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteChart(chart._id); }}
+                                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Save As Modal */}
+                {isSaveAsModalOpen && (
+                    <div className="fixed inset-0 bg-[#404040]/30 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h3 className="text-lg font-bold text-[#404040]">Save As New Project</h3>
+                                <button onClick={() => setIsSaveAsModalOpen(false)} className="text-slate-400 hover:text-[#404040] transition-colors hover:rotate-90 duration-200">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleSaveAs} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Project Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newChartNameInput}
+                                        onChange={(e) => setNewChartNameInput(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040] font-medium placeholder-slate-400"
+                                        placeholder="e.g. Website Redesign"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSaveAsModalOpen(false)}
+                                        className="px-4 py-2 text-slate-500 hover:text-[#404040] font-medium text-sm transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-2 bg-[#6FBE44] hover:bg-[#5da33a] text-white rounded-xl shadow-md hover:shadow-lg transition-all text-sm font-bold"
+                                    >
+                                        Save Project
                                     </button>
                                 </div>
                             </form>
