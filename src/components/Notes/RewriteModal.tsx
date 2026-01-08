@@ -1,6 +1,6 @@
-import {Dialog, Transition} from '@headlessui/react';
-import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, memo, useState} from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import React, { Fragment, memo, useState, useEffect } from 'react';
 
 interface RewriteModalProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface RewriteModalProps {
   onInsert: (text: string) => void;
 }
 
-const RewriteModal: React.FC<RewriteModalProps> = memo(({isOpen, onClose, originalText, onInsert}) => {
+const RewriteModal: React.FC<RewriteModalProps> = memo(({ isOpen, onClose, originalText, onInsert }) => {
   // Sliders
   const [professionalism, setProfessionalism] = useState(5);
   const [directness, setDirectness] = useState(5);
@@ -23,6 +23,41 @@ const RewriteModal: React.FC<RewriteModalProps> = memo(({isOpen, onClose, origin
   const [noBulletPoints, setNoBulletPoints] = useState(false);
   const [noGreetings, setNoGreetings] = useState(false);
   const [noSemicolons, setNoSemicolons] = useState(false);
+  const [noTables, setNoTables] = useState(true); // Default true
+
+  // System Prompt for Rewrite
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [isEditingPrompt, setIsEditingPrompt] = useState(false);
+  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
+
+  // Fetch System Prompt on Mount
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/prompts/rewrite')
+        .then(res => res.json())
+        .then(data => {
+          if (data.prompt) setSystemPrompt(data.prompt);
+        })
+        .catch(err => console.error('Failed to fetch prompt:', err));
+    }
+  }, [isOpen]);
+
+  const handleSavePrompt = async () => {
+    setIsSavingPrompt(true);
+    try {
+      await fetch('/api/prompts/rewrite', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: systemPrompt }),
+      });
+      setIsEditingPrompt(false);
+    } catch (e) {
+      console.error('Failed to save prompt:', e);
+      alert('Failed to save prompt.');
+    } finally {
+      setIsSavingPrompt(false);
+    }
+  };
 
   // Result
   const [isGenerating, setIsGenerating] = useState(false);
@@ -33,6 +68,7 @@ const RewriteModal: React.FC<RewriteModalProps> = memo(({isOpen, onClose, origin
     if (noBulletPoints) constraints += '- Do not use bullet points.\\n';
     if (noGreetings) constraints += '- Start immediately without intro phrases (e.g., no "Hi", "Dear Team").\\n';
     if (noSemicolons) constraints += '- Do not use semicolons (;) or em-dashes (—).\\n';
+    if (noTables) constraints += '- Do NOT use Markdown tables. Use lists or plain text.\\n';
 
     return `Rewrite the following text for a [${audience}].
     
@@ -57,9 +93,10 @@ Text to rewrite:
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
+          systemInstruction: systemPrompt,
           model: 'gemini-flash-latest',
           apiKey: 'MANAGED',
         }),
@@ -130,9 +167,9 @@ Text to rewrite:
                         min: 'Casual',
                         max: 'Formal',
                       },
-                      {label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt'},
-                      {label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly'},
-                      {label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index'},
+                      { label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt' },
+                      { label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly' },
+                      { label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index' },
                     ].map(s => (
                       <div key={s.label}>
                         <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
@@ -174,9 +211,10 @@ Text to rewrite:
                       <label className="block text-sm font-medium text-gray-700 mb-2">Constraints</label>
                       <div className="space-y-2">
                         {[
-                          {label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints},
-                          {label: 'No Greetings', checked: noGreetings, set: setNoGreetings},
-                          {label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons},
+                          { label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints },
+                          { label: 'No Greetings', checked: noGreetings, set: setNoGreetings },
+                          { label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons },
+                          { label: 'No Tables', checked: noTables, set: setNoTables },
                         ].map(c => (
                           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer" key={c.label}>
                             <input
@@ -189,6 +227,37 @@ Text to rewrite:
                           </label>
                         ))}
                       </div>
+                    </div>
+
+                    {/* System Prompt Editor */}
+                    <div className="bg-gray-50 p-3 rounded-md border border-gray-200 mt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-semibold text-gray-500 uppercase">AI Instruction</span>
+                        <button
+                          onClick={() => {
+                            if (isEditingPrompt) handleSavePrompt();
+                            else setIsEditingPrompt(true);
+                          }}
+                          className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+                          disabled={isSavingPrompt}
+                        >
+                          {isSavingPrompt ? 'Saving...' : (isEditingPrompt ? 'Save' : 'Edit')}
+                          {!isEditingPrompt && <PencilSquareIcon className="h-3 w-3" />}
+                        </button>
+                      </div>
+
+                      {isEditingPrompt ? (
+                        <textarea
+                          className="w-full text-xs p-2 border rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          rows={4}
+                          value={systemPrompt}
+                          onChange={(e) => setSystemPrompt(e.target.value)}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-600 line-clamp-3 italic">
+                          {systemPrompt}
+                        </p>
+                      )}
                     </div>
 
                     <button
