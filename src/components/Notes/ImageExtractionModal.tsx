@@ -1,4 +1,4 @@
-import {Dialog, Transition} from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   ArrowPathIcon,
   ClipboardDocumentCheckIcon,
@@ -7,7 +7,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
-import React, {Fragment, useCallback, useEffect, useState} from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -16,7 +16,7 @@ interface ImageExtractionModalProps {
   onClose: () => void;
 }
 
-const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({isOpen, onClose}) => {
+const ImageExtractionModal: React.FC<ImageExtractionModalProps> = React.memo(({ isOpen, onClose }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [resultText, setResultText] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -128,11 +128,16 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
 
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: 'Extract text from this image.',
-          image: base64Data,
-          mimeType: mimeType,
+          attachments: [
+            {
+              type: 'image',
+              content: base64Data,
+              mimeType: mimeType,
+            }
+          ],
           systemInstruction: sysInstruction,
           model: 'gemini-flash-latest',
           apiKey: 'MANAGED',
@@ -284,8 +289,8 @@ Output: Return ONLY the formatted Markdown. No conversational filler.`;
                         copied
                           ? 'bg-green-100 text-green-700'
                           : resultText
-                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          : 'bg-gray-50 text-gray-300 cursor-not-allowed',
+                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            : 'bg-gray-50 text-gray-300 cursor-not-allowed',
                       )}
                       disabled={!resultText}
                       onClick={copyToClipboard}>
