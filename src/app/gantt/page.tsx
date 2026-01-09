@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw, ZoomIn, ZoomOut, CornerDownRight } from 'lucide-react';
 import Header from '../../components/Sections/Header';
 import {
     DndContext,
@@ -63,7 +63,7 @@ const INITIAL_CATEGORIES: Record<string, string> = {
 
 // --- Sortable Item Component ---
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function SortableTaskItem({ task, categoryColors, onClick }: any) {
+function SortableTaskItem({ task, categoryColors, onClick, onAddSubtask, onDelete }: any) {
     const {
         attributes,
         listeners,
@@ -81,11 +81,13 @@ function SortableTaskItem({ task, categoryColors, onClick }: any) {
         position: 'relative' as const,
     };
 
+    const isSubtask = !!task.parentId;
+
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center justify-between px-4 h-[50px] border-b border-slate-100 bg-white hover:bg-slate-50 transition-colors"
+            className={`group flex items-center justify-between px-4 h-[50px] border-b border-slate-100 bg-white hover:bg-slate-50 transition-colors ${isSubtask ? 'pl-10' : ''}`}
         >
             <div className="flex items-center space-x-3 overflow-hidden flex-1">
                 {/* Drag Handle */}
@@ -96,6 +98,8 @@ function SortableTaskItem({ task, categoryColors, onClick }: any) {
                 >
                     <GripVertical className="w-4 h-4" />
                 </div>
+
+                {isSubtask && <CornerDownRight className="w-4 h-4 text-slate-300 flex-shrink-0" />}
 
                 <div
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm ring-2 ring-white"
@@ -108,11 +112,28 @@ function SortableTaskItem({ task, categoryColors, onClick }: any) {
                     {task.name}
                 </span>
             </div>
-            <div
-                onClick={() => onClick(task)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-200 cursor-pointer pl-2"
-            >
-                <Edit2 className="w-3.5 h-3.5 text-slate-400 hover:text-[#6FBE44]" />
+
+            <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-200 pl-2">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onAddSubtask(task.id); }}
+                    className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-[#6FBE44]"
+                    title="Add Subtask"
+                >
+                    <CornerDownRight className="w-3.5 h-3.5" />
+                </button>
+                <div
+                    onClick={() => onClick(task)}
+                    className="cursor-pointer p-1 hover:bg-slate-200 rounded"
+                >
+                    <Edit2 className="w-3.5 h-3.5 text-slate-400 hover:text-[#6FBE44]" />
+                </div>
+                <div
+                    onClick={() => onDelete(task.id)}
+                    className="cursor-pointer p-1 hover:bg-red-100 rounded"
+                    title="Delete Task"
+                >
+                    <Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-red-500" />
+                </div>
             </div>
         </div>
     );
@@ -425,6 +446,31 @@ export default function GanttPage() {
         setActiveId(event.active.id);
     };
 
+    const handleAddSubtask = (parentId: string) => {
+        const parentTask = tasks.find(t => t.id === parentId);
+        if (!parentTask) return;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newTask: any = {
+            id: generateId(),
+            name: 'New Subtask',
+            start: new Date(parentTask.start),
+            end: addDays(new Date(parentTask.start), 2),
+            progress: 0,
+            category: parentTask.category,
+            parentId: parentId
+        };
+
+        // Find insert index: after parent and its current subtasks (simplistic: just after parent for now, reorder handles the rest)
+        // Better: Find the last task that has this parentId, or the parent itself
+        let insertIndex = tasks.findIndex(t => t.id === parentId);
+
+        // simple approach: insert immediately after parent
+        const newTasks = [...tasks];
+        newTasks.splice(insertIndex + 1, 0, newTask);
+        setTasks(newTasks);
+    };
+
     const handleAddTask = () => {
         const newTask = {
             id: generateId(),
@@ -479,9 +525,13 @@ export default function GanttPage() {
         setIsModalOpen(false);
     };
 
-    const handleDeleteTask = () => {
+    const handleDeleteTask = (taskId?: string) => {
+        const idToDelete = typeof taskId === 'string' ? taskId : currentTask?.id;
+
+        if (!confirm("Delete this task?")) return;
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setTasks(prev => prev.filter((t: any) => t.id !== currentTask.id));
+        setTasks(prev => prev.filter((t: any) => t.id !== idToDelete && t.parentId !== idToDelete));
         setIsModalOpen(false);
     };
 
@@ -863,6 +913,8 @@ export default function GanttPage() {
                                         task={task}
                                         categoryColors={categoryColors}
                                         onClick={handleEditTask}
+                                        onAddSubtask={handleAddSubtask}
+                                        onDelete={handleDeleteTask}
                                     />
                                 ))}
                             </SortableContext>

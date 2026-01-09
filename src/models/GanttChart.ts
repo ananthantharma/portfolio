@@ -7,6 +7,7 @@ export interface ITask {
     end: Date;
     progress: number;
     category: string;
+    parentId?: string;
 }
 
 interface IGanttChart extends Document {
@@ -24,6 +25,7 @@ const TaskSchema = new Schema<ITask>({
     end: { type: Date, required: true },
     progress: { type: Number, default: 0 },
     category: { type: String, default: 'default' },
+    parentId: { type: String },
 });
 
 const GanttChartSchema = new Schema<IGanttChart>({
