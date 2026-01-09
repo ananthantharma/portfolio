@@ -10,47 +10,78 @@ export async function GET(_req: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // UPDATE THIS STRING TO FORCE DEPLOYMENT
+    const VERSION = "2026-01-08-FIX-V3";
+
     await dbConnect();
 
     try {
         const collection = mongoose.connection.collection('ganttcharts');
-
-        // List indexes before
-        const indexesBefore = await collection.indexes();
-        console.log("Indexes before:", JSON.stringify(indexesBefore, null, 2));
-
         const logs: string[] = [];
-        logs.push(`Indexes found: ${indexesBefore.length}`);
-        indexesBefore.forEach(idx => logs.push(`- ${idx.name} (Unique: ${idx.unique || false})`));
+        logs.push(`Script Version: ${VERSION}`);
 
-        // Attempt to drop 'userId_1' directly
+        // 1. List indexes before
         try {
-            if (await collection.indexExists('userId_1')) {
-                await collection.dropIndex("userId_1");
-                logs.push("Successfully dropped index 'userId_1'");
-            } else {
-                logs.push("Index 'userId_1' not found by name.");
-            }
+            const indexesBefore = await collection.indexes();
+            logs.push(`Indexes found: ${indexesBefore.length}`);
+            indexesBefore.forEach(idx => logs.push(`- ${idx.name} (Unique: ${idx.unique || false})`));
+        } catch (e) { logs.push("Could not list indexes (might be dropped already)"); }
+
+        // 2. Aggressive Drop Attempts
+
+        // Attempt A: By Name "userId_1"
+        try {
+            await collection.dropIndex("userId_1");
+            logs.push("SUCCESS: Dropped index by name 'userId_1'");
         } catch (e) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            logs.push(`Failed to drop 'userId_1': ${(e as any).message}`);
+            logs.push(`Attempt A (Name) failed: ${(e as any).message}`);
         }
 
-        // List indexes after
-        const indexesAfter = await collection.indexes();
+        // Attempt B: By naming convention "userId_1_unique" (just in case)
+        try {
+            await collection.dropIndex("userId_1_unique");
+            logs.push("SUCCESS: Dropped index by name 'userId_1_unique'");
+        } catch (e) {
+            // Ignored
+        }
+
+        // Attempt C: By Specification (Mongoose/Mongo driver supports dropping by spec)
+        try {
+            // @ts-ignore - dropIndex signature allows object in some driver versions, trying just in case
+            await collection.dropIndex({ userId: 1 });
+            logs.push("SUCCESS: Dropped index by specification { userId: 1 }");
+        } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            logs.push(`Attempt C (Spec) failed: ${(e as any).message}`);
+        }
+
+        // 3. List indexes after
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let indexesAfter: any[] = [];
+        try {
+            indexesAfter = await collection.indexes();
+        } catch (e) { logs.push("Could not list indexes after op"); }
 
         return new NextResponse(`
             <html>
-                <body style="font-family: monospace; padding: 20px; background: #f0f0f0;">
-                    <h1>Database Fix Report</h1>
-                    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h3>Logs:</h3>
-                        <pre>${logs.join('\n')}</pre>
-                        <h3>Current Indexes:</h3>
-                        <pre>${JSON.stringify(indexesAfter, null, 2)}</pre>
-                        <br/>
-                        <div style="padding: 10px; background: #dcfce7; color: #166534; border-radius: 4px;">
-                            <strong>Refreshed!</strong> You can now try saving your Gantt chart again.
+                <body style="font-family: sans-serif; padding: 20px; background: #f3f4f6;">
+                    <div style="max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <h1 style="color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Database Cleanup Report</h1>
+                        <div style="margin-bottom: 15px;">
+                            <span style="background: #dbeafe; color: #1e40af; px: 3px; py: 1px; border-radius: 4px; font-size: 14px; font-family: monospace;">
+                                Script Version: ${VERSION}
+                            </span>
+                        </div>
+                        
+                        <h3 style="color: #374151;">Operation Logs:</h3>
+                        <pre style="background: #1f2937; color: #e5e7eb; padding: 15px; border-radius: 8px; overflow-x: auto;">${logs.join('\n')}</pre>
+                        
+                        <h3 style="color: #374151;">Current Indexes:</h3>
+                        <pre style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">${JSON.stringify(indexesAfter, null, 2)}</pre>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #ecfdf5; color: #065f46; border-radius: 8px; border: 1px solid #6ee7b7;">
+                            <strong>✅ Steps Completed.</strong> If you see "SUCCESS" in the logs above, try "Save As" again.
                         </div>
                     </div>
                 </body>
