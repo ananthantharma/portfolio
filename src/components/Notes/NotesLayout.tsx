@@ -13,6 +13,7 @@ import {
   PhotoIcon,
   UsersIcon,
   Cog6ToothIcon, // Added for BadgeSettingsModal
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
@@ -23,6 +24,7 @@ import { INoteSection } from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import SimpleRewriteModal from './SimpleRewriteModal';
+import SimpleRewriteOpenAIModal from './SimpleRewriteOpenAIModal';
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
@@ -524,6 +526,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(true), []);
   const handleCloseSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(false), []);
 
+  // Simple Rewrite (OpenAI) Modal
+  const [isSimpleRewriteOpenAIOpen, setIsSimpleRewriteOpenAIOpen] = useState(false);
+  const handleOpenSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(true), []);
+  const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
+
   const { data: session } = useSession();
 
   // Image Extraction Modal
@@ -633,6 +640,12 @@ const NotesLayout: React.FC = React.memo(() => {
                   onClick={handleOpenSimpleRewrite}>
                   <PencilSquareIcon className="h-3.5 w-3.5" />
                   Simple Rewrite
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all"
+                  onClick={handleOpenSimpleRewriteOpenAI}>
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  Simple Rewrite (OpenAI)
                 </button>
                 <button
                   className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
@@ -841,6 +854,7 @@ const NotesLayout: React.FC = React.memo(() => {
         />
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
+        <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
       </div>
