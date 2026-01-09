@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Plus, Trash2, Calendar, ChevronLeft, X, Edit2, CheckSquare, Settings, Maximize, Save, GripVertical, Sparkles, FolderOpen, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import Header from '../../components/Sections/Header';
 import {
     DndContext,
     closestCenter,
@@ -671,6 +672,7 @@ export default function GanttPage() {
             onDragEnd={handleDragEnd}
             onDragStart={handleDragStart}
         >
+            <Header />
             <div className="flex flex-col h-screen bg-slate-50 font-sans text-[#404040] pt-[72px]">
                 {/* Top Navigation */}
                 <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-20">
