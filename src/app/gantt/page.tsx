@@ -45,11 +45,11 @@ const addDays = (date: Date, days: number) => {
 
 // --- Mock Data (Placeholder) ---
 const INITIAL_TASKS = [
-    { id: '1', name: 'Project Kickoff', start: new Date(2023, 9, 1), end: new Date(2023, 9, 3), progress: 100, category: 'Planning' },
-    { id: '2', name: 'Requirements Gathering', start: new Date(2023, 9, 4), end: new Date(2023, 9, 10), progress: 60, category: 'Planning' },
-    { id: '3', name: 'Design Phase', start: new Date(2023, 9, 11), end: new Date(2023, 9, 25), progress: 20, category: 'Design' },
-    { id: '4', name: 'Development Sprint 1', start: new Date(2023, 9, 20), end: new Date(2023, 10, 5), progress: 0, category: 'Development' },
-    { id: '5', name: 'Client Review', start: new Date(2023, 10, 6), end: new Date(2023, 10, 8), progress: 0, category: 'Review' },
+    { id: '1', name: 'Project Kickoff', start: new Date(2023, 9, 1), end: new Date(2023, 9, 3), progress: 100, category: 'Planning', type: 'task' },
+    { id: '2', name: 'Requirements Gathering', start: new Date(2023, 9, 4), end: new Date(2023, 9, 10), progress: 60, category: 'Planning', type: 'task' },
+    { id: '3', name: 'Design Phase', start: new Date(2023, 9, 11), end: new Date(2023, 9, 25), progress: 20, category: 'Design', type: 'task' },
+    { id: '4', name: 'Development Sprint 1', start: new Date(2023, 9, 20), end: new Date(2023, 10, 5), progress: 0, category: 'Development', type: 'task' },
+    { id: '5', name: 'Client Review', start: new Date(2023, 10, 6), end: new Date(2023, 10, 8), progress: 0, category: 'Review', type: 'task' },
 ];
 
 // Hex codes for defaults to support dynamic style injection
@@ -458,7 +458,8 @@ export default function GanttPage() {
             end: addDays(new Date(parentTask.start), 2),
             progress: 0,
             category: parentTask.category,
-            parentId: parentId
+            parentId: parentId,
+            type: 'task'
         };
 
         // Find insert index: after parent and its current subtasks (simplistic: just after parent for now, reorder handles the rest)
@@ -478,7 +479,8 @@ export default function GanttPage() {
             start: new Date(),
             end: addDays(new Date(), 3),
             progress: 0,
-            category: Object.keys(categoryColors)[0] || 'default'
+            category: Object.keys(categoryColors)[0] || 'default',
+            type: 'task'
         };
         setCurrentTask(newTask);
         setIsModalOpen(true);
@@ -508,7 +510,7 @@ export default function GanttPage() {
         const taskToSave = {
             ...currentTask,
             start,
-            end,
+            end: currentTask.type === 'milestone' ? start : end,
             progress: Math.min(100, Math.max(0, parseInt(currentTask.progress) || 0))
         };
 
@@ -674,6 +676,36 @@ export default function GanttPage() {
             const barColor = categoryColors[task.category] || categoryColors['default'];
             const isDragging = activeId === task.id;
 
+            // Milestone Rendering
+            if (task.type === 'milestone') {
+                return (
+                    <div
+                        key={task.id}
+                        className={`relative group transition-opacity ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+                        style={{ height: ROW_HEIGHT }}
+                    >
+                        <div
+                            onClick={() => handleEditTask(task)}
+                            className="absolute top-1/2 -translate-y-1/2 w-6 h-6 transform rotate-45 shadow-md cursor-pointer hover:brightness-110 transition-all border-2 border-white"
+                            style={{
+                                left: `${left + (COLUMN_WIDTH / 2) - 12}px`, // Center in column
+                                backgroundColor: barColor
+                            }}
+                        >
+                        </div>
+
+                        {/* Label */}
+                        <div
+                            className="absolute top-1/2 -translate-y-1/2 text-xs font-bold text-[#404040] whitespace-nowrap pl-2"
+                            style={{ left: `${left + (COLUMN_WIDTH / 2) + 16}px` }}
+                        >
+                            {task.name}
+                        </div>
+                    </div>
+                );
+            }
+
+            // Normal Task Rendering
             return (
                 <div
                     key={task.id}
@@ -1000,6 +1032,23 @@ export default function GanttPage() {
                                     />
                                 </div>
 
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <input
+                                        type="checkbox"
+                                        id="isMilestone"
+                                        checked={currentTask.type === 'milestone'}
+                                        onChange={e => setCurrentTask({
+                                            ...currentTask,
+                                            type: e.target.checked ? 'milestone' : 'task',
+                                            // If switching to milestone, sync end date
+                                            end: e.target.checked ? currentTask.start : currentTask.end,
+                                            endStr: e.target.checked ? currentTask.startStr : currentTask.endStr
+                                        })}
+                                        className="w-4 h-4 text-[#6FBE44] rounded border-slate-300 focus:ring-[#6FBE44]"
+                                    />
+                                    <label htmlFor="isMilestone" className="text-sm font-bold text-[#404040]">Mark as Milestone</label>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Start Date</label>
@@ -1007,20 +1056,25 @@ export default function GanttPage() {
                                             type="date"
                                             required
                                             value={currentTask.startStr || formatDate(currentTask.start)}
-                                            onChange={e => setCurrentTask({ ...currentTask, startStr: e.target.value })}
+                                            onChange={e => {
+                                                const newEndStr = currentTask.type === 'milestone' ? e.target.value : currentTask.endStr;
+                                                setCurrentTask({ ...currentTask, startStr: e.target.value, endStr: newEndStr });
+                                            }}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040] font-medium"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">End Date</label>
-                                        <input
-                                            type="date"
-                                            required
-                                            value={currentTask.endStr || formatDate(currentTask.end)}
-                                            onChange={e => setCurrentTask({ ...currentTask, endStr: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040] font-medium"
-                                        />
-                                    </div>
+                                    {currentTask.type !== 'milestone' && (
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">End Date</label>
+                                            <input
+                                                type="date"
+                                                required
+                                                value={currentTask.endStr || formatDate(currentTask.end)}
+                                                onChange={e => setCurrentTask({ ...currentTask, endStr: e.target.value })}
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6FBE44]/20 focus:border-[#6FBE44] transition-all text-sm text-[#404040] font-medium"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">

@@ -8,6 +8,7 @@ export interface ITask {
     progress: number;
     category: string;
     parentId?: string;
+    type?: 'task' | 'milestone';
 }
 
 interface IGanttChart extends Document {
@@ -26,6 +27,7 @@ const TaskSchema = new Schema<ITask>({
     progress: { type: Number, default: 0 },
     category: { type: String, default: 'default' },
     parentId: { type: String },
+    type: { type: String, default: 'task', enum: ['task', 'milestone'] },
 });
 
 const GanttChartSchema = new Schema<IGanttChart>({
