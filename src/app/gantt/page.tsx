@@ -385,7 +385,7 @@ export default function GanttPage() {
     useEffect(() => {
         if (viewMode === 'Fit' && containerRef.current) {
             const availableWidth = containerRef.current.offsetWidth;
-            const newWidth = Math.max((availableWidth / totalDays), 5); // Minimum 5px
+            const newWidth = Math.max((availableWidth / totalDays), 1); // Minimum 1px
             setFitColumnWidth(newWidth);
         }
     }, [viewMode, totalDays, containerRef.current?.offsetWidth]);
@@ -395,7 +395,7 @@ export default function GanttPage() {
         const handleResize = () => {
             if (viewMode === 'Fit' && containerRef.current) {
                 const availableWidth = containerRef.current.offsetWidth;
-                const newWidth = Math.max((availableWidth / totalDays), 5);
+                const newWidth = Math.max((availableWidth / totalDays), 1);
                 setFitColumnWidth(newWidth);
             }
         };
@@ -752,7 +752,10 @@ export default function GanttPage() {
                             <ZoomOut
                                 className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
                                 onClick={() => {
-                                    setColumnWidth(prev => Math.max(1, prev - 5));
+                                    setColumnWidth(prev => {
+                                        if (prev <= 20) return Math.max(1, prev - 1);
+                                        return Math.max(1, prev - 5);
+                                    });
                                     setViewMode('Custom');
                                 }}
                             />
@@ -789,7 +792,10 @@ export default function GanttPage() {
                             <ZoomIn
                                 className="w-4 h-4 text-slate-400 cursor-pointer hover:text-slate-600"
                                 onClick={() => {
-                                    setColumnWidth(prev => Math.min(200, prev + 5));
+                                    setColumnWidth(prev => {
+                                        if (prev < 20) return Math.min(200, prev + 1);
+                                        return Math.min(200, prev + 5);
+                                    });
                                     setViewMode('Custom');
                                 }}
                             />
