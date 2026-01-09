@@ -22,6 +22,7 @@ import { INotePage } from '@/models/NotePage';
 import { INoteSection } from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
+import SimpleRewriteModal from './SimpleRewriteModal';
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
@@ -517,6 +518,12 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
+
+  // Simple Rewrite Modal
+  const [isSimpleRewriteOpen, setIsSimpleRewriteOpen] = useState(false);
+  const handleOpenSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(true), []);
+  const handleCloseSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(false), []);
+
   const { data: session } = useSession();
 
   // Image Extraction Modal
@@ -620,6 +627,12 @@ const NotesLayout: React.FC = React.memo(() => {
                   onClick={handleOpenRewrite}>
                   <PencilSquareIcon className="h-3.5 w-3.5" />
                   Rewrite
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-purple-600 transition-all"
+                  onClick={handleOpenSimpleRewrite}>
+                  <PencilSquareIcon className="h-3.5 w-3.5" />
+                  Simple Rewrite
                 </button>
                 <button
                   className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
@@ -827,6 +840,7 @@ const NotesLayout: React.FC = React.memo(() => {
           onSelectTask={handleJumpToTask}
         />
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
+        <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
       </div>
