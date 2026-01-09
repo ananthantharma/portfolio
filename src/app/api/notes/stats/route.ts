@@ -38,7 +38,7 @@ export async function GET(_req: Request) {
         };
 
         const todoStats = await ToDo.aggregate([
-            { $match: { userEmail, isCompleted: false } },
+            { $match: { userEmail, isCompleted: false, sourcePageId: { $exists: true, $ne: null } } },
             {
                 $lookup: {
                     from: 'notepages',
