@@ -1060,7 +1060,7 @@ export default function GanttPage() {
                                     {currentTask.id && tasks.find(t => t.id === currentTask.id) ? (
                                         <button
                                             type="button"
-                                            onClick={handleDeleteTask}
+                                            onClick={() => handleDeleteTask()}
                                             className="flex items-center space-x-2 text-red-500 hover:text-red-600 text-xs font-bold px-3 py-2 rounded-lg hover:bg-red-50 transition-colors uppercase tracking-wider"
                                         >
                                             <Trash2 className="w-4 h-4" />
