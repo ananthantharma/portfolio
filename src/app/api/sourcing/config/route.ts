@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
-import connectToDatabase from '../../../../lib/mongodb';
+import dbConnect from '../../../../lib/dbConnect';
 import SourcingConfig from '../../../../models/SourcingConfig';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        await connectToDatabase();
+        await dbConnect();
 
         // Find or create config
         let config = await SourcingConfig.findOne({ userId: session.user.email });
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        await connectToDatabase();
+        await dbConnect();
 
         const config = await SourcingConfig.findOneAndUpdate(
             { userId: session.user.email },

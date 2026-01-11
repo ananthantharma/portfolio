@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
-import connectToDatabase from '../../../../lib/mongodb';
+import dbConnect from '../../../../lib/dbConnect';
 import SourcingEvent from '../../../../models/SourcingEvent';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        await connectToDatabase();
+        await dbConnect();
         const events = await SourcingEvent.find({ userId: session.user.email }).sort({ updatedAt: -1 });
 
         return NextResponse.json(events);
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        await connectToDatabase();
+        await dbConnect();
 
         let event;
         if (body._id) {
