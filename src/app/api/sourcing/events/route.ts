@@ -65,7 +65,7 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
 
-        await connectToDatabase();
+        await dbConnect();
         await SourcingEvent.deleteOne({ _id: id, userId: session.user.email });
 
         return NextResponse.json({ success: true });
