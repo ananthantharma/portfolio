@@ -658,14 +658,6 @@ const NotesLayout: React.FC = React.memo(() => {
                   className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
                   onClick={handleOpenAssessment}
                   title="Document Assessment">
-                  {/* Using ClipboardDocumentListIcon as placeholder or need new icon. DocumentTextIcon is used in modal. */}
-                  {/* Re-using ClipboardDocumentListIcon or importing DocumentTextIcon would be better. */}
-                  {/* Let's use generic PenciSquare logic or Photo. I'll use ClipboardDocumentListIcon for now OR import DocumentTextIcon from outline above. */}
-                  {/* Wait, DocumentTextIcon is NOT imported in NotesLayout. import it? */}
-                  {/* I will use ClipboardDocumentListIcon which IS imported, but it's used for Tasks. */}
-                  {/* Let's verify imports. DocumentTextIcon is NOT in imports. */}
-                  {/* I'll use PhotoIcon temporarily OR I can add DocumentTextIcon to imports. */}
-                  {/* Better to add DocumentTextIcon to imports. */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -680,6 +672,28 @@ const NotesLayout: React.FC = React.memo(() => {
                     />
                   </svg>
                   Assessment
+                </button>
+
+                {/* Sourcing Buttons */}
+                <div className="h-4 w-px bg-gray-200"></div>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                  onClick={() => setIsSourcingListOpen(true)}
+                  title="View All Sourcing Events"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+                  </svg>
+                  Sourcing
+                </button>
+                <button
+                  className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-indigo-600 transition-colors"
+                  onClick={() => setIsSourcingModalOpen(true)}
+                  title="Create Sourcing Event for this Page"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
                 </button>
               </>
             )}
