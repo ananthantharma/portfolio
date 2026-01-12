@@ -877,17 +877,31 @@ const NotesLayout: React.FC = React.memo(() => {
         <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
-        {/* Sourcing Modals */}
         <SourcingEventModal
           isOpen={isSourcingModalOpen}
           onClose={() => setIsSourcingModalOpen(false)}
-          defaultDescription={pages.find(p => p._id === selectedPageId)?.title || ''}
+          defaultEventName={selectedPage?.title || ''}
+          defaultDescription=""
           sourcePageId={selectedPageId || undefined}
         />
 
         <SourcingListModal
           isOpen={isSourcingListOpen}
           onClose={() => setIsSourcingListOpen(false)}
+          onNavigateToPage={async (pageId) => {
+            try {
+              // We need to fetch the full page object to get section/category info for navigation
+              // Assuming GET /api/notes/pages/:id returns the populated page
+              const res = await axios.get(`/api/notes/pages/${pageId}`);
+              if (res.data && res.data.data) {
+                handleJumpToTask(res.data.data);
+                setIsSourcingListOpen(false);
+              }
+            } catch (e) {
+              console.error("Failed to navigate to page", e);
+              alert("Could not load the linked page.");
+            }
+          }}
         />
       </div>
     </BadgeSettingsProvider>

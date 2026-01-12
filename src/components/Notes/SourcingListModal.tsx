@@ -1,15 +1,16 @@
 import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import SourcingEventModal from './SourcingEventModal';
 
 interface SourcingListModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onNavigateToPage?: (pageId: string) => void;
 }
 
-export default function SourcingListModal({ isOpen, onClose }: SourcingListModalProps) {
+export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }: SourcingListModalProps) {
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [editEvent, setEditEvent] = useState<any>(null);
@@ -216,7 +217,26 @@ export default function SourcingListModal({ isOpen, onClose }: SourcingListModal
                                                     {sortedAndFilteredEvents.map((event) => (
                                                         <tr key={event._id} className="hover:bg-gray-50">
                                                             <td className="px-3 py-4 text-sm text-gray-900 align-top">
-                                                                <div className="font-medium text-indigo-600 truncate" title={event.eventName}>{event.eventName || 'Untitled Event'}</div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div
+                                                                        className={`font-medium text-indigo-600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
+                                                                        title={event.eventName}
+                                                                        onClick={() => {
+                                                                            if (event.sourcePageId && onNavigateToPage) {
+                                                                                onNavigateToPage(event.sourcePageId);
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {event.eventName || 'Untitled Event'}
+                                                                    </div>
+                                                                    {event.sourcePageId && onNavigateToPage && (
+                                                                        <ArrowTopRightOnSquareIcon
+                                                                            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600"
+                                                                            onClick={() => onNavigateToPage(event.sourcePageId)}
+                                                                            title="Go to Page"
+                                                                        />
+                                                                    )}
+                                                                </div>
                                                                 <div className="text-gray-500 text-xs mt-1 line-clamp-2" title={event.description}>{event.description}</div>
                                                             </td>
                                                             <td className="px-3 py-4 text-sm text-gray-500 align-top">
@@ -227,15 +247,15 @@ export default function SourcingListModal({ isOpen, onClose }: SourcingListModal
                                                                 <div className="text-xs">{event.activityType}</div>
                                                                 <div className="text-xs text-gray-400">{event.sourcingStatus}</div>
                                                                 <div className={`text-xs mt-1 font-medium ${event.riskLevel === 'High' ? 'text-red-600' :
-                                                                        event.riskLevel === 'Medium' ? 'text-yellow-600' : 'text-green-600'
+                                                                    event.riskLevel === 'Medium' ? 'text-yellow-600' : 'text-green-600'
                                                                     }`}>
                                                                     {event.riskLevel ? `${event.riskLevel} Risk` : ''}
                                                                 </div>
                                                             </td>
                                                             <td className="px-3 py-4 text-sm align-top">
                                                                 <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mb-1 ${event.status === 'Active' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' :
-                                                                        event.status === 'On Hold' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' :
-                                                                            'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
+                                                                    event.status === 'On Hold' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' :
+                                                                        'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
                                                                     }`}>
                                                                     {event.status}
                                                                 </span>
