@@ -249,6 +249,16 @@ export default function SourcingEventModal({
                                                 <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
                                                 <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                                             </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Tracking Status</label>
+                                                <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="On Track">On Track (Green)</option>
+                                                    <option value="At Risk">At Risk (Amber)</option>
+                                                    <option value="Off Track / Late">Off Track / Late (Red)</option>
+                                                    <option value="Cancelled">Cancelled (Gray)</option>
+                                                    <option value="Closed">Closed (Gray)</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -343,13 +353,7 @@ export default function SourcingEventModal({
                                                     <input type="date" name="expirationDate" value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
                                                 </div>
                                                 {renderSelectWithAdd("Renewal Type", "renewalType", "renewalTypes", config.renewalTypes)}
-                                                <div className="col-span-1">
-                                                    <label className="block text-sm font-medium text-gray-700">On Track / Late</label>
-                                                    <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                        <option value="On Track">On Track</option>
-                                                        <option value="Late">Late</option>
-                                                    </select>
-                                                </div>
+
                                             </div>
                                         )}
                                     </div>
