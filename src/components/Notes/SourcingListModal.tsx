@@ -21,18 +21,24 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const [filters, setFilters] = useState({
         search: '',
         status: '',
-        lead: '',
-        activityType: ''
+        primaryLead: '',
+        categoryLead: '',
+        risk: '',
+        onTrack: ''
     });
 
-    // Extract unique leads for filter dropdown
-    const availableLeads = useMemo(() => {
-        const leads = new Set<string>();
+    // Extract unique leads for filter dropdowns
+    const { primaryLeads, categoryLeads } = useMemo(() => {
+        const pLeads = new Set<string>();
+        const cLeads = new Set<string>();
         events.forEach(e => {
-            if (e.primaryLead) leads.add(e.primaryLead);
-            if (e.categoryLead) leads.add(e.categoryLead);
+            if (e.primaryLead) pLeads.add(e.primaryLead);
+            if (e.categoryLead) cLeads.add(e.categoryLead);
         });
-        return Array.from(leads).sort();
+        return {
+            primaryLeads: Array.from(pLeads).sort(),
+            categoryLeads: Array.from(cLeads).sort()
+        };
     }, [events]);
 
     useEffect(() => {
@@ -94,16 +100,21 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         if (filters.status) {
             items = items.filter(item => item.status === filters.status);
         }
-        if (filters.lead) {
-            const lowerLead = filters.lead.toLowerCase();
-            items = items.filter(item =>
-                (item.primaryLead?.toLowerCase() === lowerLead) ||
-                (item.categoryLead?.toLowerCase() === lowerLead)
-            );
+        if (filters.primaryLead) {
+            const lower = filters.primaryLead.toLowerCase();
+            items = items.filter(item => item.primaryLead?.toLowerCase() === lower);
         }
-        if (filters.activityType) {
-            items = items.filter(item => item.activityType === filters.activityType);
+        if (filters.categoryLead) {
+            const lower = filters.categoryLead.toLowerCase();
+            items = items.filter(item => item.categoryLead?.toLowerCase() === lower);
         }
+        if (filters.risk) {
+            items = items.filter(item => item.riskLevel === filters.risk);
+        }
+        if (filters.onTrack) {
+            items = items.filter(item => item.onTrack === filters.onTrack);
+        }
+
 
         // Sorting
         if (sortConfig) {
@@ -157,6 +168,20 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         }
     };
 
+    const renderTracking = (status: string) => {
+        let bgClass = 'bg-gray-100 text-gray-800';
+        if (status === 'On Track') bgClass = 'bg-green-100 text-green-800';
+        else if (status === 'At Risk') bgClass = 'bg-yellow-100 text-yellow-800';
+        else if (status === 'Off Track / Late') bgClass = 'bg-red-100 text-red-800';
+        else if (status === 'Cancelled' || status === 'Closed') bgClass = 'bg-gray-200 text-gray-800';
+
+        return (
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${bgClass}`}>
+                {status || '-'}
+            </span>
+        );
+    };
+
     return (
         <>
             <Transition.Root show={isOpen} as={Fragment}>
@@ -194,23 +219,33 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                     {/* Filters Bar */}
                                     {showFilters && (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn">
+                                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn">
                                             <input
                                                 type="text"
-                                                placeholder="Search Name or Desc..."
+                                                placeholder="Search..."
                                                 value={filters.search}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             />
 
-                                            {/* Lead Dropdown */}
                                             <select
-                                                value={filters.lead}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, lead: e.target.value }))}
+                                                value={filters.primaryLead}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, primaryLead: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             >
-                                                <option value="">All Leads</option>
-                                                {availableLeads.map(lead => (
+                                                <option value="">All Pri Leads</option>
+                                                {primaryLeads.map(lead => (
+                                                    <option key={lead} value={lead}>{lead}</option>
+                                                ))}
+                                            </select>
+
+                                            <select
+                                                value={filters.categoryLead}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, categoryLead: e.target.value }))}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            >
+                                                <option value="">All Cat Leads</option>
+                                                {categoryLeads.map(lead => (
                                                     <option key={lead} value={lead}>{lead}</option>
                                                 ))}
                                             </select>
@@ -227,12 +262,38 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 <option value="Cancelled">Cancelled</option>
                                             </select>
 
-                                            <button
-                                                onClick={() => setFilters({ search: '', status: '', lead: '', activityType: '' })}
-                                                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                            <select
+                                                value={filters.risk}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, risk: e.target.value }))}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             >
-                                                Clear Filters
-                                            </button>
+                                                <option value="">All Risks</option>
+                                                <option value="Low">Low</option>
+                                                <option value="Medium">Medium</option>
+                                                <option value="High">High</option>
+                                            </select>
+
+                                            <select
+                                                value={filters.onTrack}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, onTrack: e.target.value }))}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            >
+                                                <option value="">All Tracking</option>
+                                                <option value="On Track">On Track</option>
+                                                <option value="At Risk">At Risk</option>
+                                                <option value="Off Track / Late">Off Track / Late</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                                <option value="Closed">Closed</option>
+                                            </select>
+
+                                            <div className="md:col-span-6 text-right">
+                                                <button
+                                                    onClick={() => setFilters({ search: '', status: '', primaryLead: '', categoryLead: '', risk: '', onTrack: '' })}
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                                >
+                                                    Clear Filters
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -241,22 +302,23 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
                                             <tr>
-                                                <SortableHeader label="Event Name" column="eventName" className="w-1/4" />
-                                                <SortableHeader label="Primary Lead" column="primaryLead" />
-                                                <SortableHeader label="Category Lead" column="categoryLead" />
+                                                <SortableHeader label="Event Name" column="eventName" className="w-1/5" />
+                                                <SortableHeader label="Pri. Lead" column="primaryLead" />
+                                                <SortableHeader label="Cat. Lead" column="categoryLead" />
                                                 <SortableHeader label="Value" column="estimatedContractValue" />
                                                 <SortableHeader label="Risk" column="riskLevel" className="text-center" />
+                                                <SortableHeader label="Tracking" column="onTrack" />
                                                 <SortableHeader label="Status" column="status" />
                                                 <SortableHeader label="Date" column="needDate" />
-                                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Notes</th>
+                                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">Notes</th>
                                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {loading ? (
-                                                <tr><td colSpan={9} className="p-4 text-center text-gray-500">Loading events...</td></tr>
+                                                <tr><td colSpan={10} className="p-4 text-center text-gray-500">Loading events...</td></tr>
                                             ) : sortedAndFilteredEvents.length === 0 ? (
-                                                <tr><td colSpan={9} className="p-4 text-center text-gray-500">No events found.</td></tr>
+                                                <tr><td colSpan={10} className="p-4 text-center text-gray-500">No events found.</td></tr>
                                             ) : (
                                                 sortedAndFilteredEvents.map((event) => (
                                                     <tr key={event._id} className="hover:bg-gray-50 transition-colors">
@@ -298,6 +360,11 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                         {/* Risk */}
                                                         <td className="px-3 py-4 text-sm text-center align-top text-lg">
                                                             {renderRisk(event.riskLevel)}
+                                                        </td>
+
+                                                        {/* Tracking */}
+                                                        <td className="px-3 py-4 text-sm align-top">
+                                                            {renderTracking(event.onTrack)}
                                                         </td>
 
                                                         {/* Status */}
