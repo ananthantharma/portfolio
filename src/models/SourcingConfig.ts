@@ -6,6 +6,11 @@ export interface ISourcingConfig extends Document {
     activityTypes: string[];
     sourcingStatuses: string[];
     categoryLeads: string[];
+    statuses: string[];
+    departments: string[];
+    renewalTypes: string[];
+    spendTypes: string[];
+    msaVorOptions: string[];
 }
 
 const SourcingConfigSchema = new Schema<ISourcingConfig>({
@@ -33,6 +38,26 @@ const SourcingConfigSchema = new Schema<ISourcingConfig>({
     categoryLeads: {
         type: [String],
         default: ['Jermaine Chin', 'Parul Singh', 'Jonathan Cardoso', 'Rohan Segal', 'Ananthan']
+    },
+    statuses: {
+        type: [String],
+        default: ['Active', 'Pending', 'Complete', 'On Hold', 'Cancelled']
+    },
+    departments: {
+        type: [String],
+        default: ['IT', 'HR', 'Finance', 'Operations', 'Legal', 'Marketing']
+    },
+    renewalTypes: {
+        type: [String],
+        default: ['Auto-renew', 'Manual', 'One-time']
+    },
+    spendTypes: {
+        type: [String],
+        default: ['OpEx', 'CapEx']
+    },
+    msaVorOptions: { // Just for suggestions if needed, though MSA often free text. User asked for options.
+        type: [String],
+        default: ['MSA', 'VOR', 'SOW']
     }
 });
 

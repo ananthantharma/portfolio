@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
 interface SourcingEventModalProps {
@@ -25,13 +25,30 @@ export default function SourcingEventModal({
         facilities: [],
         activityTypes: [],
         sourcingStatuses: [],
-        categoryLeads: []
+        categoryLeads: [],
+        statuses: [],
+        departments: [],
+        renewalTypes: [],
+        spendTypes: [],
+        msaVorOptions: []
     });
 
     // Form Data
     const [formData, setFormData] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [vendorsInput, setVendorsInput] = useState('');
+
+    // Section Visibility State (Default Open)
+    const [sectionsOpen, setSectionsOpen] = useState({
+        ownership: true,
+        vendor: true,
+        timeline: true,
+        financials: true
+    });
+
+    const toggleSection = (section: keyof typeof sectionsOpen) => {
+        setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }));
+    };
 
     // Fetch Config
     useEffect(() => {
@@ -114,8 +131,8 @@ export default function SourcingEventModal({
         }
     };
 
-    const renderSelectWithAdd = (label: string, name: string, configKey: string, options: string[]) => (
-        <div className="col-span-1">
+    const renderSelectWithAdd = (label: string, name: string, configKey: string, options: string[], className = "col-span-1") => (
+        <div className={className}>
             <label className="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
                 {label}
                 <button type="button" onClick={() => handleAddFieldOption(configKey)} className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center">
@@ -130,11 +147,21 @@ export default function SourcingEventModal({
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
                     <option value="">Select...</option>
-                    {options.map((opt) => (
+                    {options && options.map((opt) => (
                         <option key={opt} value={opt}>{opt}</option>
                     ))}
                 </select>
             </div>
+        </div>
+    );
+
+    const CollapsibleSectionHeader = ({ title, section, isOpen }: { title: string, section: keyof typeof sectionsOpen, isOpen: boolean }) => (
+        <div
+            className="flex justify-between items-center cursor-pointer bg-gray-100 p-2 rounded-t-lg mt-4 border-b border-gray-200"
+            onClick={() => toggleSection(section)}
+        >
+            <h3 className="text-md font-medium text-gray-900">{title}</h3>
+            {isOpen ? <ChevronUpIcon className="w-4 h-4 text-gray-500" /> : <ChevronDownIcon className="w-4 h-4 text-gray-500" />}
         </div>
     );
 
@@ -155,8 +182,8 @@ export default function SourcingEventModal({
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-8">
-                                    {/* 1. Header Section: Core Identity */}
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    {/* 1. Core Identity (Always Visible) */}
                                     <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                                         <h3 className="text-lg font-medium text-gray-900 mb-4">Core Identity</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -183,28 +210,22 @@ export default function SourcingEventModal({
                                                 />
                                             </div>
 
-                                            {/* Row 2 */}
-                                            <div className="md:col-span-2">
+                                            {/* Description */}
+                                            <div className="md:col-span-4">
                                                 <label className="block text-sm font-medium text-gray-700">Description</label>
                                                 <textarea
                                                     name="description"
-                                                    rows={3}
+                                                    rows={2}
                                                     value={formData.description || ''}
                                                     onChange={handleChange}
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 />
                                             </div>
-                                            <div className="md:col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Status</label>
-                                                <select name="status" value={formData.status || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <option value="Active">Active</option>
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Complete">Complete</option>
-                                                    <option value="On Hold">On Hold</option>
-                                                    <option value="Cancelled">Cancelled</option>
-                                                </select>
-                                            </div>
-                                            <div className="md:col-span-1">
+
+                                            {/* Row 2: Category Lead, Activity Type, Risk Level, Status, Sourcing Status */}
+                                            {renderSelectWithAdd("Category Lead", "categoryLead", "categoryLeads", config.categoryLeads)}
+                                            {renderSelectWithAdd("Activity Type", "activityType", "activityTypes", config.activityTypes)}
+                                            <div className="col-span-1">
                                                 <label className="block text-sm font-medium text-gray-700">Risk Level</label>
                                                 <select name="riskLevel" value={formData.riskLevel || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                                     <option value="Low">Low</option>
@@ -212,153 +233,130 @@ export default function SourcingEventModal({
                                                     <option value="High">High</option>
                                                 </select>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    {/* 2. Section: Ownership & Categorization */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Ownership & Categorization</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                            {/* Row 1 */}
-                                            <div className="col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700">Business Unit/Dept</label>
-                                                <input type="text" name="department" value={formData.department || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="col-span-2">
-                                                {renderSelectWithAdd("Facility", "facility", "facilities", config.facilities)}
-                                            </div>
-
-                                            {/* Row 2 */}
-                                            {renderSelectWithAdd("Category Lead", "categoryLead", "categoryLeads", config.categoryLeads)}
-                                            {renderSelectWithAdd("Activity Type", "activityType", "activityTypes", config.activityTypes)}
+                                            {renderSelectWithAdd("Status", "status", "statuses", config.statuses)}
                                             {renderSelectWithAdd("Sourcing Status", "sourcingStatus", "sourcingStatuses", config.sourcingStatuses)}
-
-                                            {/* Row 3 */}
-                                            <div className="col-span-1 md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700">Commodity Category</label>
-                                                <input type="text" name="commodityCategory" value={formData.commodityCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="col-span-1 md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700">Sub Category</label>
-                                                <input type="text" name="subCategory" value={formData.subCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* 3. Section: Vendor Information */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Vendor Information</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                            <div className="md:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700">Vendor(s) (Comma separated)</label>
-                                                <input type="text" value={vendorsInput} onChange={e => setVendorsInput(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Vendor A, Vendor B..." />
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Vendor Tier</label>
-                                                <select name="vendorTier" value={formData.vendorTier || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <option value="">Select...</option>
-                                                    <option value="Strategic">Strategic</option>
-                                                    <option value="Preferred">Preferred</option>
-                                                    <option value="Transactional">Transactional</option>
-                                                </select>
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Performance (1-5)</label>
-                                                <input type="number" name="vendorPerformance" min="1" max="5" value={formData.vendorPerformance || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="md:col-span-4 flex gap-6">
-                                                <label className="inline-flex items-center">
-                                                    <input type="checkbox" name="existingVendor" checked={!!formData.existingVendor} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                    <span className="ml-2 text-sm text-gray-700">Existing Vendor</span>
-                                                </label>
-                                                <label className="inline-flex items-center">
-                                                    <input type="checkbox" name="diversityClassification" checked={!!formData.diversityClassification} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                    <span className="ml-2 text-sm text-gray-700">Diversity Classification</span>
-                                                </label>
-                                                <label className="inline-flex items-center">
-                                                    <input type="checkbox" name="indigenousOpportunity" checked={!!formData.indigenousOpportunity} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                    <span className="ml-2 text-sm text-gray-700">Indigenous Opp.</span>
-                                                </label>
-                                            </div>
-                                        </div>
+                                    {/* Additional Details (Notes) - Moved Up */}
+                                    <div className="border border-gray-200 rounded-lg p-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Notes & Additional Details</label>
+                                        <textarea
+                                            name="notes"
+                                            rows={3}
+                                            value={formData.notes || ''}
+                                            onChange={handleChange}
+                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            placeholder="Internal notes, next steps, or general comments..."
+                                        />
                                     </div>
 
-                                    {/* 4. Section: Timeline & Schedule */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Timeline & Schedule</h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Effective Date</label>
-                                                <input type="date" name="effectiveDate" value={formData.effectiveDate ? new Date(formData.effectiveDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                    {/* 2. Ownership & Categorization */}
+                                    <div className="border border-gray-200 rounded-lg">
+                                        <CollapsibleSectionHeader title="Ownership & Categorization" section="ownership" isOpen={sectionsOpen.ownership} />
+                                        {sectionsOpen.ownership && (
+                                            <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                {renderSelectWithAdd("Business Unit/Dept", "department", "departments", config.departments, "col-span-2")}
+                                                {renderSelectWithAdd("Facility", "facility", "facilities", config.facilities, "col-span-2")}
+
+                                                <div className="col-span-1 md:col-span-2">
+                                                    <label className="block text-sm font-medium text-gray-700">Commodity Category</label>
+                                                    <input type="text" name="commodityCategory" value={formData.commodityCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                <div className="col-span-1 md:col-span-2">
+                                                    <label className="block text-sm font-medium text-gray-700">Sub Category</label>
+                                                    <input type="text" name="subCategory" value={formData.subCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
                                             </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Expiration Date</label>
-                                                <input type="date" name="expirationDate" value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Renewal Type</label>
-                                                <select name="renewalType" value={formData.renewalType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <option value="">Select...</option>
-                                                    <option value="Auto-renew">Auto-renew</option>
-                                                    <option value="Manual">Manual</option>
-                                                    <option value="One-time">One-time</option>
-                                                </select>
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">On Track / Late</label>
-                                                <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <option value="On Track">On Track</option>
-                                                    <option value="Late">Late</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    {/* 5. Section: Financials & Contracts */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Financials & Contracts</h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
-                                                <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                    {/* 3. Vendor Information */}
+                                    <div className="border border-gray-200 rounded-lg">
+                                        <CollapsibleSectionHeader title="Vendor Information" section="vendor" isOpen={sectionsOpen.vendor} />
+                                        {sectionsOpen.vendor && (
+                                            <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-sm font-medium text-gray-700">Vendor(s) (Comma separated)</label>
+                                                    <input type="text" value={vendorsInput} onChange={e => setVendorsInput(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Vendor A, Vendor B..." />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Vendor Tier</label>
+                                                    <select name="vendorTier" value={formData.vendorTier || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                        <option value="">Select...</option>
+                                                        <option value="Strategic">Strategic</option>
+                                                        <option value="Preferred">Preferred</option>
+                                                        <option value="Transactional">Transactional</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Performance (1-5)</label>
+                                                    <input type="number" name="vendorPerformance" min="1" max="5" value={formData.vendorPerformance || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                <div className="md:col-span-4 flex gap-6">
+                                                    <label className="inline-flex items-center">
+                                                        <input type="checkbox" name="existingVendor" checked={!!formData.existingVendor} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                        <span className="ml-2 text-sm text-gray-700">Existing Vendor</span>
+                                                    </label>
+                                                    <label className="inline-flex items-center">
+                                                        <input type="checkbox" name="diversityClassification" checked={!!formData.diversityClassification} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                        <span className="ml-2 text-sm text-gray-700">Diversity Classification</span>
+                                                    </label>
+                                                    <label className="inline-flex items-center">
+                                                        <input type="checkbox" name="indigenousOpportunity" checked={!!formData.indigenousOpportunity} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                        <span className="ml-2 text-sm text-gray-700">Indigenous Opp.</span>
+                                                    </label>
+                                                </div>
                                             </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Cost Savings</label>
-                                                <input type="number" name="costSavings" value={formData.costSavings || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Spend Type</label>
-                                                <select name="spendType" value={formData.spendType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <option value="">Select...</option>
-                                                    <option value="OpEx">OpEx</option>
-                                                    <option value="CapEx">CapEx</option>
-                                                </select>
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">MSA / VOR</label>
-                                                <input type="text" name="msaVor" value={formData.msaVor || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                            <div className="col-span-1">
-                                                <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
-                                                <input type="text" name="purchaseOrder" value={formData.purchaseOrder || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    {/* 6. Section: Additional Details (Footer) */}
-                                    <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Additional Details</h3>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">Notes</label>
-                                            <textarea
-                                                name="notes"
-                                                rows={4}
-                                                value={formData.notes || ''}
-                                                onChange={handleChange}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                placeholder="Internal notes, next steps, or general comments..."
-                                            />
-                                        </div>
+                                    {/* 4. Timeline & Schedule */}
+                                    <div className="border border-gray-200 rounded-lg">
+                                        <CollapsibleSectionHeader title="Timeline & Schedule" section="timeline" isOpen={sectionsOpen.timeline} />
+                                        {sectionsOpen.timeline && (
+                                            <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Effective Date</label>
+                                                    <input type="date" name="effectiveDate" value={formData.effectiveDate ? new Date(formData.effectiveDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Expiration Date</label>
+                                                    <input type="date" name="expirationDate" value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                {renderSelectWithAdd("Renewal Type", "renewalType", "renewalTypes", config.renewalTypes)}
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">On Track / Late</label>
+                                                    <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                        <option value="On Track">On Track</option>
+                                                        <option value="Late">Late</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* 5. Financials & Contracts */}
+                                    <div className="border border-gray-200 rounded-lg">
+                                        <CollapsibleSectionHeader title="Financials & Contracts" section="financials" isOpen={sectionsOpen.financials} />
+                                        {sectionsOpen.financials && (
+                                            <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
+                                                    <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Cost Savings</label>
+                                                    <input type="number" name="costSavings" value={formData.costSavings || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                                {renderSelectWithAdd("Spend Type", "spendType", "spendTypes", config.spendTypes)}
+                                                {renderSelectWithAdd("MSA / VOR", "msaVor", "msaVorOptions", config.msaVorOptions)}
+                                                <div className="col-span-1">
+                                                    <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
+                                                    <input type="text" name="purchaseOrder" value={formData.purchaseOrder || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-lg">
