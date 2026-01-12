@@ -16,17 +16,18 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const [editEvent, setEditEvent] = useState<any>(null);
 
     // Column Widths State
-    const [colWidths, setColWidths] = useState<Record<string, number>>({
-        eventName: 250,
-        primaryLead: 120,
-        categoryLead: 120,
-        estimatedContractValue: 120,
-        riskLevel: 80,
-        onTrack: 110,
-        sourcingStatus: 140,
-        needDate: 100,
-        notes: 200,
-        actions: 100
+    // Column Widths State - Using Percentages
+    const [colWidths, setColWidths] = useState<Record<string, string | number>>({
+        eventName: '15%',
+        primaryLead: '8%',
+        categoryLead: '8%',
+        estimatedContractValue: '9%',
+        riskLevel: '6%',
+        onTrack: '8%',
+        sourcingStatus: '12%',
+        needDate: '8%',
+        notes: '20%',
+        actions: '6%'
     });
 
     // Sorting & Filtering State
@@ -76,7 +77,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this event?")) return;
         try {
-            await axios.delete(`/ api / sourcing / events ? id = ${id} `);
+            await axios.delete(`/api/sourcing/events?id=${id}`);
             setEvents(prev => prev.filter(e => e._id !== id));
         } catch (e) {
             console.error("Delete failed", e);
@@ -106,9 +107,14 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const handleResizeStart = (e: React.MouseEvent, colKey: string) => {
         e.preventDefault();
         e.stopPropagation();
+
+        // Get the current actual width in pixels from the DOM element
+        const parentHeader = (e.target as HTMLElement).closest('th');
+        const startWidth = parentHeader ? parentHeader.offsetWidth : 100;
+
         resizingRef.current = {
             startX: e.clientX,
-            startWidth: colWidths[colKey] || 100,
+            startWidth,
             colKey
         };
         document.addEventListener('mousemove', handleResizeMove);

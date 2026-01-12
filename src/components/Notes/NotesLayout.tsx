@@ -641,10 +641,10 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
             </button>
             <button
-              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-              onClick={handleOpenContactList}>
+              className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+              onClick={handleOpenContactList}
+              title="Contacts">
               <UsersIcon className="h-3.5 w-3.5" />
-              Contacts
             </button>
 
             <div className="h-4 w-px bg-gray-200"></div>
@@ -653,32 +653,31 @@ const NotesLayout: React.FC = React.memo(() => {
             {session?.user?.email === 'lankanprinze@gmail.com' && (
               <>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
-                  onClick={handleOpenRewrite}>
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
+                  onClick={handleOpenRewrite}
+                  title="Rewrite">
                   <PencilSquareIcon className="h-3.5 w-3.5" />
-                  Rewrite
                 </button>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-purple-600 transition-all"
-                  onClick={handleOpenSimpleRewrite}>
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-purple-600 transition-all"
+                  onClick={handleOpenSimpleRewrite}
+                  title="Simple Rewrite">
                   <PencilSquareIcon className="h-3.5 w-3.5" />
-                  Simple Rewrite
                 </button>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all"
-                  onClick={handleOpenSimpleRewriteOpenAI}>
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all"
+                  onClick={handleOpenSimpleRewriteOpenAI}
+                  title="Simple Rewrite (GPT)">
                   <SparklesIcon className="h-3.5 w-3.5" />
-                  Simple Rewrite
                 </button>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
                   onClick={handleOpenImageExtract}
                   title="Extract Text from Image">
                   <PhotoIcon className="h-3.5 w-3.5" />
-                  OCR
                 </button>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
                   onClick={handleOpenAssessment}
                   title="Document Assessment">
                   <svg
@@ -694,7 +693,6 @@ const NotesLayout: React.FC = React.memo(() => {
                       d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
                     />
                   </svg>
-                  Assessment
                 </button>
 
                 {/* Sourcing Buttons */}
