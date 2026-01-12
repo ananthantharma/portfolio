@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
@@ -77,7 +76,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this event?")) return;
         try {
-            await axios.delete(`/ api / sourcing / events ? id = ${ id } `);
+            await axios.delete(`/ api / sourcing / events ? id = ${id} `);
             setEvents(prev => prev.filter(e => e._id !== id));
         } catch (e) {
             console.error("Delete failed", e);
@@ -232,7 +231,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         else if (status === 'Off Track / Late') bgClass = 'bg-red-100 text-red-800';
         // Removed 'Cancelled' and 'Closed' as they are now part of Sourcing Status
         return (
-            <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium whitespace - nowrap ${ bgClass } `}>
+            <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium whitespace - nowrap ${bgClass} `}>
                 {status || '-'}
             </span>
         );
@@ -257,7 +256,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                         <div className="flex items-center gap-4">
                                             <button
                                                 onClick={() => setShowFilters(!showFilters)}
-                                                className={`p - 2 rounded - md transition - colors ${ showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100' } `}
+                                                className={`p - 2 rounded - md transition - colors ${showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'} `}
                                                 title="Toggle Filters"
                                             >
                                                 <FunnelIcon className="w-5 h-5" />
@@ -388,7 +387,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                         <td className="px-3 py-4 text-sm text-gray-900 align-top truncate" style={{ width: colWidths.eventName }}>
                                                             <div className="flex items-center gap-2">
                                                                 <div
-                                                                    className={`font - medium text - indigo - 600 truncate ${ event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : '' } `}
+                                                                    className={`font - medium text - indigo - 600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''} `}
                                                                     title={event.eventName}
                                                                     onClick={() => {
                                                                         if (event.sourcePageId && onNavigateToPage) {
