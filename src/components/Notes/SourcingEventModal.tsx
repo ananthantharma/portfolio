@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
 interface SourcingEventModalProps {
@@ -68,7 +68,7 @@ export default function SourcingEventModal({
         }
     };
 
-    const updateConfig = async (key: string, newValue: string[], action: 'add' | 'remove', value?: string) => {
+    const updateConfig = async (key: string, newValue: string[]) => {
         try {
             const newConfig = { ...config, [key]: newValue };
             setConfig(newConfig); // Optimistic update
@@ -82,13 +82,7 @@ export default function SourcingEventModal({
     const handleAddFieldOption = (field: string) => {
         const value = prompt(`Add new ${field}:`);
         if (value && !config[field].includes(value)) {
-            updateConfig(field, [...config[field], value], 'add');
-        }
-    };
-
-    const handleRemoveFieldOption = (field: string, value: string) => {
-        if (confirm(`Remove "${value}" from list?`)) {
-            updateConfig(field, config[field].filter((i: string) => i !== value), 'remove', value);
+            updateConfig(field, [...config[field], value]);
         }
     };
 
