@@ -361,7 +361,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                 </div>
 
                                 <div className="flex-1 overflow-auto">
-                                    <table className="min-w-full divide-y divide-gray-200" style={{ tableLayout: 'fixed' }}>
+                                    <table className="min-w-full divide-y divide-gray-200 table-fixed">
                                         <thead>
                                             <tr>
                                                 <ResizableHeader label="Event Name" column="eventName" />
@@ -391,7 +391,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                         <td className="px-3 py-4 text-sm text-gray-900 align-top truncate" style={{ width: colWidths.eventName }}>
                                                             <div className="flex items-center gap-2">
                                                                 <div
-                                                                    className={`font - medium text - indigo - 600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''} `}
+                                                                    className={`font-medium text-indigo-600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
                                                                     title={event.eventName}
                                                                     onClick={() => {
                                                                         if (event.sourcePageId && onNavigateToPage) {
