@@ -6,9 +6,9 @@ import axios from 'axios';
 interface SourcingEventModalProps {
     isOpen: boolean;
     onClose: () => void;
-    initialData?: any; // If editing
-    defaultDescription?: string; // For creating from Page
-    sourcePageId?: string; // For linking
+    initialData?: any;
+    defaultDescription?: string;
+    sourcePageId?: string;
     onSave?: () => void;
 }
 
@@ -43,6 +43,7 @@ export default function SourcingEventModal({
             } else {
                 // Reset for new
                 setFormData({
+                    eventName: '',
                     description: defaultDescription || '',
                     sourcePageId: sourcePageId,
                     vendors: [],
@@ -133,9 +134,6 @@ export default function SourcingEventModal({
                         <option key={opt} value={opt}>{opt}</option>
                     ))}
                 </select>
-                {/* Optional: Add a way to delete selected option? Complex UI for select. 
-             Maybe separate manage list button? keeping simple for now with prompt. 
-         */}
             </div>
         </div>
     );
@@ -146,7 +144,7 @@ export default function SourcingEventModal({
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
                 <div className="fixed inset-0 z-10 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                        <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                        <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-7xl">
                             <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                                 <div className="flex justify-between items-start mb-6 border-b pb-4">
                                     <Dialog.Title className="text-xl font-semibold text-gray-900">
@@ -157,150 +155,209 @@ export default function SourcingEventModal({
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Basic Info */}
-                                    <div className="grid grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
-                                        <div className="col-span-2 md:col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Description (Free Text)</label>
-                                            <input type="text" name="description" value={formData.description || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        {/* Facility */}
-                                        {renderSelectWithAdd("Facility", "facility", "facilities", config.facilities)}
-                                    </div>
+                                <form onSubmit={handleSubmit} className="space-y-8">
+                                    {/* 1. Header Section: Core Identity */}
+                                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4">Core Identity</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                            {/* Row 1 */}
+                                            <div className="md:col-span-3">
+                                                <label className="block text-sm font-medium text-gray-700">Sourcing Event Name</label>
+                                                <input
+                                                    type="text"
+                                                    name="eventName"
+                                                    value={formData.eventName || ''}
+                                                    onChange={handleChange}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                    placeholder="E.g. Q1 Office Supplies Procurement"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Need Date</label>
+                                                <input
+                                                    type="date"
+                                                    name="needDate"
+                                                    value={formData.needDate ? new Date(formData.needDate).toISOString().split('T')[0] : ''}
+                                                    onChange={handleChange}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                />
+                                            </div>
 
-                                    {/* Categorization */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Commodity Category</label>
-                                            <input type="text" name="commodityCategory" value={formData.commodityCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Sub Category</label>
-                                            <input type="text" name="subCategory" value={formData.subCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        {renderSelectWithAdd("Category Lead", "categoryLead", "categoryLeads", config.categoryLeads)}
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Business Unit/Dept</label>
-                                            <input type="text" name="department" value={formData.department || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                    </div>
-
-                                    {/* Vendor Info */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t pt-4">
-                                        <div className="col-span-1 md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700">Vendor(s) (Comma separated)</label>
-                                            <input type="text" value={vendorsInput} onChange={e => setVendorsInput(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Vendor A, Vendor B..." />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Vendor Tier</label>
-                                            <select name="vendorTier" value={formData.vendorTier || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="">Select...</option>
-                                                <option value="Strategic">Strategic</option>
-                                                <option value="Preferred">Preferred</option>
-                                                <option value="Transactional">Transactional</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <label className="inline-flex items-center">
-                                            <input type="checkbox" name="existingVendor" checked={!!formData.existingVendor} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                            <span className="ml-2 text-sm text-gray-700">Existing Vendor</span>
-                                        </label>
-                                        <label className="inline-flex items-center">
-                                            <input type="checkbox" name="diversityClassification" checked={!!formData.diversityClassification} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                            <span className="ml-2 text-sm text-gray-700">Diversity Classification</span>
-                                        </label>
-                                        <label className="inline-flex items-center">
-                                            <input type="checkbox" name="indigenousOpportunity" checked={!!formData.indigenousOpportunity} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                            <span className="ml-2 text-sm text-gray-700">Indigenous Opp.</span>
-                                        </label>
-                                    </div>
-
-                                    {/* Process Info */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
-                                        {renderSelectWithAdd("Activity Type", "activityType", "activityTypes", config.activityTypes)}
-                                        {renderSelectWithAdd("Sourcing Status", "sourcingStatus", "sourcingStatuses", config.sourcingStatuses)}
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Risk Level</label>
-                                            <select name="riskLevel" value={formData.riskLevel || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="Low">Low</option>
-                                                <option value="Medium">Medium</option>
-                                                <option value="High">High</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Status</label>
-                                            <select name="status" value={formData.status || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="Active">Active</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="Complete">Complete</option>
-                                                <option value="On Hold">On Hold</option>
-                                                <option value="Long Pause">Long Pause</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">On Track / Late</label>
-                                            <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="On Track">On Track</option>
-                                                <option value="Late">Late</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Vendor Performance (1-5)</label>
-                                            <input type="number" name="vendorPerformance" min="1" max="5" value={formData.vendorPerformance || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            {/* Row 2 */}
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700">Description</label>
+                                                <textarea
+                                                    name="description"
+                                                    rows={3}
+                                                    value={formData.description || ''}
+                                                    onChange={handleChange}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Status</label>
+                                                <select name="status" value={formData.status || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="Active">Active</option>
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Complete">Complete</option>
+                                                    <option value="On Hold">On Hold</option>
+                                                    <option value="Cancelled">Cancelled</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Risk Level</label>
+                                                <select name="riskLevel" value={formData.riskLevel || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Dates & Financials */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Effective Date</label>
-                                            <input type="date" name="effectiveDate" value={formData.effectiveDate ? new Date(formData.effectiveDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Expiration Date</label>
-                                            <input type="date" name="expirationDate" value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Need Date</label>
-                                            <input type="date" name="needDate" value={formData.needDate ? new Date(formData.needDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Renewal Type</label>
-                                            <select name="renewalType" value={formData.renewalType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="">Select...</option>
-                                                <option value="Auto-renew">Auto-renew</option>
-                                                <option value="Manual">Manual</option>
-                                                <option value="One-time">One-time</option>
-                                            </select>
+                                    {/* 2. Section: Ownership & Categorization */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Ownership & Categorization</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                            {/* Row 1 */}
+                                            <div className="col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700">Business Unit/Dept</label>
+                                                <input type="text" name="department" value={formData.department || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-2">
+                                                {renderSelectWithAdd("Facility", "facility", "facilities", config.facilities)}
+                                            </div>
+
+                                            {/* Row 2 */}
+                                            {renderSelectWithAdd("Category Lead", "categoryLead", "categoryLeads", config.categoryLeads)}
+                                            {renderSelectWithAdd("Activity Type", "activityType", "activityTypes", config.activityTypes)}
+                                            {renderSelectWithAdd("Sourcing Status", "sourcingStatus", "sourcingStatuses", config.sourcingStatuses)}
+
+                                            {/* Row 3 */}
+                                            <div className="col-span-1 md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700">Commodity Category</label>
+                                                <input type="text" name="commodityCategory" value={formData.commodityCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1 md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700">Sub Category</label>
+                                                <input type="text" name="subCategory" value={formData.subCategory || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">MSA / VOR</label>
-                                            <input type="text" name="msaVor" value={formData.msaVor || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+
+                                    {/* 3. Section: Vendor Information */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Vendor Information</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700">Vendor(s) (Comma separated)</label>
+                                                <input type="text" value={vendorsInput} onChange={e => setVendorsInput(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Vendor A, Vendor B..." />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Vendor Tier</label>
+                                                <select name="vendorTier" value={formData.vendorTier || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="">Select...</option>
+                                                    <option value="Strategic">Strategic</option>
+                                                    <option value="Preferred">Preferred</option>
+                                                    <option value="Transactional">Transactional</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Performance (1-5)</label>
+                                                <input type="number" name="vendorPerformance" min="1" max="5" value={formData.vendorPerformance || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="md:col-span-4 flex gap-6">
+                                                <label className="inline-flex items-center">
+                                                    <input type="checkbox" name="existingVendor" checked={!!formData.existingVendor} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                    <span className="ml-2 text-sm text-gray-700">Existing Vendor</span>
+                                                </label>
+                                                <label className="inline-flex items-center">
+                                                    <input type="checkbox" name="diversityClassification" checked={!!formData.diversityClassification} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                    <span className="ml-2 text-sm text-gray-700">Diversity Classification</span>
+                                                </label>
+                                                <label className="inline-flex items-center">
+                                                    <input type="checkbox" name="indigenousOpportunity" checked={!!formData.indigenousOpportunity} onChange={handleChange} className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+                                                    <span className="ml-2 text-sm text-gray-700">Indigenous Opp.</span>
+                                                </label>
+                                            </div>
                                         </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
-                                            <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                    </div>
+
+                                    {/* 4. Section: Timeline & Schedule */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Timeline & Schedule</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Effective Date</label>
+                                                <input type="date" name="effectiveDate" value={formData.effectiveDate ? new Date(formData.effectiveDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Expiration Date</label>
+                                                <input type="date" name="expirationDate" value={formData.expirationDate ? new Date(formData.expirationDate).toISOString().split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Renewal Type</label>
+                                                <select name="renewalType" value={formData.renewalType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="">Select...</option>
+                                                    <option value="Auto-renew">Auto-renew</option>
+                                                    <option value="Manual">Manual</option>
+                                                    <option value="One-time">One-time</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">On Track / Late</label>
+                                                <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="On Track">On Track</option>
+                                                    <option value="Late">Late</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Spend Type</label>
-                                            <select name="spendType" value={formData.spendType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                <option value="">Select...</option>
-                                                <option value="OpEx">OpEx</option>
-                                                <option value="CapEx">CapEx</option>
-                                            </select>
+                                    </div>
+
+                                    {/* 5. Section: Financials & Contracts */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Financials & Contracts</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
+                                                <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Cost Savings</label>
+                                                <input type="number" name="costSavings" value={formData.costSavings || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Spend Type</label>
+                                                <select name="spendType" value={formData.spendType || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                    <option value="">Select...</option>
+                                                    <option value="OpEx">OpEx</option>
+                                                    <option value="CapEx">CapEx</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">MSA / VOR</label>
+                                                <input type="text" name="msaVor" value={formData.msaVor || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
+                                                <input type="text" name="purchaseOrder" value={formData.purchaseOrder || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
                                         </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Cost Savings</label>
-                                            <input type="number" name="costSavings" value={formData.costSavings || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className="block text-sm font-medium text-gray-700">Purchase Order</label>
-                                            <input type="text" name="purchaseOrder" value={formData.purchaseOrder || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                    </div>
+
+                                    {/* 6. Section: Additional Details (Footer) */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Additional Details</h3>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">Notes</label>
+                                            <textarea
+                                                name="notes"
+                                                rows={4}
+                                                value={formData.notes || ''}
+                                                onChange={handleChange}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                placeholder="Internal notes, next steps, or general comments..."
+                                            />
                                         </div>
                                     </div>
 

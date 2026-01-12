@@ -79,7 +79,7 @@ export default function SourcingListModal({ isOpen, onClose }: SourcingListModal
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
                                                     <tr>
-                                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name / Description</th>
                                                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facility</th>
                                                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendors</th>
                                                         <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
@@ -93,15 +93,18 @@ export default function SourcingListModal({ isOpen, onClose }: SourcingListModal
                                                 <tbody className="bg-white divide-y divide-gray-200">
                                                     {events.map((event) => (
                                                         <tr key={event._id} className="hover:bg-gray-50">
-                                                            <td className="px-3 py-4 text-sm text-gray-900 max-w-xs truncate" title={event.description}>{event.description}</td>
+                                                            <td className="px-3 py-4 text-sm text-gray-900 max-w-xs">
+                                                                <div className="font-medium text-indigo-600 truncate" title={event.eventName}>{event.eventName || 'Untitled Event'}</div>
+                                                                <div className="text-gray-500 text-xs truncate" title={event.description}>{event.description}</div>
+                                                            </td>
                                                             <td className="px-3 py-4 text-sm text-gray-500">{event.facility}</td>
                                                             <td className="px-3 py-4 text-sm text-gray-500">{event.vendors?.join(', ')}</td>
                                                             <td className="px-3 py-4 text-sm text-gray-500">{event.activityType}</td>
                                                             <td className="px-3 py-4 text-sm text-gray-500">{event.sourcingStatus}</td>
                                                             <td className="px-3 py-4 text-sm">
                                                                 <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${event.status === 'Active' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' :
-                                                                        event.status === 'On Hold' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' :
-                                                                            'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
+                                                                    event.status === 'On Hold' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' :
+                                                                        'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
                                                                     }`}>
                                                                     {event.status}
                                                                 </span>
