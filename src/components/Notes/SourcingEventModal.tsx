@@ -223,6 +223,16 @@ export default function SourcingEventModal({
                                             </div>
 
                                             {/* Row 2: Category Lead, Activity Type, Risk Level, Status, Sourcing Status */}
+                                            <div className="md:col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Primary Lead</label>
+                                                <input
+                                                    type="text"
+                                                    name="primaryLead"
+                                                    value={formData.primaryLead || ''}
+                                                    onChange={handleChange}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                />
+                                            </div>
                                             {renderSelectWithAdd("Category Lead", "categoryLead", "categoryLeads", config.categoryLeads)}
                                             {renderSelectWithAdd("Activity Type", "activityType", "activityTypes", config.activityTypes)}
                                             <div className="col-span-1">

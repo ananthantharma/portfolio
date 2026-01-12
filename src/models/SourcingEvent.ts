@@ -31,6 +31,8 @@ export interface ISourcingEvent extends Document {
     purchaseOrder?: string;
     eventName?: string;
     notes?: string;
+    primaryLead?: string;
+    contact?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -41,6 +43,8 @@ const SourcingEventSchema = new Schema<ISourcingEvent>(
         sourcePageId: { type: String },
         eventName: { type: String },
         notes: { type: String },
+        primaryLead: { type: String },
+        contact: { type: String },
         commodityCategory: { type: String },
         subCategory: { type: String },
         description: { type: String },
