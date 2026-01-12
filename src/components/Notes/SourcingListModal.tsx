@@ -145,7 +145,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
             );
         }
         if (filters.status) {
-            items = items.filter(item => item.sourcingStatus === filters.status);
+            items = items.filter(item => item.status === filters.status);
         }
         if (filters.primaryLead) {
             const lower = filters.primaryLead.toLowerCase();
@@ -231,7 +231,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         else if (status === 'Off Track / Late') bgClass = 'bg-red-100 text-red-800';
         // Removed 'Cancelled' and 'Closed' as they are now part of Sourcing Status
         return (
-            <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium whitespace - nowrap ${bgClass} `}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${bgClass}`}>
                 {status || '-'}
             </span>
         );
@@ -256,7 +256,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                         <div className="flex items-center gap-4">
                                             <button
                                                 onClick={() => setShowFilters(!showFilters)}
-                                                className={`p - 2 rounded - md transition - colors ${showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'} `}
+                                                className={`p-2 rounded-md transition-colors ${showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'}`}
                                                 title="Toggle Filters"
                                             >
                                                 <FunnelIcon className="w-5 h-5" />
@@ -312,12 +312,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                             >
                                                 <option value="">All Statuses</option>
                                                 <option value="Active">Active</option>
+                                                <option value="Pending">Pending</option>
                                                 <option value="Completed">Completed</option>
                                                 <option value="On Hold">On Hold</option>
                                                 <option value="Cancelled">Cancelled</option>
-                                                <option value="Draft">Draft</option>
-                                                <option value="Approved">Approved</option>
-                                                <option value="Rejected">Rejected</option>
                                             </select>
 
                                             <select
