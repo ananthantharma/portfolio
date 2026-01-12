@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment, useMemo, useRef } from 'react';
+import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
@@ -17,7 +17,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
     // Column Widths State
     // Column Widths State - Using Percentages
-    const [colWidths, setColWidths] = useState<Record<string, string | number>>({
+    const [colWidths] = useState<Record<string, string | number>>({
         eventName: '15%',
         primaryLead: '8%',
         categoryLead: '8%',
@@ -101,43 +101,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         setSortConfig({ key, direction });
     };
 
-    // Column Resizing Logic
-    const resizingRef = useRef<{ startX: number, startWidth: number, colKey: string } | null>(null);
 
-    const handleResizeStart = (e: React.MouseEvent, colKey: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Get the current actual width in pixels from the DOM element
-        const parentHeader = (e.target as HTMLElement).closest('th');
-        const startWidth = parentHeader ? parentHeader.offsetWidth : 100;
-
-        resizingRef.current = {
-            startX: e.clientX,
-            startWidth,
-            colKey
-        };
-        document.addEventListener('mousemove', handleResizeMove);
-        document.addEventListener('mouseup', handleResizeEnd);
-        document.body.style.cursor = 'col-resize';
-    };
-
-    const handleResizeMove = (e: MouseEvent) => {
-        if (!resizingRef.current) return;
-        const { startX, startWidth, colKey } = resizingRef.current;
-        const diff = e.clientX - startX;
-        setColWidths(prev => ({
-            ...prev,
-            [colKey]: Math.max(50, startWidth + diff) // Min width 50px
-        }));
-    };
-
-    const handleResizeEnd = () => {
-        resizingRef.current = null;
-        document.removeEventListener('mousemove', handleResizeMove);
-        document.removeEventListener('mouseup', handleResizeEnd);
-        document.body.style.cursor = 'default';
-    };
 
     const sortedAndFilteredEvents = useMemo(() => {
         let items = [...events];
@@ -195,24 +159,16 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
             : <ChevronDownIcon className="w-4 h-4 ml-1 inline-block text-indigo-600" />;
     };
 
-    const ResizableHeader = ({ label, column }: { label: string, column: string }) => (
+    const FixedHeader = ({ label, column }: { label: string, column: string }) => (
         <th
-            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative group select-none bg-gray-50 sticky top-0 z-10 shadow-sm transition-colors hover:bg-gray-100"
+            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative group select-none bg-gray-50 sticky top-0 z-10 shadow-sm transition-colors hover:bg-gray-100 cursor-pointer"
             style={{ width: colWidths[column] }}
+            onClick={() => handleSort(column)}
         >
-            <div
-                className="flex items-center cursor-pointer h-full w-full"
-                onClick={() => handleSort(column)}
-            >
+            <div className="flex items-center h-full w-full">
                 <span className="truncate">{label}</span>
                 <SortIcon column={column} />
             </div>
-
-            {/* Resize Handle - Right Border Area */}
-            <div
-                className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-indigo-300 z-20 group-hover:bg-gray-300"
-                onMouseDown={(e) => handleResizeStart(e, column)}
-            />
         </th>
     );
 
@@ -364,15 +320,15 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                     <table className="min-w-full divide-y divide-gray-200 table-fixed">
                                         <thead>
                                             <tr>
-                                                <ResizableHeader label="Event Name" column="eventName" />
-                                                <ResizableHeader label="Pri. Lead" column="primaryLead" />
-                                                <ResizableHeader label="Cat. Lead" column="categoryLead" />
-                                                <ResizableHeader label="Value" column="estimatedContractValue" />
-                                                <ResizableHeader label="Risk" column="riskLevel" />
-                                                <ResizableHeader label="Tracking" column="onTrack" />
-                                                <ResizableHeader label="Sourcing Status" column="sourcingStatus" />
-                                                <ResizableHeader label="Date" column="needDate" />
-                                                <ResizableHeader label="Notes" column="notes" />
+                                                <FixedHeader label="Event Name" column="eventName" />
+                                                <FixedHeader label="Pri. Lead" column="primaryLead" />
+                                                <FixedHeader label="Cat. Lead" column="categoryLead" />
+                                                <FixedHeader label="Value" column="estimatedContractValue" />
+                                                <FixedHeader label="Risk" column="riskLevel" />
+                                                <FixedHeader label="Tracking" column="onTrack" />
+                                                <FixedHeader label="Sourcing Status" column="sourcingStatus" />
+                                                <FixedHeader label="Date" column="needDate" />
+                                                <FixedHeader label="Notes" column="notes" />
                                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50 z-10 shadow-sm" style={{ width: colWidths.actions }}>
                                                     Actions
                                                 </th>
