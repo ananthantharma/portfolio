@@ -60,6 +60,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Sourcing Events
   const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
   const [isSourcingListOpen, setIsSourcingListOpen] = useState(false);
+  const [sourcingEventCount, setSourcingEventCount] = useState(0);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -148,12 +149,28 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
+  const fetchSourcingCount = useCallback(async () => {
+    try {
+      // Optimized: In a real app, create a HEAD or stats endpoint. For now, fetching array is ok if small.
+      const response = await axios.get('/api/sourcing/events');
+      if (Array.isArray(response.data)) {
+        setSourcingEventCount(response.data.length);
+      }
+    } catch (error) {
+      console.error('Error fetching sourcing count:', error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchActiveTaskCount();
+    fetchSourcingCount();
     // Optional: Poll every minute or so
-    const interval = setInterval(fetchActiveTaskCount, 60000);
+    const interval = setInterval(() => {
+      fetchActiveTaskCount();
+      fetchSourcingCount();
+    }, 60000);
     return () => clearInterval(interval);
-  }, [fetchActiveTaskCount]);
+  }, [fetchActiveTaskCount, fetchSourcingCount]);
 
   // Fetch pages when section changes
   useEffect(() => {
@@ -683,7 +700,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 {/* Sourcing Buttons */}
                 <div className="h-4 w-px bg-gray-200"></div>
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all relative"
                   onClick={() => setIsSourcingListOpen(true)}
                   title="View All Sourcing Events"
                 >
@@ -691,6 +708,11 @@ const NotesLayout: React.FC = React.memo(() => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
                   </svg>
                   Sourcing
+                  {sourcingEventCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
+                      {sourcingEventCount}
+                    </span>
+                  )}
                 </button>
                 <button
                   className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-indigo-600 transition-colors"

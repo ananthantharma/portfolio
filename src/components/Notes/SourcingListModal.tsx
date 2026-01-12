@@ -25,6 +25,16 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         activityType: ''
     });
 
+    // Extract unique leads for filter dropdown
+    const availableLeads = useMemo(() => {
+        const leads = new Set<string>();
+        events.forEach(e => {
+            if (e.primaryLead) leads.add(e.primaryLead);
+            if (e.categoryLead) leads.add(e.categoryLead);
+        });
+        return Array.from(leads).sort();
+    }, [events]);
+
     useEffect(() => {
         if (isOpen) {
             loadEvents();
@@ -87,8 +97,8 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         if (filters.lead) {
             const lowerLead = filters.lead.toLowerCase();
             items = items.filter(item =>
-                (item.primaryLead?.toLowerCase().includes(lowerLead)) ||
-                (item.categoryLead?.toLowerCase().includes(lowerLead))
+                (item.primaryLead?.toLowerCase() === lowerLead) ||
+                (item.categoryLead?.toLowerCase() === lowerLead)
             );
         }
         if (filters.activityType) {
@@ -98,8 +108,13 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         // Sorting
         if (sortConfig) {
             items.sort((a, b) => {
-                const aValue = a[sortConfig.key] || '';
-                const bValue = b[sortConfig.key] || '';
+                const aValue = a[sortConfig.key];
+                const bValue = b[sortConfig.key];
+
+                if (aValue === bValue) return 0;
+                if (aValue === undefined || aValue === null) return 1;
+                if (bValue === undefined || bValue === null) return -1;
+
                 if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
                 if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
@@ -128,6 +143,20 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         </th>
     );
 
+    const formatCurrency = (amount: number | undefined) => {
+        if (!amount) return '-';
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    };
+
+    const renderRisk = (level: string) => {
+        switch (level) {
+            case 'High': return <span title="High Risk">🔴</span>;
+            case 'Medium': return <span title="Medium Risk">🟡</span>;
+            case 'Low': return <span title="Low Risk">🟢</span>;
+            default: return <span>⚪</span>;
+        }
+    };
+
     return (
         <>
             <Transition.Root show={isOpen} as={Fragment}>
@@ -150,46 +179,57 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 className={`p-2 rounded-md transition-colors ${showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'}`}
                                                 title="Toggle Filters"
                                             >
-                                                <FunnelIcon className="h-5 w-5" />
+                                                <FunnelIcon className="w-5 h-5" />
                                             </button>
-                                            <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
-                                                <XMarkIcon className="h-6 w-6" />
+                                            <button
+                                                type="button"
+                                                className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                                                onClick={onClose}
+                                            >
+                                                <span className="sr-only">Close</span>
+                                                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* Filter Bar */}
+                                    {/* Filters Bar */}
                                     {showFilters && (
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn">
                                             <input
                                                 type="text"
                                                 placeholder="Search Name or Desc..."
                                                 value={filters.search}
-                                                onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             />
-                                            <input
-                                                type="text"
-                                                placeholder="Filter by Lead..."
+
+                                            {/* Lead Dropdown */}
+                                            <select
                                                 value={filters.lead}
-                                                onChange={e => setFilters(prev => ({ ...prev, lead: e.target.value }))}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, lead: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            />
+                                            >
+                                                <option value="">All Leads</option>
+                                                {availableLeads.map(lead => (
+                                                    <option key={lead} value={lead}>{lead}</option>
+                                                ))}
+                                            </select>
+
                                             <select
                                                 value={filters.status}
-                                                onChange={e => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             >
                                                 <option value="">All Statuses</option>
                                                 <option value="Active">Active</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="Complete">Complete</option>
+                                                <option value="Completed">Completed</option>
                                                 <option value="On Hold">On Hold</option>
                                                 <option value="Cancelled">Cancelled</option>
                                             </select>
+
                                             <button
                                                 onClick={() => setFilters({ search: '', status: '', lead: '', activityType: '' })}
-                                                className="text-sm text-gray-500 hover:text-gray-700 text-right underline"
+                                                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
                                             >
                                                 Clear Filters
                                             </button>
@@ -197,91 +237,108 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                     )}
                                 </div>
 
-                                <div className="flex-1 overflow-auto p-4 bg-gray-50">
-                                    {loading ? (
-                                        <div className="flex justify-center p-10">Loading...</div>
-                                    ) : (
-                                        <div className="overflow-x-auto rounded-lg border shadow-sm bg-white">
-                                            <table className="min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <SortableHeader label="Event Name / Description" column="eventName" className="w-1/4" />
-                                                        <SortableHeader label="Leads" column="categoryLead" />
-                                                        <SortableHeader label="Classification" column="activityType" />
-                                                        <SortableHeader label="Status / Date" column="status" />
-                                                        <SortableHeader label="Notes" column="notes" className="w-1/4" />
-                                                        <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <div className="flex-1 overflow-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                                            <tr>
+                                                <SortableHeader label="Event Name" column="eventName" className="w-1/4" />
+                                                <SortableHeader label="Primary Lead" column="primaryLead" />
+                                                <SortableHeader label="Category Lead" column="categoryLead" />
+                                                <SortableHeader label="Value" column="estimatedContractValue" />
+                                                <SortableHeader label="Risk" column="riskLevel" className="text-center" />
+                                                <SortableHeader label="Status" column="status" />
+                                                <SortableHeader label="Date" column="needDate" />
+                                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Notes</th>
+                                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {loading ? (
+                                                <tr><td colSpan={9} className="p-4 text-center text-gray-500">Loading events...</td></tr>
+                                            ) : sortedAndFilteredEvents.length === 0 ? (
+                                                <tr><td colSpan={9} className="p-4 text-center text-gray-500">No events found.</td></tr>
+                                            ) : (
+                                                sortedAndFilteredEvents.map((event) => (
+                                                    <tr key={event._id} className="hover:bg-gray-50 transition-colors">
+
+                                                        {/* Event Name */}
+                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top">
+                                                            <div className="flex items-center gap-2">
+                                                                <div
+                                                                    className={`font-medium text-indigo-600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
+                                                                    title={event.eventName}
+                                                                    onClick={() => {
+                                                                        if (event.sourcePageId && onNavigateToPage) {
+                                                                            onNavigateToPage(event.sourcePageId);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {event.eventName || 'Untitled Event'}
+                                                                </div>
+                                                                {event.sourcePageId && onNavigateToPage && (
+                                                                    <ArrowTopRightOnSquareIcon
+                                                                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600"
+                                                                        onClick={() => onNavigateToPage(event.sourcePageId)}
+                                                                        title="Go to Page"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                            <div className="text-gray-500 text-xs mt-1 line-clamp-2" title={event.description}>{event.description}</div>
+                                                        </td>
+
+                                                        {/* Leads */}
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top">{event.primaryLead || '-'}</td>
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top">{event.categoryLead || '-'}</td>
+
+                                                        {/* Value */}
+                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top font-medium font-mono">
+                                                            {formatCurrency(event.estimatedContractValue)}
+                                                        </td>
+
+                                                        {/* Risk */}
+                                                        <td className="px-3 py-4 text-sm text-center align-top text-lg">
+                                                            {renderRisk(event.riskLevel)}
+                                                        </td>
+
+                                                        {/* Status */}
+                                                        <td className="px-3 py-4 text-sm align-top">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${event.status === 'Active' ? 'bg-green-100 text-green-800' :
+                                                                    event.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
+                                                                        event.status === 'On Hold' ? 'bg-yellow-100 text-yellow-800' :
+                                                                            'bg-gray-100 text-gray-800'
+                                                                }`}>
+                                                                {event.status}
+                                                            </span>
+                                                        </td>
+
+                                                        {/* Date */}
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top whitespace-nowrap">
+                                                            {event.needDate ? new Date(event.needDate).toLocaleDateString() : '-'}
+                                                        </td>
+
+                                                        {/* Notes */}
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top">
+                                                            <div className="line-clamp-3 text-xs italic" title={event.notes}>
+                                                                {event.notes}
+                                                            </div>
+                                                        </td>
+
+                                                        {/* Actions */}
+                                                        <td className="px-3 py-4 text-right text-sm font-medium align-top">
+                                                            <div className="flex justify-end gap-2">
+                                                                <button onClick={() => handleEdit(event)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-md">
+                                                                    <PencilSquareIcon className="w-4 h-4" />
+                                                                </button>
+                                                                <button onClick={() => handleDelete(event._id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-md">
+                                                                    <TrashIcon className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {sortedAndFilteredEvents.map((event) => (
-                                                        <tr key={event._id} className="hover:bg-gray-50">
-                                                            <td className="px-3 py-4 text-sm text-gray-900 align-top">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div
-                                                                        className={`font-medium text-indigo-600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
-                                                                        title={event.eventName}
-                                                                        onClick={() => {
-                                                                            if (event.sourcePageId && onNavigateToPage) {
-                                                                                onNavigateToPage(event.sourcePageId);
-                                                                            }
-                                                                        }}
-                                                                    >
-                                                                        {event.eventName || 'Untitled Event'}
-                                                                    </div>
-                                                                    {event.sourcePageId && onNavigateToPage && (
-                                                                        <ArrowTopRightOnSquareIcon
-                                                                            className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600"
-                                                                            onClick={() => onNavigateToPage(event.sourcePageId)}
-                                                                            title="Go to Page"
-                                                                        />
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-gray-500 text-xs mt-1 line-clamp-2" title={event.description}>{event.description}</div>
-                                                            </td>
-                                                            <td className="px-3 py-4 text-sm text-gray-500 align-top">
-                                                                <div className="text-xs"><span className="font-semibold">Pri:</span> {event.primaryLead || '-'}</div>
-                                                                <div className="text-xs"><span className="font-semibold">Cat:</span> {event.categoryLead || '-'}</div>
-                                                            </td>
-                                                            <td className="px-3 py-4 text-sm text-gray-500 align-top">
-                                                                <div className="text-xs">{event.activityType}</div>
-                                                                <div className="text-xs text-gray-400">{event.sourcingStatus}</div>
-                                                                <div className={`text-xs mt-1 font-medium ${event.riskLevel === 'High' ? 'text-red-600' :
-                                                                    event.riskLevel === 'Medium' ? 'text-yellow-600' : 'text-green-600'
-                                                                    }`}>
-                                                                    {event.riskLevel ? `${event.riskLevel} Risk` : ''}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-3 py-4 text-sm align-top">
-                                                                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mb-1 ${event.status === 'Active' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20' :
-                                                                    event.status === 'On Hold' ? 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20' :
-                                                                        'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10'
-                                                                    }`}>
-                                                                    {event.status}
-                                                                </span>
-                                                                <div className="text-xs text-gray-500">
-                                                                    Need: {event.needDate ? new Date(event.needDate).toLocaleDateString() : '-'}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-3 py-4 text-sm text-gray-500 align-top">
-                                                                <div className="line-clamp-3 text-xs" title={event.notes}>
-                                                                    {event.notes || '-'}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium align-top">
-                                                                <button onClick={() => handleEdit(event)} className="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                                    <PencilSquareIcon className="w-5 h-5" />
-                                                                </button>
-                                                                <button onClick={() => handleDelete(event._id)} className="text-red-600 hover:text-red-900">
-                                                                    <TrashIcon className="w-5 h-5" />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </Dialog.Panel>
                         </div>
