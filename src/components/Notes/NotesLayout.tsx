@@ -38,6 +38,8 @@ import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
+import SourcingEventModal from './SourcingEventModal';
+import SourcingListModal from './SourcingListModal';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -55,6 +57,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
+  // Sourcing Events
+  const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
+  const [isSourcingListOpen, setIsSourcingListOpen] = useState(false);
+
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
     sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -871,6 +877,18 @@ const NotesLayout: React.FC = React.memo(() => {
         <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
+        {/* Sourcing Modals */}
+        <SourcingEventModal
+          isOpen={isSourcingModalOpen}
+          onClose={() => setIsSourcingModalOpen(false)}
+          defaultDescription={pages.find(p => p._id === selectedPageId)?.title || ''}
+          sourcePageId={selectedPageId || undefined}
+        />
+
+        <SourcingListModal
+          isOpen={isSourcingListOpen}
+          onClose={() => setIsSourcingListOpen(false)}
+        />
       </div>
     </BadgeSettingsProvider>
   );
