@@ -391,7 +391,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                         <td className="px-3 py-4 text-sm text-gray-900 align-top truncate" style={{ width: colWidths.eventName }}>
                                                             <div className="flex items-center gap-2">
                                                                 <div
-                                                                    className={`font-medium text-indigo-600 truncate ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
+                                                                    className={`font-medium text-indigo-600 truncate min-w-0 ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
                                                                     title={event.eventName}
                                                                     onClick={() => {
                                                                         if (event.sourcePageId && onNavigateToPage) {
