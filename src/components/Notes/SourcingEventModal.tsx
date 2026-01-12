@@ -245,6 +245,10 @@ export default function SourcingEventModal({
                                             </div>
                                             {renderSelectWithAdd("Status", "status", "statuses", config.statuses)}
                                             {renderSelectWithAdd("Sourcing Status", "sourcingStatus", "sourcingStatuses", config.sourcingStatuses)}
+                                            <div className="col-span-1">
+                                                <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
+                                                <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                                            </div>
                                         </div>
                                     </div>
 
@@ -355,10 +359,7 @@ export default function SourcingEventModal({
                                         <CollapsibleSectionHeader title="Financials & Contracts" section="financials" isOpen={sectionsOpen.financials} />
                                         {sectionsOpen.financials && (
                                             <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                <div className="col-span-1">
-                                                    <label className="block text-sm font-medium text-gray-700">Total Contract Value</label>
-                                                    <input type="number" name="estimatedContractValue" value={formData.estimatedContractValue || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                                                </div>
+
                                                 <div className="col-span-1">
                                                     <label className="block text-sm font-medium text-gray-700">Cost Savings</label>
                                                     <input type="number" name="costSavings" value={formData.costSavings || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
