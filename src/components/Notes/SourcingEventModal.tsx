@@ -334,10 +334,18 @@ export default function SourcingEventModal({
                                                 <label className="block text-sm font-medium text-gray-700">Tracking Status</label>
                                                 <select name="onTrack" value={formData.onTrack || ''} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                                     <option value="On Track">On Track (Green)</option>
-                                                    <option value="At Risk">At Risk (Amber)</option>
-                                                    <option value="Off Track / Late">Off Track / Late (Red)</option>
-                                                    <option value="Cancelled">Cancelled (Gray)</option>
-                                                    <option value="Closed">Closed (Gray)</option>
+                                                    <option value="At Risk">At Risk (Yellow)</option>
+                                                    <option value="Off Track">Off Track (Red)</option>
+                                                    <option value="Blocked / Critical">Blocked / Critical (Dark Gray)</option>
+                                                    <option value="Not Started">Not Started (Gray)</option>
+                                                    <option value="In Progress">In Progress (Blue)</option>
+                                                    <option value="On Hold / Paused">On Hold / Paused (Orange)</option>
+                                                    <option value="Pending Approval / Review">Pending Approval / Review (Purple)</option>
+                                                    <option value="Draft / Scoping">Draft / Scoping (Teal)</option>
+                                                    <option value="Completed / Delivered">Completed / Delivered (Dark Green)</option>
+                                                    <option value="Cancelled">Cancelled (Dark Gray)</option>
+                                                    <option value="Deferred">Deferred (Brown)</option>
+                                                    <option value="Archived">Archived (Silver)</option>
                                                 </select>
                                             </div>
                                         </div>

@@ -66,16 +66,17 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     // Column Widths State
     // Column Widths State - Using Percentages
     const [colWidths] = useState<Record<string, string | number>>({
-        eventName: '15%',
-        primaryLead: '8%',
-        categoryLead: '8%',
-        estimatedContractValue: '9%',
-        riskLevel: '6%',
-        onTrack: '8%',
-        sourcingStatus: '12%',
-        needDate: '8%',
-        notes: '20%',
-        actions: '6%'
+        eventName: '14%',
+        department: '8%',
+        primaryLead: '7%',
+        categoryLead: '7%',
+        estimatedContractValue: '8%',
+        riskLevel: '5%',
+        onTrack: '10%',
+        sourcingStatus: '9%',
+        needDate: '7%',
+        notes: '18%',
+        actions: '7%'
     });
 
     // Sorting & Filtering State
@@ -240,13 +241,26 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
     const renderTracking = (status: string) => {
         let bgClass = 'bg-gray-100 text-gray-800';
-        if (status === 'On Track') bgClass = 'bg-green-100 text-green-800';
-        else if (status === 'At Risk') bgClass = 'bg-yellow-100 text-yellow-800';
-        else if (status === 'Off Track / Late') bgClass = 'bg-red-100 text-red-800';
-        // Removed 'Cancelled' and 'Closed' as they are now part of Sourcing Status
+        switch (status) {
+            case 'On Track': bgClass = 'bg-green-100 text-green-800'; break;
+            case 'At Risk': bgClass = 'bg-yellow-100 text-yellow-800'; break;
+            case 'Off Track': bgClass = 'bg-red-100 text-red-800'; break;
+            case 'Blocked / Critical': bgClass = 'bg-gray-900 text-white'; break;
+            case 'Not Started': bgClass = 'bg-gray-100 text-gray-800'; break;
+            case 'In Progress': bgClass = 'bg-blue-100 text-blue-800'; break;
+            case 'On Hold / Paused': bgClass = 'bg-orange-100 text-orange-800'; break;
+            case 'Pending Approval / Review': bgClass = 'bg-purple-100 text-purple-800'; break;
+            case 'Draft / Scoping': bgClass = 'bg-teal-100 text-teal-800'; break;
+            case 'Completed / Delivered': bgClass = 'bg-green-800 text-white'; break;
+            case 'Cancelled': bgClass = 'bg-gray-600 text-white'; break;
+            case 'Deferred': bgClass = 'bg-yellow-900 text-white'; break;
+            case 'Archived': bgClass = 'bg-slate-300 text-slate-800'; break;
+            default: bgClass = 'bg-gray-100 text-gray-800';
+        }
+
         return (
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${bgClass}`}>
-                {status || '-'}
+                {status || 'Not Started'}
             </span>
         );
     };
@@ -440,9 +454,17 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 <option value="">All Tracking</option>
                                                 <option value="On Track">On Track</option>
                                                 <option value="At Risk">At Risk</option>
-                                                <option value="Off Track / Late">Off Track / Late</option>
+                                                <option value="Off Track">Off Track</option>
+                                                <option value="Blocked / Critical">Blocked / Critical</option>
+                                                <option value="Not Started">Not Started</option>
+                                                <option value="In Progress">In Progress</option>
+                                                <option value="On Hold / Paused">On Hold / Paused</option>
+                                                <option value="Pending Approval / Review">Pending Approval / Review</option>
+                                                <option value="Draft / Scoping">Draft / Scoping</option>
+                                                <option value="Completed / Delivered">Completed / Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
-                                                <option value="Closed">Closed</option>
+                                                <option value="Deferred">Deferred</option>
+                                                <option value="Archived">Archived</option>
                                             </select>
 
                                             <div className="md:col-span-6 text-right">
@@ -462,6 +484,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                         <thead>
                                             <tr>
                                                 <FixedHeader label="Event Name" column="eventName" />
+                                                <FixedHeader label="BU / Dept" column="department" />
                                                 <FixedHeader label="Pri. Lead" column="primaryLead" />
                                                 <FixedHeader label="Cat. Lead" column="categoryLead" />
                                                 <FixedHeader label="Value" column="estimatedContractValue" />
@@ -511,6 +534,11 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                             </div>
                                                         </td>
 
+                                                        {/* Business Unit / Dept */}
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.department }}>
+                                                            {renderEditableCell(event, 'department', 'text')}
+                                                        </td>
+
                                                         {/* Leads */}
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.primaryLead }}>
                                                             {renderEditableCell(event, 'primaryLead', 'select', primaryLeads)}
@@ -531,7 +559,21 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                                         {/* Tracking */}
                                                         <td className="px-3 py-4 text-sm align-top" style={{ width: colWidths.onTrack }}>
-                                                            {renderEditableCell(event, 'onTrack', 'select', ['On Track', 'At Risk', 'Off Track / Late', 'Cancelled', 'Closed'])}
+                                                            {renderEditableCell(event, 'onTrack', 'select', [
+                                                                'On Track',
+                                                                'At Risk',
+                                                                'Off Track',
+                                                                'Blocked / Critical',
+                                                                'Not Started',
+                                                                'In Progress',
+                                                                'On Hold / Paused',
+                                                                'Pending Approval / Review',
+                                                                'Draft / Scoping',
+                                                                'Completed / Delivered',
+                                                                'Cancelled',
+                                                                'Deferred',
+                                                                'Archived'
+                                                            ])}
                                                         </td>
 
                                                         {/* Sourcing Status */}
