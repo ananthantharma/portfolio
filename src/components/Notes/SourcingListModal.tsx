@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import SourcingEventModal from './SourcingEventModal';
 
@@ -86,6 +86,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
     const handleEdit = (event: any) => {
         setEditEvent(event);
+    };
+
+    const handleCreate = () => {
+        setEditEvent({}); // Empty object triggers create mode
     };
 
     const handleSaveEdit = () => {
@@ -222,6 +226,13 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 title="Toggle Filters"
                                             >
                                                 <FunnelIcon className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={handleCreate}
+                                                className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium"
+                                            >
+                                                <PlusIcon className="w-4 h-4" />
+                                                New Event
                                             </button>
                                             <button
                                                 type="button"
@@ -432,8 +443,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                 <SourcingEventModal
                     isOpen={!!editEvent}
                     onClose={() => setEditEvent(null)}
-                    initialData={editEvent}
+                    initialData={editEvent._id ? editEvent : undefined}
                     onSave={handleSaveEdit}
+                    defaultDescription={editEvent.description}
+                    defaultEventName={editEvent.eventName}
                 />
             )}
         </>
