@@ -15,6 +15,54 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     const [loading, setLoading] = useState(false);
     const [editEvent, setEditEvent] = useState<any>(null);
 
+    // Inline Editing State
+    const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null);
+    const [editValue, setEditValue] = useState<any>('');
+
+    const handleStartEdit = (e: React.MouseEvent, event: any, field: string) => {
+        e.stopPropagation(); // Prevent row click
+        setEditingCell({ id: event._id, field });
+
+        // Format initial value
+        let val = event[field];
+        if (field === 'needDate' && val) {
+            val = new Date(val).toISOString().split('T')[0];
+        }
+        setEditValue(val || '');
+    };
+
+    const handleInlineSave = async () => {
+        if (!editingCell) return;
+        const { id, field } = editingCell;
+
+        // Optimistic Update
+        const oldEvents = [...events];
+        const updatedEvents = events.map(e => {
+            if (e._id === id) {
+                return { ...e, [field]: editValue };
+            }
+            return e;
+        });
+        setEvents(updatedEvents);
+        setEditingCell(null);
+
+        try {
+            await axios.post('/api/sourcing/events', { _id: id, [field]: editValue });
+        } catch (e) {
+            console.error("Inline update failed", e);
+            setEvents(oldEvents); // Revert
+            alert("Failed to update");
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) { // Allow Shift+Enter for textarea
+            e.preventDefault();
+            handleInlineSave();
+        }
+        if (e.key === 'Escape') setEditingCell(null);
+    };
+
     // Column Widths State
     // Column Widths State - Using Percentages
     const [colWidths] = useState<Record<string, string | number>>({
@@ -203,6 +251,88 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         );
     };
 
+    const renderEditableCell = (event: any, field: string, type: 'text' | 'number' | 'select' | 'date' | 'textarea', options: string[] = []) => {
+        const isEditing = editingCell?.id === event._id && editingCell?.field === field;
+        const value = event[field];
+
+        if (isEditing) {
+            if (type === 'select') {
+                return (
+                    <select
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={handleInlineSave}
+                        onKeyDown={handleKeyDown}
+                        onClick={(e) => e.stopPropagation()}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1 h-full"
+                    >
+                        <option value="">-</option>
+                        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                );
+            }
+            if (type === 'textarea') {
+                return (
+                    <textarea
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={handleInlineSave}
+                        onKeyDown={handleKeyDown}
+                        onClick={(e) => e.stopPropagation()}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+                        rows={3}
+                    />
+                );
+            }
+            if (type === 'date') {
+                return (
+                    <input
+                        type="date"
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={handleInlineSave}
+                        onKeyDown={handleKeyDown}
+                        onClick={(e) => e.stopPropagation()}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+                    />
+                );
+            }
+            return (
+                <input
+                    type={type}
+                    autoFocus
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={handleInlineSave}
+                    onKeyDown={handleKeyDown}
+                    onClick={(e) => e.stopPropagation()}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+                />
+            );
+        }
+
+        // Display Mode
+        let content;
+        if (type === 'select' && field === 'riskLevel') content = renderRisk(value);
+        else if (type === 'select' && field === 'onTrack') content = renderTracking(value);
+        else if (type === 'date') content = value ? new Date(value).toLocaleDateString() : '-';
+        else if (field === 'estimatedContractValue') content = formatCurrency(value);
+        else content = value || '-';
+
+        return (
+            <div
+                className="cursor-pointer hover:bg-gray-100 p-1 rounded min-h-[1.5rem]"
+                onClick={(e) => handleStartEdit(e, event, field)}
+                title="Click to edit"
+            >
+                {content}
+            </div>
+        );
+    };
+
     return (
         <>
             <Transition.Root show={isOpen} as={Fragment}>
@@ -376,43 +506,47 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                                     />
                                                                 )}
                                                             </div>
-                                                            <div className="text-gray-500 text-xs mt-1 whitespace-normal break-words">{event.description}</div>
+                                                            <div className="text-gray-500 text-xs mt-1 whitespace-normal break-words">
+                                                                {renderEditableCell(event, 'description', 'textarea')}
+                                                            </div>
                                                         </td>
 
                                                         {/* Leads */}
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.primaryLead }}>{event.primaryLead || '-'}</td>
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.categoryLead }}>{event.categoryLead || '-'}</td>
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.primaryLead }}>
+                                                            {renderEditableCell(event, 'primaryLead', 'select', primaryLeads)}
+                                                        </td>
+                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.categoryLead }}>
+                                                            {renderEditableCell(event, 'categoryLead', 'select', categoryLeads)}
+                                                        </td>
 
                                                         {/* Value */}
                                                         <td className="px-3 py-4 text-sm text-gray-900 align-top font-medium font-mono truncate" style={{ width: colWidths.estimatedContractValue }}>
-                                                            {formatCurrency(event.estimatedContractValue)}
+                                                            {renderEditableCell(event, 'estimatedContractValue', 'number')}
                                                         </td>
 
                                                         {/* Risk */}
                                                         <td className="px-3 py-4 text-sm text-center align-top text-lg" style={{ width: colWidths.riskLevel }}>
-                                                            {renderRisk(event.riskLevel)}
+                                                            {renderEditableCell(event, 'riskLevel', 'select', ['Low', 'Medium', 'High'])}
                                                         </td>
 
                                                         {/* Tracking */}
                                                         <td className="px-3 py-4 text-sm align-top" style={{ width: colWidths.onTrack }}>
-                                                            {renderTracking(event.onTrack)}
+                                                            {renderEditableCell(event, 'onTrack', 'select', ['On Track', 'At Risk', 'Off Track / Late', 'Cancelled', 'Closed'])}
                                                         </td>
 
                                                         {/* Sourcing Status */}
                                                         <td className="px-3 py-4 text-sm align-top text-gray-700 truncate" style={{ width: colWidths.sourcingStatus }}>
-                                                            {event.sourcingStatus || '-'}
+                                                            {renderEditableCell(event, 'sourcingStatus', 'select', ['Active', 'Pending', 'Completed', 'On Hold', 'Cancelled'])}
                                                         </td>
 
                                                         {/* Date */}
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top whitespace-nowrap" style={{ width: colWidths.needDate }}>
-                                                            {event.needDate ? new Date(event.needDate).toLocaleDateString() : '-'}
+                                                            {renderEditableCell(event, 'needDate', 'date')}
                                                         </td>
 
                                                         {/* Notes */}
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top" style={{ width: colWidths.notes }}>
-                                                            <div className="line-clamp-2 text-xs italic" title={event.notes}>
-                                                                {event.notes}
-                                                            </div>
+                                                            {renderEditableCell(event, 'notes', 'textarea')}
                                                         </td>
 
                                                         {/* Actions */}

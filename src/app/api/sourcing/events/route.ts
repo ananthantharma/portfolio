@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
             // Update
             event = await SourcingEvent.findOneAndUpdate(
                 { _id: body._id, userId: session.user.email },
-                { ...body, userId: session.user.email },
+                { $set: { ...body, userId: session.user.email } },
                 { new: true }
             );
         } else {
