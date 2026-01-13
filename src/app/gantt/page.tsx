@@ -57,7 +57,7 @@ const INITIAL_CATEGORIES: Record<string, string> = {
     'Planning': '#6FBE44', // Sushi Green
     'Design': '#a855f7',    // Purple
     'Development': '#10b981', // Emerald
-    'Review': '#f59e0b',    // Amber
+    'Review': '#FFDF00',    // Amber
     'default': '#404040'    // Tundora
 };
 

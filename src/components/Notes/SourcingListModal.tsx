@@ -355,10 +355,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                     <tr key={event._id} className="hover:bg-gray-50 transition-colors">
 
                                                         {/* Event Name */}
-                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top truncate" style={{ width: colWidths.eventName }}>
-                                                            <div className="flex items-center gap-2">
+                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top whitespace-normal" style={{ width: colWidths.eventName }}>
+                                                            <div className="flex items-start gap-2">
                                                                 <div
-                                                                    className={`font-medium text-indigo-600 truncate min-w-0 ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
+                                                                    className={`font-medium text-indigo-600 break-words min-w-0 ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
                                                                     title={event.eventName}
                                                                     onClick={() => {
                                                                         if (event.sourcePageId && onNavigateToPage) {
@@ -370,13 +370,13 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                                 </div>
                                                                 {event.sourcePageId && onNavigateToPage && (
                                                                     <ArrowTopRightOnSquareIcon
-                                                                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600 flex-shrink-0"
+                                                                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600 flex-shrink-0 mt-0.5"
                                                                         onClick={() => onNavigateToPage(event.sourcePageId)}
                                                                         title="Go to Page"
                                                                     />
                                                                 )}
                                                             </div>
-                                                            <div className="text-gray-500 text-xs mt-1 truncate" title={event.description}>{event.description}</div>
+                                                            <div className="text-gray-500 text-xs mt-1 whitespace-normal break-words">{event.description}</div>
                                                         </td>
 
                                                         {/* Leads */}

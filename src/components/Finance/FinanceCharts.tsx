@@ -1,5 +1,5 @@
 import React from 'react';
-import {Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface FinanceChartsProps {
   data: {
@@ -13,25 +13,25 @@ const COLORS = [
   '#10b981', // Emerald (Income)
   '#f43f5e', // Rose
   '#3b82f6', // Blue
-  '#f59e0b', // Amber
+  '#FFDF00', // Amber
   '#8b5cf6', // Violet
   '#ec4899', // Pink
   '#06b6d4', // Cyan
   '#84cc16', // Lime
 ];
 
-const TOOLTIP_CONTENT_STYLE = {backgroundColor: '#1f2937', border: 'none', borderRadius: '0.5rem'};
-const TOOLTIP_ITEM_STYLE = {color: '#fff'};
-const CURSOR_STYLE = {fill: '#374151', opacity: 0.2};
-const CHART_MARGIN = {top: 20, right: 30, left: 20, bottom: 5};
+const TOOLTIP_CONTENT_STYLE = { backgroundColor: '#1f2937', border: 'none', borderRadius: '0.5rem' };
+const TOOLTIP_ITEM_STYLE = { color: '#fff' };
+const CURSOR_STYLE = { fill: '#374151', opacity: 0.2 };
+const CHART_MARGIN = { top: 20, right: 30, left: 20, bottom: 5 };
 
-const TICK_STYLE = {fill: '#9ca3af'};
-const LEGEND_WRAPPER_STYLE = {paddingTop: '20px'};
+const TICK_STYLE = { fill: '#9ca3af' };
+const LEGEND_WRAPPER_STYLE = { paddingTop: '20px' };
 
 const formatYAxisTick = (value: number | string) => `$${value}`;
 const formatTooltipValue = (value: number) => [`$${value}`, ''];
 
-const FinanceCharts: React.FC<FinanceChartsProps> = React.memo(({data, categories}) => {
+const FinanceCharts: React.FC<FinanceChartsProps> = React.memo(({ data, categories }) => {
   return (
     <div className="rounded-xl bg-gray-800 p-6 shadow-lg">
       <h3 className="mb-4 text-lg font-semibold text-white">Monthly Budget Breakdown</h3>
