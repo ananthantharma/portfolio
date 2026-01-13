@@ -85,7 +85,7 @@ export default function SourcingEventModal({
                 axios.get('/api/notes/pages')
             ]);
             setConfig(configRes.data);
-            setPages(pagesRes.data);
+            setPages(pagesRes.data.data || []);
         } catch (e) {
             console.error("Failed to load config or pages", e);
         }
