@@ -39,6 +39,7 @@ export default function SourcingEventModal({
     const [formData, setFormData] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [vendorsInput, setVendorsInput] = useState('');
+    const [pages, setPages] = useState<any[]>([]); // Available pages for linking
 
     // Section Visibility State (Default Open)
     const [sectionsOpen, setSectionsOpen] = useState({
@@ -79,10 +80,14 @@ export default function SourcingEventModal({
 
     const loadConfig = async () => {
         try {
-            const res = await axios.get('/api/sourcing/config');
-            setConfig(res.data);
+            const [configRes, pagesRes] = await Promise.all([
+                axios.get('/api/sourcing/config'),
+                axios.get('/api/notes/pages')
+            ]);
+            setConfig(configRes.data);
+            setPages(pagesRes.data);
         } catch (e) {
-            console.error("Failed to load config", e);
+            console.error("Failed to load config or pages", e);
         }
     };
 
@@ -208,6 +213,25 @@ export default function SourcingEventModal({
                                                     onChange={handleChange}
                                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 />
+                                            </div>
+
+                                            {/* Linked Page */}
+                                            <div className="md:col-span-4">
+                                                <label className="block text-sm font-medium text-gray-700">Linked Notebook Page</label>
+                                                <select
+                                                    name="sourcePageId"
+                                                    value={formData.sourcePageId || ''}
+                                                    onChange={handleChange}
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                >
+                                                    <option value="">No Link</option>
+                                                    {pages.map(page => (
+                                                        <option key={page._id} value={page._id}>
+                                                            {page.title}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <p className="mt-1 text-xs text-gray-500">Link this event to a specific notebook page for quick access.</p>
                                             </div>
 
                                             {/* Description */}
