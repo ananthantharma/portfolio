@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { Dialog, Transition, Combobox } from '@headlessui/react';
+import { XMarkIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
 interface SourcingEventModalProps {
@@ -40,6 +40,17 @@ export default function SourcingEventModal({
     const [loading, setLoading] = useState(false);
     const [vendorsInput, setVendorsInput] = useState('');
     const [pages, setPages] = useState<any[]>([]); // Available pages for linking
+    const [query, setQuery] = useState('');
+
+    const filteredPages =
+        query === ''
+            ? pages
+            : pages.filter((page) =>
+                page.title
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .includes(query.toLowerCase().replace(/\s+/g, ''))
+            );
 
     // Section Visibility State (Default Open)
     const [sectionsOpen, setSectionsOpen] = useState({
@@ -215,22 +226,68 @@ export default function SourcingEventModal({
                                                 />
                                             </div>
 
-                                            {/* Linked Page */}
+                                            {/* Linked Page (Searchable) */}
                                             <div className="md:col-span-4">
-                                                <label className="block text-sm font-medium text-gray-700">Linked Notebook Page</label>
-                                                <select
-                                                    name="sourcePageId"
-                                                    value={formData.sourcePageId || ''}
-                                                    onChange={handleChange}
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                >
-                                                    <option value="">No Link</option>
-                                                    {pages.map(page => (
-                                                        <option key={page._id} value={page._id}>
-                                                            {page.title}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                <Combobox as="div" value={formData.sourcePageId || ''} onChange={(val) => setFormData({ ...formData, sourcePageId: val })}>
+                                                    <Combobox.Label className="block text-sm font-medium text-gray-700">Linked Notebook Page</Combobox.Label>
+                                                    <div className="relative mt-1">
+                                                        <Combobox.Input
+                                                            className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                                                            onChange={(event) => setQuery(event.target.value)}
+                                                            displayValue={(pageId: string) => pages.find((p) => p._id === pageId)?.title || ''}
+                                                            placeholder="Search pages..."
+                                                        />
+                                                        <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                                                            <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                                        </Combobox.Button>
+
+                                                        {filteredPages.length > 0 && (
+                                                            <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                                                <Combobox.Option
+                                                                    value=""
+                                                                    className={({ active }) =>
+                                                                        `relative cursor-default select-none py-2 pl-3 pr-9 ${active ? 'bg-indigo-600 text-white' : 'text-gray-900'}`
+                                                                    }
+                                                                >
+                                                                    {({ active, selected }) => (
+                                                                        <>
+                                                                            <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                                No Link
+                                                                            </span>
+                                                                            {selected && (
+                                                                                <span className={`absolute inset-y-0 right-0 flex items-center pr-4 ${active ? 'text-white' : 'text-indigo-600'}`}>
+                                                                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                                                                </span>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                </Combobox.Option>
+                                                                {filteredPages.map((page) => (
+                                                                    <Combobox.Option
+                                                                        key={page._id}
+                                                                        value={page._id}
+                                                                        className={({ active }) =>
+                                                                            `relative cursor-default select-none py-2 pl-3 pr-9 ${active ? 'bg-indigo-600 text-white' : 'text-gray-900'}`
+                                                                        }
+                                                                    >
+                                                                        {({ active, selected }) => (
+                                                                            <>
+                                                                                <span className={`block truncate ${selected ? 'font-semibold' : 'font-normal'}`}>
+                                                                                    {page.title}
+                                                                                </span>
+                                                                                {selected && (
+                                                                                    <span className={`absolute inset-y-0 right-0 flex items-center pr-4 ${active ? 'text-white' : 'text-indigo-600'}`}>
+                                                                                        <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                                                                    </span>
+                                                                                )}
+                                                                            </>
+                                                                        )}
+                                                                    </Combobox.Option>
+                                                                ))}
+                                                            </Combobox.Options>
+                                                        )}
+                                                    </div>
+                                                </Combobox>
                                                 <p className="mt-1 text-xs text-gray-500">Link this event to a specific notebook page for quick access.</p>
                                             </div>
 
