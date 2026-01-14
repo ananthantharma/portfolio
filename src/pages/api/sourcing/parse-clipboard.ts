@@ -36,29 +36,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         **YOUR GOAL**: extract as much meaningful data as possible into the JSON field structure below.
 
-        **GUIDELINES for Extraction**:
-        1. **Excel/Table Rows**: If standard table data is detected (tab-separated), try to identify columns based on content (e.g. Money = Value, Name = Lead, Date = Need Date).
-        2. **Department**: Infer the Business Unit/Department if not explicit. (e.g., "Software" -> "IT", "Recruiting" -> "HR", "Audit" -> "Finance").
-        3. **Leads**: Look for person names. 
-           - 'Primary Lead' is often the requester or business owner.
-           - 'Category Lead' is often the procurement manager.
-        4. **Value**: Look for currency amounts (e.g. $50k, 50,000) for 'estimatedContractValue'.
-        5. **Dates**: Convert all dates to 'YYYY-MM-DD'.
-        6. **Vendor**: Look for company names (e.g., "Microsoft", "Oracle", "Agency X").
+        **CRITICAL - COLUMN MAPPING LOGIC (If input is a table row)**:
+        If the input seems to be a tab-separated or structured row, follow these column indices (1-based index):
+        - **Event Name**: Map from Column 4 (Description)
+        - **Vendor(s)**: Map from Column 5
+        - **Value (Estimated Contract Value)**: Map from Column 9
+        - **Category Lead**: Map from Column 16
+        - **Notes**: Map from Column 19
+
+        **GENERAL GUIDELINES**:
+        1. **Department**: Infer the Business Unit/Department if not explicit. (e.g., "Software" -> "IT", "Recruiting" -> "HR", "Audit" -> "Finance").
+        2. **Leads**: 
+           - 'Category Lead' should map from the column specified above.
+           - 'Primary Lead' can be inferred if another name is present.
+        3. **Value**: Clean the value from Column 9 (remove symbols) for 'estimatedContractValue'.
+        4. **Dates**: Convert all dates to 'YYYY-MM-DD'.
 
         **Target JSON Structure**:
         {
-            "eventName": "string (Title of project. If missing, generate a short one from description)",
-            "description": "string (Full details/scope)",
+            "eventName": "string (Column 4)",
+            "description": "string (Column 4 - same as event name or more detail if available)",
             "department": "string (IT, HR, Finance, Marketing, Legal, Ops)",
-            "estimatedContractValue": "number (raw integer, no symbols)",
-            "categoryLead": "string (Name)",
+            "estimatedContractValue": "number (Column 9 - raw integer)",
+            "categoryLead": "string (Column 16 - Name)",
             "primaryLead": "string (Name)",
-            "vendor": "string (Name)",
+            "vendor": "string (Column 5 - Name)",
             "needDate": "string (YYYY-MM-DD)",
             "riskLevel": "Low | Medium | High (Default to Low if unknown)",
             "sourcingStatus": "Active",
-            "notes": "string (Any remaining unmapped context)"
+            "notes": "string (Column 19)"
         }
 
         **Input Text to Parse**:
