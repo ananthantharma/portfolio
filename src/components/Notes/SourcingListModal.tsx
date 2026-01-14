@@ -18,6 +18,11 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     // Inline Editing State
     const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null);
     const [editValue, setEditValue] = useState<any>('');
+    const [config, setConfig] = useState<any>({
+        departments: [],
+        categoryLeads: [],
+        sourcingStatuses: []
+    });
 
     const handleStartEdit = (e: React.MouseEvent, event: any, field: string) => {
         e.stopPropagation(); // Prevent row click
@@ -107,17 +112,21 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
     useEffect(() => {
         if (isOpen) {
-            loadEvents();
+            loadData();
         }
     }, [isOpen]);
 
-    const loadEvents = async () => {
+    const loadData = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/sourcing/events');
-            setEvents(res.data);
+            const [eventsRes, configRes] = await Promise.all([
+                axios.get('/api/sourcing/events'),
+                axios.get('/api/sourcing/config')
+            ]);
+            setEvents(eventsRes.data);
+            setConfig(configRes.data || { departments: [], categoryLeads: [], sourcingStatuses: [] });
         } catch (e) {
-            console.error("Failed to load events", e);
+            console.error("Failed to load data", e);
         } finally {
             setLoading(false);
         }
@@ -142,7 +151,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     };
 
     const handleSaveEdit = () => {
-        loadEvents(); // Reload all
+        loadData(); // Reload all
         setEditEvent(null);
     };
 
@@ -536,15 +545,15 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                                         {/* Business Unit / Dept */}
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.department }}>
-                                                            {renderEditableCell(event, 'department', 'text')}
+                                                            {renderEditableCell(event, 'department', 'select', config.departments)}
                                                         </td>
 
                                                         {/* Leads */}
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.primaryLead }}>
-                                                            {renderEditableCell(event, 'primaryLead', 'select', primaryLeads)}
+                                                            {renderEditableCell(event, 'primaryLead', 'text')}
                                                         </td>
                                                         <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.categoryLead }}>
-                                                            {renderEditableCell(event, 'categoryLead', 'select', categoryLeads)}
+                                                            {renderEditableCell(event, 'categoryLead', 'select', config.categoryLeads)}
                                                         </td>
 
                                                         {/* Value */}
@@ -578,7 +587,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                                         {/* Sourcing Status */}
                                                         <td className="px-3 py-4 text-sm align-top text-gray-700 truncate" style={{ width: colWidths.sourcingStatus }}>
-                                                            {renderEditableCell(event, 'sourcingStatus', 'select', ['Active', 'Pending', 'Completed', 'On Hold', 'Cancelled'])}
+                                                            {renderEditableCell(event, 'sourcingStatus', 'select', config.sourcingStatuses.length > 0 ? config.sourcingStatuses : ['Active', 'Pending', 'Completed', 'On Hold', 'Cancelled'])}
                                                         </td>
 
                                                         {/* Date */}
