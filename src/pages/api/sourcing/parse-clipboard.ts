@@ -30,28 +30,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' }); // Use flash for speed
 
         const prompt = `
-        You are an intelligent data extraction assistant. 
-        I am pasting a row of data (e.g. from Excel) or a snippet of text regarding a sourcing event. 
-        Your job is to extract relevant fields into a JSON object. If you are not confident about a field, leave it null or empty string.
+        You are an expert Data Entry AI for a Procurement System.
+        The user has pasted text that represents a "Sourcing Event" (a project to buy goods/services).
+        The text might be a row from an Excel spreadsheet (tab-separated), an email, or a rough note.
 
-        Target JSON Structure:
+        **YOUR GOAL**: extract as much meaningful data as possible into the JSON field structure below.
+
+        **GUIDELINES for Extraction**:
+        1. **Excel/Table Rows**: If standard table data is detected (tab-separated), try to identify columns based on content (e.g. Money = Value, Name = Lead, Date = Need Date).
+        2. **Department**: Infer the Business Unit/Department if not explicit. (e.g., "Software" -> "IT", "Recruiting" -> "HR", "Audit" -> "Finance").
+        3. **Leads**: Look for person names. 
+           - 'Primary Lead' is often the requester or business owner.
+           - 'Category Lead' is often the procurement manager.
+        4. **Value**: Look for currency amounts (e.g. $50k, 50,000) for 'estimatedContractValue'.
+        5. **Dates**: Convert all dates to 'YYYY-MM-DD'.
+        6. **Vendor**: Look for company names (e.g., "Microsoft", "Oracle", "Agency X").
+
+        **Target JSON Structure**:
         {
-            "eventName": "string (Short title of request)",
-            "description": "string (Detailed description)",
-            "department": "string (e.g. IT, HR, Marketing - infer if possible)",
-            "estimatedContractValue": "number (extract raw number)",
-            "categoryLead": "string (Person name)",
-            "primaryLead": "string (Person name)",
-            "vendor": "string (Vendor name)",
+            "eventName": "string (Title of project. If missing, generate a short one from description)",
+            "description": "string (Full details/scope)",
+            "department": "string (IT, HR, Finance, Marketing, Legal, Ops)",
+            "estimatedContractValue": "number (raw integer, no symbols)",
+            "categoryLead": "string (Name)",
+            "primaryLead": "string (Name)",
+            "vendor": "string (Name)",
             "needDate": "string (YYYY-MM-DD)",
             "riskLevel": "Low | Medium | High (Default to Low if unknown)",
-            "notes": "string (Any extra context)"
+            "sourcingStatus": "Active",
+            "notes": "string (Any remaining unmapped context)"
         }
 
-        Input Text:
+        **Input Text to Parse**:
         ${JSON.stringify(text.slice(0, 5000))}
 
-        Response (JSON Only):
+        **Response (Valid JSON only, no markdown)**:
         `;
 
         const result = await model.generateContent(prompt);
