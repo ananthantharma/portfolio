@@ -10,6 +10,17 @@ interface SourcingListModalProps {
     onNavigateToPage?: (pageId: string) => void;
 }
 
+
+const DEFAULT_SOURCING_STATUSES = [
+    'Draft',
+    'NDA',
+    'Contract Negotiation',
+    'Drafting Terms & Condition',
+    'PR Approval',
+    'SSJ Approval',
+    'PO Creation'
+];
+
 export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }: SourcingListModalProps) {
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -115,6 +126,13 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
             categoryLeads: Array.from(cLeads).sort()
         };
     }, [events]);
+
+    // Merge default statuses with custom ones
+    const mergedSourcingStatuses = useMemo(() => {
+        const custom = config.sourcingStatuses || [];
+        const combined = new Set([...DEFAULT_SOURCING_STATUSES, ...custom]);
+        return Array.from(combined);
+    }, [config.sourcingStatuses]);
 
     useEffect(() => {
         if (isOpen) {
@@ -653,7 +671,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                                         {/* Sourcing Status */}
                                                         <td className="px-3 py-4 text-sm align-top text-gray-700 truncate" style={{ width: colWidths.sourcingStatus }}>
-                                                            {renderEditableCell(event, 'sourcingStatus', 'select', config.sourcingStatuses.length > 0 ? config.sourcingStatuses : ['Active', 'Pending', 'Completed', 'On Hold', 'Cancelled'])}
+                                                            {renderEditableCell(event, 'sourcingStatus', 'select', mergedSourcingStatuses)}
                                                         </td>
 
                                                         {/* Date */}
