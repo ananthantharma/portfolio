@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, PlusIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 import SourcingEventModal from './SourcingEventModal';
 
@@ -148,6 +148,35 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
     const handleCreate = () => {
         setEditEvent({}); // Empty object triggers create mode
+    };
+
+    const handleSmartPaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (!text) {
+                alert("Clipboard is empty!");
+                return;
+            }
+
+            // Show loading state or toast
+            // Optional: You could set some UI state here to show a spinner on the button
+
+            const res = await axios.post('/api/sourcing/parse-clipboard', { text });
+            const parsedData = res.data;
+
+            // Map single 'vendor' return to 'vendors' array if needed
+            if (parsedData.vendor) {
+                parsedData.vendors = [parsedData.vendor];
+                delete parsedData.vendor;
+            }
+
+            // Open modal with this data (no _id, so it will be treated as new/draft-like)
+            setEditEvent(parsedData);
+
+        } catch (error) {
+            console.error("Smart paste failed", error);
+            alert("Failed to interpret clipboard data. Please try again or enter manually.");
+        }
     };
 
     const handleSaveEdit = () => {
@@ -379,6 +408,14 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 title="Toggle Filters"
                                             >
                                                 <FunnelIcon className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={handleSmartPaste}
+                                                className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium mr-2"
+                                                title="Paste row from Excel/Email"
+                                            >
+                                                <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-500" />
+                                                Smart Paste
                                             </button>
                                             <button
                                                 onClick={handleCreate}
