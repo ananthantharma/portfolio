@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const { model: requestedModel, apiKey: apiKeyParam, fileUrl, fileType, text: providedText } = req.body;
-    const modelName = requestedModel || 'gemini-1.5-flash';
+    const modelName = requestedModel || 'gemini-flash-latest';
 
     let apiKey = process.env.GOOGLE_API_KEY;
     if (apiKeyParam === 'GEMINI_SCOPED') {

@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const apiKey = process.env.GOOGLE_API_KEY || process.env.Gemini_Key;
         const genAI = new GoogleGenerativeAI(apiKey!);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); // Use flash for speed
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' }); // Use flash for speed
 
         const prompt = `
         You are an intelligent data extraction assistant. 
