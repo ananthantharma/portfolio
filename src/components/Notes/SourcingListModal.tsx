@@ -179,9 +179,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
             setShowPasteModal(false);
             setEditEvent(parsedData);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Smart paste processing failed", error);
-            alert("Failed to interpret data. Please check your text and try again.");
+            const msg = error.response?.data?.error || error.response?.data?.details || error.message || "Unknown error";
+            alert(`Failed to interpret data: ${msg}`);
         } finally {
             setIsProcessingPaste(false);
         }

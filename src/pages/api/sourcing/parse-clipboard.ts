@@ -10,9 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         await getServerSession(req, res, authOptions);
-        // Lenient auth check for now, matches other endpoints if key exists
-        if (!process.env.GOOGLE_API_KEY && !process.env.Gemini_Key) {
-            return res.status(500).json({ error: 'API Key not configured' });
+        // Check keys
+        const hasGoogleKey = !!process.env.GOOGLE_API_KEY;
+        const hasGeminiKey = !!process.env.Gemini_Key;
+
+        if (!hasGoogleKey && !hasGeminiKey) {
+            console.error("Missing Gemini API Keys in environment variables");
+            return res.status(503).json({ error: 'Server configuration error: Gemini API Key not configured.' });
         }
 
         const { text } = req.body;
@@ -67,7 +71,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
     } catch (error: any) {
-        console.error('Parse error:', error);
-        return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        console.error('Parse error details:', error);
+        return res.status(500).json({
+            error: 'AI Processing Failed',
+            details: error instanceof Error ? error.message : JSON.stringify(error)
+        });
     }
 }
