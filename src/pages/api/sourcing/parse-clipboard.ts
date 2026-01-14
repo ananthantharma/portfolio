@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         Input Text:
-        "${text.slice(0, 5000)}"
+        ${JSON.stringify(text.slice(0, 5000))}
 
         Response (JSON Only):
         `;
@@ -54,8 +54,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const response = await result.response;
         const textResponse = response.text();
 
-        // Clean markdown code blocks if present
-        const jsonString = textResponse.replace(/^```json\n|\n```$/g, '').trim();
+        // Robust JSON extraction
+        const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+        const jsonString = jsonMatch ? jsonMatch[0] : textResponse;
 
         try {
             const parsed = JSON.parse(jsonString);
