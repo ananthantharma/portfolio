@@ -19,55 +19,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(503).json({ error: 'Server configuration error: Gemini API Key not configured.' });
         }
 
-        const { text } = req.body;
+        const { text, options } = req.body;
 
         if (!text) {
             return res.status(400).json({ error: 'No text provided' });
         }
 
+        const departments = options?.departments?.join(', ') || "IT, HR, Finance, Marketing, Legal, Ops";
+        const categoryLeads = options?.categoryLeads?.join(', ') || "Use any identified name";
+
         const apiKey = process.env.GOOGLE_API_KEY || process.env.Gemini_Key;
         const genAI = new GoogleGenerativeAI(apiKey!);
-        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' }); // Use flash for speed
+        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
         const prompt = `
         You are an expert Data Entry AI for a Procurement System.
-        The user has pasted text that represents a "Sourcing Event" (a project to buy goods/services).
-        The text might be a row from an Excel spreadsheet (tab-separated), an email, or a rough note.
+        The user has pasted text that represents a "Sourcing Event".
 
-        **YOUR GOAL**: extract as much meaningful data as possible into the JSON field structure below.
+        **YOUR GOAL**: extract data into the JSON structure below.
 
-        **CRITICAL - COLUMN MAPPING LOGIC (If input is a table row)**:
-        If the input seems to be a tab-separated or structured row, follow these column indices (1-based index):
-        - **Event Name**: Map from Column 4 (Description)
-        - **Vendor(s)**: Map from Column 5
-        - **Value (Estimated Contract Value)**: Map from Column 9
-        - **Category Lead**: Map from Column 16
-        - **Notes**: Map from Column 19
+        **CRITICAL - STRICT DROPDOWN MATCHING**:
+        - **Department**: Must match one of these EXACTLY if possible: [${departments}]
+        - **Category Lead**: Must match one of these EXACTLY if possible: [${categoryLeads}]
+          - If the exact name is not found, return the closest match or the raw name.
 
-        **GENERAL GUIDELINES**:
-        1. **Department**: Infer the Business Unit/Department if not explicit. (e.g., "Software" -> "IT", "Recruiting" -> "HR", "Audit" -> "Finance").
-        2. **Leads**: 
-           - 'Category Lead' should map from the column specified above.
-           - 'Primary Lead' can be inferred if another name is present.
-        3. **Value**: Clean the value from Column 9 (remove symbols) for 'estimatedContractValue'.
-        4. **Dates**: Convert all dates to 'YYYY-MM-DD'.
+        **COLUMN MAPPING (If Tab-Separated/Excel Row)**:
+        - **Event Name**: Column 4
+        - **Vendor**: Column 5
+        - **Value**: Column 9
+        - **Category Lead**: Column 16
+        - **Notes**: Column 19
 
         **Target JSON Structure**:
         {
-            "eventName": "string (Column 4)",
-            "description": "string (Column 4 - same as event name or more detail if available)",
-            "department": "string (IT, HR, Finance, Marketing, Legal, Ops)",
-            "estimatedContractValue": "number (Column 9 - raw integer)",
-            "categoryLead": "string (Column 16 - Name)",
-            "primaryLead": "string (Name)",
-            "vendor": "string (Column 5 - Name)",
+            "eventName": "string",
+            "description": "string",
+            "department": "string (Start with explicit match, otherwise infer)",
+            "estimatedContractValue": "number",
+            "categoryLead": "string",
+            "primaryLead": "string",
+            "vendor": "string",
             "needDate": "string (YYYY-MM-DD)",
-            "riskLevel": "Low | Medium | High (Default to Low if unknown)",
+            "riskLevel": "Low | Medium | High",
             "sourcingStatus": "Active",
-            "notes": "string (Column 19)"
+            "notes": "string"
         }
 
-        **Input Text to Parse**:
+        **Input Text**:
         ${JSON.stringify(text.slice(0, 5000))}
 
         **Response (Valid JSON only, no markdown)**:

@@ -166,7 +166,13 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
         setIsProcessingPaste(true);
         try {
-            const res = await axios.post('/api/sourcing/parse-clipboard', { text: pasteInput });
+            const res = await axios.post('/api/sourcing/parse-clipboard', {
+                text: pasteInput,
+                options: {
+                    departments: config.departments || [],
+                    categoryLeads: config.categoryLeads || []
+                }
+            });
             const parsedData = res.data;
 
             // Map single 'vendor' return to 'vendors' array if needed
