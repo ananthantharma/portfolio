@@ -97,6 +97,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         status: 'Active', // Default to Active
         primaryLead: '',
         categoryLead: '',
+        department: '',
         risk: '',
         onTrack: ''
     });
@@ -222,6 +223,9 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         if (filters.categoryLead) {
             const lower = filters.categoryLead.toLowerCase();
             items = items.filter(item => item.categoryLead?.toLowerCase() === lower);
+        }
+        if (filters.department) {
+            items = items.filter(item => item.department === filters.department);
         }
         if (filters.risk) {
             items = items.filter(item => item.riskLevel === filters.risk);
@@ -476,6 +480,17 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                             </select>
 
                                             <select
+                                                value={filters.department}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
+                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                            >
+                                                <option value="">All Depts</option>
+                                                {config.departments?.map((dept: string) => (
+                                                    <option key={dept} value={dept}>{dept}</option>
+                                                ))}
+                                            </select>
+
+                                            <select
                                                 value={filters.status}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -522,7 +537,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                             <div className="md:col-span-6 text-right">
                                                 <button
-                                                    onClick={() => setFilters({ search: '', status: '', primaryLead: '', categoryLead: '', risk: '', onTrack: '' })}
+                                                    onClick={() => setFilters({ search: '', status: '', primaryLead: '', categoryLead: '', department: '', risk: '', onTrack: '' })}
                                                     className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
                                                 >
                                                     Clear Filters
