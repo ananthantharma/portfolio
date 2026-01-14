@@ -24,6 +24,11 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         sourcingStatuses: []
     });
 
+    // Paste Modal State
+    const [showPasteModal, setShowPasteModal] = useState(false);
+    const [pasteInput, setPasteInput] = useState('');
+    const [isProcessingPaste, setIsProcessingPaste] = useState(false);
+
     const handleStartEdit = (e: React.MouseEvent, event: any, field: string) => {
         e.stopPropagation(); // Prevent row click
         setEditingCell({ id: event._id, field });
@@ -150,18 +155,17 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         setEditEvent({}); // Empty object triggers create mode
     };
 
-    const handleSmartPaste = async () => {
+    const handleSmartPaste = () => {
+        setPasteInput('');
+        setShowPasteModal(true);
+    };
+
+    const handleProcessPaste = async () => {
+        if (!pasteInput.trim()) return;
+
+        setIsProcessingPaste(true);
         try {
-            const text = await navigator.clipboard.readText();
-            if (!text) {
-                alert("Clipboard is empty!");
-                return;
-            }
-
-            // Show loading state or toast
-            // Optional: You could set some UI state here to show a spinner on the button
-
-            const res = await axios.post('/api/sourcing/parse-clipboard', { text });
+            const res = await axios.post('/api/sourcing/parse-clipboard', { text: pasteInput });
             const parsedData = res.data;
 
             // Map single 'vendor' return to 'vendors' array if needed
@@ -170,12 +174,15 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                 delete parsedData.vendor;
             }
 
-            // Open modal with this data (no _id, so it will be treated as new/draft-like)
+            // Close paste modal and open edit modal
+            setShowPasteModal(false);
             setEditEvent(parsedData);
 
         } catch (error) {
-            console.error("Smart paste failed", error);
-            alert("Failed to interpret clipboard data. Please try again or enter manually.");
+            console.error("Smart paste processing failed", error);
+            alert("Failed to interpret data. Please check your text and try again.");
+        } finally {
+            setIsProcessingPaste(false);
         }
     };
 
@@ -671,6 +678,60 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                     defaultEventName={editEvent.eventName}
                 />
             )}
+
+            {/* Smart Paste Data Input Modal */}
+            <Transition.Root show={showPasteModal} as={Fragment}>
+                <Dialog as="div" className="relative z-[60]" onClose={() => setShowPasteModal(false)}>
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    <div className="fixed inset-0 z-10 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                            <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                                    <div className="sm:flex sm:items-start">
+                                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                                            <ClipboardDocumentListIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                                        </div>
+                                        <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                            <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                                                Smart Paste
+                                            </Dialog.Title>
+                                            <div className="mt-2">
+                                                <p className="text-sm text-gray-500 mb-2">
+                                                    Paste your row data (from Excel, Email, or Slack) below. The AI will attempt to map the fields for you.
+                                                </p>
+                                                <textarea
+                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                                    rows={6}
+                                                    placeholder="Paste text here..."
+                                                    value={pasteInput}
+                                                    onChange={(e) => setPasteInput(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                    <button
+                                        type="button"
+                                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto disabled:opacity-50"
+                                        onClick={handleProcessPaste}
+                                        disabled={isProcessingPaste || !pasteInput.trim()}
+                                    >
+                                        {isProcessingPaste ? 'Processing...' : 'Parse & Create'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                        onClick={() => setShowPasteModal(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </Dialog.Panel>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition.Root>
         </>
     );
 }
