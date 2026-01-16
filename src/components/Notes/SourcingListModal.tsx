@@ -2,6 +2,7 @@ import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, PlusIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 import SourcingEventModal from './SourcingEventModal';
 
 interface SourcingListModalProps {
@@ -235,6 +236,27 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         setSortConfig({ key, direction });
     };
 
+    const handleExportExcel = () => {
+        const data = sortedAndFilteredEvents.map(e => ({
+            'Event Name': e.eventName,
+            'Description': e.description,
+            'Business Unit / Dept': e.department,
+            'Primary Lead': e.primaryLead,
+            'Category Lead': e.categoryLead,
+            'Est. Value': e.estimatedContractValue,
+            'Risk': e.riskLevel,
+            'Tracking': e.onTrack,
+            'Status': e.sourcingStatus,
+            'Need Date': e.needDate ? new Date(e.needDate).toLocaleDateString() : '',
+            'Notes': e.notes
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sourcing Events");
+        XLSX.writeFile(wb, `Sourcing_Events_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     const sortedAndFilteredEvents = useMemo(() => {
         let items = [...events];
 
@@ -300,55 +322,58 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                     </span>
                     <ChevronDownIcon className="h-4 w-4 text-gray-400" />
                 </button>
-                <div className="absolute z-20 mt-1 max-h-60 w-full min-w-[200px] overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block transition-opacity opacity-0 group-hover:opacity-100 hover:block hover:opacity-100">
-                    {/* Select All Option */}
-                    <div
-                        className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 mb-1 ${isAllSelected ? 'bg-indigo-50/50' : ''}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (isAllSelected) {
-                                onChange([]);
-                            } else {
-                                onChange([...options]);
-                            }
-                        }}
-                    >
-                        <input
-                            type="checkbox"
-                            checked={isAllSelected}
-                            readOnly
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
-                        />
-                        <span className="block truncate font-bold text-indigo-900">
-                            Select All
-                        </span>
-                    </div>
-
-                    {options.map((option) => (
+                {/* Dropdown Container with bridge for stable hover */}
+                <div className="absolute z-50 left-0 w-full min-w-[200px] pt-1 hidden group-hover:block hover:block">
+                    <div className="max-h-60 overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {/* Select All Option */}
                         <div
-                            key={option}
-                            className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer ${selected.includes(option) ? 'bg-indigo-50/50' : ''}`}
+                            className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 mb-1 ${isAllSelected ? 'bg-indigo-50/50' : ''}`}
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                const newSelected = selected.includes(option)
-                                    ? selected.filter(s => s !== option)
-                                    : [...selected, option];
-                                onChange(newSelected);
+                                if (isAllSelected) {
+                                    onChange([]);
+                                } else {
+                                    onChange([...options]);
+                                }
                             }}
                         >
                             <input
                                 type="checkbox"
-                                checked={selected.includes(option)}
+                                checked={isAllSelected}
                                 readOnly
                                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
                             />
-                            <span className={`block truncate ${selected.includes(option) ? 'font-medium text-indigo-900' : 'text-gray-900'}`}>
-                                {option}
+                            <span className="block truncate font-bold text-indigo-900">
+                                Select All
                             </span>
                         </div>
-                    ))}
+
+                        {options.map((option) => (
+                            <div
+                                key={option}
+                                className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer ${selected.includes(option) ? 'bg-indigo-50/50' : ''}`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const newSelected = selected.includes(option)
+                                        ? selected.filter(s => s !== option)
+                                        : [...selected, option];
+                                    onChange(newSelected);
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selected.includes(option)}
+                                    readOnly
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+                                />
+                                <span className={`block truncate ${selected.includes(option) ? 'font-medium text-indigo-900' : 'text-gray-900'}`}>
+                                    {option}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -392,7 +417,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         let bgClass = 'bg-gray-100 text-gray-800';
         switch (status) {
             case 'On Track': bgClass = 'bg-green-100 text-green-800'; break;
-            case 'At Risk': bgClass = 'bg-yellow-100 text-yellow-800'; break;
+            case 'At Risk': bgClass = 'bg-orange-100 text-orange-800'; break;
             case 'Off Track': bgClass = 'bg-red-100 text-red-800'; break;
             case 'Blocked / Critical': bgClass = 'bg-gray-900 text-white'; break;
             case 'Not Started': bgClass = 'bg-gray-100 text-gray-800'; break;
@@ -521,6 +546,14 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 <FunnelIcon className="w-5 h-5" />
                                             </button>
                                             <button
+                                                onClick={handleExportExcel}
+                                                className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-green-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium"
+                                                title="Export to Excel"
+                                            >
+                                                <ArrowTopRightOnSquareIcon className="w-4 h-4 text-green-600" />
+                                                Export
+                                            </button>
+                                            <button
                                                 onClick={handleSmartPaste}
                                                 className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium mr-2"
                                                 title="Paste row from Excel/Email"
@@ -572,7 +605,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                             />
 
                                             <MultiSelect
-                                                label="All Depts"
+                                                label="Business Unit / Dept"
                                                 options={config.departments || []}
                                                 selected={filters.department}
                                                 onChange={(val) => setFilters(prev => ({ ...prev, department: val }))}
