@@ -290,6 +290,8 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     }, [events, sortConfig, filters]);
 
     const MultiSelect = ({ label, options, selected, onChange }: { label: string, options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+        const isAllSelected = options.length > 0 && selected.length === options.length;
+
         return (
             <div className="relative group">
                 <button className="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm hover:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -299,6 +301,30 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                     <ChevronDownIcon className="h-4 w-4 text-gray-400" />
                 </button>
                 <div className="absolute z-20 mt-1 max-h-60 w-full min-w-[200px] overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block transition-opacity opacity-0 group-hover:opacity-100 hover:block hover:opacity-100">
+                    {/* Select All Option */}
+                    <div
+                        className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 mb-1 ${isAllSelected ? 'bg-indigo-50/50' : ''}`}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (isAllSelected) {
+                                onChange([]);
+                            } else {
+                                onChange([...options]);
+                            }
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={isAllSelected}
+                            readOnly
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+                        />
+                        <span className="block truncate font-bold text-indigo-900">
+                            Select All
+                        </span>
+                    </div>
+
                     {options.map((option) => (
                         <div
                             key={option}
@@ -589,10 +615,10 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                             <div className="md:col-span-6 text-right">
                                                 <button
-                                                    onClick={() => setFilters({ search: '', status: [], primaryLead: [], categoryLead: [], department: [], risk: [], onTrack: [] })}
+                                                    onClick={() => setFilters({ search: '', status: ['Active'], primaryLead: [], categoryLead: [], department: [], risk: [], onTrack: [] })}
                                                     className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
                                                 >
-                                                    Clear Filters
+                                                    Reset Filters
                                                 </button>
                                             </div>
                                         </div>
