@@ -103,14 +103,24 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
     // Sorting & Filtering State
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
     const [showFilters, setShowFilters] = useState(false);
-    const [filters, setFilters] = useState({
+
+    // Multi-select state
+    const [filters, setFilters] = useState<{
+        search: string;
+        status: string[];
+        primaryLead: string[];
+        categoryLead: string[];
+        department: string[];
+        risk: string[];
+        onTrack: string[];
+    }>({
         search: '',
-        status: 'Active', // Default to Active
-        primaryLead: '',
-        categoryLead: '',
-        department: '',
-        risk: '',
-        onTrack: ''
+        status: ['Active'], // Default to Active
+        primaryLead: [],
+        categoryLead: [],
+        department: [],
+        risk: [],
+        onTrack: []
     });
 
     // Extract unique leads for filter dropdowns
@@ -225,8 +235,6 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         setSortConfig({ key, direction });
     };
 
-
-
     const sortedAndFilteredEvents = useMemo(() => {
         let items = [...events];
 
@@ -238,25 +246,27 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                 (item.description?.toLowerCase().includes(lowerSearch))
             );
         }
-        if (filters.status) {
-            items = items.filter(item => item.status === filters.status);
+
+        // Multi-select filtering
+        if (filters.status.length > 0) {
+            items = items.filter(item => filters.status.includes(item.status));
         }
-        if (filters.primaryLead) {
-            const lower = filters.primaryLead.toLowerCase();
-            items = items.filter(item => item.primaryLead?.toLowerCase() === lower);
+        if (filters.primaryLead.length > 0) {
+            const lowerFilters = filters.primaryLead.map(f => f.toLowerCase());
+            items = items.filter(item => item.primaryLead && lowerFilters.includes(item.primaryLead.toLowerCase()));
         }
-        if (filters.categoryLead) {
-            const lower = filters.categoryLead.toLowerCase();
-            items = items.filter(item => item.categoryLead?.toLowerCase() === lower);
+        if (filters.categoryLead.length > 0) {
+            const lowerFilters = filters.categoryLead.map(f => f.toLowerCase());
+            items = items.filter(item => item.categoryLead && lowerFilters.includes(item.categoryLead.toLowerCase()));
         }
-        if (filters.department) {
-            items = items.filter(item => item.department === filters.department);
+        if (filters.department.length > 0) {
+            items = items.filter(item => filters.department.includes(item.department));
         }
-        if (filters.risk) {
-            items = items.filter(item => item.riskLevel === filters.risk);
+        if (filters.risk.length > 0) {
+            items = items.filter(item => filters.risk.includes(item.riskLevel));
         }
-        if (filters.onTrack) {
-            items = items.filter(item => item.onTrack === filters.onTrack);
+        if (filters.onTrack.length > 0) {
+            items = items.filter(item => filters.onTrack.includes(item.onTrack));
         }
 
 
@@ -278,6 +288,45 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
         return items;
     }, [events, sortConfig, filters]);
+
+    const MultiSelect = ({ label, options, selected, onChange }: { label: string, options: string[], selected: string[], onChange: (val: string[]) => void }) => {
+        return (
+            <div className="relative group">
+                <button className="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm hover:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    <span className="block truncate text-gray-700">
+                        {selected.length === 0 ? label : `${selected.length} selected`}
+                    </span>
+                    <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                </button>
+                <div className="absolute z-20 mt-1 max-h-60 w-full min-w-[200px] overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block transition-opacity opacity-0 group-hover:opacity-100 hover:block hover:opacity-100">
+                    {options.map((option) => (
+                        <div
+                            key={option}
+                            className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer ${selected.includes(option) ? 'bg-indigo-50/50' : ''}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const newSelected = selected.includes(option)
+                                    ? selected.filter(s => s !== option)
+                                    : [...selected, option];
+                                onChange(newSelected);
+                            }}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={selected.includes(option)}
+                                readOnly
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+                            />
+                            <span className={`block truncate ${selected.includes(option) ? 'font-medium text-indigo-900' : 'text-gray-900'}`}>
+                                {option}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
 
     const SortIcon = ({ column }: { column: string }) => {
         if (sortConfig?.key !== column) return <div className="w-4 h-4 ml-1 inline-block opacity-0 group-hover:opacity-50">↕</div>;
@@ -473,7 +522,7 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
 
                                     {/* Filters Bar */}
                                     {showFilters && (
-                                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn">
+                                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn z-30 relative overflow-visible">
                                             <input
                                                 type="text"
                                                 placeholder="Search..."
@@ -482,87 +531,65 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                             />
 
-                                            <select
-                                                value={filters.primaryLead}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, primaryLead: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Pri Leads</option>
-                                                {primaryLeads.map(lead => (
-                                                    <option key={lead} value={lead}>{lead}</option>
-                                                ))}
-                                            </select>
+                                            <MultiSelect
+                                                label="All Pri Leads"
+                                                options={primaryLeads}
+                                                selected={filters.primaryLead}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, primaryLead: val }))}
+                                            />
 
-                                            <select
-                                                value={filters.categoryLead}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, categoryLead: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Cat Leads</option>
-                                                {categoryLeads.map(lead => (
-                                                    <option key={lead} value={lead}>{lead}</option>
-                                                ))}
-                                            </select>
+                                            <MultiSelect
+                                                label="All Cat Leads"
+                                                options={categoryLeads}
+                                                selected={filters.categoryLead}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, categoryLead: val }))}
+                                            />
 
-                                            <select
-                                                value={filters.department}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Depts</option>
-                                                {config.departments?.map((dept: string) => (
-                                                    <option key={dept} value={dept}>{dept}</option>
-                                                ))}
-                                            </select>
+                                            <MultiSelect
+                                                label="All Depts"
+                                                options={config.departments || []}
+                                                selected={filters.department}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, department: val }))}
+                                            />
 
-                                            <select
-                                                value={filters.status}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Statuses</option>
-                                                <option value="Active">Active</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="Completed">Completed</option>
-                                                <option value="On Hold">On Hold</option>
-                                                <option value="Cancelled">Cancelled</option>
-                                            </select>
+                                            <MultiSelect
+                                                label="All Statuses"
+                                                options={mergedSourcingStatuses}
+                                                selected={filters.status}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, status: val }))}
+                                            />
 
-                                            <select
-                                                value={filters.risk}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, risk: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Risks</option>
-                                                <option value="Low">Low</option>
-                                                <option value="Medium">Medium</option>
-                                                <option value="High">High</option>
-                                            </select>
+                                            <MultiSelect
+                                                label="All Risks"
+                                                options={['Low', 'Medium', 'High']}
+                                                selected={filters.risk}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, risk: val }))}
+                                            />
 
-                                            <select
-                                                value={filters.onTrack}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, onTrack: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            >
-                                                <option value="">All Tracking</option>
-                                                <option value="On Track">On Track</option>
-                                                <option value="At Risk">At Risk</option>
-                                                <option value="Off Track">Off Track</option>
-                                                <option value="Blocked / Critical">Blocked / Critical</option>
-                                                <option value="Not Started">Not Started</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="On Hold / Paused">On Hold / Paused</option>
-                                                <option value="Pending Approval / Review">Pending Approval / Review</option>
-                                                <option value="Draft / Scoping">Draft / Scoping</option>
-                                                <option value="Completed / Delivered">Completed / Delivered</option>
-                                                <option value="Cancelled">Cancelled</option>
-                                                <option value="Deferred">Deferred</option>
-                                                <option value="Archived">Archived</option>
-                                            </select>
+                                            <MultiSelect
+                                                label="All Tracking"
+                                                options={[
+                                                    'On Track',
+                                                    'At Risk',
+                                                    'Off Track',
+                                                    'Blocked / Critical',
+                                                    'Not Started',
+                                                    'In Progress',
+                                                    'On Hold / Paused',
+                                                    'Pending Approval / Review',
+                                                    'Draft / Scoping',
+                                                    'Completed / Delivered',
+                                                    'Cancelled',
+                                                    'Deferred',
+                                                    'Archived'
+                                                ]}
+                                                selected={filters.onTrack}
+                                                onChange={(val) => setFilters(prev => ({ ...prev, onTrack: val }))}
+                                            />
 
                                             <div className="md:col-span-6 text-right">
                                                 <button
-                                                    onClick={() => setFilters({ search: '', status: '', primaryLead: '', categoryLead: '', department: '', risk: '', onTrack: '' })}
+                                                    onClick={() => setFilters({ search: '', status: [], primaryLead: [], categoryLead: [], department: [], risk: [], onTrack: [] })}
                                                     className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
                                                 >
                                                     Clear Filters
