@@ -521,6 +521,32 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
         );
     };
 
+    // Helper to generate consistent colors from strings
+    const getColorForName = (name: string) => {
+        const colors = [
+            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
+            'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
+            'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
+            'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    };
+
+    const toggleCategoryLeadFilter = (lead: string) => {
+        setFilters(prev => {
+            const isActive = prev.categoryLead.includes(lead);
+            if (isActive) {
+                return { ...prev, categoryLead: prev.categoryLead.filter(l => l !== lead) };
+            } else {
+                return { ...prev, categoryLead: [...prev.categoryLead, lead] };
+            }
+        });
+    };
+
     return (
         <>
             <Transition.Root show={isOpen} as={Fragment}>
@@ -531,12 +557,45 @@ export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }:
                             <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-[95vw] h-[90vh] flex flex-col">
                                 <div className="bg-white px-4 py-5 sm:px-6 border-b flex flex-col gap-4">
                                     <div className="flex justify-between items-center">
-                                        <Dialog.Title className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                            All Sourcing Events
-                                            <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-                                                {sortedAndFilteredEvents.length}
-                                            </span>
-                                        </Dialog.Title>
+                                        <div className="flex items-center gap-4">
+                                            <Dialog.Title className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                                All Sourcing Events
+                                                <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                                                    {sortedAndFilteredEvents.length}
+                                                </span>
+                                            </Dialog.Title>
+
+                                            {/* Category Lead Avatars */}
+                                            <div className="flex items-center -space-x-1 overflow-visible ml-4">
+                                                {categoryLeads.map((lead) => {
+                                                    const isSelected = filters.categoryLead.includes(lead);
+                                                    return (
+                                                        <button
+                                                            key={lead}
+                                                            onClick={() => toggleCategoryLeadFilter(lead)}
+                                                            className={`
+                                                                relative inline-flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs font-bold text-white shadow-sm transition-all hover:z-10 focus:outline-none
+                                                                ${getColorForName(lead)}
+                                                                ${isSelected ? 'border-indigo-600 ring-2 ring-indigo-600 z-10 scale-110' : 'border-white opacity-80 hover:opacity-100 hover:scale-105'}
+                                                            `}
+                                                            title={`Filter by ${lead}`}
+                                                        >
+                                                            {lead.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                                        </button>
+                                                    );
+                                                })}
+                                                {filters.categoryLead.length > 0 && (
+                                                    <button
+                                                        onClick={() => setFilters(prev => ({ ...prev, categoryLead: [] }))}
+                                                        className="ml-2 text-xs text-gray-400 hover:text-indigo-600 underline"
+                                                        title="Clear Lead Filters"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         <div className="flex items-center gap-4">
                                             <button
                                                 onClick={() => setShowFilters(!showFilters)}
