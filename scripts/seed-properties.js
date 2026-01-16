@@ -3,16 +3,8 @@ require('dotenv').config({ path: '.env.local' });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// ONLY throw an error if we are NOT building
 if (!process.env.MONGODB_URI) {
-    if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE === 'phase-production-build') {
-        // During build, just warn and skip connecting
-        console.warn("Skipping DB connection during build...");
-    } else {
-        // If running locally or in development, throw the error to alert you
-        // Note: You can also just delete this check entirely to let the build pass.
-        console.warn("MONGODB_URI is missing.");
-    }
+    throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
 }
 const PropertySchema = new mongoose.Schema(
     {

@@ -15,23 +15,15 @@ const SimpleRewriteModal: React.FC<SimpleRewriteModalProps> = memo(({ isOpen, on
     const [rewrittenText, setRewrittenText] = useState('');
 
     const SYSTEM_PROMPT = `
-Role: You are an experienced, efficient professional writing an email to a colleague or client. You are competent but approachable.
+Act as a professional copy editor. Please review the text below with the following goals:
 
-Task: Rewrite the draft email below.
+Grammar & Mechanics: Fix all spelling, punctuation, and grammatical errors.
 
-Style Guidelines (Strict Adherence):
+Flow & Clarity: Smooth out any awkward phrasing or run-on sentences to improve readability.
 
-Tone: "Smart-casual." Professional, but sounds like a real human speaking.
+Constraints: Strictly maintain the original tone, voice, and intent of the message. Do not make changes purely for the sake of changing them; only rewrite if the current phrasing is confusing or clunky.
 
-No "Robot" Language: Do not use phrases like "I hope this email finds you well," "Please do not hesitate to contact me," or "I am writing to inform you."
-
-Use Contractions: Always use "I'm," "don't," "can't," "it's" instead of "I am," "do not," etc. This is the #1 way to sound human.
-
-Be Direct but Polite: Get to the point quickly. Cut out fluffy adjectives and adverbs.
-
-Sentence Variation: Don't start every sentence with "I". Mix up the sentence lengths.
-
-Sign-off: Use a simple sign-off like "Thanks,"
+Here is the text:
 `;
 
     const handleRewrite = async () => {
