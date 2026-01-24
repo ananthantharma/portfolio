@@ -109,9 +109,9 @@ export async function GET(request: Request) {
         ];
       }
     } else if (isFlagged) {
-      query.isFlagged = true;
+      query.$or = [{ isFlagged: true }, { 'tabs.isFlagged': true }];
     } else if (isImportant) {
-      query.isImportant = true;
+      query.$or = [{ isImportant: true }, { 'tabs.isImportant': true }];
     } else if (sectionId) {
       query.sectionId = sectionId;
     }
