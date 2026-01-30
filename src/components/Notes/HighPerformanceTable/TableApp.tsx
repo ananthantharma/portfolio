@@ -4,7 +4,7 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import {
     DndContext,
@@ -372,6 +372,74 @@ export default function TableApp() {
         setRows(prev => deleteRecursive(prev));
     };
 
+    const indentRow = (id: string) => {
+        setRows(prev => {
+            const newRows = JSON.parse(JSON.stringify(prev)); // Deep clone
+
+            const findAndIndent = (items: TableRow[]): boolean => {
+                const idx = items.findIndex(r => r.id === id);
+                if (idx !== -1) {
+                    if (idx === 0) return true; // Can't indent first item
+
+                    const item = items[idx];
+                    const newParent = items[idx - 1];
+
+                    // Remove from current
+                    items.splice(idx, 1);
+
+                    // Add to new parent
+                    if (!newParent.children) newParent.children = [];
+                    newParent.children.push(item);
+                    newParent.isExpanded = true;
+                    return true;
+                }
+
+                for (const item of items) {
+                    if (item.children && findAndIndent(item.children)) return true;
+                }
+                return false;
+            };
+
+            findAndIndent(newRows);
+            return newRows;
+        });
+    };
+
+    const outdentRow = (id: string) => {
+        setRows(prev => {
+            const newRows = JSON.parse(JSON.stringify(prev));
+
+            const findParentAndOutdent = (items: TableRow[]): boolean => {
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+
+                    // Check children
+                    if (item.children) {
+                        const childIdx = item.children.findIndex(r => r.id === id);
+                        if (childIdx !== -1) {
+                            // Found it. 
+                            const child = item.children[childIdx];
+
+                            // Remove from parent
+                            item.children.splice(childIdx, 1);
+
+                            // Insert into *current* items list after *item*
+                            items.splice(i + 1, 0, child);
+                            return true;
+                        }
+
+                        // Recurse
+                        if (findParentAndOutdent(item.children)) return true;
+                    }
+                }
+                return false;
+            };
+
+            findParentAndOutdent(newRows);
+            return newRows;
+        });
+    };
+
     // --- Render Helpers ---
 
     const renderCellContent = (row: TableRow, col: ColumnDefinition) => {
@@ -521,6 +589,20 @@ export default function TableApp() {
                                         title="Add Sub-Task"
                                     >
                                         <PlusIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => outdentRow(row.id)}
+                                        className="p-1 text-gray-400 hover:text-indigo-600"
+                                        title="Outdent (Make Parent)"
+                                    >
+                                        <ArrowLeftIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => indentRow(row.id)}
+                                        className="p-1 text-gray-400 hover:text-indigo-600"
+                                        title="Indent (Make Child)"
+                                    >
+                                        <ArrowRightIcon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => deleteRow(row.id)}
