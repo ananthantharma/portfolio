@@ -4,7 +4,7 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import {
     DndContext,
