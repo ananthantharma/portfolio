@@ -4,7 +4,23 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { SortableHeader } from './SortableHeader';
 
 // --- Mock Initial Data ---
 const DEFAULT_OPTIONS: StatusOption[] = [
@@ -61,6 +77,17 @@ export default function TableApp() {
     const [currentTableName, setCurrentTableName] = useState<string>('New Product Roadmap');
     const [isLoadMenuOpen, setIsLoadMenuOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // Require movement before drag starts prevents accidental clicks
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     useEffect(() => {
         fetchSavedTables();
@@ -136,6 +163,38 @@ export default function TableApp() {
             alert('Error loading table');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // --- Column Management ---
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setColumns((items) => {
+                const oldIndex = items.findIndex((i) => i.id === active.id);
+                const newIndex = items.findIndex((i) => i.id === over?.id);
+                return arrayMove(items, oldIndex, newIndex);
+            });
+        }
+    };
+
+    const addColumn = () => {
+        const name = prompt("Column Name:");
+        if (!name) return;
+        // Simple type selection (defaulting to text for now, or prompt)
+        const newCol: ColumnDefinition = {
+            id: `col-${Date.now()}`,
+            label: name,
+            type: 'text',
+            width: 200
+        };
+        setColumns([...columns, newCol]);
+    };
+
+    const removeColumn = (id: string) => {
+        if (confirm("Are you sure you want to remove this column? Data in this column will be lost.")) {
+            setColumns(prev => prev.filter(c => c.id !== id));
         }
     };
 
@@ -409,7 +468,7 @@ export default function TableApp() {
                             Load Table
                         </button>
                         {isLoadMenuOpen && (
-                            <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="py-1">
                                     {savedTables.length === 0 && (
                                         <div className="px-4 py-2 text-sm text-gray-500">No saved tables</div>
@@ -439,6 +498,14 @@ export default function TableApp() {
                         Save
                     </button>
                     <button
+                        onClick={addColumn}
+                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        title="Add New Column"
+                    >
+                        <ViewColumnsIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+                        Add Col
+                    </button>
+                    <button
                         onClick={addStream}
                         className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
@@ -452,25 +519,25 @@ export default function TableApp() {
             <div className="flex-1 overflow-auto relative">
                 {/* Header */}
                 <div className="flex sticky top-0 z-20 shadow-sm bg-gray-100 border-b border-gray-200">
-                    {columns.map((col, index) => (
-                        <div
-                            key={col.id}
-                            className={clsx(
-                                "relative px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-100",
-                                index === 0 && "sticky left-0 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]"
-                            )}
-                            style={{ width: col.width, minWidth: col.width }}
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={columns.map(c => c.id)}
+                            strategy={horizontalListSortingStrategy}
                         >
-                            <div className="flex items-center justify-between">
-                                {col.label}
-                                {/* Resizer Handle */}
-                                <div
-                                    className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-400 active:bg-indigo-600 transition-colors"
-                                    onMouseDown={() => startResizing(col.id)}
+                            {columns.map((col, index) => (
+                                <SortableHeader
+                                    key={col.id}
+                                    column={col}
+                                    onResizeStart={startResizing}
+                                    onRemove={removeColumn}
                                 />
-                            </div>
-                        </div>
-                    ))}
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </div>
 
                 {/* Body */}
