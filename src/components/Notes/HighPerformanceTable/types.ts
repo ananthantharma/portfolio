@@ -1,4 +1,4 @@
-export type ColumnType = 'text' | 'date' | 'status' | 'risk';
+export type ColumnType = 'text' | 'date' | 'status' | 'risk' | 'currency';
 
 export interface StatusOption {
     id: string;

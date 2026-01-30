@@ -21,6 +21,7 @@ import {
     horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableHeader } from './SortableHeader';
+import AddColumnModal from './AddColumnModal';
 
 // --- Mock Initial Data ---
 const DEFAULT_OPTIONS: StatusOption[] = [
@@ -77,6 +78,7 @@ export default function TableApp() {
     const [currentTableName, setCurrentTableName] = useState<string>('New Product Roadmap');
     const [isLoadMenuOpen, setIsLoadMenuOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -180,15 +182,10 @@ export default function TableApp() {
     };
 
     const addColumn = () => {
-        const name = prompt("Column Name:");
-        if (!name) return;
-        // Simple type selection (defaulting to text for now, or prompt)
-        const newCol: ColumnDefinition = {
-            id: `col-${Date.now()}`,
-            label: name,
-            type: 'text',
-            width: 200
-        };
+        setIsAddColumnModalOpen(true);
+    };
+
+    const handleAddColumn = (newCol: ColumnDefinition) => {
         setColumns([...columns, newCol]);
     };
 
@@ -386,6 +383,23 @@ export default function TableApp() {
             )
         }
 
+        if (col.type === 'currency') {
+            return (
+                <div className="relative rounded-md shadow-sm">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
+                        <span className="text-gray-500 sm:text-xs">$</span>
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full border-0 bg-transparent py-0 pl-4 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-xs"
+                        placeholder="0.00"
+                        value={value || ''}
+                        onChange={(e) => updateCell(row.id, col.id, e.target.value)}
+                    />
+                </div>
+            )
+        }
+
         // Default Text & Notes
         return (
             <textarea
@@ -452,7 +466,7 @@ export default function TableApp() {
     return (
         <div className="flex flex-col h-full bg-white text-gray-900">
             {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/50 backdrop-blur">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/50 backdrop-blur relative z-50">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                     <Bars3Icon className="w-5 h-5 text-indigo-600" />
                     {currentTableName}
@@ -546,11 +560,18 @@ export default function TableApp() {
                 </div>
 
                 {/* Simple empty state if no rows */}
+                {/* Simple empty state if no rows */}
                 {rows.length === 0 && (
                     <div className="p-12 text-center text-gray-500">
                         No data. Click "New Activity Stream" to start.
                     </div>
                 )}
+
+                <AddColumnModal
+                    isOpen={isAddColumnModalOpen}
+                    onClose={() => setIsAddColumnModalOpen(false)}
+                    onAdd={handleAddColumn}
+                />
             </div>
         </div>
     );
