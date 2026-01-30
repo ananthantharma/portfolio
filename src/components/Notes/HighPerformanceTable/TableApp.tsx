@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Popover, Transition } from '@headlessui/react';
 import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
@@ -7,24 +8,26 @@ import { ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline
 
 // --- Mock Initial Data ---
 const DEFAULT_OPTIONS: StatusOption[] = [
-    { id: 'on-track', label: 'On Track', color: 'bg-green-100 text-green-800' },
-    { id: 'at-risk', label: 'At Risk', color: 'bg-red-100 text-red-800' },
-    { id: 'delayed', label: 'Delayed', color: 'bg-yellow-100 text-yellow-800' },
-    { id: 'completed', label: 'Completed', color: 'bg-blue-100 text-blue-800' },
+    { id: 'on-track', label: 'On Track', color: 'bg-green-500' },
+    { id: 'at-risk', label: 'At Risk', color: 'bg-red-500' },
+    { id: 'delayed', label: 'Delayed', color: 'bg-yellow-500' },
+    { id: 'completed', label: 'Completed', color: 'bg-blue-500' },
+    { id: 'draft', label: 'Draft', color: 'bg-gray-400' },
 ];
 
 const INITIAL_COLUMNS: ColumnDefinition[] = [
-    { id: 'name', label: 'Activity / Task', type: 'text', width: 300 },
-    { id: 'status', label: 'Status', type: 'status', width: 150, options: DEFAULT_OPTIONS },
-    { id: 'dueDate', label: 'Due Date', type: 'date', width: 140 },
-    { id: 'owner', label: 'Owner', type: 'text', width: 160 },
+    { id: 'name', label: 'Activity / Task', type: 'text', width: 350 },
+    { id: 'status', label: 'Status', type: 'status', width: 100, options: DEFAULT_OPTIONS },
     {
-        id: 'risk', label: 'Risk Level', type: 'risk', width: 140, options: [
-            { id: 'low', label: 'Low', color: 'bg-gray-100 text-gray-700' },
-            { id: 'medium', label: 'Medium', color: 'bg-orange-100 text-orange-800' },
-            { id: 'high', label: 'High', color: 'bg-red-200 text-red-900 border border-red-300' },
+        id: 'risk', label: 'Risk', type: 'risk', width: 100, options: [
+            { id: 'low', label: 'Low', color: 'bg-gray-400' },
+            { id: 'medium', label: 'Medium', color: 'bg-orange-500' },
+            { id: 'high', label: 'High', color: 'bg-red-500' },
         ]
     },
+    { id: 'dueDate', label: 'Due Date', type: 'date', width: 140 },
+    { id: 'owner', label: 'Owner', type: 'text', width: 160 },
+    { id: 'notes', label: 'Notes', type: 'text', width: 250 },
 ];
 
 const INITIAL_DATA: TableRow[] = [
@@ -262,24 +265,54 @@ export default function TableApp() {
         }
 
         if (col.type === 'status' || col.type === 'risk') {
-            const selectedOption = col.options?.find(opt => opt.id === value) || col.options?.[0]; // Default or found
-            // Dropdown implementation simplified for this pass
+            const selectedOption = col.options?.find(opt => opt.id === value);
+
             return (
-                <select
-                    className={clsx(
-                        "block w-full border-0 py-1 pl-2 pr-8 rounded-full text-xs font-semibold shadow-sm ring-1 ring-inset focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-pointer",
-                        selectedOption?.color || "bg-gray-50 text-gray-500 ring-gray-200"
-                    )}
-                    value={value || ''}
-                    onChange={(e) => updateCell(row.id, col.id, e.target.value)}
-                >
-                    <option value="">Select...</option>
-                    {col.options?.map(opt => (
-                        <option key={opt.id} value={opt.id} className="bg-white text-gray-900">
-                            {opt.label}
-                        </option>
-                    ))}
-                </select>
+                <Popover className="relative w-full h-full flex items-center justify-center">
+                    <Popover.Button className="focus:outline-none w-full h-full flex items-center justify-center">
+                        {selectedOption ? (
+                            <div
+                                className={clsx("w-6 h-6 rounded-full shadow-sm border border-gray-200", selectedOption.color)}
+                                title={selectedOption.label}
+                            />
+                        ) : (
+                            <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-300 hover:border-gray-400" />
+                        )}
+                    </Popover.Button>
+
+                    <Transition
+                        as={React.Fragment}
+                        enter="transition ease-out duration-100"
+                        enterFrom="transform opacity-0 scale-95"
+                        enterTo="transform opacity-100 scale-100"
+                        leave="transition ease-in duration-75"
+                        leaveFrom="transform opacity-100 scale-100"
+                        leaveTo="transform opacity-0 scale-95"
+                    >
+                        <Popover.Panel className="absolute z-50 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none p-2">
+                            <div className="grid grid-cols-4 gap-2">
+                                {col.options?.map(opt => (
+                                    <button
+                                        key={opt.id}
+                                        onClick={() => updateCell(row.id, col.id, opt.id)}
+                                        className={clsx(
+                                            "w-8 h-8 rounded-full shadow-sm border border-gray-100 hover:scale-110 transition-transform",
+                                            opt.color
+                                        )}
+                                        title={opt.label}
+                                    />
+                                ))}
+                                <button
+                                    onClick={() => updateCell(row.id, col.id, null)}
+                                    className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400"
+                                    title="None"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </Popover.Panel>
+                    </Transition>
+                </Popover>
             );
         }
 
@@ -287,19 +320,20 @@ export default function TableApp() {
             return (
                 <input
                     type="date"
-                    className="block w-full border-0 bg-transparent p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                    className="block w-full border-0 bg-transparent p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-xs"
                     value={value || ''}
                     onChange={(e) => updateCell(row.id, col.id, e.target.value)}
                 />
             )
         }
 
-        // Default Text
+        // Default Text & Notes
         return (
             <textarea
-                className="block w-full border-0 bg-transparent p-0 text-gray-900 focus:ring-0 sm:text-sm sm:leading-6 resize-none overflow-hidden"
+                className="block w-full border-0 bg-transparent p-0 text-gray-900 focus:ring-0 text-xs resize-none overflow-hidden leading-relaxed"
                 rows={1}
                 value={value || ''}
+                placeholder={col.id === 'notes' ? 'Add notes...' : ''}
                 onChange={(e) => updateCell(row.id, col.id, e.target.value)}
                 onInput={(e) => {
                     // Auto-grow
@@ -319,25 +353,26 @@ export default function TableApp() {
                         <div
                             key={col.id}
                             className={clsx(
-                                "relative flex items-center px-4 py-2 text-sm border-r border-gray-100 last:border-r-0",
+                                "relative flex items-center px-3 py-2 text-sm border-r border-gray-100 last:border-r-0",
                                 index === 0 && "sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]", // Sticky first col
                             )}
                             style={{ width: col.width, minWidth: col.width }}
                         >
+                            {col.id === 'name' && (
+                                <div style={{ width: depth * 24 }} className="flex-shrink-0" />
+                            )}
                             {renderCellContent(row, col)}
 
                             {/* Add Task & Delete Buttons in First Column */}
                             {index === 0 && (
                                 <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded">
-                                    {row.type === 'stream' && (
-                                        <button
-                                            onClick={() => addTask(row.id)}
-                                            className="p-1 text-gray-400 hover:text-indigo-600"
-                                            title="Add Task"
-                                        >
-                                            <PlusIcon className="w-4 h-4" />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => addTask(row.id)}
+                                        className="p-1 text-gray-400 hover:text-indigo-600"
+                                        title="Add Sub-Task"
+                                    >
+                                        <PlusIcon className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={() => deleteRow(row.id)}
                                         className="p-1 text-gray-400 hover:text-red-600"
