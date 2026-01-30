@@ -4,7 +4,8 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import * as XLSX from 'xlsx';
 import {
     DndContext,
     closestCenter,
@@ -195,6 +196,49 @@ export default function TableApp() {
         }
     };
 
+    const handleExport = () => {
+        // Flatten data for export
+        const exportData: any[] = [];
+
+        const processRow = (row: TableRow, depth: number) => {
+            const rowData: any = {};
+
+            columns.forEach(col => {
+                let val = row.data[col.id] || '';
+
+                // Add indentation visualisation for Name column
+                if (col.id === 'name') {
+                    val = '  '.repeat(depth) + val;
+                }
+
+                // Resolve Status/Risk labels if applicable
+                if (col.type === 'status' || col.type === 'risk') {
+                    const opt = col.options?.find(o => o.id === val);
+                    if (opt) val = opt.label;
+                }
+
+                rowData[col.label] = val;
+            });
+
+            exportData.push(rowData);
+
+            if (row.children && row.isExpanded) {
+                row.children.forEach(child => processRow(child, depth + 1));
+            } else if (row.children && !row.isExpanded) {
+                // Optionally export hidden children? Let's export visible only for 'What you see is what you get', 
+                // OR export all. Usually getting all data is better. Let's export ALL data regardless of expansion.
+                row.children.forEach(child => processRow(child, depth + 1));
+            }
+        };
+
+        rows.forEach(row => processRow(row, 0));
+
+        const wc = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, wc, "Roadmap");
+        XLSX.writeFile(wb, `${currentTableName}.xlsx`);
+    };
+
     // --- Resizing Logic ---
     const startResizing = (id: string) => {
         setResizingColId(id);
@@ -274,7 +318,7 @@ export default function TableApp() {
                         isExpanded: false,
                         data: { name: 'New Task' }
                     };
-                    return { ...row, children: [...(row.children || []), newTask] };
+                    return { ...row, children: [...(row.children || []), newTask], isExpanded: true };
                 }
                 if (row.children) return { ...row, children: addRecursive(row.children) };
                 return row;
@@ -305,12 +349,13 @@ export default function TableApp() {
         if (col.id === 'name') {
             return (
                 <div className="flex items-center gap-2">
-                    {row.type === 'stream' && (
+                    {(row.children && row.children.length > 0) || row.type === 'stream' ? (
                         <button onClick={() => toggleRow(row.id)} className="p-1 hover:bg-gray-200 rounded">
                             {row.isExpanded ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronRightIcon className="w-4 h-4" />}
                         </button>
+                    ) : (
+                        <div className="w-6" />
                     )}
-                    {row.type === 'task' && <div className="w-6" />} {/* Indent for task */}
                     <input
                         className="bg-transparent border-none focus:ring-0 w-full font-medium text-gray-900"
                         value={value || ''}
@@ -510,6 +555,14 @@ export default function TableApp() {
                     >
                         <CloudArrowUpIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
                         Save
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        title="Export to Excel"
+                    >
+                        <ArrowUpTrayIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+                        Export
                     </button>
                     <button
                         onClick={addColumn}

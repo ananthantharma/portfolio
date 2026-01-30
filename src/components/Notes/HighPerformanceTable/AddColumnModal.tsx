@@ -34,9 +34,11 @@ export default function AddColumnModal({ isOpen, onClose, onAdd }: AddColumnModa
         // Add default options for status/risk if selected
         if (type === 'status' || type === 'risk') {
             newCol.options = [
-                { id: '1', label: 'Option 1', color: 'bg-gray-200' },
-                { id: '2', label: 'Option 2', color: 'bg-blue-200' },
-                { id: '3', label: 'Option 3', color: 'bg-green-200' },
+                { id: '1', label: 'Green', color: 'bg-green-500' },
+                { id: '2', label: 'Yellow', color: 'bg-yellow-500' },
+                { id: '3', label: 'Orange', color: 'bg-orange-500' },
+                { id: '4', label: 'Gray', color: 'bg-gray-400' },
+                { id: '5', label: 'Red', color: 'bg-red-500' },
             ];
         }
 
