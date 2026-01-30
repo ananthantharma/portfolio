@@ -4,7 +4,7 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import {
     DndContext,
@@ -23,6 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableHeader } from './SortableHeader';
 import AddColumnModal from './AddColumnModal';
+import AIImportModal from './AIImportModal';
 
 // --- Mock Initial Data ---
 const DEFAULT_OPTIONS: StatusOption[] = [
@@ -80,6 +81,7 @@ export default function TableApp() {
     const [isLoadMenuOpen, setIsLoadMenuOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -169,6 +171,27 @@ export default function TableApp() {
         }
     };
 
+    const handleDeleteSavedTable = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this saved table?')) return;
+
+        try {
+            const res = await axios.delete(`/api/tables/${id}`);
+            if (res.data.success) {
+                fetchSavedTables();
+                if (currentTableId === id) {
+                    // Reset if deleting current
+                    setCurrentTableId(null);
+                    setCurrentTableName("New Product Roadmap");
+                    setRows([]);
+                    setColumns(INITIAL_COLUMNS);
+                }
+            }
+        } catch (e) {
+            alert("Failed to delete table");
+        }
+    };
+
     // --- Column Management ---
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -237,6 +260,14 @@ export default function TableApp() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, wc, "Roadmap");
         XLSX.writeFile(wb, `${currentTableName}.xlsx`);
+    };
+
+    const handleAIImport = (data: { columns: ColumnDefinition[], rows: TableRow[] }) => {
+        if (data.columns && data.rows) {
+            setColumns(data.columns);
+            setRows(data.rows);
+            alert("Table generated successfully!");
+        }
     };
 
     // --- Resizing Logic ---
