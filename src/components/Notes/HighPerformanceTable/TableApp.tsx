@@ -4,7 +4,7 @@ import { ColumnDefinition, TableRow, StatusOption } from './types';
 import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import {
     DndContext,
@@ -646,16 +646,24 @@ export default function TableApp() {
                                         <div className="px-4 py-2 text-sm text-gray-500">No saved tables</div>
                                     )}
                                     {savedTables.map(table => (
-                                        <button
-                                            key={table._id}
-                                            onClick={() => handleLoad(table._id)}
-                                            className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                            {table.name}
-                                            <span className="block text-xs text-gray-400">
-                                                {new Date(table.updatedAt).toLocaleDateString()}
-                                            </span>
-                                        </button>
+                                        <div key={table._id} className="relative group">
+                                            <button
+                                                onClick={() => handleLoad(table._id)}
+                                                className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                            >
+                                                {table.name}
+                                                <span className="block text-xs text-gray-400">
+                                                    {new Date(table.updatedAt).toLocaleDateString()}
+                                                </span>
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDeleteSavedTable(e, table._id)}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                title="Delete Table"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -668,6 +676,14 @@ export default function TableApp() {
                     >
                         <CloudArrowUpIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
                         Save
+                    </button>
+                    <button
+                        onClick={() => setIsAIModalOpen(true)}
+                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-purple-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        title="Generate Table from Text/Image"
+                    >
+                        <SparklesIcon className="-ml-0.5 h-5 w-5 text-purple-600" aria-hidden="true" />
+                        Smart Import
                     </button>
                     <button
                         onClick={handleExport}
@@ -737,6 +753,11 @@ export default function TableApp() {
                     isOpen={isAddColumnModalOpen}
                     onClose={() => setIsAddColumnModalOpen(false)}
                     onAdd={handleAddColumn}
+                />
+                <AIImportModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    onImport={handleAIImport}
                 />
             </div>
         </div>
