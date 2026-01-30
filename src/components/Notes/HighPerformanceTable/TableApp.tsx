@@ -528,7 +528,7 @@ export default function TableApp() {
                             items={columns.map(c => c.id)}
                             strategy={horizontalListSortingStrategy}
                         >
-                            {columns.map((col, index) => (
+                            {columns.map((col) => (
                                 <SortableHeader
                                     key={col.id}
                                     column={col}
