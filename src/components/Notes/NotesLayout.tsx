@@ -14,6 +14,7 @@ import {
   UsersIcon,
   Cog6ToothIcon, // Added for BadgeSettingsModal
   SparklesIcon,
+  TableCellsIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
@@ -38,8 +39,11 @@ import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
+
+
 import SourcingEventModal from './SourcingEventModal';
 import SourcingListModal from './SourcingListModal';
+import { TableAppModal } from './HighPerformanceTable/TableAppModal';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -60,7 +64,10 @@ const NotesLayout: React.FC = React.memo(() => {
   // Sourcing Events
   const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
   const [isSourcingListOpen, setIsSourcingListOpen] = useState(false);
+
+
   const [sourcingEventCount, setSourcingEventCount] = useState(0);
+  const [isTableAppOpen, setIsTableAppOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -721,6 +728,14 @@ const NotesLayout: React.FC = React.memo(() => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                 </button>
+                <div className="h-4 w-px bg-gray-200"></div>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
+                  onClick={() => setIsTableAppOpen(true)}
+                  title="High Performance Table App"
+                >
+                  <TableCellsIcon className="w-3.5 h-3.5" />
+                </button>
               </>
             )}
 
@@ -923,6 +938,7 @@ const NotesLayout: React.FC = React.memo(() => {
             }
           }}
         />
+        <TableAppModal isOpen={isTableAppOpen} onClose={() => setIsTableAppOpen(false)} />
       </div>
     </BadgeSettingsProvider>
   );
