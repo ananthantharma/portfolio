@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Popover, Transition } from '@headlessui/react';
 import { ColumnDefinition, TableRow, StatusOption } from './types';
-import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon, PencilIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import axios from 'axios';
 import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
@@ -24,6 +24,7 @@ import {
 import { SortableHeader } from './SortableHeader';
 import AddColumnModal from './AddColumnModal';
 import AIImportModal from './AIImportModal';
+import EditRowModal from './EditRowModal';
 
 // --- Mock Initial Data ---
 const DEFAULT_OPTIONS: StatusOption[] = [
@@ -82,6 +83,7 @@ export default function TableApp() {
     const [loading, setLoading] = useState(false);
     const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [editingRow, setEditingRow] = useState<TableRow | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -328,6 +330,24 @@ export default function TableApp() {
         setRows(prev => updateRecursive(prev));
     };
 
+    const handleEditRow = (row: TableRow) => {
+        setEditingRow(row);
+    };
+
+    const handleSaveRow = (rowId: string, newData: Record<string, any>) => {
+        const updateRecursive = (items: TableRow[]): TableRow[] => {
+            return items.map(row => {
+                if (row.id === rowId) {
+                    return { ...row, data: newData };
+                }
+                if (row.children) return { ...row, children: updateRecursive(row.children) };
+                return row;
+            });
+        };
+        setRows(prev => updateRecursive(prev));
+        setEditingRow(null);
+    };
+
     const addStream = () => {
         const newStream: TableRow = {
             id: `stream-${Date.now()}`,
@@ -390,7 +410,10 @@ export default function TableApp() {
                     // Add to new parent
                     if (!newParent.children) newParent.children = [];
                     newParent.children.push(item);
+
+                    // Force expansion to show the newly added child
                     newParent.isExpanded = true;
+
                     return true;
                 }
 
@@ -591,6 +614,13 @@ export default function TableApp() {
                                         <PlusIcon className="w-4 h-4" />
                                     </button>
                                     <button
+                                        onClick={() => handleEditRow(row)}
+                                        className="p-1 text-gray-400 hover:text-indigo-600"
+                                        title="Edit Row"
+                                    >
+                                        <PencilIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
                                         onClick={() => outdentRow(row.id)}
                                         className="p-1 text-gray-400 hover:text-indigo-600"
                                         title="Outdent (Make Parent)"
@@ -758,6 +788,13 @@ export default function TableApp() {
                     isOpen={isAIModalOpen}
                     onClose={() => setIsAIModalOpen(false)}
                     onImport={handleAIImport}
+                />
+                <EditRowModal
+                    isOpen={!!editingRow}
+                    row={editingRow}
+                    columns={columns}
+                    onClose={() => setEditingRow(null)}
+                    onSave={handleSaveRow}
                 />
             </div>
         </div>
