@@ -1,7 +1,8 @@
-import {BoltIcon, ChevronUpIcon} from '@heroicons/react/24/solid';
-import {FC, memo} from 'react';
+import Link from 'next/link';
+import { BoltIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
+import { FC, memo } from 'react';
 
-import {SectionId} from '../../data/data';
+import { SectionId } from '../../data/data';
 import Socials from '../Socials';
 
 const Footer: FC = memo(() => (
@@ -24,6 +25,9 @@ const Footer: FC = memo(() => (
           <span className="italic text-yellow">Tharmavelautham</span>
         </span>
       </a>
+      <div className="text-sm text-neutral-500">
+        <Link href="/privacy">Privacy Policy</Link>
+      </div>
     </div>
   </div>
 ));
