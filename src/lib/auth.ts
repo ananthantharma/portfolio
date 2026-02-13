@@ -14,7 +14,7 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: 'openid email profile https://www.googleapis.com/auth/drive',
+          scope: 'openid email profile',
           prompt: 'consent',
           access_type: 'offline',
           response_type: 'code',
