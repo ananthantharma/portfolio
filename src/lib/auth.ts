@@ -1,5 +1,5 @@
-import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
-import {AuthOptions} from 'next-auth'; // Use AuthOptions type
+import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
+import { AuthOptions } from 'next-auth'; // Use AuthOptions type
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from './mongodb';
@@ -24,53 +24,59 @@ export const authOptions: AuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({user, account}) {
-      console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
+    async signIn({ user, account }) {
+      console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
       console.log('SignIn Tokens Received:', {
         hasAccess: !!account?.access_token,
         hasRefresh: !!account?.refresh_token,
         expiresAt: account?.expires_at,
       });
 
-      if (account?.provider === 'google') {
+      if (account?.provider === 'google' && user.email) {
         try {
           const client = await clientPromise;
           const db = client.db('qt_portfolio');
 
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-          const updateData: any = {
-            access_token: account.access_token,
-            expires_at: account.expires_at,
-            scope: account.scope,
-            token_type: account.token_type,
-            id_token: account.id_token,
-          };
+          // Find the user in the database by email to get the correct ObjectId
+          const dbUser = await db.collection('users').findOne({ email: user.email });
 
-          if (account.refresh_token) {
-            updateData.refresh_token = account.refresh_token;
+          if (dbUser) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const updateData: any = {
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              scope: account.scope,
+              token_type: account.token_type,
+              id_token: account.id_token,
+            };
+
+            if (account.refresh_token) {
+              updateData.refresh_token = account.refresh_token;
+            }
+
+            // Update the account linked to this user
+            await db.collection('accounts').updateOne(
+              {
+                provider: 'google',
+                userId: dbUser._id,
+              },
+              { $set: updateData },
+            );
+
+            // Update user last login
+            await db.collection('users').updateOne({ _id: dbUser._id }, { $set: { lastLogin: new Date() } });
+
+            console.log('SignIn: Updated account tokens for', user.email);
+          } else {
+            console.log('SignIn: User not found in DB yet (first login?), skipping token update.');
           }
-
-          await db.collection('accounts').updateOne(
-            {
-              provider: 'google',
-              userId: new (await import('mongodb')).ObjectId(user.id),
-            },
-            {$set: updateData},
-          );
-
-          // Update user last login
-          await db
-            .collection('users')
-            .updateOne({_id: new (await import('mongodb')).ObjectId(user.id)}, {$set: {lastLogin: new Date()}});
-
-          console.log('SignIn: Updated account tokens', {hasRefresh: !!account.refresh_token});
         } catch (error) {
           console.error('SignIn: Failed to update tokens', error);
         }
       }
       return true;
     },
-    async session({session, user}: {session: any; user: any}) {
+    async session({ session, user }: { session: any; user: any }) {
       // Fetch the account to get the access token
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
