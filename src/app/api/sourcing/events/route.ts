@@ -4,14 +4,23 @@ import { authOptions } from '../../../../lib/auth';
 import dbConnect from '../../../../lib/dbConnect';
 import SourcingEvent from '../../../../models/SourcingEvent';
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
         if (!session?.user?.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const { searchParams } = new URL(req.url);
+        const countOnly = searchParams.get('count') === 'true';
+
         await dbConnect();
+
+        if (countOnly) {
+            const count = await SourcingEvent.countDocuments({ userId: session.user.email });
+            return NextResponse.json({ count });
+        }
+
         const events = await SourcingEvent.find({ userId: session.user.email }).sort({ updatedAt: -1 });
 
         return NextResponse.json(events);

@@ -158,10 +158,12 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const fetchSourcingCount = useCallback(async () => {
     try {
-      // Optimized: In a real app, create a HEAD or stats endpoint. For now, fetching array is ok if small.
-      const response = await axios.get('/api/sourcing/events');
-      if (Array.isArray(response.data)) {
-        setSourcingEventCount(response.data.length);
+      // Optimized: Use ?count=true to get lightweight count
+      const response = await axios.get('/api/sourcing/events?count=true');
+      if (response.data && typeof response.data.count === 'number') {
+        setSourcingEventCount(response.data.count);
+      } else if (Array.isArray(response.data)) {
+        setSourcingEventCount(response.data.length); // Fallback
       }
     } catch (error) {
       console.error('Error fetching sourcing count:', error);

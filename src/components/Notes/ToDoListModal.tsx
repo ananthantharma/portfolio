@@ -483,10 +483,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                     <div className="flex items-center gap-1">
                                       {todo.attachments.map((att, idx) => {
                                         const isDrive = att.storageType === 'drive';
-                                        // If Drive, use webViewLink directly. If local, use data URI or API route.
+                                        // If Drive, use webViewLink directly. If local, use the dedicated attachment endpoint.
+                                        // We no longer embed base64 data in the list view to save bandwidth.
                                         const link = isDrive
                                           ? att.webViewLink
-                                          : att.data || (att.fileId ? `/api/attachments/${att.fileId}` : '#');
+                                          : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
 
                                         return (
                                           <a

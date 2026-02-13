@@ -108,6 +108,7 @@ export async function GET(_req: Request) {
     await dbConnect();
 
     const todos = await ToDo.find({ userEmail: session.user.email })
+      .select('-attachments.data') // Exclude heavy data to prevent 2GB transfers
       .sort({ createdAt: -1 })
       .populate({
         path: 'sourcePageId',
