@@ -14,7 +14,7 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: 'openid email profile',
+          scope: 'openid email profile https://www.googleapis.com/auth/drive',
           prompt: 'consent',
           access_type: 'offline',
           response_type: 'code',
@@ -26,11 +26,6 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
-      console.log('SignIn Tokens Received:', {
-        hasAccess: !!account?.access_token,
-        hasRefresh: !!account?.refresh_token,
-        expiresAt: account?.expires_at,
-      });
 
       if (account?.provider === 'google' && user.email) {
         try {
@@ -54,13 +49,15 @@ export const authOptions: AuthOptions = {
               updateData.refresh_token = account.refresh_token;
             }
 
-            // Update the account linked to this user
+            // Upsert the account linked to this user
+            // We use upsert because sometimes the account document might be missing even if user exists
             await db.collection('accounts').updateOne(
               {
                 provider: 'google',
                 userId: dbUser._id,
               },
               { $set: updateData },
+              { upsert: true }
             );
 
             // Update user last login
