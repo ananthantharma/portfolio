@@ -18,7 +18,8 @@ import {
   TableCellsIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
@@ -553,6 +554,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Standalone Rewrite Modal
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
+  const [isRewriteDropdownOpen, setIsRewriteDropdownOpen] = useState(false);
+  const rewriteDropdownRef = useRef<HTMLDivElement>(null);
+  useDetectOutsideClick(rewriteDropdownRef, () => setIsRewriteDropdownOpen(false));
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
 
@@ -680,18 +684,22 @@ const NotesLayout: React.FC = React.memo(() => {
               <>
                 <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
                   {/* AI Rewrite Dropdown - Consolidated */}
-                  <div className="relative group">
+                  <div className="relative" ref={rewriteDropdownRef}>
                     <button
-                      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all"
-                      title="AI Rewrite Tools">
+                      className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm' : ''}`}
+                      title="AI Rewrite Tools"
+                      onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}
+                    >
                       <PencilSquareIcon className="h-3.5 w-3.5" />
                       <span className="hidden xl:inline">Rewrite</span>
                     </button>
-                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 hidden group-hover:block">
-                      <button onClick={handleOpenRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
-                      <button onClick={handleOpenSimpleRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
-                      <button onClick={handleOpenSimpleRewriteOpenAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
-                    </div>
+                    {isRewriteDropdownOpen && (
+                      <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                        <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
+                        <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
+                        <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
+                      </div>
+                    )}
                   </div>
                   <button
                     className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
