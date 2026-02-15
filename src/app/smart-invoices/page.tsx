@@ -1,9 +1,9 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import React, {useState, useEffect, useCallback} from 'react';
-import {useSession} from 'next-auth/react';
-import {useRouter} from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import InvoiceScanner from '@/components/Invoices/InvoiceScanner';
 import InvoiceList from '@/components/Invoices/InvoiceList';
 import AccessDenied from '@/components/AccessDenied';
@@ -11,14 +11,14 @@ import AccessDenied from '@/components/AccessDenied';
 import Header from '@/components/Sections/Header';
 
 export default function SmartInvoicesPage() {
-  const {data: session, status} = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Dashboard State
   const [selectedYear, setSelectedYear] = useState<string>('All');
   const [availableYears, setAvailableYears] = useState<string[]>([]);
-  const [stats, setStats] = useState({amount: 0, tax: 0});
+  const [stats, setStats] = useState({ amount: 0, tax: 0 });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -27,11 +27,22 @@ export default function SmartInvoicesPage() {
   }, [status, router]);
 
   /* eslint-disable react-memo/require-usememo */
+  const [showHistory, setShowHistory] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const handleInvoiceSaved = useCallback(() => {
+    // Show success message
+    setSuccessMessage('Invoice saved successfully!');
+
+    // Clear message after 3 seconds
+    setTimeout(() => setSuccessMessage(null), 3000);
+
+    // If history is showing, refresh it. If not, the refreshTrigger will just update but component not mounted.
+    // When mounted later, it will fetch fresh data anyway.
     setRefreshTrigger(prev => prev + 1);
   }, []);
 
-  const handleStatsUpdate = useCallback((newStats: {amount: number; tax: number}) => {
+  const handleStatsUpdate = useCallback((newStats: { amount: number; tax: number }) => {
     setStats(newStats);
   }, []);
 
@@ -95,21 +106,19 @@ export default function SmartInvoicesPage() {
         {availableYears.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <button
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                selectedYear === 'All'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                  : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === 'All'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                }`}
               onClick={() => setSelectedYear('All')}>
               All Time
             </button>
             {availableYears.map(year => (
               <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedYear === year
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                    : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedYear === year
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-neutral-800 text-slate-400 hover:bg-neutral-700'
+                  }`}
                 key={year}
                 onClick={() => setSelectedYear(year)}>
                 {year}
@@ -124,13 +133,42 @@ export default function SmartInvoicesPage() {
         </section>
 
         <section className="bg-neutral-900 rounded-2xl shadow-sm border border-neutral-800 p-6">
-          <h2 className="text-xl font-bold mb-6 text-white">Invoice History</h2>
-          <InvoiceList
-            key={refreshTrigger}
-            onStatsUpdate={handleStatsUpdate}
-            onYearsLoaded={handleYearsLoaded}
-            selectedYear={selectedYear}
-          />
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-white">Invoice History</h2>
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-slate-300 rounded-lg transition-colors font-medium text-sm flex items-center gap-2">
+              {showHistory ? 'Hide History' : 'Load History'}
+            </button>
+          </div>
+
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-900/30 border border-green-800 rounded-xl flex items-center gap-3 text-green-400">
+              <span className="text-xl">✅</span>
+              <div>
+                <p className="font-semibold">Success</p>
+                <p className="text-sm opacity-90">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {showHistory ? (
+            <InvoiceList
+              key={refreshTrigger}
+              onStatsUpdate={handleStatsUpdate}
+              onYearsLoaded={handleYearsLoaded}
+              selectedYear={selectedYear}
+            />
+          ) : (
+            <div className="text-center py-12 text-slate-500 border border-dashed border-neutral-800 rounded-xl bg-neutral-900/50">
+              <p>Invoice history is hidden.</p>
+              <button
+                onClick={() => setShowHistory(true)}
+                className="mt-2 text-indigo-400 hover:text-indigo-300 font-medium">
+                Click to load all invoices
+              </button>
+            </div>
+          )}
         </section>
       </div>
     </div>
