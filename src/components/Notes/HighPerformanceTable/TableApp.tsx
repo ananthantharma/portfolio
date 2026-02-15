@@ -469,19 +469,30 @@ export default function TableApp() {
     const [loading, setLoading] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null);
+    const [isCopyMenuOpen, setIsCopyMenuOpen] = useState(false);
     const nameInputRef = useRef<HTMLInputElement>(null);
     const loadMenuRef = useRef<HTMLDivElement>(null);
+    const copyMenuRef = useRef<HTMLDivElement>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
-    // Close load menu on outside click
+    // Close menus on outside click
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (loadMenuRef.current && !loadMenuRef.current.contains(e.target as Node)) {
                 setIsLoadMenuOpen(false);
+            }
+            if (copyMenuRef.current && !copyMenuRef.current.contains(e.target as Node)) {
+                setIsCopyMenuOpen(false);
+            }
+            // Close status dropdown when clicking outside
+            const target = e.target as HTMLElement;
+            if (!target.closest('[data-status-dropdown]')) {
+                setOpenStatusDropdown(null);
             }
         };
         document.addEventListener('mousedown', handler);
@@ -770,7 +781,7 @@ export default function TableApp() {
 
     // ========== Copy as Rich HTML ==========
 
-    const copyAsHTML = async () => {
+    const copyAsHTML = async (statusMode: 'label' | 'color-only' = 'label') => {
         const buildHTML = () => {
             let html = `<table style="border-collapse:collapse;font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:13px;width:100%;border:1px solid #d1d5db;">`;
 
@@ -799,7 +810,13 @@ export default function TableApp() {
                     if (col.type === 'status' && col.options) {
                         const opt = col.options.find(o => o.id === val);
                         if (opt) {
-                            val = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${opt.color}22;color:${opt.color};border:1px solid ${opt.color}44;">${opt.label}</span>`;
+                            if (statusMode === 'color-only') {
+                                // Circle only — no text label
+                                val = `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${opt.color};" title="${opt.label}"></span>`;
+                            } else {
+                                // Colored badge with text label
+                                val = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${opt.color}22;color:${opt.color};border:1px solid ${opt.color}44;">${opt.label}</span>`;
+                            }
                         }
                     } else if (col.type === 'currency' && val) {
                         val = `$${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
@@ -894,10 +911,18 @@ export default function TableApp() {
 
         if (col.type === 'status') {
             const selected = col.options?.find(o => o.id === value);
+            const dropdownKey = `${row.id}::${col.id}`;
+            const isOpen = openStatusDropdown === dropdownKey;
 
             return (
-                <div className="relative group/status w-full">
-                    <button className="w-full text-center focus:outline-none">
+                <div className="relative w-full" data-status-dropdown>
+                    <button
+                        className="w-full text-center focus:outline-none"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenStatusDropdown(isOpen ? null : dropdownKey);
+                        }}
+                    >
                         {selected ? (
                             <span
                                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
@@ -914,32 +939,45 @@ export default function TableApp() {
                                 {selected.label}
                             </span>
                         ) : (
-                            <span className="text-zinc-600 text-[11px]">—</span>
+                            <span className="text-zinc-600 text-[11px] hover:text-zinc-400 transition-colors">— select —</span>
                         )}
                     </button>
-                    {/* Dropdown on hover */}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 hidden group-hover/status:flex flex-col bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 z-50 min-w-[130px]">
-                        {col.options?.map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => updateCell(row.id, col.id, opt.id)}
-                                className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-300 hover:bg-zinc-700 transition-colors"
-                            >
-                                <span
-                                    className="w-2 h-2 rounded-full shrink-0"
-                                    style={{ background: opt.color }}
-                                />
-                                {opt.label}
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => updateCell(row.id, col.id, null)}
-                            className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-500 hover:bg-zinc-700 transition-colors border-t border-zinc-700"
+                    {/* Dropdown on click */}
+                    {isOpen && (
+                        <div
+                            className="absolute top-full left-1/2 -translate-x-1/2 mt-1 flex flex-col bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 z-50 min-w-[130px]"
+                            data-status-dropdown
                         >
-                            <XMarkIcon className="w-3 h-3" />
-                            Clear
-                        </button>
-                    </div>
+                            {col.options?.map(opt => (
+                                <button
+                                    key={opt.id}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        updateCell(row.id, col.id, opt.id);
+                                        setOpenStatusDropdown(null);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-300 hover:bg-zinc-700 transition-colors"
+                                >
+                                    <span
+                                        className="w-2 h-2 rounded-full shrink-0"
+                                        style={{ background: opt.color }}
+                                    />
+                                    {opt.label}
+                                </button>
+                            ))}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateCell(row.id, col.id, null);
+                                    setOpenStatusDropdown(null);
+                                }}
+                                className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-500 hover:bg-zinc-700 transition-colors border-t border-zinc-700"
+                            >
+                                <XMarkIcon className="w-3 h-3" />
+                                Clear
+                            </button>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -1177,27 +1215,59 @@ export default function TableApp() {
 
                     <div className="w-px h-6 bg-zinc-800 mx-1" />
 
-                    {/* Copy as HTML */}
-                    <button
-                        onClick={copyAsHTML}
-                        className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${copySuccess
-                            ? 'text-green-400 bg-green-500/10'
-                            : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
-                            }`}
-                        title="Copy as formatted table (for email/docs)"
-                    >
-                        {copySuccess ? (
-                            <>
-                                <CheckIcon className="w-4 h-4" />
-                                <span className="hidden sm:inline">Copied!</span>
-                            </>
-                        ) : (
-                            <>
-                                <ClipboardDocumentIcon className="w-4 h-4" />
-                                <span className="hidden sm:inline">Copy</span>
-                            </>
+                    {/* Copy as HTML — with options */}
+                    <div className="relative" ref={copyMenuRef}>
+                        <button
+                            onClick={() => setIsCopyMenuOpen(!isCopyMenuOpen)}
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${copySuccess
+                                ? 'text-green-400 bg-green-500/10'
+                                : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                                }`}
+                            title="Copy as formatted table (for email/docs)"
+                        >
+                            {copySuccess ? (
+                                <>
+                                    <CheckIcon className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Copied!</span>
+                                </>
+                            ) : (
+                                <>
+                                    <ClipboardDocumentIcon className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Copy</span>
+                                    <ChevronDownIcon className="w-3 h-3 hidden sm:inline" />
+                                </>
+                            )}
+                        </button>
+                        {isCopyMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1 w-52 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
+                                <button
+                                    onClick={() => {
+                                        setIsCopyMenuOpen(false);
+                                        copyAsHTML('label');
+                                    }}
+                                    className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors"
+                                >
+                                    <span className="flex items-center gap-1 shrink-0">
+                                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                                        <span className="text-[10px] text-green-400 font-semibold">Active</span>
+                                    </span>
+                                    <span className="text-zinc-400">Color + Label</span>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsCopyMenuOpen(false);
+                                        copyAsHTML('color-only');
+                                    }}
+                                    className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors border-t border-zinc-700/50"
+                                >
+                                    <span className="flex items-center gap-1 shrink-0">
+                                        <span className="w-3.5 h-3.5 rounded-full bg-green-500" />
+                                    </span>
+                                    <span className="text-zinc-400">Color Only</span>
+                                </button>
+                            </div>
                         )}
-                    </button>
+                    </div>
 
                     {/* Export Excel */}
                     <button

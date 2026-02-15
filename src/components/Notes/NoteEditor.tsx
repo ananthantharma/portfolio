@@ -15,6 +15,8 @@ import {
   XMarkIcon,
   PlusIcon,
   FaceSmileIcon,
+  DocumentTextIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline';
 import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
@@ -53,6 +55,10 @@ No Transitions: Avoid "Moreover," "Furthermore," or "In conclusion."
 Sentence Flow: Vary lengths, but prioritize short, declarative sentences.
 
 Here is the text to rewrite:`;
+
+const SUMMARIZE_PROMPT = `System: Provide a concise executive summary of the following content. Bullet points are preferred for readability. Key points only.`;
+
+const SUGGEST_PROMPT = `System: Analyze the text and provide 3-5 concrete suggestions for improvement, clarity, expansion, or tone matching. Format as a brief checklist.`;
 
 interface NoteEditorProps {
   onSave: (id: string, data: any) => Promise<void>;
@@ -555,6 +561,124 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     }
   };
 
+  const handleSummarizeAI = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    let text = '';
+
+    // Use selection if available, otherwise use whole text
+    if (range && range.length > 0) {
+      text = quill.getText(range.index, range.length);
+      setInsertionRange(range);
+    } else {
+      text = quill.getText();
+      setInsertionRange(null);
+    }
+
+    if (!text || text.trim().length === 0) {
+      alert('No text found to summarize.');
+      return;
+    }
+
+    setIsModalOpen(true);
+    setIsGenerating(true);
+    setGeneratedText('');
+    setIsMarkdownResponse(true);
+
+    const fullPrompt = `${SUMMARIZE_PROMPT}\n\n"${text}"`;
+
+    try {
+      const response = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          model: 'gemini-flash-latest',
+          apiKey: 'MANAGED',
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
+        return;
+      }
+
+      if (data.text) {
+        setGeneratedText(data.text);
+      } else {
+        setGeneratedText('Failed to summarize content.');
+      }
+    } catch (error) {
+      console.error(error);
+      setGeneratedText('Error connecting to Gemini.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSuggestAI = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quill: any = quillRef.current?.getEditor();
+    if (!quill) return;
+
+    const range = quill.getSelection();
+    let text = '';
+
+    // Use selection if available, otherwise use whole text
+    if (range && range.length > 0) {
+      text = quill.getText(range.index, range.length);
+      setInsertionRange(range);
+    } else {
+      text = quill.getText();
+      setInsertionRange(null);
+    }
+
+    if (!text || text.trim().length === 0) {
+      alert('No text found to analyze.');
+      return;
+    }
+
+    setIsModalOpen(true);
+    setIsGenerating(true);
+    setGeneratedText('');
+    setIsMarkdownResponse(true);
+
+    const fullPrompt = `${SUGGEST_PROMPT}\n\n"${text}"`;
+
+    try {
+      const response = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          model: 'gemini-flash-latest',
+          apiKey: 'MANAGED',
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
+        return;
+      }
+
+      if (data.text) {
+        setGeneratedText(data.text);
+      } else {
+        setGeneratedText('Failed to generate suggestions.');
+      }
+    } catch (error) {
+      console.error(error);
+      setGeneratedText('Error connecting to Gemini.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleOrganizeAI = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quillComponent: any = quillRef.current;
@@ -740,18 +864,33 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const handleInsertAI = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const quill: any = quillRef.current?.getEditor();
-    if (quill && insertionRange) {
-      if (isMarkdownResponse) {
-        // Convert Markdown to HTML for insertion
-        const htmlContent = renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>);
-        quill.deleteText(insertionRange.index, insertionRange.length);
-        quill.clipboard.dangerouslyPasteHTML(insertionRange.index, htmlContent);
+
+    if (quill) {
+      if (insertionRange) {
+        // Replace selected text
+        if (isMarkdownResponse) {
+          const htmlContent = renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>);
+          quill.deleteText(insertionRange.index, insertionRange.length);
+          quill.clipboard.dangerouslyPasteHTML(insertionRange.index, htmlContent);
+        } else {
+          quill.deleteText(insertionRange.index, insertionRange.length);
+          quill.insertText(insertionRange.index, generatedText);
+        }
       } else {
-        quill.deleteText(insertionRange.index, insertionRange.length);
-        quill.insertText(insertionRange.index, generatedText);
+        // Append to end if no selection context (e.g., Summary)
+        const length = quill.getLength();
+        quill.insertText(length, '\n\n'); // Add breathing room
+        const insertAt = length + 2;
+
+        if (isMarkdownResponse) {
+          const htmlContent = renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>);
+          quill.clipboard.dangerouslyPasteHTML(insertAt, htmlContent);
+        } else {
+          quill.insertText(insertAt, generatedText);
+        }
       }
     } else {
-      alert('Could not insert text. Lost selection context.');
+      alert('Could not access editor to insert text.');
     }
     setIsModalOpen(false);
   };
@@ -833,8 +972,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   if (!page) {
     return (
-      <div className="flex h-full items-center justify-center bg-white text-gray-400">
-        Select a page to start editing
+      <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-[#FAFAF8] to-[#F0EFEB]">
+        <div className="flex flex-col items-center gap-4 max-w-xs text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800">Select a Page</h3>
+          <p className="text-[13px] text-gray-400 leading-relaxed">Choose a page from the sidebar to start editing, or create a new one with the <span className="font-medium text-gray-500">+</span> button.</p>
+        </div>
       </div>
     );
   }
@@ -844,14 +989,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   return (
     <div className="flex h-full flex-col bg-white text-gray-900">
       {/* Tab Bar */}
-      {/* Tab Bar Container - Segmented Control Style */}
-      {/* Tab Bar Container - Segmented Control Style */}
-      <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2 bg-white">
+      <div className="flex items-center gap-2 border-b border-black/[0.04] px-5 py-2 bg-[#FAFAF8]">
         {/* Sliding Tab Bar */}
-        <div className="relative inline-flex items-center bg-gray-100/80 rounded-lg p-0.5 gap-10">
+        <div className="relative inline-flex items-center bg-black/[0.03] rounded-lg p-0.5 gap-8">
           {/* Sliding Indicator */}
           <div
-            className="absolute top-0.5 bottom-0.5 rounded-md shadow-sm ring-1 ring-black/5 transition-all duration-200 ease-out z-0"
+            className="absolute top-0.5 bottom-0.5 rounded-md shadow-sm ring-1 ring-black/[0.04] transition-all duration-250 ease-out z-0"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
@@ -888,9 +1031,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-1.5 pr-6 py-0.5 text-xs font-medium leading-none transition-colors duration-200 ${isActive
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${isActive
                   ? 'text-gray-900'
-                  : 'text-gray-500 hover:text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
                 onClick={() => {
                   const updatedTabs = tabs.map(t => {
@@ -964,10 +1107,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 </div>
 
                 {/* Tab Controls (Delete Only) */}
-                <div className={`absolute right-1 top-1/2 -translate-y-1/2 z-20 items-center justify-center bg-inherit rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
+                <div className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
                   {/* Delete Button */}
                   <button
-                    className={`rounded-md p-0.5 hover:bg-red-50 hover:text-red-600 transition-colors ${tabs.length <= 1 ? '!hidden' : ''} ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${tabs.length <= 1 ? '!hidden' : ''} ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
                     disabled={isSaving}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -984,28 +1127,40 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         {/* Add Tab Button */}
         <button
-          className={`rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
           onClick={handleAddTab}
           disabled={isSaving}
           title="Add Tab"
         >
-          <PlusIcon className="h-4 w-4" />
+          <PlusIcon className="h-3.5 w-3.5" />
         </button>
       </div>
 
 
 
-      <div className="flex items-center justify-between border-b border-gray-200 p-4">
+      <div className="flex items-center justify-between border-b border-black/[0.04] px-5 py-3">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-gray-800">{page.title}</h1>
-          <span className="text-xs text-gray-500">Last edited: {new Date(page.updatedAt).toLocaleString()}</span>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">{page.title}</h1>
+          <span className="text-[11px] text-gray-400 mt-0.5">
+            {(() => {
+              const diff = Date.now() - new Date(page.updatedAt).getTime();
+              const mins = Math.floor(diff / 60000);
+              if (mins < 1) return 'Edited just now';
+              if (mins < 60) return `Edited ${mins}m ago`;
+              const hrs = Math.floor(mins / 60);
+              if (hrs < 24) return `Edited ${hrs}h ago`;
+              const days = Math.floor(hrs / 24);
+              if (days < 7) return `Edited ${days}d ago`;
+              return `Edited ${new Date(page.updatedAt).toLocaleDateString()}`;
+            })()}
+          </span>
         </div>
         <div className="flex gap-2">
           {/* Symbol Toolbar */}
 
           {/* Symbol Toolbar - Dropdown */}
           <Menu as="div" className="relative text-left">
-            <Menu.Button className="flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300">
+            <Menu.Button className="flex items-center rounded-lg bg-gray-50 px-2.5 py-1.5 text-[11px] font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-700">
               <FaceSmileIcon className="h-4 w-4" />
             </Menu.Button>
             <Transition
@@ -1016,7 +1171,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               leave="transition ease-in duration-75"
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95">
-              <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
+              <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-xl bg-white shadow-lg ring-1 ring-black/[0.06] focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
                 {SYMBOLS.map(s => (
                   <Menu.Item key={s.char}>
                     {({ active }) => (
@@ -1060,7 +1215,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 setIsDirty(true);
                 alert('Legacy content has been recovered into a new tab. Please save to persist it.');
               }}
-              className={`flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-yellow-600 transition-colors hover:bg-gray-200 hover:text-yellow-700 disabled:opacity-50 disabled:cursor-wait`}
+              className={`flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-600 transition-all hover:bg-amber-100 hover:text-amber-700 disabled:opacity-50 disabled:cursor-wait`}
               disabled={isSaving}
               title="Found content from before tabs were implemented. Click to recover."
             >
@@ -1068,50 +1223,44 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             </button>
           )}
 
-          {/* Organize Button */}
-          <button
-            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-            onClick={handleOrganizeAI}
-            title="Organize Content"
-            type="button">
-            <QueueListIcon className="h-4 w-4" />
-            Organize
-          </button>
-
-          {/* REWRITE AI BUTTON - Restricted Access */}
-          {isAuthorizedFull && (
+          {/* AI Actions Dropdown - Consolidated */}
+          <div className="relative group">
             <button
-              className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-              onClick={handleOpenRewrite}
-              title="Advanced AI Rewrite"
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100"
               type="button">
-              <CodeBracketIcon className="h-4 w-4" />
-              Rewrite
+              <SparklesIcon className="h-3.5 w-3.5" />
+              AI Actions
             </button>
-          )}
-
-          <button
-            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-            onClick={handleRefineAI}
-            type="button">
-            <WrenchIcon className="h-3 w-3" />
-            Refine
-          </button>
-          <button
-            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900 disabled:bg-gray-50 disabled:text-gray-300"
-            onClick={handleGenerateAI}
-            title="Question">
-            <SparklesIcon className="h-3 w-3" />
-            Question
-          </button>
+            <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 hidden group-hover:block">
+              <button onClick={handleOrganizeAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                <QueueListIcon className="h-3.5 w-3.5" />Organize
+              </button>
+              <button onClick={handleSummarizeAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                <DocumentTextIcon className="h-3.5 w-3.5" />Summarize
+              </button>
+              <button onClick={handleSuggestAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                <LightBulbIcon className="h-3.5 w-3.5" />Suggest
+              </button>
+              <button onClick={handleRefineAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                <WrenchIcon className="h-3.5 w-3.5" />Refine
+              </button>
+              <button onClick={handleGenerateAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                <SparklesIcon className="h-3.5 w-3.5" />Question
+              </button>
+              {isAuthorizedFull && (
+                <button onClick={handleOpenRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
+                  <CodeBracketIcon className="h-3.5 w-3.5" />Rewrite
+                </button>
+              )}
+            </div>
+          </div>
 
           {/* To Do Button */}
           <button
-            className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
+            className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 text-[11px] font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-700"
             onClick={handleOpenToDo}
             title="Create To Do">
-            {/* Using ClipboardDocumentListIcon represented as generic SVG here if import fails, but I will import it properly */}
-            <ClipboardDocumentListIcon className="h-3 w-3" />
+            <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
             To Do
           </button>
 
@@ -1120,40 +1269,48 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             return (
               <>
                 <button
-                  className={`rounded-full p-2 transition-colors ${activeTab?.isImportant
-                    ? 'text-orange-500 bg-orange-50 hover:bg-orange-100'
-                    : 'text-gray-400 hover:bg-gray-100 hover:text-orange-400'
+                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isImportant
+                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                    : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
                     }`}
                   onClick={handleToggleImportant}
                   title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
                   {activeTab?.isImportant ? (
-                    <ExclamationTriangleIconSolid className="h-6 w-6" />
+                    <ExclamationTriangleIconSolid className="h-4 w-4" />
                   ) : (
-                    <ExclamationTriangleIcon className="h-6 w-6" />
+                    <ExclamationTriangleIcon className="h-4 w-4" />
                   )}
                 </button>
                 <button
-                  className={`rounded-full p-2 transition-colors ${activeTab?.isFlagged
+                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isFlagged
                     ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                    : 'text-gray-400 hover:bg-gray-100 hover:text-red-400'
+                    : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
                     }`}
                   onClick={handleToggleFlagged}
                   title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
-                  {activeTab?.isFlagged ? <FlagIconSolid className="h-6 w-6" /> : <FlagIcon className="h-6 w-6" />}
+                  {activeTab?.isFlagged ? <FlagIconSolid className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
                 </button>
               </>
             );
           })()}
           <button
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${isDirty ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${isDirty
+              ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
+              : 'bg-green-50 text-green-600 cursor-default'
               } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
             disabled={!isDirty || isSaving}
             onClick={handleSave}>
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? (
+              <><ArrowPathIcon className="h-3 w-3 animate-spin" />Saving...</>
+            ) : isDirty ? (
+              <>Save</>
+            ) : (
+              <><CheckIcon className="h-3 w-3" />Saved</>
+            )}
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden p-4">
+      <div className="flex-1 overflow-hidden px-5 py-3">
         <RichTextEditor
           onChange={handleContentChange}
           placeholder="Start typing your notes here..."

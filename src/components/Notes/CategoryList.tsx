@@ -82,7 +82,7 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-gray-200' : 'hover:bg-gray-100'
+        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
           }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
@@ -109,13 +109,13 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${isSelected
-          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 font-medium'
-          : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
+        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${isSelected
+          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
+          : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
           }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
-        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-blue-500" />}
+        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />}
 
         <div className="flex items-center gap-3 overflow-hidden">
           {category.image ? (
@@ -130,7 +130,7 @@ const CategoryItem = React.memo<{
             />
           ) : null}
           <CategoryIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${isSelected ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
               }`}
             style={style}
           />
@@ -282,25 +282,25 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     }
 
     return (
-      <div className="flex h-full flex-col border-r border-gray-200 bg-gray-50/50">
+      <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-3 py-2">
-          {!isCollapsed && <h2 className="text-xs font-semibold uppercase text-gray-400">Notebooks</h2>}
-          <div className={`flex items-center gap-1 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
+        <div className="flex items-center justify-between border-b border-black/[0.04] px-3 py-2.5">
+          {!isCollapsed && <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Notebooks</h2>}
+          <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             <button
-              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+              className="rounded-md p-1 text-gray-400 hover:bg-white/80 hover:text-gray-600 transition-all"
               onClick={onToggleCollapse}
               title={isCollapsed ? 'Expand Notebooks' : 'Collapse Notebooks'}>
-              {isCollapsed ? <ChevronRightIcon className="h-4 w-4" /> : <ChevronLeftIcon className="h-4 w-4" />}
+              {isCollapsed ? <ChevronRightIcon className="h-3.5 w-3.5" /> : <ChevronLeftIcon className="h-3.5 w-3.5" />}
             </button>
             <button
-              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+              className="rounded-md p-1 text-gray-400 hover:bg-white/80 hover:text-gray-600 transition-all"
               onClick={() => {
                 if (isCollapsed) onToggleCollapse();
                 setIsAdding(true);
               }}
               title="Add Notebook">
-              <PlusIcon className="h-4 w-4" />
+              <PlusIcon className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -309,11 +309,11 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
         {!isCollapsed ? (
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             {isAdding && (
-              <div className="mb-2 rounded-xl border border-gray-200 bg-white p-3 shadow-lg ring-1 ring-black/5 relative z-20">
+              <div className="mb-2 rounded-xl border border-black/[0.06] bg-white p-3 shadow-lg relative z-20">
                 <div className="mb-3">
                   <input
                     autoFocus
-                    className="w-full border-b border-gray-200 px-1 py-1 text-sm font-medium outline-none focus:border-blue-500 text-gray-900"
+                    className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
                     onChange={e => setNewCategoryName(e.target.value)}
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleAdd();
@@ -343,7 +343,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                     Cancel
                   </button>
                   <button
-                    className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 shadow-sm shadow-blue-200"
+                    className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 shadow-sm"
                     onClick={handleAdd}>
                     Add
                   </button>
@@ -362,12 +362,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       if (editingId === category._id) {
                         return (
                           <div
-                            className="rounded-xl border border-blue-100 bg-white p-3 shadow-md ring-2 ring-blue-50 relative z-20"
+                            className="rounded-xl border border-indigo-100 bg-white p-3 shadow-md ring-1 ring-indigo-50 relative z-20"
                             key={category._id as string}>
                             <div className="mb-3">
                               <input
                                 autoFocus
-                                className="w-full border-b border-gray-200 px-1 py-1 text-sm font-medium outline-none focus:border-blue-500 text-gray-900"
+                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
                                 onChange={e => setEditName(e.target.value)}
                                 onKeyDown={e => {
                                   if (e.key === 'Enter') handleRename();

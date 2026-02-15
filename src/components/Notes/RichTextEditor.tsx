@@ -104,22 +104,131 @@ const RichTextEditor = React.memo(
           value={value}
         />
         <style global jsx>{`
+          /* Main Layout */
           .quill {
             display: flex;
             flex-direction: column;
             height: 100%;
+            font-family: 'Inter', sans-serif;
           }
-          .ql-container {
+
+          /* Toolbar Styling */
+          .ql-toolbar.ql-snow {
+            border: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            padding: 12px 16px;
+            background: white;
+            flex-shrink: 0;
+            z-index: 10;
+          }
+
+          .ql-toolbar.ql-snow .ql-formats {
+            margin-right: 12px;
+          }
+
+          /* Toolbar Buttons */
+          .ql-snow .ql-toolbar button,
+          .ql-snow.ql-toolbar button {
+            width: 28px;
+            height: 28px;
+            padding: 4px;
+            margin-right: 2px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            color: #6b7280; /* text-gray-500 */
+          }
+
+          .ql-snow .ql-toolbar button:hover,
+          .ql-snow.ql-toolbar button:hover,
+          .ql-snow .ql-toolbar button.ql-active,
+          .ql-snow.ql-toolbar button.ql-active,
+          .ql-snow .ql-toolbar .ql-picker-label:hover,
+          .ql-snow.ql-toolbar .ql-picker-label:hover,
+          .ql-snow .ql-toolbar .ql-picker-item:hover,
+          .ql-snow.ql-toolbar .ql-picker-item:hover {
+            color: #111827; /* text-gray-900 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+          }
+          
+           .ql-snow .ql-toolbar button.ql-active {
+             background-color: #e0e7ff; /* indigo-50 */
+             color: #4f46e5; /* indigo-600 */
+           }
+           
+           .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+             stroke: #4f46e5;
+           }
+
+          /* Icons */
+          .ql-snow .ql-stroke {
+            stroke: #9ca3af; /* text-gray-400 */
+            stroke-width: 1.5;
+            transition: stroke 0.2s;
+          }
+          
+          .ql-snow .ql-fill {
+            fill: #9ca3af;
+            transition: fill 0.2s;
+          }
+
+          .ql-snow .ql-toolbar button:hover .ql-stroke,
+          .ql-snow .ql-toolbar button:focus .ql-stroke {
+            stroke: #374151; /* text-gray-700 */
+          }
+          
+           .ql-snow .ql-toolbar button:hover .ql-fill,
+          .ql-snow .ql-toolbar button:focus .ql-fill {
+            fill: #374151; /* text-gray-700 */
+          }
+
+          /* Container Styling */
+          .ql-container.ql-snow {
+            border: none;
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            font-size: 15px;
+            color: #374151;
           }
+
+          /* Editor Area */
           .ql-editor {
             flex: 1;
             overflow-y: auto;
-            color: #111827; /* text-gray-900 */
+            padding: 24px 32px;
+            line-height: 1.7;
           }
+
+          .ql-editor.ql-blank::before {
+            color: #9ca3af;
+            font-style: normal;
+            font-size: 15px;
+          }
+          
+          /* Custom Scrollbar */
+          .ql-editor::-webkit-scrollbar {
+            width: 8px;
+          }
+          .ql-editor::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .ql-editor::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+          }
+          .ql-editor::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+          }
+
+          /* Typographic refinements for headings within editor */
+          .ql-editor h1 { font-size: 1.75em; font-weight: 700; margin-bottom: 0.5em; margin-top: 0.5em; letter-spacing: -0.025em; color: #111827; }
+          .ql-editor h2 { font-size: 1.4em; font-weight: 600; margin-bottom: 0.5em; margin-top: 1em; letter-spacing: -0.015em; color: #1f2937; }
+          .ql-editor h3 { font-size: 1.2em; font-weight: 600; margin-bottom: 0.25em; margin-top: 1em; color: #374151; }
+          .ql-editor p { margin-bottom: 0.75em; }
+          .ql-editor ul, .ql-editor ol { padding-left: 1.5em; margin-bottom: 0.75em; }
+          .ql-editor li { margin-bottom: 0.25em; }
+          .ql-editor blockquote { border-left: 3px solid #e5e7eb; padding-left: 1em; color: #6b7280; font-style: italic; }
         `}</style>
       </div>
     );

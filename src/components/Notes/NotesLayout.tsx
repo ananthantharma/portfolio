@@ -609,204 +609,178 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-gray-100 font-sans">
+      <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-[#F8F8F6] font-['Inter',system-ui,sans-serif]">
         {/* Top Navigation / Breadcrumbs Bar */}
 
-        <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/70 backdrop-blur-md px-4 py-3 shadow-sm z-50">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <HomeIcon className="h-4 w-4 text-gray-400" />
-            <span className="font-medium">Workspace</span>
+        <div className="flex items-center justify-between border-b border-black/[0.06] bg-white/80 backdrop-blur-xl px-5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] z-50">
+          <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
+            <HomeIcon className="h-3.5 w-3.5" />
+            <span className="font-medium text-gray-500">Workspace</span>
             {currentCategory && (
               <>
-                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-                <span className="font-medium text-gray-700 flex items-center gap-2">
-                  {currentCategory.icon && (
-                    <span className="text-gray-400">
-                      {/* Simple text fallback if icon component lookup is complex here, or just name */}
-                    </span>
-                  )}
+                <ChevronRightIcon className="h-3 w-3" />
+                <span className="font-medium text-gray-600">
                   {currentCategory.name}
                 </span>
               </>
             )}
             {currentSection && (
               <>
-                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-                <span className="font-medium text-gray-700">{currentSection.name}</span>
+                <ChevronRightIcon className="h-3 w-3" />
+                <span className="font-medium text-gray-600">{currentSection.name}</span>
               </>
             )}
             {selectedPage && (
               <>
-                <ChevronRightIcon className="h-3 w-3 text-gray-300" />
-                <span className="font-medium text-gray-900">{selectedPage.title || 'Untitled'}</span>
+                <ChevronRightIcon className="h-3 w-3" />
+                <span className="font-semibold text-gray-900">{selectedPage.title || 'Untitled'}</span>
               </>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            {dbSize && <span className="text-xs text-gray-400 mr-2 font-mono">{dbSize}</span>}
-            <div className="h-4 w-px bg-gray-200"></div>
+          <div className="flex items-center gap-2">
+            {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight">{dbSize}</span>}
 
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-blue-600 transition-all"
-              onClick={handleOpenSearch}>
-              <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-              Search
-            </button>
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all relative"
-              onClick={handleOpenToDoList}>
-              <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-              Tasks
-              {activeTaskCount > 0 && (
-                <>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
-                    {activeTaskCount}
-                  </span>
-                </>
-              )}
-            </button>
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-              onClick={handleOpenContactList}
-              title="Contacts">
-              <UsersIcon className="h-3.5 w-3.5" />
-            </button>
+            {/* ── Navigation Group ── */}
+            <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+              <button
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                onClick={handleOpenSearch}
+                title="Search (Ctrl+K)">
+                <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">Search</span>
+                <kbd className="hidden lg:inline ml-1 text-[9px] text-gray-300 font-mono bg-gray-100 px-1 py-0.5 rounded">⌘K</kbd>
+              </button>
+              <button
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition-all relative"
+                onClick={handleOpenToDoList}>
+                <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">Tasks</span>
+                {activeTaskCount > 0 && (
+                  <>
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+                      {activeTaskCount}
+                    </span>
+                  </>
+                )}
+              </button>
+              <button
+                className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                onClick={handleOpenContactList}
+                title="Contacts">
+                <UsersIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
 
-            <div className="h-4 w-px bg-gray-200"></div>
+            <div className="h-5 w-px bg-black/[0.06]"></div>
 
-            {/* Restricted Buttons */}
+            {/* ── AI & Tools Group (Restricted) ── */}
             {session?.user?.email === 'lankanprinze@gmail.com' && (
               <>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-pink-600 transition-all"
-                  onClick={handleOpenRewrite}
-                  title="Rewrite">
-                  <PencilSquareIcon className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-purple-600 transition-all"
-                  onClick={handleOpenSimpleRewrite}
-                  title="Simple Rewrite">
-                  <PencilSquareIcon className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-teal-600 transition-all"
-                  onClick={handleOpenSimpleRewriteOpenAI}
-                  title="Simple Rewrite (GPT)">
-                  <SparklesIcon className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-                  onClick={handleOpenImageExtract}
-                  title="Extract Text from Image">
-                  <PhotoIcon className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-cyan-600 transition-all"
-                  onClick={handleOpenAssessment}
-                  title="Document Assessment">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-3.5 w-3.5">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                    />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                  {/* AI Rewrite Dropdown - Consolidated */}
+                  <div className="relative group">
+                    <button
+                      className="flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all"
+                      title="AI Rewrite Tools">
+                      <PencilSquareIcon className="h-3.5 w-3.5" />
+                      <span className="hidden xl:inline">Rewrite</span>
+                    </button>
+                    <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 hidden group-hover:block">
+                      <button onClick={handleOpenRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
+                      <button onClick={handleOpenSimpleRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
+                      <button onClick={handleOpenSimpleRewriteOpenAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
+                    </div>
+                  </div>
+                  <button
+                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                    onClick={handleOpenImageExtract}
+                    title="Extract Text from Image">
+                    <PhotoIcon className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-cyan-600 hover:shadow-sm transition-all"
+                    onClick={handleOpenAssessment}
+                    title="Document Assessment">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                  </button>
+                </div>
 
-                {/* Sourcing Buttons */}
-                <div className="h-4 w-px bg-gray-200"></div>
+                <div className="h-5 w-px bg-black/[0.06]"></div>
+
+                {/* ── Sourcing & Apps Group ── */}
+                <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                  <button
+                    className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all relative"
+                    onClick={() => setIsSourcingListOpen(true)}
+                    title="View All Sourcing Events">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
+                    <span className="hidden lg:inline">Sourcing</span>
+                    {sourcingEventCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-bold text-white ring-1 ring-white">{sourcingEventCount}</span>
+                    )}
+                  </button>
+                  <button
+                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                    onClick={() => setIsSourcingModalOpen(true)}
+                    title="Create Sourcing Event">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  </button>
+                  <button
+                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                    onClick={() => setIsTableAppOpen(true)}
+                    title="Table App">
+                    <TableCellsIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* AI Chat — Accent Button */}
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all relative"
-                  onClick={() => setIsSourcingListOpen(true)}
-                  title="View All Sourcing Events"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
-                  </svg>
-                  Sourcing
-                  {sourcingEventCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-500 text-[10px] font-bold text-white shadow-sm ring-1 ring-white">
-                      {sourcingEventCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-indigo-600 transition-colors"
-                  onClick={() => setIsSourcingModalOpen(true)}
-                  title="Create Sourcing Event for this Page"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                </button>
-                <div className="h-4 w-px bg-gray-200"></div>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-white p-1.5 text-xs font-medium text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 hover:text-indigo-600 transition-all"
-                  onClick={() => setIsTableAppOpen(true)}
-                  title="High Performance Table App"
-                >
-                  <TableCellsIcon className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-50 to-emerald-50 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 hover:from-blue-100 hover:to-emerald-100 hover:text-blue-700 transition-all"
+                  className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:from-indigo-600 hover:to-violet-600 transition-all"
                   onClick={handleOpenAIChat}
-                  title="AI Chat Assistant"
-                >
+                  title="AI Chat Assistant">
                   <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
-                  AI Chat
+                  <span className="hidden lg:inline">AI Chat</span>
                 </button>
               </>
             )}
 
-            <div className="h-4 w-px bg-gray-200"></div>
-            <button
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-600 transition-colors relative"
-              onClick={handleOpenImportant}
-              title="Important">
-              <ExclamationTriangleIcon className="h-4 w-4" />
-              {totalImportant > 0 && (
-                <>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+            <div className="h-5 w-px bg-black/[0.06]"></div>
+
+            {/* ── Flags Group ── */}
+            <div className="flex items-center gap-0.5">
+              <button
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors relative"
+                onClick={handleOpenImportant}
+                title="Important">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                {totalImportant > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white ring-1 ring-white">
                     {totalImportant}
                   </span>
-                </>
-              )}
-            </button>
-            <button
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors relative"
-              onClick={handleOpenKeyTasks}
-              title="Key Tasks">
-              <FlagIcon className="h-4 w-4" />
-              {totalFlagged > 0 && (
-                <>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-[0_0_8px_rgba(239,68,68,0.8)] ring-1 ring-white">
+                )}
+              </button>
+              <button
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors relative"
+                onClick={handleOpenKeyTasks}
+                title="Key Tasks">
+                <FlagIcon className="h-4 w-4" />
+                {totalFlagged > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
                     {totalFlagged}
                   </span>
-                </>
-              )}
-            </button>
+                )}
+              </button>
+              <button
+                onClick={handleOpenSettings}
+                className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors"
+                title="Settings">
+                <Cog6ToothIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
 
-            {/* Settings Button */}
-            <button
-              onClick={handleOpenSettings}
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
-              title="Badge Settings"
-            >
-              <Cog6ToothIcon className="h-4 w-4" />
-            </button>
-
-            <div className="h-4 w-px bg-gray-200"></div>
+            <div className="h-5 w-px bg-black/[0.06]"></div>
 
             {/* User Profile Menu */}
             <div className="flex items-center">
@@ -820,12 +794,12 @@ const NotesLayout: React.FC = React.memo(() => {
           onPointerUp={() => {
             document.body.style.cursor = 'default';
           }}>
-          {/* Main Content Area with Glassmorphism Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200/50 -z-10" />
+          {/* Warm background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#F8F8F6] via-[#F4F3F0] to-[#EFEEE9] -z-10" />
 
           {/* Column 1: Categories */}
           <div
-            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/40 backdrop-blur-xl transition-[width] duration-75 ease-out z-20 relative`}
+            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/50 backdrop-blur-xl transition-[width] duration-100 ease-out z-20 relative`}
             style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
             <CategoryList
               categories={categories}
@@ -842,7 +816,7 @@ const NotesLayout: React.FC = React.memo(() => {
             />
             {!isCategoryCollapsed && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
                 onMouseDown={e => startResizing(e, 'category')}
               />
             )}
@@ -850,7 +824,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* Column 2: Sections */}
           <div
-            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/60 backdrop-blur-xl transition-[width] duration-75 ease-out z-10 relative`}
+            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/60 backdrop-blur-xl transition-[width] duration-100 ease-out z-10 relative`}
             style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
             <SectionList
               isCollapsed={isSectionCollapsed}
@@ -867,7 +841,7 @@ const NotesLayout: React.FC = React.memo(() => {
             />
             {!isSectionCollapsed && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
                 onMouseDown={e => startResizing(e, 'section')}
               />
             )}
@@ -875,7 +849,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* Column 3: Pages */}
           <div
-            className={`flex-shrink-0 border-r border-gray-200/60 bg-white/80 backdrop-blur-xl transition-[width] duration-75 ease-out z-0 relative`}
+            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/70 backdrop-blur-xl transition-[width] duration-100 ease-out z-0 relative`}
             style={{ width: isPageCollapsed ? 56 : pageWidth }}>
             <PageList
               isCollapsed={isPageCollapsed}
@@ -892,14 +866,14 @@ const NotesLayout: React.FC = React.memo(() => {
             />
             {!isPageCollapsed && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-blue-400/50 z-50 transition-colors"
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
                 onMouseDown={e => startResizing(e, 'page')}
               />
             )}
           </div>
 
           {/* Column 4: Editor */}
-          <div className="flex-1 overflow-hidden bg-white shadow-xl z-30 m-4 rounded-xl border border-gray-100">
+          <div className="flex-1 overflow-hidden bg-white shadow-[0_1px_8px_rgba(0,0,0,0.06)] z-30 m-3 rounded-2xl border border-black/[0.04]">
             <NoteEditor
               initialTabId={targetTabId}
               onSave={handleSavePageContent}
