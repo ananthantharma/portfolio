@@ -662,30 +662,30 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                         timestamp: Date.now(),
                     };
 
-                    let updatedSession: LocalSession | undefined;
+                    // Build the complete session for saving BEFORE setState
+                    // We need the latest state, so use the functional updater
+                    let sessionForSave: LocalSession | null = null;
                     setSessions(prev => {
-                        const updated = prev.map(s => {
+                        return prev.map(s => {
                             if (s.localId === activeSessionId) {
-                                const newSession = {
+                                const updated = {
                                     ...s,
                                     messages: [...s.messages, assistantMessage],
                                     isDirty: true,
                                 };
-                                updatedSession = newSession;
-                                return newSession;
+                                sessionForSave = updated;
+                                return updated;
                             }
                             return s;
                         });
-                        return updated;
                     });
 
-                    // Auto-save after getting response
-                    if (updatedSession) {
-                        // Small delay to ensure state is updated
-                        setTimeout(() => {
-                            const sessionToSave = updatedSession!;
-                            saveSession(sessionToSave);
-                        }, 200);
+                    // Use a microtask to ensure setSessions updater has run
+                    // and sessionForSave has been assigned
+                    await new Promise(resolve => setTimeout(resolve, 50));
+
+                    if (sessionForSave) {
+                        saveSession(sessionForSave);
                     }
                 } catch (error: unknown) {
                     const errorMessage =

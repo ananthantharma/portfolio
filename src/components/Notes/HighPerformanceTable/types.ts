@@ -1,9 +1,9 @@
-export type ColumnType = 'text' | 'date' | 'status' | 'risk' | 'currency';
+export type ColumnType = 'text' | 'number' | 'date' | 'status' | 'risk' | 'currency';
 
 export interface StatusOption {
     id: string;
     label: string;
-    color: string;
+    color: string; // hex color
 }
 
 export interface ColumnDefinition {
@@ -11,13 +11,14 @@ export interface ColumnDefinition {
     label: string;
     type: ColumnType;
     width: number;
-    options?: StatusOption[]; // for status/risk types
+    options?: StatusOption[]; // for status type
+    align?: 'left' | 'center' | 'right';
 }
 
 export interface TableRow {
     id: string;
     type: 'stream' | 'task';
     isExpanded: boolean;
-    data: Record<string, any>; // Keyed by column ID. The 'primary' key usually holds the name.
+    data: Record<string, any>;
     children?: TableRow[];
 }

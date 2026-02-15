@@ -1,10 +1,25 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Popover, Transition } from '@headlessui/react';
-import { ColumnDefinition, TableRow, StatusOption } from './types';
-import { PlusIcon, TrashIcon, ChevronRightIcon, ChevronDownIcon, Bars3Icon, PencilIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
+/* eslint-disable simple-import-sort/imports */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import {
+    PlusIcon,
+    TrashIcon,
+    ChevronRightIcon,
+    ChevronDownIcon,
+
+    ClipboardDocumentIcon,
+    ArrowDownTrayIcon,
+    CloudArrowUpIcon,
+    SparklesIcon,
+    ArrowUpTrayIcon,
+    CheckIcon,
+    XMarkIcon,
+    TableCellsIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
+} from '@heroicons/react/24/outline';
 import axios from 'axios';
-import { ArrowDownTrayIcon, CloudArrowUpIcon, ViewColumnsIcon, ArrowUpTrayIcon, SparklesIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import * as XLSX from 'xlsx';
 import {
     DndContext,
@@ -13,140 +28,503 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragEndEvent
+    DragEndEvent,
 } from '@dnd-kit/core';
 import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     horizontalListSortingStrategy,
+    useSortable,
 } from '@dnd-kit/sortable';
-import { SortableHeader } from './SortableHeader';
-import AddColumnModal from './AddColumnModal';
-import AIImportModal from './AIImportModal';
-import EditRowModal from './EditRowModal';
+import { CSS } from '@dnd-kit/utilities';
+import { ColumnDefinition, ColumnType, TableRow, StatusOption } from './types';
 
-// --- Mock Initial Data ---
-const DEFAULT_OPTIONS: StatusOption[] = [
-    { id: 'on-track', label: 'On Track', color: 'bg-green-500' },
-    { id: 'at-risk', label: 'At Risk', color: 'bg-red-500' },
-    { id: 'delayed', label: 'Delayed', color: 'bg-yellow-500' },
-    { id: 'completed', label: 'Completed', color: 'bg-blue-500' },
-    { id: 'draft', label: 'Draft', color: 'bg-gray-400' },
+// ============ Color Palette ============
+
+const STATUS_COLORS: StatusOption[] = [
+    { id: 'green', label: 'Active', color: '#22c55e' },
+    { id: 'blue', label: 'In Progress', color: '#3b82f6' },
+    { id: 'amber', label: 'Pending', color: '#f59e0b' },
+    { id: 'red', label: 'Blocked', color: '#ef4444' },
+    { id: 'violet', label: 'Review', color: '#8b5cf6' },
+    { id: 'slate', label: 'Done', color: '#64748b' },
 ];
 
-const INITIAL_COLUMNS: ColumnDefinition[] = [
-    { id: 'name', label: 'Activity / Task', type: 'text', width: 350 },
-    { id: 'status', label: 'Status', type: 'status', width: 100, options: DEFAULT_OPTIONS },
-    {
-        id: 'risk', label: 'Risk', type: 'risk', width: 100, options: [
-            { id: 'low', label: 'Low', color: 'bg-gray-400' },
-            { id: 'medium', label: 'Medium', color: 'bg-orange-500' },
-            { id: 'high', label: 'High', color: 'bg-red-500' },
-        ]
-    },
-    { id: 'dueDate', label: 'Due Date', type: 'date', width: 140 },
-    { id: 'owner', label: 'Owner', type: 'text', width: 160 },
-    { id: 'notes', label: 'Notes', type: 'text', width: 250 },
+const DEFAULT_COLUMNS: ColumnDefinition[] = [
+    { id: 'name', label: 'Name', type: 'text', width: 280, align: 'left' },
+    { id: 'status', label: 'Status', type: 'status', width: 140, options: STATUS_COLORS, align: 'center' },
+    { id: 'col3', label: 'Category', type: 'text', width: 160, align: 'left' },
+    { id: 'col4', label: 'Value', type: 'currency', width: 120, align: 'right' },
+    { id: 'col5', label: 'Date', type: 'date', width: 140, align: 'center' },
+    { id: 'notes', label: 'Notes', type: 'text', width: 220, align: 'left' },
 ];
 
-const INITIAL_DATA: TableRow[] = [
-    {
-        id: 'stream-1',
-        type: 'stream',
-        isExpanded: true,
-        data: { name: 'Q1 Product Launch', status: 'on-track', dueDate: '2024-03-31', owner: 'Product Team' },
-        children: [
-            { id: 'task-1-1', type: 'task', isExpanded: false, data: { name: 'Finalize Specs', status: 'completed', dueDate: '2024-01-15', owner: 'Alice', risk: 'low' } },
-            { id: 'task-1-2', type: 'task', isExpanded: false, data: { name: 'Design Mockups', status: 'on-track', dueDate: '2024-02-01', owner: 'Bob', risk: 'medium' } },
-        ]
-    },
-    {
-        id: 'stream-2',
-        type: 'stream',
-        isExpanded: true,
-        data: { name: 'Marketing Campaign', status: 'at-risk', dueDate: '2024-04-15', owner: 'Marketing' },
-        children: [
-            { id: 'task-2-1', type: 'task', isExpanded: false, data: { name: 'Social Media Plan', status: 'delayed', dueDate: '2024-02-20', owner: 'Charlie', risk: 'high' } },
-        ]
-    }
-];
+const EMPTY_ROWS: TableRow[] = [];
+
+// ============ Inline Sortable Header ============
+
+function SortableColumnHeader({
+    column,
+    onResizeStart,
+    onRemove,
+    onRename,
+}: {
+    column: ColumnDefinition;
+    onResizeStart: (id: string) => void;
+    onRemove: (id: string) => void;
+    onRename: (id: string, label: string) => void;
+}) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: column.id,
+    });
+    const [editing, setEditing] = useState(false);
+    const [label, setLabel] = useState(column.label);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setLabel(column.label);
+    }, [column.label]);
+
+    useEffect(() => {
+        if (editing && inputRef.current) inputRef.current.focus();
+    }, [editing]);
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        width: column.width,
+        minWidth: column.width,
+        zIndex: isDragging ? 50 : 'auto',
+        opacity: isDragging ? 0.7 : 1,
+    };
+
+    const commitRename = () => {
+        setEditing(false);
+        if (label.trim() && label.trim() !== column.label) {
+            onRename(column.id, label.trim());
+        } else {
+            setLabel(column.label);
+        }
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`relative flex items-center justify-between px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wider select-none border-r border-white/[0.06] group
+                ${column.id === 'name' ? 'sticky left-0 z-30' : ''}
+                ${isDragging ? 'bg-zinc-700/80' : 'bg-zinc-800/60'}`}
+        >
+            <div className="flex items-center gap-1.5 overflow-hidden flex-1 min-w-0">
+                {column.id !== 'name' && (
+                    <div
+                        {...attributes}
+                        {...listeners}
+                        className="cursor-grab hover:text-zinc-300 text-zinc-500 shrink-0"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M7 2a2 2 0 10.001 4.001A2 2 0 007 2zm0 6a2 2 0 10.001 4.001A2 2 0 007 8zm0 6a2 2 0 10.001 4.001A2 2 0 007 14zm6-8a2 2 0 10-.001-4.001A2 2 0 0013 6zm0 2a2 2 0 10.001 4.001A2 2 0 0013 8zm0 6a2 2 0 10.001 4.001A2 2 0 0013 14z" />
+                        </svg>
+                    </div>
+                )}
+
+                {editing ? (
+                    <input
+                        ref={inputRef}
+                        className="bg-zinc-700 text-zinc-100 text-[11px] font-semibold uppercase rounded px-1 py-0.5 border border-violet-500/50 outline-none w-full"
+                        value={label}
+                        onChange={e => setLabel(e.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') commitRename();
+                            if (e.key === 'Escape') {
+                                setLabel(column.label);
+                                setEditing(false);
+                            }
+                        }}
+                    />
+                ) : (
+                    <span
+                        className="truncate text-zinc-400 cursor-pointer hover:text-zinc-200 transition-colors"
+                        onDoubleClick={() => setEditing(true)}
+                        title="Double-click to rename"
+                    >
+                        {column.label}
+                    </span>
+                )}
+            </div>
+
+            {column.id !== 'name' && (
+                <button
+                    onClick={e => {
+                        e.stopPropagation();
+                        onRemove(column.id);
+                    }}
+                    className="p-0.5 text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    title="Remove column"
+                >
+                    <XMarkIcon className="w-3 h-3" />
+                </button>
+            )}
+
+            {/* Resize handle */}
+            <div
+                className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-violet-500/60 active:bg-violet-500 transition-colors"
+                onMouseDown={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onResizeStart(column.id);
+                }}
+            />
+        </div>
+    );
+}
+
+// ============ Add Column Inline ============
+
+function AddColumnInline({ onAdd }: { onAdd: (col: ColumnDefinition) => void }) {
+    const [open, setOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [type, setType] = useState<ColumnType>('text');
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const submit = () => {
+        if (!name.trim()) return;
+        const newCol: ColumnDefinition = {
+            id: `col-${Date.now()}`,
+            label: name.trim(),
+            type,
+            width: type === 'currency' || type === 'number' ? 120 : 180,
+            align: type === 'currency' || type === 'number' ? 'right' : type === 'date' || type === 'status' ? 'center' : 'left',
+        };
+        if (type === 'status') {
+            newCol.options = STATUS_COLORS;
+        }
+        onAdd(newCol);
+        setName('');
+        setType('text');
+        setOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                onClick={() => setOpen(!open)}
+                className="h-full px-4 py-2.5 text-zinc-500 hover:text-violet-400 hover:bg-zinc-800/50 transition-colors border-r border-white/[0.06]"
+                title="Add column"
+            >
+                <PlusIcon className="w-4 h-4" />
+            </button>
+            {open && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl p-4 z-50 space-y-3">
+                    <input
+                        className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:ring-1 focus:ring-violet-500"
+                        placeholder="Column name..."
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && submit()}
+                        autoFocus
+                    />
+                    <div className="grid grid-cols-3 gap-1.5">
+                        {(['text', 'number', 'date', 'status', 'currency'] as ColumnType[]).map(t => (
+                            <button
+                                key={t}
+                                onClick={() => setType(t)}
+                                className={`px-2 py-1.5 rounded-lg text-[11px] font-medium capitalize transition-all ${type === t
+                                    ? 'bg-violet-600 text-white'
+                                    : 'bg-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-600'
+                                    }`}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={submit}
+                        disabled={!name.trim()}
+                        className="w-full py-2 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-40 text-white text-sm font-medium transition-colors"
+                    >
+                        Add Column
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============ AI Smart Import Modal ============
+
+function AISmartImportModal({
+    isOpen,
+    onClose,
+    onImport,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onImport: (data: { columns: ColumnDefinition[]; rows: TableRow[] }) => void;
+}) {
+    const [input, setInput] = useState('');
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [mode, setMode] = useState<'text' | 'image'>('text');
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    if (!isOpen) return null;
+
+    const handlePaste = (e: React.ClipboardEvent) => {
+        const items = e.clipboardData.items;
+        for (const item of items) {
+            if (item.type.indexOf('image') !== -1) {
+                const file = item.getAsFile();
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => setImagePreview(reader.result as string);
+                    reader.readAsDataURL(file);
+                    setMode('image');
+                }
+            }
+        }
+    };
+
+    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result as string);
+            reader.readAsDataURL(file);
+            setMode('image');
+        }
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            const payload: any = { prompt: input || 'Convert this data into a structured table.' };
+            if (mode === 'image' && imagePreview) {
+                const base64 = imagePreview.split(',')[1];
+                const mimeType = imagePreview.split(',')[0].match(/:(.*?);/)?.[1];
+                payload.image = { base64, mimeType };
+            }
+            const res = await axios.post('/api/tables/generate', payload);
+            if (res.data.success) {
+                onImport(res.data.data);
+                onClose();
+                setInput('');
+                setImagePreview(null);
+            }
+        } catch {
+            alert('Failed to generate table. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div
+                className="relative w-full max-w-lg bg-zinc-900 border border-zinc-700/60 rounded-2xl shadow-2xl overflow-hidden"
+                onPaste={handlePaste}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600">
+                            <SparklesIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-semibold text-zinc-100">AI Smart Import</h3>
+                            <p className="text-[11px] text-zinc-500">Paste text or an image → AI creates the table</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-1 text-zinc-500 hover:text-zinc-300">
+                        <XMarkIcon className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-zinc-800">
+                    {(['text', 'image'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setMode(tab)}
+                            className={`flex-1 py-2.5 text-xs font-medium capitalize transition-colors ${mode === tab
+                                ? 'text-violet-400 border-b-2 border-violet-400 bg-zinc-800/30'
+                                : 'text-zinc-500 hover:text-zinc-300'
+                                }`}
+                        >
+                            {tab === 'text' ? '📝 Paste Text / Data' : '🖼️ Image / Screenshot'}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Content */}
+                <div className="p-5 space-y-4">
+                    {mode === 'text' ? (
+                        <textarea
+                            className="w-full h-40 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-zinc-200 placeholder-zinc-500 outline-none focus:ring-1 focus:ring-violet-500 resize-none"
+                            placeholder={`Paste table data, CSV, or describe what table you want...\n\nExample:\nName, Role, Department\nAlice, Engineer, Product\nBob, Designer, UX`}
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                        />
+                    ) : (
+                        <div className="space-y-3">
+                            {imagePreview ? (
+                                <div className="relative">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="max-h-48 mx-auto rounded-lg border border-zinc-700"
+                                    />
+                                    <button
+                                        onClick={() => setImagePreview(null)}
+                                        className="absolute top-2 right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600"
+                                    >
+                                        <XMarkIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div
+                                    className="flex flex-col items-center justify-center h-40 rounded-xl border-2 border-dashed border-zinc-700 hover:border-violet-500/50 transition-colors cursor-pointer"
+                                    onClick={() => fileRef.current?.click()}
+                                >
+                                    <TableCellsIcon className="w-10 h-10 text-zinc-600 mb-2" />
+                                    <p className="text-sm text-zinc-400">
+                                        Click to upload or <span className="text-violet-400">paste (Ctrl+V)</span>
+                                    </p>
+                                    <p className="text-[11px] text-zinc-600 mt-1">PNG, JPG, GIF</p>
+                                    <input
+                                        ref={fileRef}
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFile}
+                                    />
+                                </div>
+                            )}
+                            <input
+                                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-500 outline-none focus:ring-1 focus:ring-violet-500"
+                                placeholder="Optional context (e.g. 'Extract only totals')"
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 px-5 pb-5">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 py-2.5 rounded-xl bg-zinc-800 text-zinc-400 text-sm font-medium hover:bg-zinc-700 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading || (!input.trim() && !imagePreview)}
+                        className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold hover:from-violet-500 hover:to-fuchsia-500 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+                    >
+                        {loading ? (
+                            <>
+                                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                Generating...
+                            </>
+                        ) : (
+                            <>
+                                <SparklesIcon className="w-4 h-4" />
+                                Generate Table
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============ Main Table App ============
 
 export default function TableApp() {
-    const [columns, setColumns] = useState<ColumnDefinition[]>(INITIAL_COLUMNS);
-    const [rows, setRows] = useState<TableRow[]>(INITIAL_DATA);
+    const [columns, setColumns] = useState<ColumnDefinition[]>(DEFAULT_COLUMNS);
+    const [rows, setRows] = useState<TableRow[]>(EMPTY_ROWS);
     const [resizingColId, setResizingColId] = useState<string | null>(null);
     const [savedTables, setSavedTables] = useState<any[]>([]);
     const [currentTableId, setCurrentTableId] = useState<string | null>(null);
-    const [currentTableName, setCurrentTableName] = useState<string>('New Product Roadmap');
+    const [currentTableName, setCurrentTableName] = useState('Untitled Table');
+    const [isEditingName, setIsEditingName] = useState(false);
     const [isLoadMenuOpen, setIsLoadMenuOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [editingRow, setEditingRow] = useState<TableRow | null>(null);
+    const [copySuccess, setCopySuccess] = useState(false);
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const loadMenuRef = useRef<HTMLDivElement>(null);
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8, // Require movement before drag starts prevents accidental clicks
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
+
+    // Close load menu on outside click
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (loadMenuRef.current && !loadMenuRef.current.contains(e.target as Node)) {
+                setIsLoadMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
 
     useEffect(() => {
         fetchSavedTables();
     }, []);
 
+    useEffect(() => {
+        if (isEditingName && nameInputRef.current) nameInputRef.current.focus();
+    }, [isEditingName]);
+
     const fetchSavedTables = async () => {
         try {
             const res = await axios.get('/api/tables');
-            if (res.data.success) {
-                setSavedTables(res.data.data);
-            }
+            if (res.data.success) setSavedTables(res.data.data);
         } catch (e) {
             console.error(e);
         }
     };
 
+    // ========== Save / Load / Delete ==========
+
     const handleSave = async () => {
         setLoading(true);
         try {
             if (currentTableId) {
-                // Update
-                const res = await axios.put(`/api/tables/${currentTableId}`, {
-                    name: currentTableName,
-                    columns,
-                    rows
-                });
-                if (res.data.success) {
-                    alert('Saved successfully!');
-                    fetchSavedTables();
-                }
+                const res = await axios.put(`/api/tables/${currentTableId}`, { name: currentTableName, columns, rows });
+                if (res.data.success) fetchSavedTables();
             } else {
-                // Create
-                const promptName = prompt("Enter table name:", currentTableName);
-                if (!promptName) {
-                    setLoading(false);
-                    return;
-                }
-                const res = await axios.post('/api/tables', {
-                    name: promptName,
-                    columns,
-                    rows
-                });
+                const nameToUse = currentTableName === 'Untitled Table' ? prompt('Enter table name:', currentTableName) : currentTableName;
+                if (!nameToUse) { setLoading(false); return; }
+                const res = await axios.post('/api/tables', { name: nameToUse, columns, rows });
                 if (res.data.success) {
                     setCurrentTableId(res.data.data._id);
                     setCurrentTableName(res.data.data.name);
-                    alert('Created successfully!');
                     fetchSavedTables();
                 }
             }
-        } catch (e) {
+        } catch {
             alert('Error saving table');
-            console.error(e);
         } finally {
             setLoading(false);
         }
@@ -160,13 +538,11 @@ export default function TableApp() {
                 const table = res.data.data;
                 setCurrentTableId(table._id);
                 setCurrentTableName(table.name);
-
-                // Handle legacy or structure changes if needed, but for now direct set
                 if (table.columns) setColumns(table.columns);
                 if (table.rows) setRows(table.rows);
                 setIsLoadMenuOpen(false);
             }
-        } catch (e) {
+        } catch {
             alert('Error loading table');
         } finally {
             setLoading(false);
@@ -175,123 +551,71 @@ export default function TableApp() {
 
     const handleDeleteSavedTable = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (!confirm('Are you sure you want to delete this saved table?')) return;
-
+        if (!confirm('Delete this saved table?')) return;
         try {
             const res = await axios.delete(`/api/tables/${id}`);
             if (res.data.success) {
                 fetchSavedTables();
                 if (currentTableId === id) {
-                    // Reset if deleting current
                     setCurrentTableId(null);
-                    setCurrentTableName("New Product Roadmap");
+                    setCurrentTableName('Untitled Table');
                     setRows([]);
-                    setColumns(INITIAL_COLUMNS);
+                    setColumns(DEFAULT_COLUMNS);
                 }
             }
-        } catch (e) {
-            alert("Failed to delete table");
+        } catch {
+            alert('Failed to delete');
         }
     };
 
-    // --- Column Management ---
+    const handleNew = () => {
+        setCurrentTableId(null);
+        setCurrentTableName('Untitled Table');
+        setColumns(DEFAULT_COLUMNS);
+        setRows([]);
+    };
+
+    // ========== Column Management ==========
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-
         if (active.id !== over?.id) {
-            setColumns((items) => {
-                const oldIndex = items.findIndex((i) => i.id === active.id);
-                const newIndex = items.findIndex((i) => i.id === over?.id);
+            setColumns(items => {
+                const oldIndex = items.findIndex(i => i.id === active.id);
+                const newIndex = items.findIndex(i => i.id === over?.id);
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
     };
 
-    const addColumn = () => {
-        setIsAddColumnModalOpen(true);
-    };
-
     const handleAddColumn = (newCol: ColumnDefinition) => {
-        setColumns([...columns, newCol]);
+        setColumns(prev => [...prev, newCol]);
     };
 
     const removeColumn = (id: string) => {
-        if (confirm("Are you sure you want to remove this column? Data in this column will be lost.")) {
-            setColumns(prev => prev.filter(c => c.id !== id));
-        }
+        setColumns(prev => prev.filter(c => c.id !== id));
     };
 
-    const handleExport = () => {
-        // Flatten data for export
-        const exportData: any[] = [];
-
-        const processRow = (row: TableRow, depth: number) => {
-            const rowData: any = {};
-
-            columns.forEach(col => {
-                let val = row.data[col.id] || '';
-
-                // Add indentation visualisation for Name column
-                if (col.id === 'name') {
-                    val = '  '.repeat(depth) + val;
-                }
-
-                // Resolve Status/Risk labels if applicable
-                if (col.type === 'status' || col.type === 'risk') {
-                    const opt = col.options?.find(o => o.id === val);
-                    if (opt) val = opt.label;
-                }
-
-                rowData[col.label] = val;
-            });
-
-            exportData.push(rowData);
-
-            if (row.children && row.isExpanded) {
-                row.children.forEach(child => processRow(child, depth + 1));
-            } else if (row.children && !row.isExpanded) {
-                // Optionally export hidden children? Let's export visible only for 'What you see is what you get', 
-                // OR export all. Usually getting all data is better. Let's export ALL data regardless of expansion.
-                row.children.forEach(child => processRow(child, depth + 1));
-            }
-        };
-
-        rows.forEach(row => processRow(row, 0));
-
-        const wc = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, wc, "Roadmap");
-        XLSX.writeFile(wb, `${currentTableName}.xlsx`);
+    const renameColumn = (id: string, label: string) => {
+        setColumns(prev => prev.map(c => (c.id === id ? { ...c, label } : c)));
     };
 
-    const handleAIImport = (data: { columns: ColumnDefinition[], rows: TableRow[] }) => {
-        if (data.columns && data.rows) {
-            setColumns(data.columns);
-            setRows(data.rows);
-            alert("Table generated successfully!");
-        }
-    };
+    // ========== Resizing ==========
 
-    // --- Resizing Logic ---
-    const startResizing = (id: string) => {
-        setResizingColId(id);
-    };
+    const startResizing = (id: string) => setResizingColId(id);
+    const stopResizing = () => setResizingColId(null);
 
-    const stopResizing = () => {
-        setResizingColId(null);
-    };
-
-    const handleResize = useCallback((e: MouseEvent) => {
-        if (!resizingColId) return;
-
-        // Find the header element to calculate offset - simplified for now using movementX
-        setColumns(prev => prev.map(col => {
-            if (col.id === resizingColId) {
-                return { ...col, width: Math.max(50, col.width + e.movementX) };
-            }
-            return col;
-        }));
-    }, [resizingColId]);
+    const handleResize = useCallback(
+        (e: MouseEvent) => {
+            if (!resizingColId) return;
+            setColumns(prev =>
+                prev.map(col =>
+                    col.id === resizingColId ? { ...col, width: Math.max(60, col.width + e.movementX) } : col
+                )
+            );
+        },
+        [resizingColId]
+    );
 
     useEffect(() => {
         if (resizingColId) {
@@ -304,238 +628,319 @@ export default function TableApp() {
         };
     }, [resizingColId, handleResize]);
 
-
-    // --- Data Manipulation ---
-    const toggleRow = (rowId: string) => {
-        const toggleRecursive = (items: TableRow[]): TableRow[] => {
-            return items.map(row => {
-                if (row.id === rowId) return { ...row, isExpanded: !row.isExpanded };
-                if (row.children) return { ...row, children: toggleRecursive(row.children) };
-                return row;
-            });
-        };
-        setRows(prev => toggleRecursive(prev));
-    };
+    // ========== Row Operations ==========
 
     const updateCell = (rowId: string, colId: string, value: any) => {
-        const updateRecursive = (items: TableRow[]): TableRow[] => {
-            return items.map(row => {
-                if (row.id === rowId) {
-                    return { ...row, data: { ...row.data, [colId]: value } };
-                }
+        const updateRecursive = (items: TableRow[]): TableRow[] =>
+            items.map(row => {
+                if (row.id === rowId) return { ...row, data: { ...row.data, [colId]: value } };
                 if (row.children) return { ...row, children: updateRecursive(row.children) };
                 return row;
             });
-        };
         setRows(prev => updateRecursive(prev));
     };
 
-    const handleEditRow = (row: TableRow) => {
-        setEditingRow(row);
-    };
-
-    const handleSaveRow = (rowId: string, newData: Record<string, any>) => {
-        const updateRecursive = (items: TableRow[]): TableRow[] => {
-            return items.map(row => {
-                if (row.id === rowId) {
-                    return { ...row, data: newData };
-                }
-                if (row.children) return { ...row, children: updateRecursive(row.children) };
+    const toggleRow = (rowId: string) => {
+        const toggle = (items: TableRow[]): TableRow[] =>
+            items.map(row => {
+                if (row.id === rowId) return { ...row, isExpanded: !row.isExpanded };
+                if (row.children) return { ...row, children: toggle(row.children) };
                 return row;
             });
-        };
-        setRows(prev => updateRecursive(prev));
-        setEditingRow(null);
+        setRows(prev => toggle(prev));
     };
 
-    const addStream = () => {
-        const newStream: TableRow = {
-            id: `stream-${Date.now()}`,
+    const addRow = () => {
+        const newRow: TableRow = {
+            id: `row-${Date.now()}`,
             type: 'stream',
             isExpanded: true,
-            data: { name: 'New Activity Stream' },
-            children: []
+            data: {},
+            children: [],
         };
-        setRows([...rows, newStream]);
+        setRows(prev => [...prev, newRow]);
     };
 
-    const addTask = (parentId: string) => {
-        const addRecursive = (items: TableRow[]): TableRow[] => {
-            return items.map(row => {
+    const addChildRow = (parentId: string) => {
+        const addRecursive = (items: TableRow[]): TableRow[] =>
+            items.map(row => {
                 if (row.id === parentId) {
-                    const newTask: TableRow = {
-                        id: `task-${Date.now()}`,
+                    const child: TableRow = {
+                        id: `row-${Date.now()}`,
                         type: 'task',
                         isExpanded: false,
-                        data: { name: 'New Task' }
+                        data: {},
                     };
-                    return { ...row, children: [...(row.children || []), newTask], isExpanded: true };
+                    return { ...row, children: [...(row.children || []), child], isExpanded: true };
                 }
                 if (row.children) return { ...row, children: addRecursive(row.children) };
                 return row;
             });
-        };
         setRows(prev => addRecursive(prev));
     };
 
     const deleteRow = (rowId: string) => {
-        const deleteRecursive = (items: TableRow[]): TableRow[] => {
-            return items
+        const deleteRecursive = (items: TableRow[]): TableRow[] =>
+            items
                 .filter(row => row.id !== rowId)
-                .map(row => {
-                    if (row.children) {
-                        return { ...row, children: deleteRecursive(row.children) };
-                    }
-                    return row;
-                });
-        };
+                .map(row =>
+                    row.children ? { ...row, children: deleteRecursive(row.children) } : row
+                );
         setRows(prev => deleteRecursive(prev));
     };
 
     const indentRow = (id: string) => {
         setRows(prev => {
-            const newRows = JSON.parse(JSON.stringify(prev)); // Deep clone
-
+            const data = JSON.parse(JSON.stringify(prev));
             const findAndIndent = (items: TableRow[]): boolean => {
                 const idx = items.findIndex(r => r.id === id);
-                if (idx !== -1) {
-                    if (idx === 0) return true; // Can't indent first item
-
-                    const item = items[idx];
-                    const newParent = items[idx - 1];
-
-                    // Remove from current
-                    items.splice(idx, 1);
-
-                    // Add to new parent
-                    if (!newParent.children) newParent.children = [];
-                    newParent.children.push(item);
-
-                    // Force expansion to show the newly added child
-                    newParent.isExpanded = true;
-
+                if (idx > 0) {
+                    const item = items.splice(idx, 1)[0];
+                    const parent = items[idx - 1];
+                    if (!parent.children) parent.children = [];
+                    parent.children.push(item);
+                    parent.isExpanded = true;
                     return true;
                 }
-
                 for (const item of items) {
                     if (item.children && findAndIndent(item.children)) return true;
                 }
                 return false;
             };
-
-            findAndIndent(newRows);
-            return newRows;
+            findAndIndent(data);
+            return data;
         });
     };
 
     const outdentRow = (id: string) => {
         setRows(prev => {
-            const newRows = JSON.parse(JSON.stringify(prev));
-
-            const findParentAndOutdent = (items: TableRow[]): boolean => {
+            const data = JSON.parse(JSON.stringify(prev));
+            const findAndOutdent = (items: TableRow[]): boolean => {
                 for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
-
-                    // Check children
-                    if (item.children) {
-                        const childIdx = item.children.findIndex(r => r.id === id);
+                    if (items[i].children) {
+                        const childIdx = items[i].children!.findIndex(r => r.id === id);
                         if (childIdx !== -1) {
-                            // Found it. 
-                            const child = item.children[childIdx];
-
-                            // Remove from parent
-                            item.children.splice(childIdx, 1);
-
-                            // Insert into *current* items list after *item*
+                            const child = items[i].children!.splice(childIdx, 1)[0];
                             items.splice(i + 1, 0, child);
                             return true;
                         }
-
-                        // Recurse
-                        if (findParentAndOutdent(item.children)) return true;
+                        if (findAndOutdent(items[i].children!)) return true;
                     }
                 }
                 return false;
             };
-
-            findParentAndOutdent(newRows);
-            return newRows;
+            findAndOutdent(data);
+            return data;
         });
     };
 
-    // --- Render Helpers ---
+    // ========== AI Import ==========
 
-    const renderCellContent = (row: TableRow, col: ColumnDefinition) => {
+    const handleAIImport = (data: { columns: ColumnDefinition[]; rows: TableRow[] }) => {
+        if (data.columns && data.rows) {
+            setColumns(data.columns);
+            setRows(data.rows);
+        }
+    };
+
+    // ========== Export ==========
+
+    const handleExportExcel = () => {
+        const exportData: any[] = [];
+        const processRow = (row: TableRow, depth: number) => {
+            const rowData: any = {};
+            columns.forEach(col => {
+                let val = row.data[col.id] || '';
+                if (col.id === 'name') val = '  '.repeat(depth) + val;
+                if (col.type === 'status' && col.options) {
+                    const opt = col.options.find(o => o.id === val);
+                    if (opt) val = opt.label;
+                }
+                rowData[col.label] = val;
+            });
+            exportData.push(rowData);
+            row.children?.forEach(child => processRow(child, depth + 1));
+        };
+        rows.forEach(row => processRow(row, 0));
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Table');
+        XLSX.writeFile(wb, `${currentTableName}.xlsx`);
+    };
+
+    // ========== Copy as Rich HTML ==========
+
+    const copyAsHTML = async () => {
+        const buildHTML = () => {
+            let html = `<table style="border-collapse:collapse;font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:13px;width:100%;border:1px solid #d1d5db;">`;
+
+            // Header
+            html += '<thead><tr>';
+            columns.forEach(col => {
+                html += `<th style="background:#f3f4f6;border:1px solid #d1d5db;padding:8px 14px;text-align:${col.align || 'left'};font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#374151;">${col.label}</th>`;
+            });
+            html += '</tr></thead>';
+
+            // Body
+            html += '<tbody>';
+            const renderHTMLRow = (row: TableRow, depth: number) => {
+                const isGroup = row.type === 'stream';
+                html += '<tr>';
+                columns.forEach(col => {
+                    let val = row.data[col.id] || '';
+                    const indent = col.id === 'name' ? depth * 20 : 0;
+                    let cellStyle = `border:1px solid #e5e7eb;padding:6px 14px;text-align:${col.align || 'left'};`;
+
+                    if (isGroup && col.id === 'name') {
+                        cellStyle += 'font-weight:600;background:#f9fafb;';
+                    }
+                    if (indent > 0) cellStyle += `padding-left:${14 + indent}px;`;
+
+                    if (col.type === 'status' && col.options) {
+                        const opt = col.options.find(o => o.id === val);
+                        if (opt) {
+                            val = `<span style="display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${opt.color}22;color:${opt.color};border:1px solid ${opt.color}44;">${opt.label}</span>`;
+                        }
+                    } else if (col.type === 'currency' && val) {
+                        val = `$${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+                    }
+
+                    html += `<td style="${cellStyle}">${val}</td>`;
+                });
+                html += '</tr>';
+                row.children?.forEach(child => renderHTMLRow(child, depth + 1));
+            };
+            rows.forEach(row => renderHTMLRow(row, 0));
+            html += '</tbody></table>';
+            return html;
+        };
+
+        const htmlContent = buildHTML();
+
+        // Also build plain text for fallback
+        let plainText = columns.map(c => c.label).join('\t') + '\n';
+        const addPlainRow = (row: TableRow, depth: number) => {
+            const cells = columns.map(col => {
+                let v = row.data[col.id] || '';
+                if (col.id === 'name') v = '  '.repeat(depth) + v;
+                if (col.type === 'status' && col.options) {
+                    const opt = col.options.find(o => o.id === v);
+                    if (opt) v = opt.label;
+                }
+                return v;
+            });
+            plainText += cells.join('\t') + '\n';
+            row.children?.forEach(child => addPlainRow(child, depth + 1));
+        };
+        rows.forEach(row => addPlainRow(row, 0));
+
+        try {
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const textBlob = new Blob([plainText], { type: 'text/plain' });
+
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'text/html': blob,
+                    'text/plain': textBlob,
+                }),
+            ]);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        } catch {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = plainText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        }
+    };
+
+    // ========== Cell Rendering ==========
+
+    const renderCell = (row: TableRow, col: ColumnDefinition, depth: number) => {
         const value = row.data[col.id];
 
         if (col.id === 'name') {
             return (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                    <div style={{ width: depth * 20 }} className="shrink-0" />
                     {(row.children && row.children.length > 0) || row.type === 'stream' ? (
-                        <button onClick={() => toggleRow(row.id)} className="p-1 hover:bg-gray-200 rounded">
-                            {row.isExpanded ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronRightIcon className="w-4 h-4" />}
+                        <button
+                            onClick={() => toggleRow(row.id)}
+                            className="p-0.5 rounded hover:bg-white/10 text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+                        >
+                            {row.isExpanded ? (
+                                <ChevronDownIcon className="w-3.5 h-3.5" />
+                            ) : (
+                                <ChevronRightIcon className="w-3.5 h-3.5" />
+                            )}
                         </button>
                     ) : (
-                        <div className="w-6" />
+                        <div className="w-[18px] shrink-0" />
                     )}
                     <input
-                        className="bg-transparent border-none focus:ring-0 w-full font-medium text-gray-900"
+                        className="bg-transparent text-zinc-100 text-sm outline-none w-full placeholder-zinc-600 font-medium"
                         value={value || ''}
-                        onChange={(e) => updateCell(row.id, col.id, e.target.value)}
+                        placeholder="Enter name..."
+                        onChange={e => updateCell(row.id, col.id, e.target.value)}
                     />
                 </div>
             );
         }
 
-        if (col.type === 'status' || col.type === 'risk') {
-            const selectedOption = col.options?.find(opt => opt.id === value);
+        if (col.type === 'status') {
+            const selected = col.options?.find(o => o.id === value);
 
             return (
-                <Popover className="relative w-full h-full flex items-center justify-center">
-                    <Popover.Button className="focus:outline-none w-full h-full flex items-center justify-center">
-                        {selectedOption ? (
-                            <div
-                                className={clsx("w-6 h-6 rounded-full shadow-sm border border-gray-200", selectedOption.color)}
-                                title={selectedOption.label}
-                            />
+                <div className="relative group/status w-full">
+                    <button className="w-full text-center focus:outline-none">
+                        {selected ? (
+                            <span
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                                style={{
+                                    background: `${selected.color}18`,
+                                    color: selected.color,
+                                    border: `1px solid ${selected.color}33`,
+                                }}
+                            >
+                                <span
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{ background: selected.color }}
+                                />
+                                {selected.label}
+                            </span>
                         ) : (
-                            <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-300 hover:border-gray-400" />
+                            <span className="text-zinc-600 text-[11px]">—</span>
                         )}
-                    </Popover.Button>
-
-                    <Transition
-                        as={React.Fragment}
-                        enter="transition ease-out duration-100"
-                        enterFrom="transform opacity-0 scale-95"
-                        enterTo="transform opacity-100 scale-100"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                    >
-                        <Popover.Panel className="absolute z-50 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none p-2">
-                            <div className="grid grid-cols-4 gap-2">
-                                {col.options?.map(opt => (
-                                    <button
-                                        key={opt.id}
-                                        onClick={() => updateCell(row.id, col.id, opt.id)}
-                                        className={clsx(
-                                            "w-8 h-8 rounded-full shadow-sm border border-gray-100 hover:scale-110 transition-transform",
-                                            opt.color
-                                        )}
-                                        title={opt.label}
-                                    />
-                                ))}
-                                <button
-                                    onClick={() => updateCell(row.id, col.id, null)}
-                                    className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-gray-400"
-                                    title="None"
-                                >
-                                    <TrashIcon className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </Popover.Panel>
-                    </Transition>
-                </Popover>
+                    </button>
+                    {/* Dropdown on hover */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 hidden group-hover/status:flex flex-col bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl py-1 z-50 min-w-[130px]">
+                        {col.options?.map(opt => (
+                            <button
+                                key={opt.id}
+                                onClick={() => updateCell(row.id, col.id, opt.id)}
+                                className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-300 hover:bg-zinc-700 transition-colors"
+                            >
+                                <span
+                                    className="w-2 h-2 rounded-full shrink-0"
+                                    style={{ background: opt.color }}
+                                />
+                                {opt.label}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => updateCell(row.id, col.id, null)}
+                            className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-zinc-500 hover:bg-zinc-700 transition-colors border-t border-zinc-700"
+                        >
+                            <XMarkIcon className="w-3 h-3" />
+                            Clear
+                        </button>
+                    </div>
+                </div>
             );
         }
 
@@ -543,103 +948,105 @@ export default function TableApp() {
             return (
                 <input
                     type="date"
-                    className="block w-full border-0 bg-transparent p-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-xs"
+                    className="bg-transparent text-zinc-300 text-xs outline-none w-full [color-scheme:dark]"
                     value={value || ''}
-                    onChange={(e) => updateCell(row.id, col.id, e.target.value)}
+                    onChange={e => updateCell(row.id, col.id, e.target.value)}
                 />
-            )
+            );
         }
 
         if (col.type === 'currency') {
             return (
-                <div className="relative rounded-md shadow-sm">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-1">
-                        <span className="text-gray-500 sm:text-xs">$</span>
-                    </div>
+                <div className="flex items-center gap-0.5">
+                    <span className="text-zinc-500 text-xs">$</span>
                     <input
                         type="text"
-                        className="block w-full border-0 bg-transparent py-0 pl-4 pr-0 text-gray-900 placeholder:text-gray-400 focus:ring-0 text-xs"
+                        className="bg-transparent text-zinc-200 text-sm outline-none w-full text-right"
                         placeholder="0.00"
                         value={value || ''}
-                        onChange={(e) => updateCell(row.id, col.id, e.target.value)}
+                        onChange={e => updateCell(row.id, col.id, e.target.value)}
                     />
                 </div>
-            )
+            );
         }
 
-        // Default Text & Notes
+        if (col.type === 'number') {
+            return (
+                <input
+                    type="number"
+                    className="bg-transparent text-zinc-200 text-sm outline-none w-full text-right"
+                    value={value || ''}
+                    onChange={e => updateCell(row.id, col.id, e.target.value)}
+                />
+            );
+        }
+
+        // Default: text
         return (
-            <textarea
-                className="block w-full border-0 bg-transparent p-0 text-gray-900 focus:ring-0 text-xs resize-none overflow-hidden leading-relaxed"
-                rows={1}
+            <input
+                className="bg-transparent text-zinc-300 text-sm outline-none w-full placeholder-zinc-600"
                 value={value || ''}
-                placeholder={col.id === 'notes' ? 'Add notes...' : ''}
-                onChange={(e) => updateCell(row.id, col.id, e.target.value)}
-                onInput={(e) => {
-                    // Auto-grow
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = target.scrollHeight + 'px';
-                }}
+                placeholder={col.label === 'Notes' ? 'Add notes...' : ''}
+                onChange={e => updateCell(row.id, col.id, e.target.value)}
             />
         );
     };
 
-    const renderRow = (row: TableRow, depth = 0) => {
+    // ========== Row Rendering ==========
+
+    const renderRow = (row: TableRow, depth: number = 0) => {
+        const isGroup = row.type === 'stream';
         return (
             <React.Fragment key={row.id}>
-                <div className="flex border-b border-gray-200 hover:bg-gray-50 group transition-colors">
-                    {columns.map((col, index) => (
+                <div
+                    className={`flex border-b border-white/[0.04] group transition-colors ${isGroup && depth === 0
+                        ? 'bg-zinc-800/40 hover:bg-zinc-800/70'
+                        : 'bg-zinc-900/20 hover:bg-zinc-800/30'
+                        }`}
+                >
+                    {columns.map((col, idx) => (
                         <div
                             key={col.id}
-                            className={clsx(
-                                "relative flex items-center px-3 py-2 text-sm border-r border-gray-100 last:border-r-0",
-                                index === 0 && "sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]", // Sticky first col
-                            )}
-                            style={{ width: col.width, minWidth: col.width }}
+                            className={`relative flex items-center px-3 py-2 text-sm border-r border-white/[0.04] last:border-r-0 ${idx === 0 ? 'sticky left-0 z-10 bg-inherit' : ''
+                                }`}
+                            style={{
+                                width: col.width,
+                                minWidth: col.width,
+                                textAlign: col.align || 'left',
+                            }}
                         >
-                            {col.id === 'name' && (
-                                <div style={{ width: depth * 24 }} className="flex-shrink-0" />
-                            )}
-                            {renderCellContent(row, col)}
+                            {renderCell(row, col, depth)}
 
-                            {/* Add Task & Delete Buttons in First Column */}
-                            {index === 0 && (
-                                <div className="absolute right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded">
+                            {/* Action buttons on first column */}
+                            {idx === 0 && (
+                                <div className="absolute right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800/90 rounded-md px-0.5">
                                     <button
-                                        onClick={() => addTask(row.id)}
-                                        className="p-1 text-gray-400 hover:text-indigo-600"
-                                        title="Add Sub-Task"
+                                        onClick={() => addChildRow(row.id)}
+                                        className="p-1 text-zinc-500 hover:text-violet-400 transition-colors"
+                                        title="Add child row"
                                     >
-                                        <PlusIcon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleEditRow(row)}
-                                        className="p-1 text-gray-400 hover:text-indigo-600"
-                                        title="Edit Row"
-                                    >
-                                        <PencilIcon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => outdentRow(row.id)}
-                                        className="p-1 text-gray-400 hover:text-indigo-600"
-                                        title="Outdent (Make Parent)"
-                                    >
-                                        <ArrowLeftIcon className="w-4 h-4" />
+                                        <PlusIcon className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => indentRow(row.id)}
-                                        className="p-1 text-gray-400 hover:text-indigo-600"
-                                        title="Indent (Make Child)"
+                                        className="p-1 text-zinc-500 hover:text-violet-400 transition-colors"
+                                        title="Indent"
                                     >
-                                        <ArrowRightIcon className="w-4 h-4" />
+                                        <ArrowRightIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => outdentRow(row.id)}
+                                        className="p-1 text-zinc-500 hover:text-violet-400 transition-colors"
+                                        title="Outdent"
+                                    >
+                                        <ArrowLeftIcon className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => deleteRow(row.id)}
-                                        className="p-1 text-gray-400 hover:text-red-600"
-                                        title="Delete"
+                                        className="p-1 text-zinc-500 hover:text-red-400 transition-colors"
+                                        title="Delete row"
                                     >
-                                        <TrashIcon className="w-4 h-4" />
+                                        <TrashIcon className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             )}
@@ -651,100 +1058,163 @@ export default function TableApp() {
         );
     };
 
+    // ========== Main Render ==========
+
     return (
-        <div className="flex flex-col h-full bg-white text-gray-900">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/50 backdrop-blur relative z-50">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <Bars3Icon className="w-5 h-5 text-indigo-600" />
-                    {currentTableName}
-                    {loading && <span className="text-xs font-normal text-gray-400 ml-2">Saving/Loading...</span>}
-                </h2>
-                <div className="flex gap-2">
-                    <div className="relative">
+        <div className="flex flex-col h-full bg-zinc-950 text-zinc-100">
+            {/* ---- Toolbar ---- */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-800/80 bg-zinc-900/80 backdrop-blur-xl relative z-40">
+                {/* Left: Title */}
+                <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/20">
+                        <TableCellsIcon className="w-4.5 h-4.5 text-white" />
+                    </div>
+                    {isEditingName ? (
+                        <input
+                            ref={nameInputRef}
+                            className="bg-zinc-800 text-zinc-100 text-lg font-bold rounded-lg border border-violet-500/40 px-3 py-1 outline-none"
+                            value={currentTableName}
+                            onChange={e => setCurrentTableName(e.target.value)}
+                            onBlur={() => setIsEditingName(false)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') setIsEditingName(false);
+                            }}
+                        />
+                    ) : (
+                        <h2
+                            className="text-lg font-bold text-zinc-100 cursor-pointer hover:text-violet-300 transition-colors"
+                            onClick={() => setIsEditingName(true)}
+                            title="Click to rename"
+                        >
+                            {currentTableName}
+                        </h2>
+                    )}
+                    {loading && (
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Saving...
+                        </div>
+                    )}
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-1.5">
+                    {/* New Table */}
+                    <button
+                        onClick={handleNew}
+                        className="px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all flex items-center gap-1.5"
+                        title="New blank table"
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">New</span>
+                    </button>
+
+                    {/* Load */}
+                    <div className="relative" ref={loadMenuRef}>
                         <button
                             onClick={() => setIsLoadMenuOpen(!isLoadMenuOpen)}
-                            className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                            className="px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all flex items-center gap-1.5"
                         >
-                            <ArrowDownTrayIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-                            Load Table
+                            <ArrowDownTrayIcon className="w-4 h-4" />
+                            <span className="hidden sm:inline">Load</span>
                         </button>
                         {isLoadMenuOpen && (
-                            <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div className="absolute right-0 top-full mt-1 w-60 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
                                 <div className="py-1">
-                                    {savedTables.length === 0 && (
-                                        <div className="px-4 py-2 text-sm text-gray-500">No saved tables</div>
+                                    {savedTables.length === 0 ? (
+                                        <div className="px-4 py-3 text-xs text-zinc-500 text-center">No saved tables</div>
+                                    ) : (
+                                        savedTables.map(table => (
+                                            <div
+                                                key={table._id}
+                                                className="relative group flex items-center"
+                                            >
+                                                <button
+                                                    onClick={() => handleLoad(table._id)}
+                                                    className="flex-1 text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700/60 transition-colors"
+                                                >
+                                                    {table.name}
+                                                    <span className="block text-[11px] text-zinc-500">
+                                                        {new Date(table.updatedAt).toLocaleDateString()}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    onClick={e => handleDeleteSavedTable(e, table._id)}
+                                                    className="p-2 text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                                >
+                                                    <TrashIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ))
                                     )}
-                                    {savedTables.map(table => (
-                                        <div key={table._id} className="relative group">
-                                            <button
-                                                onClick={() => handleLoad(table._id)}
-                                                className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                                            >
-                                                {table.name}
-                                                <span className="block text-xs text-gray-400">
-                                                    {new Date(table.updatedAt).toLocaleDateString()}
-                                                </span>
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleDeleteSavedTable(e, table._id)}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                title="Delete Table"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
                                 </div>
                             </div>
                         )}
                     </div>
 
+                    {/* Save */}
                     <button
                         onClick={handleSave}
-                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        className="px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all flex items-center gap-1.5"
                     >
-                        <CloudArrowUpIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-                        Save
+                        <CloudArrowUpIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">Save</span>
                     </button>
+
+                    <div className="w-px h-6 bg-zinc-800 mx-1" />
+
+                    {/* AI Import */}
                     <button
                         onClick={() => setIsAIModalOpen(true)}
-                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-purple-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                        title="Generate Table from Text/Image"
+                        className="px-3 py-2 rounded-lg text-xs font-semibold text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 transition-all flex items-center gap-1.5"
                     >
-                        <SparklesIcon className="-ml-0.5 h-5 w-5 text-purple-600" aria-hidden="true" />
-                        Smart Import
+                        <SparklesIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">AI Import</span>
                     </button>
+
+                    <div className="w-px h-6 bg-zinc-800 mx-1" />
+
+                    {/* Copy as HTML */}
                     <button
-                        onClick={handleExport}
-                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        onClick={copyAsHTML}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${copySuccess
+                            ? 'text-green-400 bg-green-500/10'
+                            : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                            }`}
+                        title="Copy as formatted table (for email/docs)"
+                    >
+                        {copySuccess ? (
+                            <>
+                                <CheckIcon className="w-4 h-4" />
+                                <span className="hidden sm:inline">Copied!</span>
+                            </>
+                        ) : (
+                            <>
+                                <ClipboardDocumentIcon className="w-4 h-4" />
+                                <span className="hidden sm:inline">Copy</span>
+                            </>
+                        )}
+                    </button>
+
+                    {/* Export Excel */}
+                    <button
+                        onClick={handleExportExcel}
+                        className="px-3 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-all flex items-center gap-1.5"
                         title="Export to Excel"
                     >
-                        <ArrowUpTrayIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-                        Export
-                    </button>
-                    <button
-                        onClick={addColumn}
-                        className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                        title="Add New Column"
-                    >
-                        <ViewColumnsIcon className="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
-                        Add Col
-                    </button>
-                    <button
-                        onClick={addStream}
-                        className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    >
-                        <PlusIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                        New Activity Stream
+                        <ArrowUpTrayIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">Excel</span>
                     </button>
                 </div>
             </div>
 
-            {/* Table Container */}
+            {/* ---- Table ---- */}
             <div className="flex-1 overflow-auto relative">
                 {/* Header */}
-                <div className="flex sticky top-0 z-20 shadow-sm bg-gray-100 border-b border-gray-200">
+                <div className="flex sticky top-0 z-20 bg-zinc-800/80 backdrop-blur-md border-b border-white/[0.06]">
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
@@ -754,16 +1224,20 @@ export default function TableApp() {
                             items={columns.map(c => c.id)}
                             strategy={horizontalListSortingStrategy}
                         >
-                            {columns.map((col) => (
-                                <SortableHeader
+                            {columns.map(col => (
+                                <SortableColumnHeader
                                     key={col.id}
                                     column={col}
                                     onResizeStart={startResizing}
                                     onRemove={removeColumn}
+                                    onRename={renameColumn}
                                 />
                             ))}
                         </SortableContext>
                     </DndContext>
+
+                    {/* Add column button inline */}
+                    <AddColumnInline onAdd={handleAddColumn} />
                 </div>
 
                 {/* Body */}
@@ -771,32 +1245,55 @@ export default function TableApp() {
                     {rows.map(row => renderRow(row))}
                 </div>
 
-                {/* Simple empty state if no rows */}
-                {/* Simple empty state if no rows */}
+                {/* Empty State */}
                 {rows.length === 0 && (
-                    <div className="p-12 text-center text-gray-500">
-                        No data. Click "New Activity Stream" to start.
+                    <div className="flex flex-col items-center justify-center py-20 px-8 text-center">
+                        <div className="p-4 rounded-2xl bg-zinc-800/50 mb-4">
+                            <TableCellsIcon className="w-10 h-10 text-zinc-600" />
+                        </div>
+                        <h3 className="text-sm font-semibold text-zinc-400 mb-1">
+                            No data yet
+                        </h3>
+                        <p className="text-xs text-zinc-600 mb-4 max-w-xs">
+                            Add rows manually, or use <span className="text-violet-400 font-medium"> AI Import</span> to paste text/images and auto-generate a table.
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={addRow}
+                                className="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-medium hover:bg-zinc-700 transition-colors flex items-center gap-1.5"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                Add Row
+                            </button>
+                            <button
+                                onClick={() => setIsAIModalOpen(true)}
+                                className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all flex items-center gap-1.5"
+                            >
+                                <SparklesIcon className="w-4 h-4" />
+                                AI Import
+                            </button>
+                        </div>
                     </div>
                 )}
 
-                <AddColumnModal
-                    isOpen={isAddColumnModalOpen}
-                    onClose={() => setIsAddColumnModalOpen(false)}
-                    onAdd={handleAddColumn}
-                />
-                <AIImportModal
-                    isOpen={isAIModalOpen}
-                    onClose={() => setIsAIModalOpen(false)}
-                    onImport={handleAIImport}
-                />
-                <EditRowModal
-                    isOpen={!!editingRow}
-                    row={editingRow}
-                    columns={columns}
-                    onClose={() => setEditingRow(null)}
-                    onSave={handleSaveRow}
-                />
+                {/* Add Row Footer */}
+                {rows.length > 0 && (
+                    <button
+                        onClick={addRow}
+                        className="w-full py-2.5 text-xs text-zinc-500 hover:text-violet-400 hover:bg-zinc-800/40 transition-all flex items-center justify-center gap-1.5 border-b border-white/[0.04]"
+                    >
+                        <PlusIcon className="w-3.5 h-3.5" />
+                        Add Row
+                    </button>
+                )}
             </div>
+
+            {/* AI Modal */}
+            <AISmartImportModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                onImport={handleAIImport}
+            />
         </div>
     );
 }
