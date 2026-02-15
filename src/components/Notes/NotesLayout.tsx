@@ -3,6 +3,7 @@
 
 import axios from 'axios'; // Moved up
 import {
+  ChatBubbleLeftRightIcon,
   ChevronRightIcon, // For breadcrumbs
   ClipboardDocumentListIcon,
   ExclamationTriangleIcon,
@@ -44,6 +45,7 @@ import { BadgeSettingsModal } from './BadgeSettingsModal';
 import SourcingEventModal from './SourcingEventModal';
 import SourcingListModal from './SourcingListModal';
 import { TableAppModal } from './HighPerformanceTable/TableAppModal';
+import UnifiedAIChatModal from './UnifiedAIChatModal';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -68,6 +70,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const [sourcingEventCount, setSourcingEventCount] = useState(0);
   const [isTableAppOpen, setIsTableAppOpen] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -565,6 +568,21 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const { data: session } = useSession();
 
+  // AI Chat Modal handlers
+  const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
+  const handleCloseAIChat = useCallback(() => setIsAIChatOpen(false), []);
+
+  // Determine API keys for AI Chat
+  const geminiApiKey = useMemo(() => {
+    if (session?.user && (session.user as any).googleApiEnabled) return 'GEMINI_SCOPED';
+    return null;
+  }, [session]);
+
+  const openaiApiKey = useMemo(() => {
+    if (session?.user && (session.user as any).openAiApiEnabled) return 'MANAGED';
+    return null;
+  }, [session]);
+
   // Image Extraction Modal
   const [isImageExtractOpen, setIsImageExtractOpen] = useState(false);
   const handleOpenImageExtract = useCallback(() => setIsImageExtractOpen(true), []);
@@ -737,6 +755,14 @@ const NotesLayout: React.FC = React.memo(() => {
                   title="High Performance Table App"
                 >
                   <TableCellsIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-50 to-emerald-50 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 hover:from-blue-100 hover:to-emerald-100 hover:text-blue-700 transition-all"
+                  onClick={handleOpenAIChat}
+                  title="AI Chat Assistant"
+                >
+                  <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+                  AI Chat
                 </button>
               </>
             )}
@@ -941,6 +967,12 @@ const NotesLayout: React.FC = React.memo(() => {
           }}
         />
         <TableAppModal isOpen={isTableAppOpen} onClose={() => setIsTableAppOpen(false)} />
+        <UnifiedAIChatModal
+          isOpen={isAIChatOpen}
+          onClose={handleCloseAIChat}
+          geminiApiKey={geminiApiKey}
+          openaiApiKey={openaiApiKey}
+        />
       </div>
     </BadgeSettingsProvider>
   );
