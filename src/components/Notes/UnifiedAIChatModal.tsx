@@ -5,7 +5,10 @@ import {
     Bot,
     ChevronDown,
     FilePenLine,
+    FileText,
+    ImageIcon,
     Loader2,
+    Paperclip,
     Plus,
     Send,
     Trash2,
@@ -58,9 +61,18 @@ const OPENAI_MODELS = [
 
 const ALL_MODELS = [...GEMINI_MODELS, ...OPENAI_MODELS];
 
+interface Attachment {
+    type: 'image' | 'pdf' | 'text';
+    content?: string; // Base64 (for images/pdf) or raw text
+    url?: string; // Oracle Object Storage URL
+    name: string;
+    mimeType?: string;
+}
+
 interface ChatMessage {
     role: 'user' | 'assistant' | 'model';
     content: string;
+    images?: string[]; // Base64 images attached to this message
     timestamp: number;
 }
 
@@ -108,10 +120,13 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
         const [isLoadingMessages, setIsLoadingMessages] = useState(false);
         const [selectedModel, setSelectedModel] = useState(ALL_MODELS[0].id);
         const [showModelDropdown, setShowModelDropdown] = useState(false);
+        const [attachments, setAttachments] = useState<Attachment[]>([]);
 
         const messagesEndRef = useRef<HTMLDivElement>(null);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const dropdownRef = useRef<HTMLDivElement>(null);
+        const imageInputRef = useRef<HTMLInputElement>(null);
+        const fileInputRef = useRef<HTMLInputElement>(null);
 
         const currentModel = useMemo(
             () => ALL_MODELS.find(m => m.id === selectedModel) || ALL_MODELS[0],
@@ -362,15 +377,174 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
             });
         }, [createNewSession]);
 
+        // ========== Attachment Handling ==========
+
+        const PAR_URL_BASE = 'https://objectstorage.ca-toronto-1.oraclecloud.com/p/QLAWx8wCq1Wb3kBchcG9RCcy3TcngoiuartQbdYovOIXVvYxNVvBGtWE09o29MvG/n/yzo9jkinnwr6/b/bucket-20260103-1212/o/';
+
+        // Compress and resize image for client-side sending
+        const compressImage = useCallback((file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                const QUALITY = 0.6;
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target?.result as string;
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx?.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+                        resolve(dataUrl);
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }, []);
+
+        // Upload file to Oracle Object Storage
+        const uploadToOracle = useCallback(async (file: File): Promise<string> => {
+            const objectName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const uploadUrl = `${PAR_URL_BASE}${objectName}`;
+
+            const response = await fetch(uploadUrl, {
+                method: 'PUT',
+                body: file,
+                headers: {
+                    'Content-Type': file.type || 'application/octet-stream'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Oracle Upload Failed: ${response.statusText}`);
+            }
+            return uploadUrl;
+        }, []);
+
+        // Handle file selection from input
+        const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (!e.target.files) return;
+            const files = Array.from(e.target.files);
+            const newAttachments: Attachment[] = [];
+            const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+
+            for (const file of files) {
+                if (file.size > MAX_SIZE) {
+                    alert(`File ${file.name} is too large. Max size is 50MB.`);
+                    continue;
+                }
+
+                try {
+                    // Images - compress client-side
+                    if (file.type.startsWith('image/')) {
+                        const compressed = await compressImage(file);
+                        newAttachments.push({
+                            type: 'image',
+                            content: compressed,
+                            name: file.name,
+                            mimeType: 'image/jpeg',
+                        });
+                        continue;
+                    }
+
+                    // PDF - upload to Oracle
+                    if (file.type === 'application/pdf') {
+                        try {
+                            const url = await uploadToOracle(file);
+                            newAttachments.push({
+                                type: 'pdf',
+                                url,
+                                name: file.name,
+                                mimeType: 'application/pdf',
+                            });
+                        } catch (err) {
+                            console.error('PDF Upload failed', err);
+                            alert(`Failed to upload ${file.name}`);
+                        }
+                        continue;
+                    }
+
+                    // Plain text fallback
+                    const text = await file.text();
+                    newAttachments.push({
+                        type: 'text',
+                        content: text,
+                        name: file.name,
+                    });
+                } catch (error) {
+                    console.error('Error processing file:', file.name, error);
+                    alert(`Failed to process ${file.name}`);
+                }
+            }
+
+            setAttachments(prev => [...prev, ...newAttachments]);
+            e.target.value = ''; // Allow re-selecting same file
+        }, [compressImage, uploadToOracle]);
+
+        // Handle image paste from clipboard
+        const handlePaste = useCallback(async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        try {
+                            const compressed = await compressImage(file);
+                            setAttachments(prev => [
+                                ...prev,
+                                {
+                                    type: 'image',
+                                    content: compressed,
+                                    name: 'Pasted Image',
+                                    mimeType: 'image/jpeg',
+                                },
+                            ]);
+                        } catch (error) {
+                            console.error('Error pasting image:', error);
+                        }
+                    }
+                }
+            }
+        }, [compressImage]);
+
+        // Remove an attachment by index
+        const removeAttachment = useCallback((index: number) => {
+            setAttachments(prev => prev.filter((_, i) => i !== index));
+        }, []);
+
         // ========== Chat Submit ==========
 
         const handleSubmit = useCallback(
             async (e: React.FormEvent) => {
                 e.preventDefault();
-                if (!input.trim() || isLoading || !currentSessionId) return;
+                if ((!input.trim() && attachments.length === 0) || isLoading || !currentSessionId) return;
 
                 const userMessageText = input.trim();
+                const currentAttachments = [...attachments];
                 setInput('');
+                setAttachments([]);
 
                 // Determine model being used
                 const model = ALL_MODELS.find(m => m.id === selectedModel) || ALL_MODELS[0];
@@ -394,9 +568,15 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                     activeSessionId = localId;
                 }
 
+                // Collect image data URLs for display in chat
+                const imageDataUrls = currentAttachments
+                    .filter(a => a.type === 'image' && a.content)
+                    .map(a => a.content as string);
+
                 const userMessage: ChatMessage = {
                     role: 'user',
-                    content: userMessageText,
+                    content: userMessageText || (currentAttachments.length > 0 ? `[Attached ${currentAttachments.length} file(s)]` : ''),
+                    images: imageDataUrls.length > 0 ? imageDataUrls : undefined,
                     timestamp: Date.now(),
                 };
 
@@ -436,13 +616,22 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                             parts: m.content,
                         }));
 
+                        // Build Gemini attachments array
+                        const geminiAttachments = currentAttachments.map(att => ({
+                            type: att.type,
+                            content: att.content,
+                            url: att.url,
+                            name: att.name,
+                            mimeType: att.mimeType,
+                        }));
+
                         responseText = await getChatResponse(
                             apiKey,
                             history,
                             userMessageText,
                             model.id,
                             systemInstruction,
-                            [],
+                            geminiAttachments,
                             false,
                         );
                     } else {
@@ -452,12 +641,18 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                             content: m.content as MessageContent,
                         }));
 
+                        // Extract image data URLs for OpenAI Vision
+                        const openaiImages = currentAttachments
+                            .filter(a => a.type === 'image' && a.content)
+                            .map(a => a.content as string);
+
                         responseText = await getOpenAIChatResponse(
                             apiKey,
                             history,
                             userMessageText,
                             model.id,
                             systemInstruction,
+                            openaiImages.length > 0 ? openaiImages : undefined,
                         );
                     }
 
@@ -515,6 +710,7 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
             },
             [
                 input,
+                attachments,
                 isLoading,
                 currentSessionId,
                 currentSession,
@@ -939,6 +1135,19 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                                                         }`}
                                                 >
                                                     <div className="prose prose-invert max-w-none text-sm sm:text-base">
+                                                        {/* Render attached images */}
+                                                        {msg.images && msg.images.length > 0 && (
+                                                            <div className="flex flex-wrap gap-2 mb-2">
+                                                                {msg.images.map((img, i) => (
+                                                                    <img
+                                                                        alt="Attached"
+                                                                        className="max-w-full rounded-lg max-h-48 object-contain border border-zinc-600/50"
+                                                                        key={i}
+                                                                        src={img}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                         <ReactMarkdown
                                                             components={markdownComponents}
                                                             remarkPlugins={plugins}
@@ -971,22 +1180,91 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
 
                         {/* Input Area */}
                         <div className="p-4 bg-zinc-900/80 border-t border-zinc-800 backdrop-blur-xl">
+                            {/* Hidden file inputs */}
+                            <input
+                                accept="image/*"
+                                className="hidden"
+                                multiple
+                                onChange={handleFileSelect}
+                                ref={imageInputRef}
+                                type="file"
+                            />
+                            <input
+                                accept=".pdf,.txt,.doc,.docx,.csv,.xlsx,.xls"
+                                className="hidden"
+                                multiple
+                                onChange={handleFileSelect}
+                                ref={fileInputRef}
+                                type="file"
+                            />
+
                             <form className="max-w-4xl mx-auto" onSubmit={handleSubmit}>
+                                {/* Attachment preview */}
+                                {attachments.length > 0 && (
+                                    <div className="flex gap-2 mb-3 flex-wrap">
+                                        {attachments.map((att, idx) => (
+                                            <div
+                                                className="relative group flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300"
+                                                key={idx}
+                                            >
+                                                {att.type === 'image' ? (
+                                                    <img
+                                                        alt={att.name}
+                                                        className="h-8 w-8 rounded object-cover"
+                                                        src={att.content}
+                                                    />
+                                                ) : (
+                                                    <FileText className="w-4 h-4 text-zinc-400" />
+                                                )}
+                                                <span className="truncate max-w-[120px]">{att.name}</span>
+                                                <button
+                                                    className="ml-1 p-0.5 rounded-full bg-zinc-700 hover:bg-red-500/80 text-zinc-400 hover:text-white transition-colors"
+                                                    onClick={(e) => { e.preventDefault(); removeAttachment(idx); }}
+                                                    type="button"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="relative flex items-end gap-2">
+                                    {/* Attach buttons */}
+                                    <div className="flex flex-col gap-1 pb-1">
+                                        <button
+                                            className="p-2 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+                                            onClick={() => imageInputRef.current?.click()}
+                                            title="Attach images"
+                                            type="button"
+                                        >
+                                            <ImageIcon className="w-4.5 h-4.5" />
+                                        </button>
+                                        <button
+                                            className="p-2 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            title="Attach files (PDF, text, etc.)"
+                                            type="button"
+                                        >
+                                            <Paperclip className="w-4.5 h-4.5" />
+                                        </button>
+                                    </div>
+
                                     <div className="relative flex-1">
                                         <textarea
                                             className={`w-full bg-zinc-800 text-zinc-100 rounded-xl pl-4 pr-12 py-3 border border-zinc-700 ${providerColor.ring} focus:ring-2 focus:border-transparent outline-none transition-all placeholder-zinc-500 resize-none min-h-[50px] max-h-[200px]`}
                                             disabled={isLoading}
                                             onChange={e => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
-                                            placeholder={`Message ${currentModel.provider === 'gemini' ? 'Gemini' : 'OpenAI'}...`}
+                                            onPaste={handlePaste}
+                                            placeholder={`Message ${currentModel.provider === 'gemini' ? 'Gemini' : 'OpenAI'}... (paste images here)`}
                                             ref={textareaRef}
                                             rows={1}
                                             value={input}
                                         />
                                         <button
                                             className={`absolute right-2 bottom-2 p-2 text-zinc-400 ${providerColor.hoverText} disabled:opacity-50 disabled:hover:text-zinc-400 transition-colors`}
-                                            disabled={!input.trim() || isLoading}
+                                            disabled={(!input.trim() && attachments.length === 0) || isLoading}
                                             type="submit"
                                         >
                                             <Send className="w-5 h-5" />
@@ -1001,7 +1279,7 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                                         </span>
                                     </div>
                                     <span className="text-[10px] text-zinc-600">
-                                        Shift+Enter for new line
+                                        Shift+Enter for new line · Paste images with Ctrl+V
                                     </span>
                                 </div>
                             </form>
