@@ -22,7 +22,8 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import { useSession } from 'next-auth/react'; // Import useSession
+import { useSession } from 'next-auth/react';
+import useDetectOutsideClick from '@/hooks/useDetectOutsideClick'; // Import useSession
 import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
 import { INotePage } from '@/models/NotePage';
@@ -84,6 +85,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   // ... (Modal states)
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAIActionsOpen, setIsAIActionsOpen] = useState(false);
+  const aiActionsRef = useRef<HTMLDivElement>(null);
+  useDetectOutsideClick(aiActionsRef, () => setIsAIActionsOpen(false));
   const [isGenerating, setIsGenerating] = useState(false);
   // ...
 
@@ -1224,35 +1228,39 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           )}
 
           {/* AI Actions Dropdown - Consolidated */}
-          <div className="relative group">
+          <div className="relative" ref={aiActionsRef}>
             <button
-              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100"
-              type="button">
+              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''}`}
+              type="button"
+              onClick={() => setIsAIActionsOpen(!isAIActionsOpen)}
+            >
               <SparklesIcon className="h-3.5 w-3.5" />
               AI Actions
             </button>
-            <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 hidden group-hover:block">
-              <button onClick={handleOrganizeAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                <QueueListIcon className="h-3.5 w-3.5" />Organize
-              </button>
-              <button onClick={handleSummarizeAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                <DocumentTextIcon className="h-3.5 w-3.5" />Summarize
-              </button>
-              <button onClick={handleSuggestAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                <LightBulbIcon className="h-3.5 w-3.5" />Suggest
-              </button>
-              <button onClick={handleRefineAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                <WrenchIcon className="h-3.5 w-3.5" />Refine
-              </button>
-              <button onClick={handleGenerateAI} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                <SparklesIcon className="h-3.5 w-3.5" />Question
-              </button>
-              {isAuthorizedFull && (
-                <button onClick={handleOpenRewrite} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
-                  <CodeBracketIcon className="h-3.5 w-3.5" />Rewrite
+            {isAIActionsOpen && (
+              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <button onClick={() => { handleOrganizeAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <QueueListIcon className="h-3.5 w-3.5" />Organize
                 </button>
-              )}
-            </div>
+                <button onClick={() => { handleSummarizeAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <DocumentTextIcon className="h-3.5 w-3.5" />Summarize
+                </button>
+                <button onClick={() => { handleSuggestAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <LightBulbIcon className="h-3.5 w-3.5" />Suggest
+                </button>
+                <button onClick={() => { handleRefineAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <WrenchIcon className="h-3.5 w-3.5" />Refine
+                </button>
+                <button onClick={() => { handleGenerateAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <SparklesIcon className="h-3.5 w-3.5" />Question
+                </button>
+                {isAuthorizedFull && (
+                  <button onClick={() => { handleOpenRewrite(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
+                    <CodeBracketIcon className="h-3.5 w-3.5" />Rewrite
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* To Do Button */}
