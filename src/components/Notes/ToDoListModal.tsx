@@ -384,7 +384,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
             leave="ease-in duration-200"
             leaveFrom="opacity-100"
             leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -397,7 +397,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                 leave="ease-in duration-200"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all h-[80vh] flex flex-col">
+                <Dialog.Panel className="w-full max-w-[90vw] xl:max-w-7xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all h-[90vh] flex flex-col">
                   <Dialog.Title
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center mb-4 flex-shrink-0 border-b pb-3">
@@ -645,19 +645,22 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
         </Dialog>
       </Transition>
 
-      <TaskFormModal
-        isOpen={isTaskFormOpen}
-        onClose={() => setIsTaskFormOpen(false)}
-        onSave={handleSaveTask}
-        initialData={prefilledData ? { ...prefilledData } as any : editingTask || undefined}
-        title={editingTask ? 'Edit Task' : 'New Task'}
-      />
+      {/* Increase z-index for nested modals to prevent backdrop issues */}
+      <div className="relative z-[60]">
+        <TaskFormModal
+          isOpen={isTaskFormOpen}
+          onClose={() => setIsTaskFormOpen(false)}
+          onSave={handleSaveTask}
+          initialData={prefilledData ? { ...prefilledData } as any : editingTask || undefined}
+          title={editingTask ? 'Edit Task' : 'New Task'}
+        />
 
-      <EmailTaskModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        onProceed={handleEmailProceed}
-      />
+        <EmailTaskModal
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          onProceed={handleEmailProceed}
+        />
+      </div>
     </>
   );
 });

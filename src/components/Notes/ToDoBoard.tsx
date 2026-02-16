@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { DndContext, DragOverlay, useDraggable, useDroppable, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragOverlay, useDraggable, useDroppable, DragStartEvent, DragEndEvent, pointerWithin } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { IToDo } from '@/models/ToDo';
 import { FlagIcon, PaperClipIcon, CalendarIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -29,17 +29,38 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
-            // Check if over is a column
-            const columnId = over.id as IToDo['status'];
-            if (COLUMNS.find(c => c.id === columnId)) {
-                onStatusChange(active.id as string, columnId);
+            let newStatus = over.id as IToDo['status'];
+
+            // If over.id is NOT a column, it might be a task.
+            // Check if we dropped on a column directly
+            let targetColumn = COLUMNS.find(c => c.id === newStatus);
+
+            // If not a column, check if it's a task and get its status
+            if (!targetColumn) {
+                const overTask = todos.find(t => t._id === over.id);
+                if (overTask) {
+                    newStatus = overTask.status || (overTask.isCompleted ? 'done' : 'todo');
+                    targetColumn = COLUMNS.find(c => c.id === newStatus);
+                }
+            }
+
+            if (targetColumn) {
+                // If we have an active todo, check if status changed
+                const todo = todos.find(t => t._id === active.id);
+                if (todo && (todo.status || (todo.isCompleted ? 'done' : 'todo')) !== newStatus) {
+                    onStatusChange(active.id as string, newStatus);
+                }
             }
         }
         setActiveId(null);
     };
 
     return (
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            collisionDetection={pointerWithin}
+        >
             <div className="flex gap-4 h-full overflow-x-auto pb-4">
                 {COLUMNS.map(col => (
                     <Column
