@@ -1,4 +1,4 @@
-/* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo */
+/* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
 import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
@@ -109,7 +109,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
   const [editingTask, setEditingTask] = useState<IToDo | null>(null);
 
   // New Features State
-  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('board');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [prefilledData, setPrefilledData] = useState<Partial<TaskFormData> | undefined>(undefined);
 
@@ -585,6 +585,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                         onStatusChange={handleStatusChange}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        onToggleComplete={handleToggleComplete}
                       />
                     ) : (
                       <div className="space-y-1.5">

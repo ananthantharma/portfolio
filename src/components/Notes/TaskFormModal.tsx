@@ -1,5 +1,5 @@
-/* eslint-disable react/jsx-sort-props */
-import {Dialog, Listbox, Switch, Transition} from '@headlessui/react';
+/* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo */
+import { Dialog, Listbox, Switch, Transition } from '@headlessui/react';
 import {
   CalendarIcon,
   CheckIcon,
@@ -10,7 +10,7 @@ import {
   MinusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import React, {Fragment, useEffect, useState} from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 
 export interface TaskFormData {
   title: string;
@@ -18,8 +18,8 @@ export interface TaskFormData {
   dueDate: Date;
   category: string;
   notes: string;
-  attachments?: {name: string; type: string; fileId?: string; size: number}[];
-  newFiles?: File[]; // For carrying new uploads to the parent
+  attachments?: { name: string; type: string; fileId?: string; size: number }[];
+  newFiles?: File[];
   driveAttachments?: {
     name: string;
     type: string;
@@ -39,60 +39,53 @@ interface TaskFormModalProps {
 }
 
 const PRIORITIES = [
-  {name: 'High', value: 'High', icon: ExclamationCircleIcon, color: 'text-red-500'},
-  {name: 'Medium', value: 'Medium', icon: ExclamationTriangleIcon, color: 'text-amber-500'},
-  {name: 'Low', value: 'Low', icon: MinusCircleIcon, color: 'text-green-500'},
-  {name: 'None', value: 'None', icon: MinusCircleIcon, color: 'text-gray-400'},
+  { name: 'High', value: 'High', icon: ExclamationCircleIcon, color: 'text-red-500', bg: 'bg-red-50 border-red-200', activeBg: 'bg-red-500 border-red-500 text-white' },
+  { name: 'Medium', value: 'Medium', icon: ExclamationTriangleIcon, color: 'text-amber-500', bg: 'bg-amber-50 border-amber-200', activeBg: 'bg-amber-500 border-amber-500 text-white' },
+  { name: 'Low', value: 'Low', icon: MinusCircleIcon, color: 'text-emerald-500', bg: 'bg-emerald-50 border-emerald-200', activeBg: 'bg-emerald-500 border-emerald-500 text-white' },
+  { name: 'None', value: 'None', icon: MinusCircleIcon, color: 'text-gray-400', bg: 'bg-gray-50 border-gray-200', activeBg: 'bg-gray-700 border-gray-700 text-white' },
 ];
 
 const CATEGORIES = [
-  {name: 'Urgent!', value: 'Urgent!', color: 'bg-red-100 text-red-800'},
-  {name: 'Sourcing!', value: 'Sourcing!', color: 'bg-amber-100 text-amber-800'},
-  {name: 'Boss!', value: 'Boss!', color: 'bg-purple-100 text-purple-800'},
-  {name: 'Staff! (Team)', value: 'Staff! (Team)', color: 'bg-blue-100 text-blue-800'},
-  {name: 'Projects!', value: 'Projects!', color: 'bg-green-100 text-green-800'},
-  {name: 'Admin!', value: 'Admin!', color: 'bg-gray-100 text-gray-800'},
-  {name: 'Personal!', value: 'Personal!', color: 'bg-teal-100 text-teal-800'},
+  { name: 'Urgent!', value: 'Urgent!', color: 'bg-red-50 text-red-700 border-red-200' },
+  { name: 'Sourcing!', value: 'Sourcing!', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { name: 'Boss!', value: 'Boss!', color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  { name: 'Staff! (Team)', value: 'Staff! (Team)', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { name: 'Projects!', value: 'Projects!', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { name: 'Admin!', value: 'Admin!', color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  { name: 'Personal!', value: 'Personal!', color: 'bg-teal-50 text-teal-700 border-teal-200' },
 ];
 
 const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
-  ({isOpen, onClose, onSave, initialData, title: modalTitle}) => {
+  ({ isOpen, onClose, onSave, initialData, title: modalTitle }) => {
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState(PRIORITIES[3]);
     const [dueDate, setDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<{name: string; value: string; color: string} | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<{ name: string; value: string; color: string } | null>(null);
     const [attachments, setAttachments] = useState<
-      {name: string; type: string; fileId?: string; size: number; file?: File}[]
+      { name: string; type: string; fileId?: string; size: number; file?: File }[]
     >([]);
     const [dragActive, setDragActive] = useState(false);
 
-    // Drive Integation State
+    // Drive Integration State
     const [useDriveStorage, setUseDriveStorage] = useState(false);
     const [isUploadingDrive, setIsUploadingDrive] = useState(false);
 
-    // Reset state when opening or initialData changes
     useEffect(() => {
       if (isOpen) {
         setTitle(initialData?.title || '');
-
         const initPriority = PRIORITIES.find(p => p.value === initialData?.priority) || PRIORITIES[3];
         setPriority(initPriority);
-
         const initDate = initialData?.dueDate
           ? new Date(initialData.dueDate).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0];
         setDueDate(initDate);
-
         const initCategory = CATEGORIES.find(c => c.value === initialData?.category) || null;
         setSelectedCategory(initCategory);
-
         setNotes(initialData?.notes || '');
         if (initialData?.attachments) {
-          // Ensure attachments are correctly typed when loaded
           const loadedAttachments = initialData.attachments.map(att => ({
             ...att,
-            // If initial data is missing fields (e.g. older tasks), provide defaults or handle gracefully
             fileId: att.fileId,
             size: att.size || 0,
           }));
@@ -100,8 +93,6 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
         } else {
           setAttachments([]);
         }
-
-        // Reset Drive Toggle
         setUseDriveStorage(false);
         setIsUploadingDrive(false);
       }
@@ -125,10 +116,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           setIsUploadingDrive(true);
 
           for (const file of filesToUpload) {
-            // 1. Initiate Upload Session
             const initRes = await fetch('/api/drive/files', {
               method: 'POST',
-              headers: {'Content-Type': 'application/json'},
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 action: 'initiate',
                 name: file.name,
@@ -151,14 +141,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
             const uploadUrl = initData.uploadUrl;
             if (!uploadUrl) throw new Error('Failed to get upload URL');
 
-            // 2. Chunked Proxy Upload (to bypass Vercel limits & CORS)
-            const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB Chunk Size (Safe for Vercel 4.5MB limit)
+            const CHUNK_SIZE = 2 * 1024 * 1024;
             let offset = 0;
             const fileSize = file.size;
 
             while (offset < fileSize) {
               const chunk = file.slice(offset, offset + CHUNK_SIZE);
-
               const contentRange = `bytes ${offset}-${offset + chunk.size - 1}/${fileSize}`;
 
               const chunkFormData = new FormData();
@@ -180,10 +168,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
               const chunkData = await chunkRes.json();
 
               if (chunkData.status === 308) {
-                // Continue to next chunk
                 offset += chunk.size;
               } else if (chunkData.success && (chunkData.status === 200 || chunkData.status === 201)) {
-                // Upload Complete!
                 if (chunkData.file && chunkData.file.id) {
                   finalDriveAttachments.push({
                     name: chunkData.file.name,
@@ -194,14 +180,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                     size: file.size,
                   });
                 }
-                break; // Done
+                break;
               } else {
                 throw new Error('Unexpected upload status from proxy');
               }
             }
           }
         } else {
-          // Local storage (std behavior)
           finalNewFiles = filesToUpload;
         }
 
@@ -211,7 +196,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           dueDate: new Date(dueDate),
           category: selectedCategory ? selectedCategory.value : '',
           notes,
-          attachments: attachments.filter(a => !a.file), // Keep existing ones (no file obj)
+          attachments: attachments.filter(a => !a.file),
           newFiles: finalNewFiles,
           driveAttachments: finalDriveAttachments,
         });
@@ -219,18 +204,13 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('Upload Error', error);
-        if (error.message === 'DRIVE_PERMISSION_ERROR') {
-          // We might not have access to 'data' here easily unless we throw it
-          // But wait, the previous code threw 'DRIVE_PERMISSION_ERROR' string.
-          // I need to pass the details.
-          alert('Google Drive Write Permission Denied. Please Sign Out and Sign In again.');
-        } else if (
+        if (
           (error.message && error.message.includes('DRIVE_ACCESS_DENIED')) ||
           error.message.includes('permission denied')
         ) {
           alert(`Upload Failed: ${error.message}`);
         } else {
-          alert(`Failed to upload to Drive: ${error.message}`);
+          alert(`Failed to save: ${error.message}`);
         }
       } finally {
         setIsUploadingDrive(false);
@@ -250,23 +230,10 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
     const processFiles = (files: FileList) => {
       Array.from(files).forEach(file => {
         if (!useDriveStorage && file.size > 2 * 1024 * 1024) {
-          // 2MB Safety Limit for Vercel (Local Only)
-          alert(
-            `File ${file.name} is too large. Vercel restriction is strict (max 2MB safely). Enable Drive Storage for larger files.`,
-          );
+          alert(`File ${file.name} is too large. Max 2MB for local storage. Enable Drive Storage for larger files.`);
           return;
         }
-
-        // For new files, we just store the File object.
-        setAttachments(prev => [
-          ...prev,
-          {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            file: file,
-          },
-        ]);
+        setAttachments(prev => [...prev, { name: file.name, type: file.type, size: file.size, file }]);
       });
     };
 
@@ -289,46 +256,51 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
       setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
+    const inputStyle = "block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors";
+    const labelStyle = "block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5";
+
     return (
       <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog as="div" className="relative z-[60]" onClose={onClose}>
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-300"
+            enter="ease-out duration-200"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="ease-in duration-200"
+            leave="ease-in duration-150"
             leaveFrom="opacity-100"
             leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child
                 as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
+                enter="ease-out duration-200"
+                enterFrom="opacity-0 scale-[0.98] translate-y-2"
+                enterTo="opacity-100 scale-100 translate-y-0"
+                leave="ease-in duration-150"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center">
-                    {modalTitle || 'Task Details'}
-                    <button className="text-gray-400 hover:text-gray-500" onClick={onClose}>
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  </Dialog.Title>
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all">
 
-                  <div className="mt-4 space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <h3 className="text-base font-semibold text-gray-900 tracking-tight">
+                      {modalTitle || 'Task Details'}
+                    </h3>
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors" onClick={onClose}>
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="px-6 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
                     {/* Task Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Task Name</label>
+                      <label className={labelStyle}>Task Name</label>
                       <input
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        className={inputStyle}
                         onChange={e => setTitle(e.target.value)}
                         placeholder="What needs to be done?"
                         type="text"
@@ -338,116 +310,104 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
                     {/* Priority */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                      <div className="flex gap-4">
+                      <label className={labelStyle}>Priority</label>
+                      <div className="flex gap-2">
                         {PRIORITIES.map(p => (
                           <button
                             key={p.name}
-                            className={`flex flex-col items-center p-2 rounded-md border ${
-                              priority.name === p.name
-                                ? 'border-indigo-600 bg-indigo-50'
-                                : 'border-gray-200 hover:bg-gray-50'
-                            }`}
+                            className={`flex items-center gap-1.5 flex-1 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${priority.name === p.name ? p.activeBg : `${p.bg} hover:opacity-80`
+                              }`}
                             type="button"
                             onClick={() => setPriority(p)}>
-                            <p.icon className={`h-6 w-6 ${p.color}`} />
-                            <span className="text-xs mt-1 text-gray-600">{p.name}</span>
+                            <p.icon className={`h-4 w-4 ${priority.name === p.name ? 'text-white' : p.color}`} />
+                            {p.name}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Due Date */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Due Date</label>
-                      <div className="relative mt-1 rounded-md shadow-sm">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <CalendarIcon aria-hidden="true" className="h-5 w-5 text-gray-400" />
+                    {/* Due Date + Category row */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelStyle}>Due Date</label>
+                        <div className="relative">
+                          <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            className={`${inputStyle} pl-9`}
+                            onChange={e => setDueDate(e.target.value)}
+                            type="date"
+                            value={dueDate}
+                          />
                         </div>
-                        <input
-                          className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                          onChange={e => setDueDate(e.target.value)}
-                          type="date"
-                          value={dueDate}
-                        />
                       </div>
-                    </div>
 
-                    {/* Category */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Category</label>
-                      <Listbox onChange={setSelectedCategory} value={selectedCategory}>
-                        <div className="relative mt-1">
-                          <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm border border-gray-300 min-h-[38px]">
-                            <span className={`block truncate ${!selectedCategory ? 'text-gray-400' : ''}`}>
-                              {selectedCategory ? selectedCategory.name : 'Select a category (Optional)'}
-                            </span>
-                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                              <ChevronUpDownIcon aria-hidden="true" className="h-5 w-5 text-gray-400" />
-                            </span>
-                          </Listbox.Button>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0">
-                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
-                              <Listbox.Option
-                                className={({active}) =>
-                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                    active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
-                                  }`
-                                }
-                                key="none"
-                                value={null}>
-                                {({selected}) => (
-                                  <>
-                                    <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                      None
-                                    </span>
-                                    {selected ? (
-                                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
-                                        <CheckIcon aria-hidden="true" className="h-5 w-5" />
-                                      </span>
-                                    ) : null}
-                                  </>
-                                )}
-                              </Listbox.Option>
-
-                              {CATEGORIES.map((cat, catIdx) => (
+                      <div>
+                        <label className={labelStyle}>Category</label>
+                        <Listbox onChange={setSelectedCategory} value={selectedCategory}>
+                          <div className="relative">
+                            <Listbox.Button className={`${inputStyle} text-left pr-10 cursor-default`}>
+                              <span className={`block truncate ${!selectedCategory ? 'text-gray-400' : ''}`}>
+                                {selectedCategory ? selectedCategory.name : 'Select...'}
+                              </span>
+                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                              </span>
+                            </Listbox.Button>
+                            <Transition
+                              as={Fragment}
+                              leave="transition ease-in duration-100"
+                              leaveFrom="opacity-100"
+                              leaveTo="opacity-0">
+                              <Listbox.Options className="absolute mt-1 max-h-48 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none z-10">
                                 <Listbox.Option
-                                  className={({active}) =>
-                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                      active ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
-                                    }`
+                                  className={({ active }) =>
+                                    `cursor-default select-none py-2 pl-9 pr-4 ${active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`
                                   }
-                                  key={catIdx}
-                                  value={cat}>
-                                  {({selected}) => (
+                                  key="none"
+                                  value={null}>
+                                  {({ selected }) => (
                                     <>
-                                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                        {cat.name}
-                                      </span>
-                                      {selected ? (
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
-                                          <CheckIcon aria-hidden="true" className="h-5 w-5" />
+                                      <span className={`block truncate ${selected ? 'font-medium' : ''}`}>None</span>
+                                      {selected && (
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-600">
+                                          <CheckIcon className="h-4 w-4" />
                                         </span>
-                                      ) : null}
+                                      )}
                                     </>
                                   )}
                                 </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </Transition>
-                        </div>
-                      </Listbox>
+
+                                {CATEGORIES.map((cat, idx) => (
+                                  <Listbox.Option
+                                    className={({ active }) =>
+                                      `cursor-default select-none py-2 pl-9 pr-4 ${active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`
+                                    }
+                                    key={idx}
+                                    value={cat}>
+                                    {({ selected }) => (
+                                      <>
+                                        <span className={`block truncate ${selected ? 'font-medium' : ''}`}>{cat.name}</span>
+                                        {selected && (
+                                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-600">
+                                            <CheckIcon className="h-4 w-4" />
+                                          </span>
+                                        )}
+                                      </>
+                                    )}
+                                  </Listbox.Option>
+                                ))}
+                              </Listbox.Options>
+                            </Transition>
+                          </div>
+                        </Listbox>
+                      </div>
                     </div>
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+                      <label className={labelStyle}>Notes <span className="font-normal text-gray-300">(Optional)</span></label>
                       <textarea
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        className={`${inputStyle} resize-none`}
                         onChange={e => setNotes(e.target.value)}
                         rows={3}
                         value={notes}
@@ -455,38 +415,30 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                       />
                     </div>
 
-                    {/* Attachments - Drag and Drop */}
+                    {/* Attachments */}
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-medium text-gray-700">Attachments</label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className={labelStyle + ' mb-0'}>Attachments</label>
                         <Switch.Group>
                           <div className="flex items-center">
-                            <Switch.Label
-                              className={`mr-2 text-xs ${
-                                useDriveStorage ? 'text-indigo-600 font-bold' : 'text-gray-500'
-                              }`}>
-                              {useDriveStorage ? 'Save to Drive' : 'Local Storage'}
+                            <Switch.Label className={`mr-2 text-[10px] ${useDriveStorage ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
+                              {useDriveStorage ? 'Drive' : 'Local'}
                             </Switch.Label>
                             <Switch
                               checked={useDriveStorage}
                               onChange={setUseDriveStorage}
-                              className={`${
-                                useDriveStorage ? 'bg-indigo-600' : 'bg-gray-200'
-                              } relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}>
-                              <span
-                                className={`${
-                                  useDriveStorage ? 'translate-x-5' : 'translate-x-1'
-                                } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`}
-                              />
+                              className={`${useDriveStorage ? 'bg-gray-700' : 'bg-gray-200'
+                                } relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none`}>
+                              <span className={`${useDriveStorage ? 'translate-x-4' : 'translate-x-0.5'
+                                } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`} />
                             </Switch>
                           </div>
                         </Switch.Group>
                       </div>
 
                       <div
-                        className={`relative flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed transition-colors ${
-                          dragActive ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:bg-gray-50'
-                        }`}
+                        className={`relative flex flex-col items-center justify-center w-full h-24 rounded-lg border-2 border-dashed transition-colors ${dragActive ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:bg-gray-50/50'
+                          }`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
@@ -497,35 +449,26 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                           onChange={handleChangeFile}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <div className="flex flex-col items-center justify-center">
                           {useDriveStorage ? (
-                            <CloudArrowUpIcon className="h-8 w-8 text-indigo-400 mb-2" />
-                          ) : (
-                            <p className="mb-2 text-sm text-gray-500">
-                              <span className="font-semibold">Click to upload</span> or drag and drop
-                            </p>
-                          )}
-                          {useDriveStorage ? (
-                            <p className="text-sm text-indigo-600 font-medium">Uploads to Portfolio Folder</p>
-                          ) : (
-                            <p className="text-xs text-gray-500">Max 2MB per file</p>
-                          )}
+                            <CloudArrowUpIcon className="h-6 w-6 text-gray-300 mb-1" />
+                          ) : null}
+                          <p className="text-xs text-gray-400">
+                            <span className="font-medium text-gray-500">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-[10px] text-gray-300 mt-0.5">
+                            {useDriveStorage ? 'Uploads to Google Drive' : 'Max 2MB per file'}
+                          </p>
                         </div>
                       </div>
 
-                      {/* File List */}
                       {attachments.length > 0 && (
                         <ul className="mt-2 text-xs text-gray-600 space-y-1">
                           {attachments.map((file, idx) => (
-                            <li
-                              key={idx}
-                              className="flex justify-between items-center bg-gray-50 p-2 rounded border border-gray-200">
-                              <span className="truncate max-w-[80%]">{file.name}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeAttachment(idx)}
-                                className="text-red-500 hover:text-red-700">
-                                <XMarkIcon className="h-4 w-4" />
+                            <li key={idx} className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                              <span className="truncate max-w-[85%] text-gray-600">{file.name}</span>
+                              <button type="button" onClick={() => removeAttachment(idx)} className="text-gray-400 hover:text-red-500 transition-colors">
+                                <XMarkIcon className="h-3.5 w-3.5" />
                               </button>
                             </li>
                           ))}
@@ -534,21 +477,21 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end gap-3">
+                  {/* Footer */}
+                  <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
                     <button
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                      className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                       type="button"
                       onClick={onClose}>
                       Cancel
                     </button>
                     <button
-                      className={`inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
-                        isUploadingDrive ? 'opacity-70 cursor-wait' : ''
-                      }`}
+                      className={`px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors ${isUploadingDrive ? 'opacity-70 cursor-wait' : ''
+                        }`}
                       type="button"
                       disabled={isUploadingDrive}
                       onClick={handleSave}>
-                      {isUploadingDrive ? 'Uploading...' : 'Save'}
+                      {isUploadingDrive ? 'Uploading...' : 'Save Task'}
                     </button>
                   </div>
                 </Dialog.Panel>
