@@ -10,8 +10,9 @@ import {
     FlagIcon, PaperClipIcon, CalendarIcon, TrashIcon,
     PencilIcon, CheckIcon, MagnifyingGlassIcon,
     ExclamationTriangleIcon, UserGroupIcon,
-    ClockIcon, ArrowPathIcon,
+    ClockIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
+import { INotePage } from '@/models/NotePage';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 
 interface ToDoBoardProps {
@@ -20,6 +21,8 @@ interface ToDoBoardProps {
     onEdit: (todo: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (todo: IToDo) => void;
+    onNavigate: (page: INotePage, tabId?: string) => void;
+    onClose: () => void;
 }
 
 const COLUMNS: {
@@ -109,7 +112,7 @@ const getRelativeDate = (dateString: Date) => {
 /*  BOARD                                                                      */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, onDelete, onToggleComplete }) => {
+const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, onDelete, onToggleComplete, onNavigate, onClose }) => {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -212,6 +215,8 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
                             onEdit={onEdit}
                             onDelete={onDelete}
                             onToggleComplete={onToggleComplete}
+                            onNavigate={onNavigate}
+                            onClose={onClose}
                             activeId={activeId}
                         />
                     ))}
@@ -230,12 +235,14 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
 /*  COLUMN                                                                     */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, activeId }: {
+const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, onNavigate, onClose, activeId }: {
     col: typeof COLUMNS[0];
     todos: IToDo[];
     onEdit: (t: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (t: IToDo) => void;
+    onNavigate: (page: INotePage, tabId?: string) => void;
+    onClose: () => void;
     activeId: string | null;
 }) => {
     const { setNodeRef, isOver } = useDroppable({ id: col.id });
@@ -245,8 +252,8 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, activeId }: {
         <div
             ref={setNodeRef}
             className={`flex-1 min-w-[240px] max-w-[320px] flex flex-col rounded-2xl border transition-all duration-200 ${isOver
-                    ? `${col.borderColor} ring-2 ${col.dropHighlight}`
-                    : `${col.borderColor} bg-white/40`
+                ? `${col.borderColor} ring-2 ${col.dropHighlight}`
+                : `${col.borderColor} bg-white/40`
                 }`}
         >
             {/* Header */}
@@ -262,8 +269,8 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, activeId }: {
                         <ExclamationTriangleIcon className="h-3.5 w-3.5 text-amber-500" title={`WIP: ${todos.length}/${WIP_LIMIT}`} />
                     )}
                     <span className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1.5 rounded-md ${isOverWipLimit
-                            ? 'bg-amber-200 text-amber-800'
-                            : 'bg-white/70 text-gray-400 border border-gray-100'
+                        ? 'bg-amber-200 text-amber-800'
+                        : 'bg-white/70 text-gray-400 border border-gray-100'
                         }`}>
                         {todos.length}
                     </span>
@@ -285,6 +292,8 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, activeId }: {
                         onEdit={onEdit}
                         onDelete={onDelete}
                         onToggleComplete={onToggleComplete}
+                        onNavigate={onNavigate}
+                        onClose={onClose}
                         isBeingDragged={activeId === todo._id}
                     />
                 ))}
@@ -297,11 +306,13 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, activeId }: {
 /*  DRAGGABLE WRAPPER                                                          */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, isBeingDragged }: {
+const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, onNavigate, onClose, isBeingDragged }: {
     todo: IToDo;
     onEdit: (t: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (t: IToDo) => void;
+    onNavigate: (page: INotePage, tabId?: string) => void;
+    onClose: () => void;
     isBeingDragged: boolean;
 }) => {
     const { attributes, listeners, setNodeRef } = useDraggable({
@@ -325,6 +336,8 @@ const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, isBeingDragge
                 onEdit={() => onEdit(todo)}
                 onDelete={() => onDelete(todo._id)}
                 onToggleComplete={() => onToggleComplete(todo)}
+                onNavigate={onNavigate}
+                onClose={onClose}
             />
         </div>
     );
@@ -334,12 +347,14 @@ const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, isBeingDragge
 /*  TASK CARD                                                                  */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete }: {
+const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onNavigate, onClose }: {
     todo: IToDo;
     isOverlay?: boolean;
     onEdit?: () => void;
     onDelete?: () => void;
     onToggleComplete?: () => void;
+    onNavigate?: (page: INotePage, tabId?: string) => void;
+    onClose?: () => void;
 }) => {
     const isDone = todo.status === 'done' || todo.isCompleted;
     const dateInfo = todo.dueDate ? getRelativeDate(todo.dueDate) : null;
@@ -351,12 +366,12 @@ const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete }: {
     return (
         <div
             className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${isOverlay
-                    ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
-                    : isDone
-                        ? 'bg-gray-50/60 border-gray-100 opacity-55'
-                        : dateInfo?.isOverdue
-                            ? 'bg-white border-red-200 hover:border-red-300 hover:shadow-md'
-                            : 'bg-white border-gray-150 hover:border-gray-300 hover:shadow-md'
+                ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
+                : isDone
+                    ? 'bg-gray-50/60 border-gray-100 opacity-55'
+                    : dateInfo?.isOverdue
+                        ? 'bg-white border-red-200 hover:border-red-300 hover:shadow-md'
+                        : 'bg-white border-gray-150 hover:border-gray-300 hover:shadow-md'
                 } ${!isOverlay ? 'cursor-grab active:cursor-grabbing' : ''}`}
         >
             {/* Priority top accent line */}
@@ -444,10 +459,40 @@ const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete }: {
                             </span>
                         )}
                         {todo.attachments && todo.attachments.length > 0 && (
-                            <span className="flex items-center gap-0.5 text-gray-400">
-                                <PaperClipIcon className="h-3 w-3" />
-                                {todo.attachments.length}
-                            </span>
+                            <div className="flex items-center gap-1">
+                                {todo.attachments.map((att, idx) => {
+                                    const isDrive = att.storageType === 'drive';
+                                    const link = isDrive ? att.webViewLink : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
+                                    return (
+                                        <a key={idx} href={link} target="_blank" rel="noopener noreferrer"
+                                            className={`transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}
+                                            title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
+                                            onClick={e => e.stopPropagation()}
+                                            onPointerDown={e => e.stopPropagation()}
+                                        >
+                                            <PaperClipIcon className="h-3 w-3" />
+                                        </a>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        {!isOverlay && onNavigate && typeof todo.sourcePageId !== 'string' && todo.sourcePageId?.title && (
+                            <button
+                                className="flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-indigo-500 transition-colors"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    const targetId = (todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-'))
+                                        ? todo.tabId : todo.tabName;
+                                    onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
+                                    onClose?.();
+                                }}
+                                onPointerDown={e => e.stopPropagation()}
+                                title="Go to Note"
+                            >
+                                <ArrowTopRightOnSquareIcon className="h-2.5 w-2.5" />
+                                <span className="truncate max-w-[80px]"> {todo.sourcePageId.title}</span>
+                            </button>
                         )}
                     </div>
 

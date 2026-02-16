@@ -586,6 +586,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleComplete={handleToggleComplete}
+                        onNavigate={onNavigate}
+                        onClose={onClose}
                       />
                     ) : (
                       <div className="space-y-1.5">
