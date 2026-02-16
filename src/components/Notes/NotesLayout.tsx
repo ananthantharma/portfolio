@@ -925,7 +925,7 @@ const NotesLayout: React.FC = React.memo(() => {
             {selectedPageId ? (
               <NoteEditor
                 key={selectedPageId}
-                page={selectedPage || undefined} // Changed from pageId to page object
+                page={selectedPage || null} // Changed from undefined to null to match INotePage | null
                 initialTabId={targetTabId}
                 onSave={handleSavePageContent}
               />
