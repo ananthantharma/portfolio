@@ -197,6 +197,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
       }, 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isPasteModalOpen]);
 
   const handleAIPaste = async () => {
