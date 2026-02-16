@@ -1,4 +1,4 @@
-/* eslint-disable react/jsx-sort-props, simple-import-sort/imports, react-memo/require-usememo, react-memo/require-memo */
+/* eslint-disable react/jsx-sort-props, simple-import-sort/imports, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
 import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
@@ -12,6 +12,8 @@ import {
   EnvelopeIcon,
   UserIcon,
   ArrowsUpDownIcon,
+  SparklesIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
 import { CONTACT_DEPARTMENTS, IContactBase as IContact } from '@/lib/contact-constants';
@@ -175,11 +177,51 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
 
   const handleCreate = () => {
     setEditingContact(null);
+    setAiPrefillData(undefined);
     setIsContactFormOpen(true);
   };
 
+  // AI Paste State
+  const [isPasteModalOpen, setIsPasteModalOpen] = useState(false);
+  const [pasteText, setPasteText] = useState('');
+  const [isParsing, setIsParsing] = useState(false);
+  const [aiPrefillData, setAiPrefillData] = useState<Partial<IContact> | undefined>(undefined);
+
+  const handleAIPaste = async () => {
+    if (!pasteText.trim()) return;
+    setIsParsing(true);
+    try {
+      const res = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position, department (choose from: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Do NOT wrap in markdown code blocks.\n\nText:\n${pasteText}`,
+        }),
+      });
+      const data = await res.json();
+      const text = data.text || data.result || '';
+      // Extract JSON from response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        setAiPrefillData(parsed);
+        setIsPasteModalOpen(false);
+        setPasteText('');
+        setEditingContact(null);
+        setIsContactFormOpen(true);
+      } else {
+        alert('Could not parse contact information. Please try again with more details.');
+      }
+    } catch (err) {
+      console.error('AI parse error:', err);
+      alert('Failed to parse contact info. Please try again.');
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
   const filteredContacts = useMemo(() => {
-    let result = contacts.filter(c => {
+    const result = contacts.filter(c => {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
         (c.name || '').toLowerCase().includes(query) ||
@@ -228,7 +270,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
   return (
     <>
       <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog as="div" className="relative z-50" onClose={() => { if (!isContactFormOpen && !isPasteModalOpen) onClose(); }}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
@@ -241,7 +283,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
+            <div className="flex min-h-full items-center justify-center p-2">
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-200"
@@ -250,7 +292,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                 leave="ease-in duration-150"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-5xl transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[85vh] flex flex-col">
+                <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[94vh] flex flex-col">
 
                   {/* Header */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
@@ -274,6 +316,15 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {/* AI Paste */}
+                      <button
+                        onClick={() => setIsPasteModalOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
+                        title="Paste contact info for AI extraction">
+                        <SparklesIcon className="h-3.5 w-3.5" />
+                        AI Paste
+                      </button>
+
                       <button
                         onClick={handleCreate}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium"
@@ -457,13 +508,81 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
         </Dialog>
       </Transition>
 
-      <ContactFormModal
-        isOpen={isContactFormOpen}
-        onClose={() => setIsContactFormOpen(false)}
-        onSave={handleSaveContact}
-        initialData={editingContact || undefined}
-        title={editingContact ? 'Edit Contact' : 'New Contact'}
-      />
+      <div className="relative z-[60]">
+        <ContactFormModal
+          isOpen={isContactFormOpen}
+          onClose={() => setIsContactFormOpen(false)}
+          onSave={handleSaveContact}
+          initialData={aiPrefillData || editingContact || undefined}
+          title={aiPrefillData ? 'Confirm AI Contact' : editingContact ? 'Edit Contact' : 'New Contact'}
+        />
+      </div>
+
+      {/* AI Paste Modal */}
+      <Transition appear={true} as={Fragment} show={isPasteModalOpen}>
+        <Dialog as="div" className="relative z-[60]" onClose={() => setIsPasteModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-150"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-black/10 backdrop-blur-[2px]" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-150"
+                enterFrom="opacity-0 scale-[0.98]"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0 scale-95">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all">
+                  <div className="px-5 pt-5 pb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-2 bg-violet-50 rounded-lg">
+                        <ClipboardDocumentIcon className="h-5 w-5 text-violet-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900">AI Contact Parser</h3>
+                        <p className="text-[11px] text-gray-400">Paste any contact info — AI will extract the fields</p>
+                      </div>
+                    </div>
+                    <textarea
+                      className="w-full h-36 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition-all resize-none"
+                      placeholder={`Paste contact details here...\n\nExample:\nJohn Doe\nSenior Manager at Acme Corp\njohn@acme.com | (555) 123-4567\nProcurement Department`}
+                      value={pasteText}
+                      onChange={e => setPasteText(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="px-5 pb-4 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      onClick={() => { setIsPasteModalOpen(false); setPasteText(''); }}>
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-1.5 ${isParsing ? 'opacity-70 cursor-wait' : ''
+                        }`}
+                      disabled={isParsing || !pasteText.trim()}
+                      onClick={handleAIPaste}>
+                      <SparklesIcon className={`h-3.5 w-3.5 ${isParsing ? 'animate-spin' : ''}`} />
+                      {isParsing ? 'Parsing...' : 'Extract Contact'}
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </>
   );
 });

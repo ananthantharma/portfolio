@@ -139,7 +139,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
 
     return (
       <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog as="div" className="relative z-[60]" onClose={onClose}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
