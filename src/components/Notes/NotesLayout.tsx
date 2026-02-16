@@ -686,166 +686,178 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
-              {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight">{dbSize}</span>}
+            <div className="flex items-center gap-1.5">
+              {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight mr-1">{dbSize}</span>}
 
-              {/* ── Navigation Group ── */}
-              <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+              {/* ── Core Tools ── */}
+              <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200/50 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
                 <button
-                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                   onClick={handleOpenSearch}
                   title="Command Palette (Ctrl+K)">
-                  <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+                  <MagnifyingGlassIcon className="h-3.5 w-3.5 group-hover:text-sky-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Search</span>
-                  <kbd className="hidden lg:inline ml-1 text-[9px] text-gray-300 font-mono bg-gray-100 px-1 py-0.5 rounded">⌘K</kbd>
+                  <kbd className="hidden lg:inline ml-0.5 text-[8px] text-slate-300 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-400 transition-colors">⌘K</kbd>
                 </button>
                 <button
-                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition-all relative"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
                   onClick={handleOpenToDoList}>
-                  <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                  <ClipboardDocumentListIcon className="h-3.5 w-3.5 group-hover:text-teal-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Tasks</span>
                   {activeTaskCount > 0 && (
                     <>
-                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 animate-ping rounded-full bg-rose-400 opacity-60"></span>
+                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
                         {activeTaskCount}
                       </span>
                     </>
                   )}
                 </button>
                 <button
-                  className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                  className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                   onClick={handleOpenContactList}
                   title="Contacts">
-                  <UsersIcon className="h-3.5 w-3.5" />
+                  <UsersIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
+                  <span className="hidden xl:inline">Contacts</span>
                 </button>
               </div>
 
-              <div className="h-5 w-px bg-black/[0.06]"></div>
+              {/* Thin Separator */}
+              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
-              {/* Focus Mode Button */}
+              {/* Focus Mode */}
               <button
-                className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 border border-transparent hover:border-slate-200/50"
                 onClick={toggleFocusMode}
                 title="Focus Mode (Cmd+\)"
               >
-                <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
+                <ArrowsPointingOutIcon className="h-3.5 w-3.5 group-hover:text-amber-500 transition-colors duration-200" />
               </button>
 
-              <div className="h-5 w-px bg-black/[0.06]"></div>
+              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
-              {/* ── AI & Tools Group (Restricted) ── */}
+              {/* ── AI & Tools (Restricted) ── */}
               {session?.user?.email === 'lankanprinze@gmail.com' && (
                 <>
-                  <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
-                    {/* AI Rewrite Dropdown - Consolidated */}
+                  <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-violet-50/50 to-purple-50/30 border border-violet-200/30 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                    {/* Rewrite Dropdown */}
                     <div className="relative" ref={rewriteDropdownRef}>
                       <button
-                        className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm' : ''}`}
+                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''}`}
                         title="AI Rewrite Tools"
                         onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}
                       >
-                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                        <PencilSquareIcon className={`h-3.5 w-3.5 transition-colors duration-200 ${isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'}`} />
                         <span className="hidden xl:inline">Rewrite</span>
                       </button>
                       {isRewriteDropdownOpen && (
-                        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-                          <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
-                          <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
-                          <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
+                        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                          <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
+                            <PencilSquareIcon className="h-3 w-3 text-indigo-400" />Advanced Rewrite
+                          </button>
+                          <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
+                            <PencilSquareIcon className="h-3 w-3 text-purple-400" />Simple Rewrite
+                          </button>
+                          <div className="h-px bg-slate-100 my-1 mx-2" />
+                          <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
+                            <SparklesIcon className="h-3 w-3 text-teal-400" />GPT Rewrite
+                          </button>
                         </div>
                       )}
                     </div>
                     <button
-                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={handleOpenImageExtract}
-                      title="Extract Text from Image">
-                      <PhotoIcon className="h-3.5 w-3.5" />
+                      title="Extract from Image">
+                      <PhotoIcon className="h-3.5 w-3.5 group-hover:text-orange-500 transition-colors duration-200" />
+                      <span className="hidden 2xl:inline">Image</span>
                     </button>
                     <button
-                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-cyan-600 hover:shadow-sm transition-all"
+                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={handleOpenAssessment}
                       title="Document Assessment">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5 group-hover:text-cyan-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                      <span className="hidden 2xl:inline">Assess</span>
                     </button>
                   </div>
 
-                  <div className="h-5 w-px bg-black/[0.06]"></div>
+                  <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
-                  {/* ── Sourcing & Apps Group ── */}
-                  <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                  {/* ── Sourcing & Apps ── */}
+                  <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-sky-50/40 to-blue-50/30 border border-sky-200/30 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <button
-                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all relative"
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
                       onClick={() => setIsSourcingListOpen(true)}
                       title="View All Sourcing Events">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 group-hover:text-blue-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
                       <span className="hidden lg:inline">Sourcing</span>
                       {sourcingEventCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-bold text-white ring-1 ring-white">{sourcingEventCount}</span>
+                        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white ring-2 ring-white">{sourcingEventCount}</span>
                       )}
                     </button>
                     <button
-                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={() => setIsSourcingModalOpen(true)}
                       title="Create Sourcing Event">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 group-hover:text-emerald-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     </button>
                     <button
-                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={() => setIsTableAppOpen(true)}
                       title="Table App">
-                      <TableCellsIcon className="w-3.5 h-3.5" />
+                      <TableCellsIcon className="w-3.5 h-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
+                      <span className="hidden 2xl:inline">Tables</span>
                     </button>
                   </div>
 
-                  {/* AI Chat — Accent Button */}
+                  {/* Chat — Premium Accent Button */}
                   <button
-                    className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:from-indigo-600 hover:to-violet-600 transition-all"
+                    className="group flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-md shadow-violet-500/20 hover:shadow-lg hover:shadow-violet-500/30 hover:from-indigo-600 hover:via-violet-600 hover:to-purple-600 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                     onClick={handleOpenAIChat}
-                    title="AI Chat Assistant">
+                    title="Chat Assistant">
                     <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">AI Chat</span>
+                    <span className="hidden lg:inline">Chat</span>
                   </button>
                 </>
               )}
 
-              <div className="h-5 w-px bg-black/[0.06]"></div>
+              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
-              {/* ── Flags Group ── */}
+              {/* ── Flags & Settings ── */}
               <div className="flex items-center gap-0.5">
                 <button
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors relative"
+                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-amber-50 hover:text-amber-500 hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 relative border border-transparent hover:border-amber-200/40"
                   onClick={handleOpenImportant}
                   title="Important">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {totalImportant > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white ring-1 ring-white">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
                       {totalImportant}
                     </span>
                   )}
                 </button>
                 <button
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors relative"
+                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 relative border border-transparent hover:border-rose-200/40"
                   onClick={handleOpenKeyTasks}
                   title="Key Tasks">
                   <FlagIcon className="h-4 w-4" />
                   {totalFlagged > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
                       {totalFlagged}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={handleOpenSettings}
-                  className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors"
+                  className="group rounded-lg p-1.5 text-slate-300 hover:bg-slate-50 hover:text-slate-500 transition-all duration-200"
                   title="Settings">
-                  <Cog6ToothIcon className="h-3.5 w-3.5" />
+                  <Cog6ToothIcon className="h-3.5 w-3.5 group-hover:rotate-45 transition-transform duration-300" />
                 </button>
               </div>
 
-              <div className="h-5 w-px bg-black/[0.06]"></div>
+              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
-              {/* User Profile Menu */}
+              {/* User Profile */}
               <div className="flex items-center">
                 <UserProfileMenu />
               </div>

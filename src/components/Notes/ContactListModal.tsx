@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props, simple-import-sort/imports, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   MagnifyingGlassIcon,
@@ -187,6 +187,18 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
   const [isParsing, setIsParsing] = useState(false);
   const [aiPrefillData, setAiPrefillData] = useState<Partial<IContact> | undefined>(undefined);
 
+  const pasteTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus textarea when paste modal opens (workaround for Headless UI focus trap)
+  useEffect(() => {
+    if (isPasteModalOpen) {
+      const timer = setTimeout(() => {
+        pasteTextareaRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isPasteModalOpen]);
+
   const handleAIPaste = async () => {
     if (!pasteText.trim()) return;
     setIsParsing(true);
@@ -195,10 +207,12 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position, department (choose from: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Do NOT wrap in markdown code blocks.\n\nText:\n${pasteText}`,
+          apiKey: 'GEMINI_SCOPED',
+          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position, department (choose from: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Do NOT wrap in markdown code blocks. Return ONLY the raw JSON object, nothing else.\n\nText:\n${pasteText}`,
         }),
       });
       const data = await res.json();
+      console.log('AI Contact Parser response:', data);
       const text = data.text || data.result || '';
       // Extract JSON from response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -553,7 +567,8 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                       </div>
                     </div>
                     <textarea
-                      className="w-full h-36 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition-all resize-none"
+                      ref={pasteTextareaRef}
+                      className="w-full h-36 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition-all resize-none relative z-10"
                       placeholder={`Paste contact details here...\n\nExample:\nJohn Doe\nSenior Manager at Acme Corp\njohn@acme.com | (555) 123-4567\nProcurement Department`}
                       value={pasteText}
                       onChange={e => setPasteText(e.target.value)}
