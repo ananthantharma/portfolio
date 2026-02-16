@@ -12,12 +12,18 @@ import {
   TrashIcon,
   XMarkIcon,
   PaperClipIcon,
+  ListBulletIcon,
+  Squares2X2Icon,
+  EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 
 import { INotePage } from '@/models/NotePage';
 import { IToDo } from '@/models/ToDo';
 import TaskFormModal, { TaskFormData } from './TaskFormModal';
+import SmartInput from './SmartInput';
+import ToDoBoard from './ToDoBoard';
+import EmailTaskModal from './EmailTaskModal';
 
 interface ToDoListModalProps {
   isOpen: boolean;
@@ -101,6 +107,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<IToDo | null>(null);
 
+  // New Features State
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [prefilledData, setPrefilledData] = useState<Partial<TaskFormData> | undefined>(undefined);
+
   useEffect(() => {
     if (isOpen) {
       fetchTodos();
@@ -157,12 +168,45 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
 
   const handleEdit = (todo: IToDo) => {
     setEditingTask(todo);
+    setPrefilledData(undefined);
     setIsTaskFormOpen(true);
   };
 
   const handleCreateStandalone = () => {
     setEditingTask(null);
+    setPrefilledData(undefined);
     setIsTaskFormOpen(true);
+  };
+
+  const handleSmartAdd = (data: { title: string; priority: string; dueDate: Date | null }) => {
+    setEditingTask(null);
+    setPrefilledData({
+      title: data.title,
+      priority: data.priority,
+      dueDate: data.dueDate || new Date(),
+    } as any);
+    setIsTaskFormOpen(true);
+  };
+
+  const handleEmailProceed = (data: Partial<TaskFormData>) => {
+    setPrefilledData(data);
+    setIsTaskFormOpen(true);
+  };
+
+  const handleStatusChange = async (id: string, newStatus: IToDo['status']) => {
+    // Optimistic update
+    setTodos(prev => prev.map(t => t._id === id ? { ...t, status: newStatus } as any : t));
+
+    try {
+      await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+    } catch (error) {
+      console.error('Failed to update status', error);
+      fetchTodos();
+    }
   };
 
   const handleSaveTask = async (data: TaskFormData) => {
@@ -376,6 +420,31 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <div className="flex bg-gray-100 rounded-lg p-1 mr-2">
+                        <button
+                          className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                          onClick={() => setViewMode('list')}
+                          title="List View"
+                        >
+                          <ListBulletIcon className="h-5 w-5" />
+                        </button>
+                        <button
+                          className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                          onClick={() => setViewMode('board')}
+                          title="Kanban Board"
+                        >
+                          <Squares2X2Icon className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="p-1.5 text-gray-500 hover:text-indigo-600 transition-colors"
+                        title="Create from Email"
+                      >
+                        <EnvelopeIcon className="h-5 w-5" />
+                      </button>
+
                       <FilterDropdown
                         label="Priority"
                         value={filterPriority}
@@ -401,6 +470,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       </button>
                     </div>
                   </Dialog.Title>
+
+                  <div className="mb-4 px-1">
+                    <SmartInput onAdd={handleSmartAdd} />
+                  </div>
 
                   {!showCompleted && (
                     <div className="flex gap-2 mb-4 flex-shrink-0 flex-wrap">
@@ -441,6 +514,13 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                       <div className="text-center py-10 text-gray-400">
                         No {showCompleted ? 'completed' : 'active'} tasks found.
                       </div>
+                    ) : viewMode === 'board' ? (
+                      <ToDoBoard
+                        todos={filteredTodos}
+                        onStatusChange={handleStatusChange}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
                     ) : (
                       sortedTodos.map(todo => (
                         <div
@@ -569,8 +649,14 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
         isOpen={isTaskFormOpen}
         onClose={() => setIsTaskFormOpen(false)}
         onSave={handleSaveTask}
-        initialData={editingTask || undefined}
+        initialData={prefilledData ? { ...prefilledData } as any : editingTask || undefined}
         title={editingTask ? 'Edit Task' : 'New Task'}
+      />
+
+      <EmailTaskModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        onProceed={handleEmailProceed}
       />
     </>
   );

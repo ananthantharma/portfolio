@@ -39,6 +39,16 @@ export async function POST(req: Request) {
       const tabId = formData.get('tabId') as string;
       const tabName = formData.get('tabName') as string;
 
+      const subtasksRaw = formData.get('subtasks') as string;
+      const subtasks = subtasksRaw ? JSON.parse(subtasksRaw) : [];
+
+      const estimatedTime = formData.get('estimatedTime') ? Number(formData.get('estimatedTime')) : undefined;
+      const aiGenerated = formData.get('aiGenerated') === 'true';
+      const aiContext = formData.get('aiContext') as string;
+
+      const tagsRaw = formData.get('tags') as string;
+      const tags = tagsRaw ? JSON.parse(tagsRaw) : [];
+
       const driveAttachmentsRaw = formData.get('driveAttachments') as string;
       const driveAttachments = driveAttachmentsRaw ? JSON.parse(driveAttachmentsRaw) : [];
 
@@ -71,8 +81,14 @@ export async function POST(req: Request) {
         dueDate,
         category,
         notes,
+        status: 'todo', // Default
         attachments,
         userEmail: session.user.email,
+        subtasks,
+        estimatedTime,
+        aiGenerated,
+        aiContext,
+        tags,
       };
     } else {
       // Fallback for JSON (e.g. from existing external calls?)

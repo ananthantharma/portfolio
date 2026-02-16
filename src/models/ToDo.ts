@@ -12,6 +12,16 @@ export interface IToDo extends Document {
   category?: string;
   notes?: string;
   isCompleted: boolean;
+  status?: 'todo' | 'in-progress' | 'done';
+  subtasks?: {
+    _id?: string;
+    title: string;
+    isCompleted: boolean;
+  }[];
+  estimatedTime?: number;
+  aiGenerated?: boolean;
+  aiContext?: string;
+  tags?: string[];
   attachments?: {
     name: string;
     type: string;
@@ -46,6 +56,21 @@ const ToDoSchema = new Schema<IToDo>(
     category: { type: String },
     notes: { type: String },
     isCompleted: { type: Boolean, default: false },
+    status: {
+      type: String,
+      enum: ['todo', 'in-progress', 'done'],
+      default: 'todo',
+    },
+    subtasks: [
+      {
+        title: { type: String, required: true },
+        isCompleted: { type: Boolean, default: false },
+      },
+    ],
+    estimatedTime: { type: Number }, // In minutes
+    aiGenerated: { type: Boolean, default: false },
+    aiContext: { type: String },
+    tags: [{ type: String }],
     attachments: [
       {
         name: { type: String, required: true },
