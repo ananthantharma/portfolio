@@ -1,8 +1,9 @@
+/* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, simple-import-sort/imports */
 import React, { useMemo } from 'react';
 import { DndContext, DragOverlay, useDraggable, useDroppable, DragStartEvent, DragEndEvent, pointerWithin } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { IToDo } from '@/models/ToDo';
-import { FlagIcon, PaperClipIcon, CalendarIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { FlagIcon, PaperClipIcon, CalendarIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface ToDoBoardProps {
     todos: IToDo[];
@@ -12,10 +13,12 @@ interface ToDoBoardProps {
 }
 
 const COLUMNS = [
-    { id: 'todo', title: 'To Do', color: 'bg-indigo-50 border-indigo-100 text-indigo-700' },
-    { id: 'in-progress', title: 'In Progress', color: 'bg-amber-50 border-amber-100 text-amber-700' },
-    { id: 'done', title: 'Done', color: 'bg-green-50 border-green-100 text-green-700' }
+    { id: 'todo', title: 'To Do', color: 'border-gray-200', headerBg: 'bg-gray-50', headerText: 'text-gray-600', dotColor: 'bg-gray-400' },
+    { id: 'in-progress', title: 'In Progress', color: 'border-amber-200', headerBg: 'bg-amber-50', headerText: 'text-amber-700', dotColor: 'bg-amber-400' },
+    { id: 'done', title: 'Done', color: 'border-emerald-200', headerBg: 'bg-emerald-50', headerText: 'text-emerald-700', dotColor: 'bg-emerald-400' }
 ];
+
+const WIP_LIMIT = 5;
 
 const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, onDelete }) => {
     const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -30,12 +33,8 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
         const { active, over } = event;
         if (over && active.id !== over.id) {
             let newStatus = over.id as IToDo['status'];
-
-            // If over.id is NOT a column, it might be a task.
-            // Check if we dropped on a column directly
             let targetColumn = COLUMNS.find(c => c.id === newStatus);
 
-            // If not a column, check if it's a task and get its status
             if (!targetColumn) {
                 const overTask = todos.find(t => t._id === over.id);
                 if (overTask) {
@@ -45,7 +44,6 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
             }
 
             if (targetColumn) {
-                // If we have an active todo, check if status changed
                 const todo = todos.find(t => t._id === active.id);
                 if (todo && (todo.status || (todo.isCompleted ? 'done' : 'todo')) !== newStatus) {
                     onStatusChange(active.id as string, newStatus);
@@ -79,18 +77,39 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
     );
 };
 
-const Column = ({ col, todos, onEdit, onDelete }: { col: any, todos: IToDo[], onEdit: (t: IToDo) => void, onDelete: (id: string) => void }) => {
+const Column = ({ col, todos, onEdit, onDelete }: {
+    col: typeof COLUMNS[0], todos: IToDo[], onEdit: (t: IToDo) => void, onDelete: (id: string) => void
+}) => {
     const { setNodeRef } = useDroppable({ id: col.id });
+    const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
 
     return (
-        <div ref={setNodeRef} className="flex-1 min-w-[300px] flex flex-col h-full rounded-xl bg-gray-50/50 border border-gray-100">
-            <div className={`p-3 border-b ${col.color.replace('bg-', 'bg-opacity-50 ')} rounded-t-xl flex justify-between items-center bg-white`}>
-                <h3 className={`font-semibold text-sm ${col.color.split(' ')[2]}`}>{col.title}</h3>
-                <span className="text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm text-gray-500">
-                    {todos.length}
-                </span>
+        <div ref={setNodeRef} className={`flex-1 min-w-[280px] flex flex-col h-full rounded-xl border ${col.color} bg-gray-50/30`}>
+            <div className={`p-3 border-b ${col.color} rounded-t-xl flex justify-between items-center ${col.headerBg}`}>
+                <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${col.dotColor}`} />
+                    <h3 className={`font-semibold text-xs uppercase tracking-wider ${col.headerText}`}>{col.title}</h3>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    {isOverWipLimit && (
+                        <div className="flex items-center gap-1 text-amber-600" title={`WIP limit exceeded (${WIP_LIMIT})`}>
+                            <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+                        </div>
+                    )}
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isOverWipLimit
+                        ? 'bg-amber-200 text-amber-800'
+                        : 'bg-white/80 text-gray-500 border border-gray-200'
+                        }`}>
+                        {todos.length}
+                    </span>
+                </div>
             </div>
-            <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[100px]">
+            <div className="flex-1 p-2 space-y-2 overflow-y-auto min-h-[80px]">
+                {todos.length === 0 && (
+                    <div className="flex items-center justify-center h-20 text-xs text-gray-300">
+                        Drop tasks here
+                    </div>
+                )}
                 {todos.map(todo => (
                     <DraggableTask key={todo._id} todo={todo} onEdit={onEdit} onDelete={onDelete} />
                 ))}
@@ -109,7 +128,7 @@ const DraggableTask = ({ todo, onEdit, onDelete }: { todo: IToDo, onEdit: (t: IT
     } : undefined;
 
     if (isDragging) {
-        return <div ref={setNodeRef} style={style} className="opacity-50"><TaskCard todo={todo} /></div>;
+        return <div ref={setNodeRef} style={style} className="opacity-30"><TaskCard todo={todo} /></div>;
     }
 
     return (
@@ -121,53 +140,67 @@ const DraggableTask = ({ todo, onEdit, onDelete }: { todo: IToDo, onEdit: (t: IT
 
 const TaskCard = ({ todo, isOverlay, onClick, onDelete }: { todo: IToDo, isOverlay?: boolean, onClick?: () => void, onDelete?: () => void }) => {
     const isDone = todo.status === 'done' || todo.isCompleted;
+    const isOverdue = !isDone && new Date(todo.dueDate) < new Date();
+
+    const priorityColors: Record<string, string> = {
+        High: 'bg-red-500',
+        Medium: 'bg-amber-400',
+        Low: 'bg-emerald-500',
+        None: 'bg-gray-300',
+    };
 
     return (
         <div
             onClick={onClick}
-            className={`relative group bg-white p-3 rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-300 transition-all ${isOverlay ? 'scale-105 shadow-xl rotate-2' : ''} ${isDone ? 'opacity-80' : ''}`}
+            className={`relative group bg-white p-3 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${isOverlay ? 'scale-[1.02] shadow-xl ring-2 ring-gray-900/10 rotate-1' : ''
+                } ${isDone ? 'opacity-60 border-gray-100' : isOverdue ? 'border-red-200 hover:border-red-300' : 'border-gray-150 hover:border-gray-300 hover:shadow-sm'}`}
         >
-            <div className="flex justify-between items-start gap-2">
-                <h4 className={`text-sm font-medium text-gray-800 line-clamp-2 ${isDone ? 'line-through text-gray-500' : ''}`}>
+            {/* Priority indicator */}
+            <div className={`absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full ${priorityColors[todo.priority] || priorityColors.None}`} />
+
+            <div className="pl-2">
+                <h4 className={`text-[13px] font-medium text-gray-800 line-clamp-2 ${isDone ? 'line-through text-gray-400' : ''}`}>
                     {todo.title}
                 </h4>
-                {todo.priority && todo.priority !== 'None' && (
-                    <FlagIcon className={`h-4 w-4 flex-shrink-0 ${todo.priority === 'High' ? 'text-red-500 fill-red-50' :
-                        todo.priority === 'Medium' ? 'text-amber-500' : 'text-green-500'
-                        }`} />
+
+                {todo.category && (
+                    <span className="inline-block px-1.5 py-0.5 mt-1.5 text-[10px] rounded-md bg-gray-50 text-gray-500 font-medium">
+                        {todo.category.replace('!', '')}
+                    </span>
                 )}
-            </div>
 
-            {todo.category && (
-                <span className="inline-block px-2 py-0.5 mt-2 text-[10px] rounded bg-gray-100 text-gray-600 border border-gray-200">
-                    {todo.category}
-                </span>
-            )}
-
-            <div className="mt-3 flex items-center justify-between text-gray-400 text-xs">
-                <div className="flex items-center gap-2">
-                    {todo.dueDate && (
-                        <div className={`flex items-center gap-1 ${new Date(todo.dueDate) < new Date() && !isDone ? 'text-red-500' : ''}`}>
-                            <CalendarIcon className="h-3 w-3" />
-                            {new Date(todo.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        </div>
-                    )}
-                    {todo.attachments && todo.attachments.length > 0 && (
-                        <PaperClipIcon className="h-3 w-3" />
-                    )}
+                <div className="mt-2 flex items-center justify-between text-gray-400 text-[11px]">
+                    <div className="flex items-center gap-2">
+                        {todo.dueDate && (
+                            <div className={`flex items-center gap-1 ${isOverdue ? 'text-red-500 font-semibold' : ''}`}>
+                                <CalendarIcon className="h-3 w-3" />
+                                {new Date(todo.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </div>
+                        )}
+                        {todo.attachments && todo.attachments.length > 0 && (
+                            <PaperClipIcon className="h-3 w-3" />
+                        )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                        {todo.aiGenerated && (
+                            <span className="text-[9px] text-violet-500 font-bold px-1 rounded bg-violet-50">AI</span>
+                        )}
+                        {todo.priority && todo.priority !== 'None' && (
+                            <FlagIcon className={`h-3 w-3 ${todo.priority === 'High' ? 'text-red-500' :
+                                todo.priority === 'Medium' ? 'text-amber-400' : 'text-emerald-500'
+                                }`} />
+                        )}
+                    </div>
                 </div>
-                {todo.aiGenerated && (
-                    <span className="text-[9px] text-indigo-400 font-medium px-1 rounded bg-indigo-50">AI</span>
-                )}
             </div>
 
             {!isOverlay && onDelete && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                    className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-white shadow-sm rounded-md"
+                    className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all bg-white/90 backdrop-blur-sm shadow-sm rounded-md border border-gray-100"
                     title="Delete task"
                 >
-                    <TrashIcon className="h-4 w-4" />
+                    <TrashIcon className="h-3.5 w-3.5" />
                 </button>
             )}
         </div>

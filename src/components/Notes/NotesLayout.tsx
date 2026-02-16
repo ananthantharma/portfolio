@@ -615,6 +615,36 @@ const NotesLayout: React.FC = React.memo(() => {
     setIsFocusMode(prev => !prev);
   }, []);
 
+  // Create Page handler for CommandPalette
+  const handleCreatePageFromPalette = useCallback(() => {
+    if (selectedSectionId) {
+      handleAddPage('New Page');
+    }
+  }, [selectedSectionId, handleAddPage]);
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+K / Cmd+K — Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+      // Ctrl+\ / Cmd+\ — Focus Mode
+      if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+        e.preventDefault();
+        setIsFocusMode(prev => !prev);
+      }
+      // Ctrl+N / Cmd+N — New Page
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && selectedSectionId) {
+        e.preventDefault();
+        handleAddPage('New Page');
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [selectedSectionId, handleAddPage]);
+
   // Calculate total important and flagged counts
   const totalImportant = useMemo(() => {
     return Object.values(badgeCounts.pages).reduce((acc, curr) => acc + (curr.important || 0), 0);
@@ -988,6 +1018,9 @@ const NotesLayout: React.FC = React.memo(() => {
           onClose={handleCloseSearch}
           fetchItems={fetchSearchResults}
           onSelectTask={handleJumpToTask}
+          onCreatePage={selectedSectionId ? handleCreatePageFromPalette : undefined}
+          currentPageContent={selectedPage?.tabs?.[0]?.content || ''}
+          currentPageTitle={selectedPage?.title || ''}
         />
 
         {/* Sourcing Modals */}
