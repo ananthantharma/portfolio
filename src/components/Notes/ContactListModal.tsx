@@ -16,7 +16,7 @@ import {
   ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
-import { CONTACT_DEPARTMENTS, IContactBase as IContact } from '@/lib/contact-constants';
+import { CONTACT_DEPARTMENTS, CONTACT_POSITIONS, IContactBase as IContact } from '@/lib/contact-constants';
 import ContactFormModal, { ContactFormData } from './ContactFormModal';
 
 interface ContactListModalProps {
@@ -209,7 +209,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           apiKey: 'GEMINI_SCOPED',
-          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position, department (choose from: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Do NOT wrap in markdown code blocks. Return ONLY the raw JSON object, nothing else.\n\nText:\n${pasteText}`,
+          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position (MUST be one of: ${CONTACT_POSITIONS.join(', ')}), department (MUST be one of: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Pick the closest matching position and department from those lists. Do NOT wrap in markdown code blocks. Return ONLY the raw JSON object, nothing else.\n\nText:\n${pasteText}`,
         }),
       });
       const data = await res.json();
