@@ -1,8 +1,6 @@
-/* eslint-disable simple-import-sort/imports */
 /* eslint-disable react/jsx-sort-props */
 'use client';
 import { PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
-import { upload } from '@vercel/blob/client';
 
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -160,10 +158,16 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           }
         } else if (storageType === 'blob') {
           // --- BLOB UPLOAD FLOW ---
-          const newBlob = await upload(file.name, file, {
-            access: 'public',
-            handleUploadUrl: '/api/upload',
+          const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+            method: 'POST',
+            body: file,
           });
+
+          if (!response.ok) {
+            throw new Error(`Upload failed: ${response.statusText}`);
+          }
+
+          const newBlob = await response.json();
 
           const metaFormData = new FormData();
           metaFormData.append('pageId', pageId);

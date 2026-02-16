@@ -11,7 +11,6 @@ import {
   MinusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { upload } from '@vercel/blob/client';
 import React, { Fragment, useEffect, useState } from 'react';
 
 export interface TaskFormData {
@@ -203,10 +202,17 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           setIsUploading(true);
 
           for (const file of filesToUpload) {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
+            const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+              method: 'POST',
+              body: file,
             });
+
+            if (!response.ok) {
+              throw new Error(`Upload failed: ${response.statusText}`);
+            }
+
+            const newBlob = await response.json();
+
             finalBlobAttachments.push({
               name: file.name,
               type: file.type,

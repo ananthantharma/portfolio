@@ -1,40 +1,31 @@
-
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 export async function POST(request: Request): Promise<NextResponse> {
-    const body = (await request.json()) as HandleUploadBody;
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const filename = searchParams.get('filename');
+
+    if (!filename || !request.body) {
+        return NextResponse.json({ error: 'No filename or body provided' }, { status: 400 });
+    }
 
     try {
-        const jsonResponse = await handleUpload({
-            body,
-            request,
-            onBeforeGenerateToken: async (_pathname) => {
-                const session = await getServerSession(authOptions);
-                if (!session || !session.user) {
-                    throw new Error('Unauthorized');
-                }
-
-                return {
-                    allowedContentTypes: undefined, // Allow all types
-                    tokenPayload: JSON.stringify({
-                        userId: (session.user as any).id || 'unknown',
-                        email: session.user.email,
-                    }),
-                };
-            },
-            onUploadCompleted: async ({ blob, tokenPayload }) => {
-                console.log('blob upload completed', blob, tokenPayload);
-            },
+        const blob = await put(filename, request.body, {
+            access: 'public',
         });
 
-        return NextResponse.json(jsonResponse);
+        return NextResponse.json(blob);
     } catch (error) {
         return NextResponse.json(
             { error: (error as Error).message },
-            { status: 400 },
+            { status: 500 },
         );
     }
 }
