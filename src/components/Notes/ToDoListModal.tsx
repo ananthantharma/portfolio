@@ -395,7 +395,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
   return (
     <>
       <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Dialog as="div" className="relative z-50" onClose={() => { if (!isTaskFormOpen) onClose(); }}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
@@ -408,7 +408,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
+            <div className="flex min-h-full items-center justify-center p-2">
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-200"
@@ -417,7 +417,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                 leave="ease-in duration-150"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-[88vw] xl:max-w-7xl transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[88vh] flex flex-col">
+                <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[94vh] flex flex-col">
 
                   {/* Header */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
