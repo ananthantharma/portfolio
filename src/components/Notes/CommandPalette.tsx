@@ -10,7 +10,7 @@ import {
     FolderIcon,
     DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useState, useRef, useCallback } from 'react';
+import React, { Fragment, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { INotePage } from '@/models/NotePage';
 
