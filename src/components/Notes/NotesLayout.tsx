@@ -1,10 +1,10 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import axios from 'axios'; // Moved up
+import axios from 'axios';
 import {
   ChatBubbleLeftRightIcon,
-  ChevronRightIcon, // For breadcrumbs
+  ChevronRightIcon,
   ClipboardDocumentListIcon,
   ExclamationTriangleIcon,
   FlagIcon,
@@ -13,9 +13,11 @@ import {
   PencilSquareIcon,
   PhotoIcon,
   UsersIcon,
-  Cog6ToothIcon, // Added for BadgeSettingsModal
+  Cog6ToothIcon,
   SparklesIcon,
   TableCellsIcon,
+  ArrowsPointingOutIcon, // For Focus Mode
+  ArrowsPointingInIcon   // For Focus Mode Exit
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
@@ -35,12 +37,13 @@ import AssessmentModal from './AssessmentModal';
 import ImageExtractionModal from './ImageExtractionModal';
 import NoteEditor from './NoteEditor';
 import PageList from './PageList';
-import SearchModal from './SearchModal';
+// import SearchModal from './SearchModal'; // Replaced by CommandPalette
 import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
+import CommandPalette from './CommandPalette';
 
 
 import SourcingEventModal from './SourcingEventModal';
@@ -58,16 +61,21 @@ const NotesLayout: React.FC = React.memo(() => {
   const [targetTabId, setTargetTabId] = useState<string | undefined>(undefined);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
-  const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
-  const [isImportantOpen, setIsImportantOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Sidebar visibility states
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
   const [isPageCollapsed, setIsPageCollapsed] = useState(false);
-  // Sourcing Events
+
+  // Focus Mode
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // Modal states
+  const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
+  const [isImportantOpen, setIsImportantOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
   const [isSourcingListOpen, setIsSourcingListOpen] = useState(false);
-
 
   const [sourcingEventCount, setSourcingEventCount] = useState(0);
   const [isTableAppOpen, setIsTableAppOpen] = useState(false);
@@ -602,6 +610,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSettings = useCallback(() => setIsSettingsOpen(true), []);
   const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
 
+  // Focus Mode Toggle
+  const toggleFocusMode = useCallback(() => {
+    setIsFocusMode(prev => !prev);
+  }, []);
+
   // Calculate total important and flagged counts
   const totalImportant = useMemo(() => {
     return Object.values(badgeCounts.pages).reduce((acc, curr) => acc + (curr.important || 0), 0);
@@ -613,202 +626,223 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-[#F8F8F6] font-['Inter',system-ui,sans-serif]">
+      <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-slate-50 text-slate-900 font-['Inter',system-ui,sans-serif]">
         {/* Top Navigation / Breadcrumbs Bar */}
 
-        <div className="flex items-center justify-between border-b border-black/[0.06] bg-white/80 backdrop-blur-xl px-5 py-2.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] z-50">
-          <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
-            <HomeIcon className="h-3.5 w-3.5" />
-            <span className="font-medium text-gray-500">Workspace</span>
-            {currentCategory && (
-              <>
-                <ChevronRightIcon className="h-3 w-3" />
-                <span className="font-medium text-gray-600">
-                  {currentCategory.name}
-                </span>
-              </>
-            )}
-            {currentSection && (
-              <>
-                <ChevronRightIcon className="h-3 w-3" />
-                <span className="font-medium text-gray-600">{currentSection.name}</span>
-              </>
-            )}
-            {selectedPage && (
-              <>
-                <ChevronRightIcon className="h-3 w-3" />
-                <span className="font-semibold text-gray-900">{selectedPage.title || 'Untitled'}</span>
-              </>
-            )}
-          </div>
+        {!isFocusMode && (
+          <div className="flex flex-shrink-0 items-center justify-between mx-4 my-2 rounded-xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-4 py-2.5 shadow-sm z-40 transition-all duration-300">
+            <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
+              <HomeIcon className="h-3.5 w-3.5" />
+              <span className="font-medium text-gray-500">Workspace</span>
+              {currentCategory && (
+                <>
+                  <ChevronRightIcon className="h-3 w-3" />
+                  <span className="font-medium text-gray-600">
+                    {currentCategory.name}
+                  </span>
+                </>
+              )}
+              {currentSection && (
+                <>
+                  <ChevronRightIcon className="h-3 w-3" />
+                  <span className="font-medium text-gray-600">{currentSection.name}</span>
+                </>
+              )}
+              {selectedPage && (
+                <>
+                  <ChevronRightIcon className="h-3 w-3" />
+                  <span className="font-semibold text-gray-900">{selectedPage.title || 'Untitled'}</span>
+                </>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2">
-            {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight">{dbSize}</span>}
+            <div className="flex items-center gap-2">
+              {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight">{dbSize}</span>}
 
-            {/* ── Navigation Group ── */}
-            <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
-              <button
-                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
-                onClick={handleOpenSearch}
-                title="Search (Ctrl+K)">
-                <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">Search</span>
-                <kbd className="hidden lg:inline ml-1 text-[9px] text-gray-300 font-mono bg-gray-100 px-1 py-0.5 rounded">⌘K</kbd>
-              </button>
-              <button
-                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition-all relative"
-                onClick={handleOpenToDoList}>
-                <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-                <span className="hidden lg:inline">Tasks</span>
-                {activeTaskCount > 0 && (
-                  <>
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-75"></span>
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
-                      {activeTaskCount}
-                    </span>
-                  </>
-                )}
-              </button>
+              {/* ── Navigation Group ── */}
+              <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                <button
+                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                  onClick={handleOpenSearch}
+                  title="Command Palette (Ctrl+K)">
+                  <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline">Search</span>
+                  <kbd className="hidden lg:inline ml-1 text-[9px] text-gray-300 font-mono bg-gray-100 px-1 py-0.5 rounded">⌘K</kbd>
+                </button>
+                <button
+                  className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-teal-600 hover:shadow-sm transition-all relative"
+                  onClick={handleOpenToDoList}>
+                  <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline">Tasks</span>
+                  {activeTaskCount > 0 && (
+                    <>
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 animate-ping rounded-full bg-red-400 opacity-75"></span>
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+                        {activeTaskCount}
+                      </span>
+                    </>
+                  )}
+                </button>
+                <button
+                  className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                  onClick={handleOpenContactList}
+                  title="Contacts">
+                  <UsersIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <div className="h-5 w-px bg-black/[0.06]"></div>
+
+              {/* Focus Mode Button */}
               <button
                 className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
-                onClick={handleOpenContactList}
-                title="Contacts">
-                <UsersIcon className="h-3.5 w-3.5" />
+                onClick={toggleFocusMode}
+                title="Focus Mode (Cmd+\)"
+              >
+                <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
               </button>
-            </div>
 
-            <div className="h-5 w-px bg-black/[0.06]"></div>
+              <div className="h-5 w-px bg-black/[0.06]"></div>
 
-            {/* ── AI & Tools Group (Restricted) ── */}
-            {session?.user?.email === 'lankanprinze@gmail.com' && (
-              <>
-                <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
-                  {/* AI Rewrite Dropdown - Consolidated */}
-                  <div className="relative" ref={rewriteDropdownRef}>
+              {/* ── AI & Tools Group (Restricted) ── */}
+              {session?.user?.email === 'lankanprinze@gmail.com' && (
+                <>
+                  <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                    {/* AI Rewrite Dropdown - Consolidated */}
+                    <div className="relative" ref={rewriteDropdownRef}>
+                      <button
+                        className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm' : ''}`}
+                        title="AI Rewrite Tools"
+                        onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}
+                      >
+                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                        <span className="hidden xl:inline">Rewrite</span>
+                      </button>
+                      {isRewriteDropdownOpen && (
+                        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                          <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
+                          <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
+                          <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
+                        </div>
+                      )}
+                    </div>
                     <button
-                      className={`flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-violet-600 hover:shadow-sm transition-all ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm' : ''}`}
-                      title="AI Rewrite Tools"
-                      onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}
-                    >
-                      <PencilSquareIcon className="h-3.5 w-3.5" />
-                      <span className="hidden xl:inline">Rewrite</span>
+                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      onClick={handleOpenImageExtract}
+                      title="Extract Text from Image">
+                      <PhotoIcon className="h-3.5 w-3.5" />
                     </button>
-                    {isRewriteDropdownOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-                        <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">Advanced Rewrite</button>
-                        <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Simple Rewrite</button>
-                        <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-teal-50 hover:text-teal-700 transition-colors flex items-center gap-1.5"><SparklesIcon className="h-3 w-3" />GPT Rewrite</button>
-                      </div>
-                    )}
+                    <button
+                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-cyan-600 hover:shadow-sm transition-all"
+                      onClick={handleOpenAssessment}
+                      title="Document Assessment">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    </button>
                   </div>
-                  <button
-                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
-                    onClick={handleOpenImageExtract}
-                    title="Extract Text from Image">
-                    <PhotoIcon className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-cyan-600 hover:shadow-sm transition-all"
-                    onClick={handleOpenAssessment}
-                    title="Document Assessment">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-                  </button>
-                </div>
 
-                <div className="h-5 w-px bg-black/[0.06]"></div>
+                  <div className="h-5 w-px bg-black/[0.06]"></div>
 
-                {/* ── Sourcing & Apps Group ── */}
-                <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
-                  <button
-                    className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all relative"
-                    onClick={() => setIsSourcingListOpen(true)}
-                    title="View All Sourcing Events">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
-                    <span className="hidden lg:inline">Sourcing</span>
-                    {sourcingEventCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-bold text-white ring-1 ring-white">{sourcingEventCount}</span>
-                    )}
-                  </button>
-                  <button
-                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
-                    onClick={() => setIsSourcingModalOpen(true)}
-                    title="Create Sourcing Event">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                  </button>
-                  <button
-                    className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
-                    onClick={() => setIsTableAppOpen(true)}
-                    title="Table App">
-                    <TableCellsIcon className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                  {/* ── Sourcing & Apps Group ── */}
+                  <div className="flex items-center gap-1 bg-gray-50/80 rounded-lg p-0.5">
+                    <button
+                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all relative"
+                      onClick={() => setIsSourcingListOpen(true)}
+                      title="View All Sourcing Events">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
+                      <span className="hidden lg:inline">Sourcing</span>
+                      {sourcingEventCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-indigo-500 text-[9px] font-bold text-white ring-1 ring-white">{sourcingEventCount}</span>
+                      )}
+                    </button>
+                    <button
+                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      onClick={() => setIsSourcingModalOpen(true)}
+                      title="Create Sourcing Event">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                    <button
+                      className="flex items-center gap-1 rounded-md p-1.5 text-gray-400 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                      onClick={() => setIsTableAppOpen(true)}
+                      title="Table App">
+                      <TableCellsIcon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
 
-                {/* AI Chat — Accent Button */}
+                  {/* AI Chat — Accent Button */}
+                  <button
+                    className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:from-indigo-600 hover:to-violet-600 transition-all"
+                    onClick={handleOpenAIChat}
+                    title="AI Chat Assistant">
+                    <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">AI Chat</span>
+                  </button>
+                </>
+              )}
+
+              <div className="h-5 w-px bg-black/[0.06]"></div>
+
+              {/* ── Flags Group ── */}
+              <div className="flex items-center gap-0.5">
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:from-indigo-600 hover:to-violet-600 transition-all"
-                  onClick={handleOpenAIChat}
-                  title="AI Chat Assistant">
-                  <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
-                  <span className="hidden lg:inline">AI Chat</span>
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors relative"
+                  onClick={handleOpenImportant}
+                  title="Important">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  {totalImportant > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white ring-1 ring-white">
+                      {totalImportant}
+                    </span>
+                  )}
                 </button>
-              </>
-            )}
+                <button
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors relative"
+                  onClick={handleOpenKeyTasks}
+                  title="Key Tasks">
+                  <FlagIcon className="h-4 w-4" />
+                  {totalFlagged > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
+                      {totalFlagged}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={handleOpenSettings}
+                  className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors"
+                  title="Settings">
+                  <Cog6ToothIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
 
-            <div className="h-5 w-px bg-black/[0.06]"></div>
+              <div className="h-5 w-px bg-black/[0.06]"></div>
 
-            {/* ── Flags Group ── */}
-            <div className="flex items-center gap-0.5">
-              <button
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors relative"
-                onClick={handleOpenImportant}
-                title="Important">
-                <ExclamationTriangleIcon className="h-4 w-4" />
-                {totalImportant > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white ring-1 ring-white">
-                    {totalImportant}
-                  </span>
-                )}
-              </button>
-              <button
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors relative"
-                onClick={handleOpenKeyTasks}
-                title="Key Tasks">
-                <FlagIcon className="h-4 w-4" />
-                {totalFlagged > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-1 ring-white">
-                    {totalFlagged}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={handleOpenSettings}
-                className="rounded-lg p-1.5 text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors"
-                title="Settings">
-                <Cog6ToothIcon className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            <div className="h-5 w-px bg-black/[0.06]"></div>
-
-            {/* User Profile Menu */}
-            <div className="flex items-center">
-              <UserProfileMenu />
+              {/* User Profile Menu */}
+              <div className="flex items-center">
+                <UserProfileMenu />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <div
-          className="flex flex-1 overflow-hidden relative"
-          onPointerUp={() => {
-            document.body.style.cursor = 'default';
-          }}>
-          {/* Warm background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#F8F8F6] via-[#F4F3F0] to-[#EFEEE9] -z-10" />
+        <div className="flex flex-1 overflow-hidden px-4 pb-4 gap-3 relative">
 
-          {/* Column 1: Categories */}
+          {/* Focus Mode Exit Button (Only visible in Focus Mode) */}
+          {isFocusMode && (
+            <button
+              onClick={toggleFocusMode}
+              className="absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-slate-400 hover:text-indigo-600 transition-all opacity-0 hover:opacity-100 group"
+              title="Exit Focus Mode"
+            >
+              <ArrowsPointingInIcon className="h-5 w-5" />
+            </button>
+          )}
+
+          {/* ─── 1. Categories Column ─── */}
+          {/* Hidden in Focus Mode */}
           <div
-            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/50 backdrop-blur-xl transition-[width] duration-100 ease-out z-20 relative`}
-            style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isCategoryCollapsed ? 'w-14 items-center' : ''
+              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}
+          >
             <CategoryList
               categories={categories}
               isCollapsed={isCategoryCollapsed}
@@ -822,139 +856,163 @@ const NotesLayout: React.FC = React.memo(() => {
               selectedCategoryId={selectedCategoryId}
               badgeCounts={badgeCounts.categories}
             />
-            {!isCategoryCollapsed && (
+            {!isCategoryCollapsed && !isFocusMode && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
-                onMouseDown={e => startResizing(e, 'category')}
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
+                onMouseDown={(e) => startResizing(e, 'category')}
               />
             )}
           </div>
 
-          {/* Column 2: Sections */}
+          {/* ─── 2. Sections Column ─── */}
           <div
-            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/60 backdrop-blur-xl transition-[width] duration-100 ease-out z-10 relative`}
-            style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative ${isSectionCollapsed ? 'w-14 items-center' : ''
+              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}
+          >
             <SectionList
-              isCollapsed={isSectionCollapsed}
-              loading={loadingSections}
-              onAddSection={handleAddSection}
-              onDeleteSection={handleDeleteSection}
-              onRenameSection={handleRenameSection}
-              onReorderSections={handleReorderSections}
-              onSelectSection={setSelectedSectionId}
-              onToggleCollapse={handleToggleSectionCollapse}
               sections={sections}
               selectedSectionId={selectedSectionId}
+              onSelectSection={setSelectedSectionId}
+              onAddSection={handleAddSection}
+              onRenameSection={handleRenameSection}
+              onDeleteSection={handleDeleteSection}
+              onReorderSections={handleReorderSections}
+              isCollapsed={isSectionCollapsed}
+              onToggleCollapse={handleToggleSectionCollapse}
               badgeCounts={badgeCounts.sections}
+              loading={loadingSections}
             />
-            {!isSectionCollapsed && (
+            {/* Resize Handle */}
+            {!isSectionCollapsed && !isFocusMode && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
-                onMouseDown={e => startResizing(e, 'section')}
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
+                onMouseDown={(e) => startResizing(e, 'section')}
               />
             )}
           </div>
 
-          {/* Column 3: Pages */}
+          {/* ─── 3. Pages Column ─── */}
           <div
-            className={`flex-shrink-0 border-r border-black/[0.04] bg-white/70 backdrop-blur-xl transition-[width] duration-100 ease-out z-0 relative`}
-            style={{ width: isPageCollapsed ? 56 : pageWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative ${isPageCollapsed ? 'w-14 items-center' : ''
+              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}
+          >
             <PageList
-              isCollapsed={isPageCollapsed}
-              loading={loadingPages}
-              onAddPage={handleAddPage}
-              onDeletePage={handleDeletePage}
-              onRenamePage={handleRenamePage}
-              onReorderPages={handleReorderPages}
-              onSelectPage={(id) => { setSelectedPageId(id); setTargetTabId(undefined); }}
-              onToggleCollapse={handleTogglePageCollapse}
               pages={pages}
               selectedPageId={selectedPageId}
+              onSelectPage={setSelectedPageId}
+              onAddPage={handleAddPage}
+              onRenamePage={handleRenamePage}
+              onDeletePage={handleDeletePage}
+              onReorderPages={handleReorderPages}
+              isCollapsed={isPageCollapsed}
+              onToggleCollapse={handleTogglePageCollapse}
               badgeCounts={badgeCounts.pages}
+              loading={loadingPages}
             />
-            {!isPageCollapsed && (
+            {/* Resize Handle */}
+            {!isPageCollapsed && !isFocusMode && (
               <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 z-50 transition-colors"
-                onMouseDown={e => startResizing(e, 'page')}
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
+                onMouseDown={(e) => startResizing(e, 'page')}
               />
             )}
           </div>
 
-          {/* Column 4: Editor */}
-          <div className="flex-1 overflow-hidden bg-white shadow-[0_1px_8px_rgba(0,0,0,0.06)] z-30 m-3 rounded-2xl border border-black/[0.04]">
-            <NoteEditor
-              initialTabId={targetTabId}
-              onSave={handleSavePageContent}
-              page={selectedPage}
-            />
+          {/* ─── 4. Editor Area ─── */}
+          <div className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 flex flex-col overflow-hidden relative transition-all duration-500 ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
+            {selectedPageId ? (
+              <NoteEditor
+                key={selectedPageId}
+                page={selectedPage || undefined} // Changed from pageId to page object
+                initialTabId={targetTabId}
+                onSave={handleSavePageContent}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-slate-300">
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-4">
+                  <PencilSquareIcon className="h-8 w-8 text-slate-200" />
+                </div>
+                <p className="text-sm font-medium">Select a page to start writing</p>
+              </div>
+            )}
           </div>
+
         </div>
 
-        <FlaggedItemsModal
-          fetchItems={fetchFlaggedTasks}
-          icon="flag"
-          isOpen={isKeyTasksOpen}
-          onClose={handleCloseKeyTasks}
-          onSelectTask={handleJumpToTask}
-          title="Key Tasks"
+        {/* Access Modals */}
+        <ToDoListModal
+          isOpen={isToDoListOpen}
+          onClose={handleCloseToDoList}
+          onNavigate={(task) => task ? handleJumpToTask(task) : undefined}
         />
-
-        <FlaggedItemsModal
-          fetchItems={fetchImportantTasks}
-          icon="important"
-          isOpen={isImportantOpen}
-          onClose={handleCloseImportant}
-          onSelectTask={handleJumpToTask}
-          title="Important"
-        />
-
-        <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
-        <ToDoListModal isOpen={isToDoListOpen} onClose={handleCloseToDoList} onNavigate={handleJumpToTask} />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
-        <SearchModal
-          fetchItems={fetchSearchResults}
-          isOpen={isSearchOpen}
-          onClose={handleCloseSearch}
-          onSelectTask={handleJumpToTask}
-        />
-        <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
+
+        {/* Other Modals... */}
         <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
         <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
+        <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
-        <SourcingEventModal
-          isOpen={isSourcingModalOpen}
-          onClose={() => setIsSourcingModalOpen(false)}
-          defaultEventName={selectedPage?.title || ''}
-          defaultDescription=""
-          sourcePageId={selectedPageId || undefined}
-        />
 
-        <SourcingListModal
-          isOpen={isSourcingListOpen}
-          onClose={() => setIsSourcingListOpen(false)}
-          onNavigateToPage={async (pageId) => {
-            try {
-              // We need to fetch the full page object to get section/category info for navigation
-              // Assuming GET /api/notes/pages/:id returns the populated page
-              const res = await axios.get(`/api/notes/pages/${pageId}`);
-              if (res.data && res.data.data) {
-                handleJumpToTask(res.data.data);
-                setIsSourcingListOpen(false);
-              }
-            } catch (e) {
-              console.error("Failed to navigate to page", e);
-              alert("Could not load the linked page.");
-            }
-          }}
-        />
-        <TableAppModal isOpen={isTableAppOpen} onClose={() => setIsTableAppOpen(false)} />
+        {/* Unified AI Chat */}
         <UnifiedAIChatModal
           isOpen={isAIChatOpen}
           onClose={handleCloseAIChat}
           geminiApiKey={geminiApiKey}
           openaiApiKey={openaiApiKey}
         />
+
+        {/* Flags Modals */}
+        <FlaggedItemsModal
+          isOpen={isKeyTasksOpen}
+          onClose={handleCloseKeyTasks}
+          title="Key Tasks"
+          fetchItems={fetchFlaggedTasks}
+          onSelectTask={handleJumpToTask}
+          icon="flag"
+        />
+        <FlaggedItemsModal
+          isOpen={isImportantOpen}
+          onClose={handleCloseImportant}
+          title="Important Items"
+          fetchItems={fetchImportantTasks}
+          onSelectTask={handleJumpToTask}
+          icon="important"
+        />
+
+        {/* Command Palette (Replaces SearchModal) */}
+        <CommandPalette
+          isOpen={isSearchOpen}
+          onClose={handleCloseSearch}
+          fetchItems={fetchSearchResults}
+          onSelectTask={handleJumpToTask}
+        />
+
+        {/* Sourcing Modals */}
+        <SourcingEventModal
+          isOpen={isSourcingModalOpen}
+          onClose={() => setIsSourcingModalOpen(false)}
+          sourcePageId={selectedPageId || undefined}
+          defaultEventName={selectedPage?.title || ''}
+          defaultDescription=""
+        />
+        <SourcingListModal
+          isOpen={isSourcingListOpen}
+          onClose={() => setIsSourcingListOpen(false)}
+        />
+
+        <TableAppModal
+          isOpen={isTableAppOpen}
+          onClose={() => setIsTableAppOpen(false)}
+        />
+
+        <BadgeSettingsModal
+          isOpen={isSettingsOpen}
+          onClose={handleCloseSettings}
+        />
+
       </div>
     </BadgeSettingsProvider>
   );
