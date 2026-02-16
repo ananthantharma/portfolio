@@ -17,6 +17,9 @@ const nextConfig = {
 
     return config;
   },
+  experimental: {
+    serverComponentsExternalPackages: ['@vercel/blob', 'undici'],
+  },
   compress: true,
   generateEtags: true,
   pageExtensions: ['tsx', 'mdx', 'ts'],
