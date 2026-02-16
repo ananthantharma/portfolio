@@ -22,6 +22,7 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: ['@vercel/blob'],
   trailingSlash: false,
   images: {
     domains: ['images.unsplash.com', 'source.unsplash.com', 'ui-avatars.com'],

@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo */
-import { Dialog, Listbox, Switch, Transition } from '@headlessui/react';
+'use client';
+import { Dialog, Listbox, Transition } from '@headlessui/react';
 import {
   CalendarIcon,
   CheckIcon,
@@ -10,6 +11,7 @@ import {
   MinusCircleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { upload } from '@vercel/blob/client';
 import React, { Fragment, useEffect, useState } from 'react';
 
 export interface TaskFormData {
@@ -26,6 +28,13 @@ export interface TaskFormData {
     webViewLink: string;
     fileId: string;
     storageType: 'drive';
+    size: number;
+  }[];
+  blobAttachments?: {
+    name: string;
+    type: string;
+    webViewLink: string;
+    storageType: 'blob';
     size: number;
   }[];
 }
@@ -67,9 +76,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
     >([]);
     const [dragActive, setDragActive] = useState(false);
 
-    // Drive Integration State
-    const [useDriveStorage, setUseDriveStorage] = useState(false);
-    const [isUploadingDrive, setIsUploadingDrive] = useState(false);
+    // Storage State
+    const [storageType, setStorageType] = useState<'local' | 'drive' | 'blob'>('local');
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
       if (isOpen) {
@@ -93,27 +102,31 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
         } else {
           setAttachments([]);
         }
-        setUseDriveStorage(false);
-        setIsUploadingDrive(false);
+        if (initialData?.attachments) {
+          const loadedAttachments = initialData.attachments.map(att => ({
+            ...att,
+            fileId: att.fileId,
+            size: att.size || 0,
+          }));
+          setAttachments(loadedAttachments);
+        } else {
+          setAttachments([]);
+        }
+        setStorageType('local');
+        setIsUploading(false);
       }
     }, [isOpen, initialData]);
 
     const handleSave = async () => {
       let finalNewFiles: File[] = [];
-      const finalDriveAttachments: {
-        name: string;
-        type: string;
-        webViewLink: string;
-        fileId: string;
-        storageType: 'drive';
-        size: number;
-      }[] = [];
+      const finalDriveAttachments: TaskFormData['driveAttachments'] = [];
+      const finalBlobAttachments: TaskFormData['blobAttachments'] = [];
 
       try {
         const filesToUpload = attachments.map(a => a.file).filter(f => f !== undefined) as File[];
 
-        if (useDriveStorage && filesToUpload.length > 0) {
-          setIsUploadingDrive(true);
+        if (storageType === 'drive' && filesToUpload.length > 0) {
+          setIsUploading(true);
 
           for (const file of filesToUpload) {
             const initRes = await fetch('/api/drive/files', {
@@ -186,6 +199,22 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
               }
             }
           }
+        } else if (storageType === 'blob' && filesToUpload.length > 0) {
+          setIsUploading(true);
+
+          for (const file of filesToUpload) {
+            const newBlob = await upload(file.name, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
+            });
+            finalBlobAttachments.push({
+              name: file.name,
+              type: file.type,
+              webViewLink: newBlob.url,
+              storageType: 'blob',
+              size: file.size,
+            });
+          }
         } else {
           finalNewFiles = filesToUpload;
         }
@@ -199,6 +228,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           attachments: attachments.filter(a => !a.file),
           newFiles: finalNewFiles,
           driveAttachments: finalDriveAttachments,
+          blobAttachments: finalBlobAttachments,
         });
         onClose();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,7 +243,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           alert(`Failed to save: ${error.message}`);
         }
       } finally {
-        setIsUploadingDrive(false);
+        setIsUploading(false);
       }
     };
 
@@ -229,8 +259,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
     const processFiles = (files: FileList) => {
       Array.from(files).forEach(file => {
-        if (!useDriveStorage && file.size > 2 * 1024 * 1024) {
-          alert(`File ${file.name} is too large. Max 2MB for local storage. Enable Drive Storage for larger files.`);
+        if (storageType === 'local' && file.size > 4 * 1024 * 1024) {
+          alert(`File ${file.name} is too large. Max 4MB for local storage. Enable Drive or Blob Storage for larger files.`);
           return;
         }
         setAttachments(prev => [...prev, { name: file.name, type: file.type, size: file.size, file }]);
@@ -419,21 +449,21 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className={labelStyle + ' mb-0'}>Attachments</label>
-                        <Switch.Group>
-                          <div className="flex items-center">
-                            <Switch.Label className={`mr-2 text-[10px] ${useDriveStorage ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
-                              {useDriveStorage ? 'Drive' : 'Local'}
-                            </Switch.Label>
-                            <Switch
-                              checked={useDriveStorage}
-                              onChange={setUseDriveStorage}
-                              className={`${useDriveStorage ? 'bg-gray-700' : 'bg-gray-200'
-                                } relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none`}>
-                              <span className={`${useDriveStorage ? 'translate-x-4' : 'translate-x-0.5'
-                                } inline-block h-3 w-3 transform rounded-full bg-white transition-transform`} />
-                            </Switch>
-                          </div>
-                        </Switch.Group>
+                        <div className="flex bg-gray-100 p-0.5 rounded-lg">
+                          {(['local', 'drive', 'blob'] as const).map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => setStorageType(type)}
+                              className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === type
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                              {type === 'local' ? 'Local' : type === 'drive' ? 'Drive' : 'Blob'}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       <div
@@ -450,14 +480,16 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <div className="flex flex-col items-center justify-center">
-                          {useDriveStorage ? (
+                          {storageType === 'drive' ? (
                             <CloudArrowUpIcon className="h-6 w-6 text-gray-300 mb-1" />
+                          ) : storageType === 'blob' ? (
+                            <CloudArrowUpIcon className="h-6 w-6 text-indigo-300 mb-1" />
                           ) : null}
                           <p className="text-xs text-gray-400">
                             <span className="font-medium text-gray-500">Click to upload</span> or drag and drop
                           </p>
                           <p className="text-[10px] text-gray-300 mt-0.5">
-                            {useDriveStorage ? 'Uploads to Google Drive' : 'Max 2MB per file'}
+                            {storageType === 'local' ? 'Max 4MB per file' : 'Uploads to ' + (storageType === 'drive' ? 'Google Drive' : 'Vercel Blob')}
                           </p>
                         </div>
                       </div>
@@ -486,12 +518,12 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                       Cancel
                     </button>
                     <button
-                      className={`px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors ${isUploadingDrive ? 'opacity-70 cursor-wait' : ''
+                      className={`px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors ${isUploading ? 'opacity-70 cursor-wait' : ''
                         }`}
                       type="button"
-                      disabled={isUploadingDrive}
+                      disabled={isUploading}
                       onClick={handleSave}>
-                      {isUploadingDrive ? 'Uploading...' : 'Save Task'}
+                      {isUploading ? 'Uploading...' : 'Save Task'}
                     </button>
                   </div>
                 </Dialog.Panel>

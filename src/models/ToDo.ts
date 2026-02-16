@@ -28,7 +28,7 @@ export interface IToDo extends Document {
     fileId?: string;
     data?: string;
     webViewLink?: string;
-    storageType?: 'local' | 'drive';
+    storageType?: 'local' | 'drive' | 'blob';
     size: number;
   }[];
   userEmail?: string;
@@ -80,7 +80,7 @@ const ToDoSchema = new Schema<IToDo>(
         webViewLink: { type: String, required: false }, // Google Drive Link
         storageType: {
           type: String,
-          enum: ['local', 'drive'],
+          enum: ['local', 'drive', 'blob'],
           default: 'local',
         },
         size: { type: Number, required: true },
