@@ -84,11 +84,57 @@ export const authOptions: AuthOptions = {
 
       if (account) {
         console.log('NextAuth Session: Account found for user', user.id);
-        console.log('NextAuth Session: Token expires at', (account as any).expires_at);
-        console.log('NextAuth Session: Refresh Token exists?', !!(account as any).refresh_token);
-        session.accessToken = (account as any).access_token;
-        session.refreshToken = (account as any).refresh_token;
-        session.error = Date.now() / 1000 > (account as any).expires_at ? 'RefreshAccessTokenError' : null;
+        const now = Date.now() / 1000;
+        let accessToken = account.access_token;
+
+        // Has the access token expired?
+        if (account.expires_at && now > account.expires_at) {
+          console.log('NextAuth Session: Access Token Expired, attempting to refresh...');
+          try {
+            const url = 'https://oauth2.googleapis.com/token?' +
+              new URLSearchParams({
+                client_id: process.env.GOOGLE_CLIENT_ID as string,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET as string,
+                grant_type: 'refresh_token',
+                refresh_token: account.refresh_token,
+              });
+
+            const response = await fetch(url, {
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              method: 'POST',
+            });
+
+            const refreshedTokens = await response.json();
+
+            if (!response.ok) {
+              throw refreshedTokens;
+            }
+
+            console.log('NextAuth Session: Refresh successful, updating DB');
+            const newExpiresAt = Math.floor(Date.now() / 1000 + refreshedTokens.expires_in);
+
+            await db.collection('accounts').updateOne(
+              { _id: account._id },
+              {
+                $set: {
+                  access_token: refreshedTokens.access_token,
+                  expires_at: newExpiresAt,
+                  refresh_token: refreshedTokens.refresh_token ?? account.refresh_token,
+                },
+              }
+            );
+
+            accessToken = refreshedTokens.access_token;
+            account.refresh_token = refreshedTokens.refresh_token ?? account.refresh_token;
+            session.error = null;
+          } catch (error) {
+            console.error('NextAuth Session: Error refreshing access token', error);
+            session.error = 'RefreshAccessTokenError';
+          }
+        }
+
+        session.accessToken = accessToken;
+        session.refreshToken = account.refresh_token;
       } else {
         console.log('NextAuth Session: No Google account found for user', user.id);
       }
