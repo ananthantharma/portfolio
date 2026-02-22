@@ -1,6 +1,6 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, memo, useState, useEffect } from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon, PencilSquareIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, memo, useState, useEffect} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -9,7 +9,7 @@ interface StandaloneRewriteModalProps {
   onClose: () => void;
 }
 
-const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ isOpen, onClose }) => {
+const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({isOpen, onClose}) => {
   // Input State
   const [inputText, setInputText] = useState('');
 
@@ -54,8 +54,8 @@ const StandaloneRewriteModal: React.FC<StandaloneRewriteModalProps> = memo(({ is
     try {
       await fetch('/api/prompts/rewrite', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: systemPrompt }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: systemPrompt}),
       });
       setIsEditingPrompt(false);
     } catch (e) {
@@ -119,7 +119,7 @@ Text to rewrite:
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           systemInstruction: systemPrompt,
@@ -196,11 +196,11 @@ Text to rewrite:
                         min: 'Casual',
                         max: 'Formal',
                       },
-                      { label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt' },
-                      { label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly' },
-                      { label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index' },
-                      { label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive' },
-                      { label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical' },
+                      {label: 'Directness', val: directness, set: setDirectness, min: 'Soft', max: 'Blunt'},
+                      {label: 'Warmth', val: warmth, set: setWarmth, min: 'Cold', max: 'Friendly'},
+                      {label: 'Length', val: length, set: setLength, min: 'Concise', max: 'Index'},
+                      {label: 'Confidence', val: confidence, set: setConfidence, min: 'Tentative', max: 'Assertive'},
+                      {label: 'Urgency', val: urgency, set: setUrgency, min: 'Relaxed', max: 'Critical'},
                       {
                         label: 'Tech Density',
                         val: technicalDensity,
@@ -249,11 +249,11 @@ Text to rewrite:
                       <label className="block text-sm font-medium text-gray-700 mb-2">Constraints</label>
                       <div className="space-y-2">
                         {[
-                          { label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints },
-                          { label: 'No Greetings', checked: noGreetings, set: setNoGreetings },
-                          { label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons },
-                          { label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot },
-                          { label: 'No Tables', checked: noTables, set: setNoTables },
+                          {label: 'No Bullet Points', checked: noBulletPoints, set: setNoBulletPoints},
+                          {label: 'No Greetings', checked: noGreetings, set: setNoGreetings},
+                          {label: 'No Semicolons/Dashes', checked: noSemicolons, set: setNoSemicolons},
+                          {label: 'Negotiation Pivot', checked: negotiationPivot, set: setNegotiationPivot},
+                          {label: 'No Tables', checked: noTables, set: setNoTables},
                         ].map(c => (
                           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer" key={c.label}>
                             <input
@@ -278,9 +278,8 @@ Text to rewrite:
                             else setIsEditingPrompt(true);
                           }}
                           className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
-                          disabled={isSavingPrompt}
-                        >
-                          {isSavingPrompt ? 'Saving...' : (isEditingPrompt ? 'Save' : 'Edit')}
+                          disabled={isSavingPrompt}>
+                          {isSavingPrompt ? 'Saving...' : isEditingPrompt ? 'Save' : 'Edit'}
                           {!isEditingPrompt && <PencilSquareIcon className="h-3 w-3" />}
                         </button>
                       </div>
@@ -290,12 +289,10 @@ Text to rewrite:
                           className="w-full text-xs p-2 border rounded-md focus:ring-purple-500 focus:border-purple-500"
                           rows={4}
                           value={systemPrompt}
-                          onChange={(e) => setSystemPrompt(e.target.value)}
+                          onChange={e => setSystemPrompt(e.target.value)}
                         />
                       ) : (
-                        <p className="text-xs text-gray-600 line-clamp-3 italic">
-                          {systemPrompt}
-                        </p>
+                        <p className="text-xs text-gray-600 line-clamp-3 italic">{systemPrompt}</p>
                       )}
                     </div>
 
@@ -348,29 +345,29 @@ Text to rewrite:
                             {rewrittenText ? (
                               <ReactMarkdown
                                 components={{
-                                  table: ({ children }) => (
+                                  table: ({children}) => (
                                     <table className="border-collapse table-auto w-full text-sm my-4 border border-gray-300">
                                       {children}
                                     </table>
                                   ),
-                                  thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
-                                  tbody: ({ children }) => (
+                                  thead: ({children}) => <thead className="bg-gray-100">{children}</thead>,
+                                  tbody: ({children}) => (
                                     <tbody className="bg-white divide-y divide-gray-200">{children}</tbody>
                                   ),
-                                  tr: ({ children }) => (
+                                  tr: ({children}) => (
                                     <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
                                   ),
-                                  th: ({ children }) => (
+                                  th: ({children}) => (
                                     <th className="border border-gray-300 px-4 py-2 font-bold text-left text-gray-700">
                                       {children}
                                     </th>
                                   ),
-                                  td: ({ children }) => (
+                                  td: ({children}) => (
                                     <td className="border border-gray-300 px-4 py-2 text-gray-700">{children}</td>
                                   ),
-                                  ul: ({ children }) => <ul className="list-disc ml-4 my-2">{children}</ul>,
-                                  ol: ({ children }) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
-                                  li: ({ children }) => <li className="mb-1">{children}</li>,
+                                  ul: ({children}) => <ul className="list-disc ml-4 my-2">{children}</ul>,
+                                  ol: ({children}) => <ol className="list-decimal ml-4 my-2">{children}</ol>,
+                                  li: ({children}) => <li className="mb-1">{children}</li>,
                                 }}
                                 remarkPlugins={[remarkGfm]}>
                                 {rewrittenText}

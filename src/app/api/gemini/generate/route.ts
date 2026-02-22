@@ -1,23 +1,23 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import {GoogleGenerativeAI} from '@google/generative-ai';
+import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
+import {authOptions} from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body = await req.json();
-    let { apiKey } = body;
+    let {apiKey} = body;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { prompt, history, model: requestedModel, systemInstruction, attachments, useSearch } = body;
+    const {prompt, history, model: requestedModel, systemInstruction, attachments, useSearch} = body;
 
     if (apiKey === 'MANAGED') {
       const session = await getServerSession(authOptions);
       if (!session || !(session.user as any).googleApiEnabled) {
         return NextResponse.json(
-          { error: 'Access Denied: You do not have permission to use the managed Google API key.' },
-          { status: 403 },
+          {error: 'Access Denied: You do not have permission to use the managed Google API key.'},
+          {status: 403},
         );
       }
       apiKey = process.env.GOOGLE_API_KEY;
@@ -25,21 +25,21 @@ export async function POST(req: Request) {
       const session = await getServerSession(authOptions);
       if (!session || !(session.user as any).googleApiEnabled) {
         return NextResponse.json(
-          { error: 'Access Denied: You do not have permission to use the managed Gemini API key.' },
-          { status: 403 },
+          {error: 'Access Denied: You do not have permission to use the managed Gemini API key.'},
+          {status: 403},
         );
       }
       apiKey = process.env.Gemini_Key;
     }
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing API Key configuration' }, { status: 400 });
+      return NextResponse.json({error: 'Missing API Key configuration'}, {status: 400});
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
     if (!prompt && (!attachments || attachments.length === 0)) {
-      return NextResponse.json({ error: 'Prompt or attachment is required' }, { status: 400 });
+      return NextResponse.json({error: 'Prompt or attachment is required'}, {status: 400});
     }
 
     // Use requested model or fallback
@@ -47,14 +47,14 @@ export async function POST(req: Request) {
     console.log(`Using Gemini model: ${modelToUse}`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const modelParams: any = { model: modelToUse };
+    const modelParams: any = {model: modelToUse};
     if (systemInstruction) {
       modelParams.systemInstruction = systemInstruction;
     }
 
     // Tools: Google Search
     if (useSearch) {
-      modelParams.tools = [{ googleSearch: {} }];
+      modelParams.tools = [{googleSearch: {}}];
     }
 
     const model = genAI.getGenerativeModel(modelParams);
@@ -65,11 +65,11 @@ export async function POST(req: Request) {
       chat = model.startChat({
         history: history.map((msg: any) => ({
           role: msg.role,
-          parts: [{ text: msg.parts }], // Basic text history for now
+          parts: [{text: msg.parts}], // Basic text history for now
         })),
       });
     } else {
-      chat = model.startChat({ history: [] });
+      chat = model.startChat({history: []});
     }
 
     // Construct the current message parts
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
     // Add text part if prompt exists
     if (prompt) {
-      currentMessageParts.push({ text: prompt });
+      currentMessageParts.push({text: prompt});
     }
 
     // Add attachment parts
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
     const response = await result.response;
     const text = response.text();
 
-    return NextResponse.json({ text });
+    return NextResponse.json({text});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Gemini API Error:', error);
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
         error: 'Failed to generate content',
         details: error.message || error.toString(),
       },
-      { status: 500 },
+      {status: 500},
     );
   }
 }

@@ -1,23 +1,23 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
+import {GoogleGenerativeAI} from '@google/generative-ai';
+import {NextApiRequest, NextApiResponse} from 'next';
+import {getServerSession} from 'next-auth';
 
-import { authOptions } from '@/lib/auth';
+import {authOptions} from '@/lib/auth';
 
 // Config removed to enable default bodyParser (JSON)
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({error: 'Method not allowed'});
   }
 
   try {
     const session = await getServerSession(req, res, authOptions);
     if (!session || !(session.user as any).googleApiEnabled) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({error: 'Unauthorized'});
     }
 
-    const { model: requestedModel, apiKey: apiKeyParam, fileUrl, fileType, text: providedText } = req.body;
+    const {model: requestedModel, apiKey: apiKeyParam, fileUrl, fileType, text: providedText} = req.body;
     const modelName = requestedModel || 'gemini-flash-latest';
 
     let apiKey = process.env.GOOGLE_API_KEY;
@@ -26,11 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!apiKey) {
-      return res.status(500).json({ error: 'API Key not configured' });
+      return res.status(500).json({error: 'API Key not configured'});
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+    const model = genAI.getGenerativeModel({model: modelName});
 
     let promptParts: any[] = [];
     let textToAnalyze = '';
@@ -47,19 +47,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           inlineData: {
             data: base64Content,
             mimeType: 'application/pdf',
-          }
+          },
         });
-        textToAnalyze = "PDF Document (Attached)";
+        textToAnalyze = 'PDF Document (Attached)';
       } catch (err) {
-        console.error("Error fetching PDF for assessment:", err);
-        return res.status(500).json({ error: "Failed to retrieve PDF" });
+        console.error('Error fetching PDF for assessment:', err);
+        return res.status(500).json({error: 'Failed to retrieve PDF'});
       }
     }
     // Case 2: Text (DOCX/Excel extracted client-side)
     else if (providedText) {
       textToAnalyze = providedText;
     } else {
-      return res.status(400).json({ error: "No file content provided" });
+      return res.status(400).json({error: 'No file content provided'});
     }
 
     const PROMPT = `
@@ -87,16 +87,15 @@ DOCUMENT CONTENT:
 ${textToAnalyze.slice(0, 50000)}
 `;
 
-    promptParts.push({ text: PROMPT });
+    promptParts.push({text: PROMPT});
 
     const result = await model.generateContent(promptParts);
     const response = await result.response;
     const analysisText = response.text();
 
-    return res.status(200).json({ text: analysisText });
-
+    return res.status(200).json({text: analysisText});
   } catch (error: any) {
     console.error('Assessment error:', error);
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    return res.status(500).json({error: 'Internal Server Error', details: error.message});
   }
 }

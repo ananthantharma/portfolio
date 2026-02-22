@@ -1,11 +1,11 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import { Dialog, Listbox, Transition } from '@headlessui/react';
-import { ChevronUpDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
+import {Dialog, Listbox, Transition} from '@headlessui/react';
+import {ChevronUpDownIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, useEffect, useMemo, useState} from 'react';
 
-import { CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact } from '@/lib/contact-constants';
+import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact} from '@/lib/contact-constants';
 
-import { IconPicker } from './IconPicker';
+import {IconPicker} from './IconPicker';
 
 export interface ContactFormData {
   name: string;
@@ -28,8 +28,16 @@ interface ContactFormModalProps {
 }
 
 // Select component with clean styling
-const SelectField = ({ label, value, onChange, options }: {
-  label: string; value: string; onChange: (val: any) => void; options: string[];
+const SelectField = ({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: any) => void;
+  options: string[];
 }) => (
   <div>
     <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
@@ -47,10 +55,10 @@ const SelectField = ({ label, value, onChange, options }: {
               <Listbox.Option
                 key={idx}
                 value={opt}
-                className={({ active }) =>
+                className={({active}) =>
                   `cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`
                 }>
-                {({ selected }) => (
+                {({selected}) => (
                   <span className={`block truncate ${selected ? 'font-medium text-gray-900' : ''}`}>{opt}</span>
                 )}
               </Listbox.Option>
@@ -63,7 +71,7 @@ const SelectField = ({ label, value, onChange, options }: {
 );
 
 const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
-  ({ isOpen, onClose, onSave, initialData, title }) => {
+  ({isOpen, onClose, onSave, initialData, title}) => {
     const [name, setName] = useState('');
     const [company, setCompany] = useState('');
     const [phone, setPhone] = useState('');
@@ -106,17 +114,19 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      onSave({ name, company, phone, email, notes, position, department, type, image });
+      onSave({name, company, phone, email, notes, position, department, type, image});
     };
 
     // Auto-avatar preview
     const avatarInitials = useMemo(() => {
-      return name
-        .split(' ')
-        .map(n => n.charAt(0))
-        .slice(0, 2)
-        .join('')
-        .toUpperCase() || '?';
+      return (
+        name
+          .split(' ')
+          .map(n => n.charAt(0))
+          .slice(0, 2)
+          .join('')
+          .toUpperCase() || '?'
+      );
     }, [name]);
 
     const avatarColor = useMemo(() => {
@@ -162,31 +172,39 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all">
-
                   {/* Header with Avatar Preview */}
                   <div className="px-6 pt-5 pb-4 border-b border-gray-100">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-base font-semibold text-gray-900 tracking-tight">{title || 'New Contact'}</h3>
-                      <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
+                      <button
+                        onClick={onClose}
+                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
                         <XMarkIcon className="h-4 w-4" />
                       </button>
                     </div>
 
                     {/* Avatar Preview */}
                     <div className="flex items-center gap-4">
-                      <div className={`h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${avatarColor}`}>
+                      <div
+                        className={`h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${avatarColor}`}>
                         {image ? (
                           <img
                             src={`/api/notes/brandfetch?domain=${image}`}
                             alt={name}
                             className="h-14 w-14 rounded-full object-contain bg-white border border-gray-100"
-                            onError={e => { e.currentTarget.style.display = 'none'; }}
+                            onError={e => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
-                        ) : avatarInitials}
+                        ) : (
+                          avatarInitials
+                        )}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-700">{name || 'Contact Name'}</p>
-                        <p className="text-xs text-gray-400">{company || 'Company'} · {position}</p>
+                        <p className="text-xs text-gray-400">
+                          {company || 'Company'} · {position}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -196,7 +214,9 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                       {/* Name - full width */}
                       <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Name</label>
+                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Name
+                        </label>
                         <input
                           type="text"
                           required
@@ -209,7 +229,9 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
 
                       {/* Company - full width */}
                       <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Company</label>
+                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                          Company
+                        </label>
                         <input
                           type="text"
                           required
@@ -224,11 +246,21 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                       <SelectField label="Type" value={type} onChange={setType} options={CONTACT_TYPES} />
 
                       {/* Position */}
-                      <SelectField label="Position" value={position} onChange={setPosition} options={CONTACT_POSITIONS} />
+                      <SelectField
+                        label="Position"
+                        value={position}
+                        onChange={setPosition}
+                        options={CONTACT_POSITIONS}
+                      />
 
                       {/* Department - full width */}
                       <div className="col-span-2">
-                        <SelectField label="Department" value={department} onChange={setDepartment} options={CONTACT_DEPARTMENTS} />
+                        <SelectField
+                          label="Department"
+                          value={department}
+                          onChange={setDepartment}
+                          options={CONTACT_DEPARTMENTS}
+                        />
                       </div>
 
                       {/* Phone */}

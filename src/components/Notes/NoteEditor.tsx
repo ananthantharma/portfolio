@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition, Menu } from '@headlessui/react';
+import {Dialog, Transition, Menu} from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -22,11 +22,11 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import { useSession } from 'next-auth/react';
+import {useSession} from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick'; // Import useSession
-import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
@@ -34,12 +34,10 @@ import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { AttachmentManager } from './AttachmentManager';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {AttachmentManager} from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
-import { useBadgeSettings } from './BadgeSettingsContext'; // Added import
-
-
+import {useBadgeSettings} from './BadgeSettingsContext'; // Added import
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
@@ -67,14 +65,24 @@ interface NoteEditorProps {
   initialTabId?: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initialTabId }) => {
-  const { data: session } = useSession(); // Get session data
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId}) => {
+  const {data: session} = useSession(); // Get session data
   // Tab State
-  const [tabs, setTabs] = useState<{ _id?: string; title: string; content: string; color?: string; isImportant?: boolean; isFlagged?: boolean; order: number }[]>([]);
+  const [tabs, setTabs] = useState<
+    {
+      _id?: string;
+      title: string;
+      content: string;
+      color?: string;
+      isImportant?: boolean;
+      isFlagged?: boolean;
+      order: number;
+    }[]
+  >([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
-  const { getBadgeStyle } = useBadgeSettings(); // Hook
+  const {getBadgeStyle} = useBadgeSettings(); // Hook
 
   // Badge/ToDo State
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,7 +111,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             setPageTodos(data.data);
           }
         } catch (e) {
-          console.error("Failed to fetch page todos", e);
+          console.error('Failed to fetch page todos', e);
         }
       };
       fetchPageTodos();
@@ -123,37 +131,40 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           setOrganizePrompt(data.prompt);
         }
       } catch (e) {
-        console.error("Failed to fetch organize prompt", e);
+        console.error('Failed to fetch organize prompt', e);
       }
     };
     fetchPrompt();
   }, []);
 
-
   // Tab Flag Handlers
   const handleToggleImportant = () => {
-    setTabs(prev => prev.map(t => {
-      if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, isImportant: !t.isImportant };
-      }
-      return t;
-    }));
+    setTabs(prev =>
+      prev.map(t => {
+        if (t._id === activeTabId || t.title === activeTabId) {
+          return {...t, isImportant: !t.isImportant};
+        }
+        return t;
+      }),
+    );
     setIsDirty(true);
   };
 
   const handleToggleFlagged = () => {
-    setTabs(prev => prev.map(t => {
-      if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, isFlagged: !t.isFlagged };
-      }
-      return t;
-    }));
+    setTabs(prev =>
+      prev.map(t => {
+        if (t._id === activeTabId || t.title === activeTabId) {
+          return {...t, isFlagged: !t.isFlagged};
+        }
+        return t;
+      }),
+    );
     setIsDirty(true);
   };
 
   const [generatedText, setGeneratedText] = useState('');
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{ index: number; length: number } | null>(null);
+  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
 
   const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
   const [rewriteSelectedText, setRewriteSelectedText] = useState('');
@@ -164,7 +175,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [isToDoOpen, setIsToDoOpen] = useState(false);
 
   // Tab Indicator State
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [indicatorStyle, setIndicatorStyle] = useState({left: 0, width: 0});
   const tabsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -291,7 +302,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         isFlagged: t.isFlagged,
         order: t.order,
         // Only include _id if it's a real server ID
-        ...(!isTempId && t._id ? { _id: t._id } : {})
+        ...(!isTempId && t._id ? {_id: t._id} : {}),
       };
     });
   };
@@ -300,7 +311,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, content: editorContent };
+        return {...t, content: editorContent};
       }
       return t;
     });
@@ -329,7 +340,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
-        console.error("Failed to save new tab", error);
+        console.error('Failed to save new tab', error);
       } finally {
         setIsSaving(false);
       }
@@ -348,7 +359,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // Sync current content before modifying tabs array
     const currentSyncedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, content: editorContent };
+        return {...t, content: editorContent};
       }
       return t;
     });
@@ -370,7 +381,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
-        console.error("Failed to save deletion", error);
+        console.error('Failed to save deletion', error);
       } finally {
         setIsSaving(false);
       }
@@ -388,12 +399,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       // Create a base object that has the latest content if it's the active tab
       let updatedTab = t;
       if (t._id === activeTabId || t.title === activeTabId) {
-        updatedTab = { ...t, content: editorContent };
+        updatedTab = {...t, content: editorContent};
       }
 
       // Now apply rename if it matches target
       if (updatedTab._id === tabId || (!updatedTab._id && updatedTab.title === tabId)) {
-        return { ...updatedTab, title: newTitle };
+        return {...updatedTab, title: newTitle};
       }
       return updatedTab;
     });
@@ -415,37 +426,36 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
-        console.error("Failed to save page", error);
+        console.error('Failed to save page', error);
       } finally {
         setIsSaving(false);
       }
     }
   };
 
-
-
-
-
-
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleContentChange = useCallback((val: string, _delta: any, source: string) => {
-    // CRITICAL FIX: Only update state if the change comes from the USER.
-    // Programmatic changes (e.g. switching tabs loads empty content) trigger 'api' source.
-    // If we process 'api' changes, we might overwrite the PREVIOUS tab's content with the NEW tab's empty content
-    // because of closure staleness or race conditions.
-    if (source !== 'user') return;
+  const handleContentChange = useCallback(
+    (val: string, _delta: any, source: string) => {
+      // CRITICAL FIX: Only update state if the change comes from the USER.
+      // Programmatic changes (e.g. switching tabs loads empty content) trigger 'api' source.
+      // If we process 'api' changes, we might overwrite the PREVIOUS tab's content with the NEW tab's empty content
+      // because of closure staleness or race conditions.
+      if (source !== 'user') return;
 
-    setEditorContent(val);
-    // Update the tabs state immediately so that if we switch tabs or save, it's captured
-    setTabs(prev => prev.map(t => {
-      if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, content: val };
-      }
-      return t;
-    }));
-    setIsDirty(true);
-  }, [activeTabId]);
+      setEditorContent(val);
+      // Update the tabs state immediately so that if we switch tabs or save, it's captured
+      setTabs(prev =>
+        prev.map(t => {
+          if (t._id === activeTabId || t.title === activeTabId) {
+            return {...t, content: val};
+          }
+          return t;
+        }),
+      );
+      setIsDirty(true);
+    },
+    [activeTabId],
+  );
 
   // Helper to get selected text
   const getSelectedText = () => {
@@ -457,7 +467,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     if (!range) return null;
 
     const text = quill.getText(range.index, range.length);
-    return { text, range };
+    return {text, range};
   };
 
   const handleOpenRewrite = () => {
@@ -536,7 +546,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -597,7 +607,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -656,7 +666,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -729,8 +739,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       await fetch('/api/prompts/organize', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: customPrompt}),
       });
       setOrganizePrompt(customPrompt);
     } catch (e) {
@@ -758,7 +768,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -840,8 +850,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest' }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest'}),
       });
       const data = await response.json();
       console.log('Gemini API Response:', data);
@@ -873,7 +883,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       if (insertionRange) {
         // Replace selected text
         if (isMarkdownResponse) {
-          const htmlContent = renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>);
+          const htmlContent = renderToStaticMarkup(
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>,
+          );
           quill.deleteText(insertionRange.index, insertionRange.length);
           quill.clipboard.dangerouslyPasteHTML(insertionRange.index, htmlContent);
         } else {
@@ -887,7 +899,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         const insertAt = length + 2;
 
         if (isMarkdownResponse) {
-          const htmlContent = renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>);
+          const htmlContent = renderToStaticMarkup(
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>,
+          );
           quill.clipboard.dangerouslyPasteHTML(insertAt, htmlContent);
         } else {
           quill.insertText(insertAt, generatedText);
@@ -902,7 +916,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
   }, []);
-
 
   const handleOpenToDo = useCallback(() => {
     setIsToDoOpen(true);
@@ -930,20 +943,20 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   };
 
   const SYMBOLS = [
-    { char: '🚨', tooltip: 'Instant Action Required' },
-    { char: '⏳', tooltip: 'Waiting' },
-    { char: '💡', tooltip: 'Good Idea' },
-    { char: '⚠️', tooltip: 'Warning' },
-    { char: '💰', tooltip: 'Money / Financial' },
-    { char: '📉', tooltip: 'Decrease / Loss' },
-    { char: '🤝', tooltip: 'Deal / Agreement' },
-    { char: '🗣️', tooltip: 'Speak / Announce' },
-    { char: '✅', tooltip: 'Complete' },
-    { char: '❌', tooltip: 'Cancel / Fail' },
+    {char: '🚨', tooltip: 'Instant Action Required'},
+    {char: '⏳', tooltip: 'Waiting'},
+    {char: '💡', tooltip: 'Good Idea'},
+    {char: '⚠️', tooltip: 'Warning'},
+    {char: '💰', tooltip: 'Money / Financial'},
+    {char: '📉', tooltip: 'Decrease / Loss'},
+    {char: '🤝', tooltip: 'Deal / Agreement'},
+    {char: '🗣️', tooltip: 'Speak / Announce'},
+    {char: '✅', tooltip: 'Complete'},
+    {char: '❌', tooltip: 'Cancel / Fail'},
   ];
 
   const handleSaveToDo = useCallback(
-    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
+    async (toDoData: {title: string; priority: string; dueDate: Date; category: string; notes: string}) => {
       try {
         if (!page) return;
 
@@ -951,7 +964,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         const response = await fetch('/api/todos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
@@ -979,10 +992,24 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-[#FAFAF8] to-[#F0EFEB]">
         <div className="flex flex-col items-center gap-4 max-w-xs text-center">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+            <svg
+              className="w-8 h-8 text-indigo-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
+            </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-800">Select a Page</h3>
-          <p className="text-[13px] text-gray-400 leading-relaxed">Choose a page from the sidebar to start editing, or create a new one with the <span className="font-medium text-gray-500">+</span> button.</p>
+          <p className="text-[13px] text-gray-400 leading-relaxed">
+            Choose a page from the sidebar to start editing, or create a new one with the{' '}
+            <span className="font-medium text-gray-500">+</span> button.
+          </p>
         </div>
       </div>
     );
@@ -1013,14 +1040,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             // Calculate Badge Count
             // Match by ID primarily, fallback to Name for robustness (legacy support)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tabTasks = pageTodos.filter((todo: any) =>
-              !todo.isCompleted && (todo.tabId === tab._id || (tab._id?.startsWith('new-') && todo.tabName === tab.title))
+            const tabTasks = pageTodos.filter(
+              (todo: any) =>
+                !todo.isCompleted &&
+                (todo.tabId === tab._id || (tab._id?.startsWith('new-') && todo.tabName === tab.title)),
             );
 
             let minDays: number | null = null;
             if (tabTasks.length > 0) {
               const dates = tabTasks
-                .map((t: any) => t.dueDate ? new Date(t.dueDate).getTime() : null)
+                .map((t: any) => (t.dueDate ? new Date(t.dueDate).getTime() : null))
                 .filter((d: number | null) => d !== null) as number[];
 
               if (dates.length > 0) {
@@ -1029,28 +1058,26 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               }
             }
 
-            const { className, style } = getBadgeStyle(minDays);
+            const {className, style} = getBadgeStyle(minDays);
 
             return (
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${isActive
-                  ? 'text-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${
+                  isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                }`}
                 onClick={() => {
                   const updatedTabs = tabs.map(t => {
                     if (t._id === activeTabId || t.title === activeTabId) {
-                      return { ...t, content: editorContent };
+                      return {...t, content: editorContent};
                     }
                     return t;
                   });
                   setTabs(updatedTabs);
                   setActiveTabId(tab._id || tab.title);
                   setEditorContent(tab.content);
-                }}
-              >
+                }}>
                 {/* Status Badge (Important/Flagged) */}
                 {(tab.isImportant || tab.isFlagged) && (
                   <span className="absolute -top-1.5 -left-1 flex h-3 w-3 items-center justify-center rounded-full bg-white ring-1 ring-gray-200 z-40 shadow-sm">
@@ -1066,8 +1093,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 {tabTasks.length > 0 && (
                   <span
                     className={`absolute -top-1.5 -right-1 flex h-3 min-w-[12px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold text-white ring-1 ring-white z-30 ${className}`}
-                    style={style}
-                  >
+                    style={style}>
                     {tabTasks.length}
                   </span>
                 )}
@@ -1078,49 +1104,58 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                     type="color"
                     className="absolute -top-1 -left-1 w-6 h-6 border-none p-0 cursor-pointer opacity-0"
                     value={tab.color || '#ffffff'}
-                    onChange={(e) => {
+                    onChange={e => {
                       const newColor = e.target.value;
-                      setTabs(tabs.map(t => (t._id === tab._id && t.title === tab.title) ? { ...t, color: newColor } : t));
+                      setTabs(
+                        tabs.map(t => (t._id === tab._id && t.title === tab.title ? {...t, color: newColor} : t)),
+                      );
                       setIsDirty(true);
                     }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   />
-                  <div className="w-full h-full rounded-full border border-gray-300" style={{ backgroundColor: tab.color || '#ffffff' }}></div>
+                  <div
+                    className="w-full h-full rounded-full border border-gray-300"
+                    style={{backgroundColor: tab.color || '#ffffff'}}></div>
                 </div>
 
                 {/* Auto-width Container: Grid stack with invisible span and absolute input */}
-                <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
+                <div className="grid place-items-center" style={{gridTemplateAreas: '"stack"'}}>
                   {/* Invisible sizing span - dictates width */}
                   <span
                     className="invisible opacity-0 px-1 whitespace-pre leading-none pointer-events-none font-medium text-xs"
-                    style={{ gridArea: 'stack' }}
-                    aria-hidden="true"
-                  >
+                    style={{gridArea: 'stack'}}
+                    aria-hidden="true">
                     {tab.title}
                   </span>
 
                   {/* Input for editing - absolute over the span */}
                   <input
-                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${isActive ? '' : 'pointer-events-none'}`}
-                    style={{ gridArea: 'stack', minWidth: '2ch' }}
-                    onChange={(e) => handleRenameTab(tab._id || tab.title, e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
+                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${
+                      isActive ? '' : 'pointer-events-none'
+                    }`}
+                    style={{gridArea: 'stack', minWidth: '2ch'}}
+                    onChange={e => handleRenameTab(tab._id || tab.title, e.target.value)}
+                    onClick={e => e.stopPropagation()}
                     value={tab.title}
                     size={1}
                   />
                 </div>
 
                 {/* Tab Controls (Delete Only) */}
-                <div className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'}`}>
+                <div
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${
+                    isActive ? 'flex' : 'hidden group-hover:flex'
+                  }`}>
                   {/* Delete Button */}
                   <button
-                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${tabs.length <= 1 ? '!hidden' : ''} ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${
+                      tabs.length <= 1 ? '!hidden' : ''
+                    } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
                     disabled={isSaving}
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       handleDeleteTab(tab._id || tab.title);
-                    }}
-                  >
+                    }}>
                     <XMarkIcon className="h-3 w-3" />
                   </button>
                 </div>
@@ -1131,16 +1166,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         {/* Add Tab Button */}
         <button
-          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${
+            isSaving ? 'opacity-50 cursor-wait' : ''
+          }`}
           onClick={handleAddTab}
           disabled={isSaving}
-          title="Add Tab"
-        >
+          title="Add Tab">
           <PlusIcon className="h-3.5 w-3.5" />
         </button>
       </div>
-
-
 
       <div className="flex items-center justify-between border-b border-black/[0.04] px-5 py-3">
         <div className="flex flex-col">
@@ -1178,11 +1212,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-xl bg-white shadow-lg ring-1 ring-black/[0.06] focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
                 {SYMBOLS.map(s => (
                   <Menu.Item key={s.char}>
-                    {({ active }) => (
+                    {({active}) => (
                       <button
                         type="button"
-                        className={`${active ? 'bg-gray-100' : ''
-                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
+                        className={`${
+                          active ? 'bg-gray-100' : ''
+                        } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
                         onClick={() => handleInsertSymbol(s.char)}
                         title={s.tooltip}>
                         {s.char}
@@ -1208,7 +1243,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 // Sync current state first!
                 const updatedTabs = tabs.map(t => {
                   if (t._id === activeTabId || t.title === activeTabId) {
-                    return { ...t, content: editorContent };
+                    return {...t, content: editorContent};
                   }
                   return t;
                 });
@@ -1221,8 +1256,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               }}
               className={`flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-600 transition-all hover:bg-amber-100 hover:text-amber-700 disabled:opacity-50 disabled:cursor-wait`}
               disabled={isSaving}
-              title="Found content from before tabs were implemented. Click to recover."
-            >
+              title="Found content from before tabs were implemented. Click to recover.">
               <ExclamationTriangleIconSolid className="h-4 w-4" />
             </button>
           )}
@@ -1230,33 +1264,70 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           {/* AI Actions Dropdown - Consolidated */}
           <div className="relative" ref={aiActionsRef}>
             <button
-              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''}`}
+              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${
+                isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''
+              }`}
               type="button"
-              onClick={() => setIsAIActionsOpen(!isAIActionsOpen)}
-            >
+              onClick={() => setIsAIActionsOpen(!isAIActionsOpen)}>
               <SparklesIcon className="h-3.5 w-3.5" />
               AI Actions
             </button>
             {isAIActionsOpen && (
               <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-black/[0.06] rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <button onClick={() => { handleOrganizeAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                  <QueueListIcon className="h-3.5 w-3.5" />Organize
+                <button
+                  onClick={() => {
+                    handleOrganizeAI();
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <QueueListIcon className="h-3.5 w-3.5" />
+                  Organize
                 </button>
-                <button onClick={() => { handleSummarizeAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                  <DocumentTextIcon className="h-3.5 w-3.5" />Summarize
+                <button
+                  onClick={() => {
+                    handleSummarizeAI();
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <DocumentTextIcon className="h-3.5 w-3.5" />
+                  Summarize
                 </button>
-                <button onClick={() => { handleSuggestAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                  <LightBulbIcon className="h-3.5 w-3.5" />Suggest
+                <button
+                  onClick={() => {
+                    handleSuggestAI();
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <LightBulbIcon className="h-3.5 w-3.5" />
+                  Suggest
                 </button>
-                <button onClick={() => { handleRefineAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                  <WrenchIcon className="h-3.5 w-3.5" />Refine
+                <button
+                  onClick={() => {
+                    handleRefineAI();
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <WrenchIcon className="h-3.5 w-3.5" />
+                  Refine
                 </button>
-                <button onClick={() => { handleGenerateAI(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
-                  <SparklesIcon className="h-3.5 w-3.5" />Question
+                <button
+                  onClick={() => {
+                    handleGenerateAI();
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2">
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  Question
                 </button>
                 {isAuthorizedFull && (
-                  <button onClick={() => { handleOpenRewrite(); setIsAIActionsOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
-                    <CodeBracketIcon className="h-3.5 w-3.5" />Rewrite
+                  <button
+                    onClick={() => {
+                      handleOpenRewrite();
+                      setIsAIActionsOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
+                    <CodeBracketIcon className="h-3.5 w-3.5" />
+                    Rewrite
                   </button>
                 )}
               </div>
@@ -1277,10 +1348,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             return (
               <>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isImportant
-                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                    : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
-                    }`}
+                  className={`rounded-full p-1.5 transition-colors ${
+                    activeTab?.isImportant
+                      ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                      : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
+                  }`}
                   onClick={handleToggleImportant}
                   title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
                   {activeTab?.isImportant ? (
@@ -1290,10 +1362,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                   )}
                 </button>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isFlagged
-                    ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                    : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
-                    }`}
+                  className={`rounded-full p-1.5 transition-colors ${
+                    activeTab?.isFlagged
+                      ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                      : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
+                  }`}
                   onClick={handleToggleFlagged}
                   title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
                   {activeTab?.isFlagged ? <FlagIconSolid className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
@@ -1302,18 +1375,25 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             );
           })()}
           <button
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${isDirty
-              ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
-              : 'bg-green-50 text-green-600 cursor-default'
-              } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+              isDirty
+                ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
+                : 'bg-green-50 text-green-600 cursor-default'
+            } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
             disabled={!isDirty || isSaving}
             onClick={handleSave}>
             {isSaving ? (
-              <><ArrowPathIcon className="h-3 w-3 animate-spin" />Saving...</>
+              <>
+                <ArrowPathIcon className="h-3 w-3 animate-spin" />
+                Saving...
+              </>
             ) : isDirty ? (
               <>Save</>
             ) : (
-              <><CheckIcon className="h-3 w-3" />Saved</>
+              <>
+                <CheckIcon className="h-3 w-3" />
+                Saved
+              </>
             )}
           </button>
         </div>
@@ -1414,9 +1494,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       />
 
       <ToDoModal
-        initialTitle={
-          tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.title || page?.title || ''
-        }
+        initialTitle={tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.title || page?.title || ''}
         isOpen={isToDoOpen}
         onClose={handleCloseToDo}
         onSave={handleSaveToDo}
@@ -1431,7 +1509,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
       {/* Attachments Section */}
       <AttachmentManager pageId={page._id as string} />
-    </div >
+    </div>
   );
 });
 

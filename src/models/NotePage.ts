@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, {Document, Model, Schema} from 'mongoose';
 
 export interface INoteTab {
   _id?: string;
@@ -44,12 +44,12 @@ const NotePageSchema: Schema = new Schema(
     },
     tabs: [
       {
-        title: { type: String, required: true },
-        content: { type: String, default: '' },
-        color: { type: String, default: '#ffffff' },
-        isImportant: { type: Boolean, default: false },
-        isFlagged: { type: Boolean, default: false },
-        order: { type: Number, default: 0 },
+        title: {type: String, required: true},
+        content: {type: String, default: ''},
+        color: {type: String, default: '#ffffff'},
+        isImportant: {type: Boolean, default: false},
+        isFlagged: {type: Boolean, default: false},
+        order: {type: Number, default: 0},
       },
     ],
     color: {

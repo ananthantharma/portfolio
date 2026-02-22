@@ -1,5 +1,5 @@
-import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
-import { AuthOptions } from 'next-auth'; // Use AuthOptions type
+import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
+import {AuthOptions} from 'next-auth'; // Use AuthOptions type
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from './mongodb';
@@ -24,8 +24,8 @@ export const authOptions: AuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, account }) {
-      console.log('SignIn Attempt:', { email: user.email, provider: account?.provider });
+    async signIn({user, account}) {
+      console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
 
       if (account?.provider === 'google' && user.email) {
         try {
@@ -33,7 +33,7 @@ export const authOptions: AuthOptions = {
           const db = client.db('qt_portfolio');
 
           // Find the user in the database by email to get the correct ObjectId
-          const dbUser = await db.collection('users').findOne({ email: user.email });
+          const dbUser = await db.collection('users').findOne({email: user.email});
 
           if (dbUser) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -56,12 +56,12 @@ export const authOptions: AuthOptions = {
                 provider: 'google',
                 userId: dbUser._id,
               },
-              { $set: updateData },
-              { upsert: true }
+              {$set: updateData},
+              {upsert: true},
             );
 
             // Update user last login
-            await db.collection('users').updateOne({ _id: dbUser._id }, { $set: { lastLogin: new Date() } });
+            await db.collection('users').updateOne({_id: dbUser._id}, {$set: {lastLogin: new Date()}});
 
             console.log('SignIn: Updated account tokens for', user.email);
           } else {
@@ -73,7 +73,7 @@ export const authOptions: AuthOptions = {
       }
       return true;
     },
-    async session({ session, user }: { session: any; user: any }) {
+    async session({session, user}: {session: any; user: any}) {
       // Fetch the account to get the access token
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
@@ -91,7 +91,8 @@ export const authOptions: AuthOptions = {
         if (account.expires_at && now > account.expires_at) {
           console.log('NextAuth Session: Access Token Expired, attempting to refresh...');
           try {
-            const url = 'https://oauth2.googleapis.com/token?' +
+            const url =
+              'https://oauth2.googleapis.com/token?' +
               new URLSearchParams({
                 client_id: process.env.GOOGLE_CLIENT_ID as string,
                 client_secret: process.env.GOOGLE_CLIENT_SECRET as string,
@@ -100,7 +101,7 @@ export const authOptions: AuthOptions = {
               });
 
             const response = await fetch(url, {
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              headers: {'Content-Type': 'application/x-www-form-urlencoded'},
               method: 'POST',
             });
 
@@ -114,14 +115,14 @@ export const authOptions: AuthOptions = {
             const newExpiresAt = Math.floor(Date.now() / 1000 + refreshedTokens.expires_in);
 
             await db.collection('accounts').updateOne(
-              { _id: account._id },
+              {_id: account._id},
               {
                 $set: {
                   access_token: refreshedTokens.access_token,
                   expires_at: newExpiresAt,
                   refresh_token: refreshedTokens.refresh_token ?? account.refresh_token,
                 },
-              }
+              },
             );
 
             accessToken = refreshedTokens.access_token;

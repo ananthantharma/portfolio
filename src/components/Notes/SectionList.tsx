@@ -7,16 +7,16 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useMemo, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INoteSection } from '@/models/NoteSection';
+import {INoteSection} from '@/models/NoteSection';
 
-import { useBadgeSettings } from './BadgeSettingsContext';
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {useBadgeSettings} from './BadgeSettingsContext';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface SectionListProps {
   sections: INoteSection[];
@@ -29,7 +29,7 @@ interface SectionListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+  badgeCounts?: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
 }
 
 // Extracted Item Component
@@ -40,10 +40,10 @@ const SectionItem = React.memo<{
   onEdit: (section: INoteSection) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
-}>(({ section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
+  badgeStats?: {todo: {count: number; minDays: number | null}; important: number; flagged: number};
+}>(({section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats}) => {
   const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
-  const { getBadgeStyle } = useBadgeSettings(); // Use hook
+  const {getBadgeStyle} = useBadgeSettings(); // Use hook
 
   const style = useMemo(
     () => ({
@@ -61,17 +61,16 @@ const SectionItem = React.memo<{
 
   const renderBadges = () => {
     if (!badgeStats) return null;
-    const { todo } = badgeStats;
+    const {todo} = badgeStats;
     if (!todo || todo.count === 0) return null;
 
-    const { className, style } = getBadgeStyle(todo.minDays);
+    const {className, style} = getBadgeStyle(todo.minDays);
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'ml-auto mr-2'}`}>
         <span
           className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${className}`}
-          style={style}
-        >
+          style={style}>
           {todo.count}
         </span>
       </div>
@@ -81,8 +80,9 @@ const SectionItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
-          }`}
+        className={`relative p-2 rounded-lg transition-all ${
+          isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
+        }`}
         onClick={() => onSelect(section._id as string)}
         title={section.name}>
         {section.image ? (
@@ -108,13 +108,16 @@ const SectionItem = React.memo<{
   return (
     <SortableItem id={section._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${isSelected
-          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
-          : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
-          }`}
+        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+          isSelected
+            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
+            : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
+        }`}
         onClick={() => onSelect(section._id as string)}>
         {/* Accent Bar */}
-        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />}
+        {isSelected && (
+          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />
+        )}
 
         <div className="flex items-center gap-3 overflow-hidden">
           {section.image ? (
@@ -129,15 +132,15 @@ const SectionItem = React.memo<{
             />
           ) : null}
           <SectionIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${section.image ? 'hidden' : ''} ${isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
-              }`}
+            className={`h-4 w-4 shrink-0 transition-colors ${section.image ? 'hidden' : ''} ${
+              isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
+            }`}
             style={style}
           />
           <span className="truncate">{section.name}</span>
         </div>
 
         {renderBadges()}
-
 
         <div className="hidden space-x-1 group-hover:flex opacity-0 group-hover:opacity-100 transition-opacity">
           <button
@@ -160,7 +163,7 @@ const SectionItem = React.memo<{
           </button>
         </div>
       </div>
-    </SortableItem >
+    </SortableItem>
   );
 });
 
@@ -205,7 +208,7 @@ const SectionList: React.FC<SectionListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = sections.findIndex(s => s._id === active.id);

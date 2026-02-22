@@ -1,15 +1,14 @@
-
-import { Dialog, Transition } from '@headlessui/react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
   DocumentTextIcon,
   FolderIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
-import React, { Fragment, useEffect, useState, useRef, useCallback } from 'react';
+import React, {Fragment, useEffect, useState, useRef, useCallback} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 interface SearchModalProps {
   fetchItems: (query: string, searchPageTitlesOnly: boolean, searchSectionNamesOnly: boolean) => Promise<INotePage[]>;
@@ -18,7 +17,7 @@ interface SearchModalProps {
   onSelectTask: (task: INotePage) => void;
 }
 
-const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen, onClose, onSelectTask }) => {
+const SearchModal: React.FC<SearchModalProps> = React.memo(({fetchItems, isOpen, onClose, onSelectTask}) => {
   const [query, setQuery] = useState('');
   const [items, setItems] = useState<INotePage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,21 +63,24 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
   }, [isOpen]);
 
   // Keyboard Navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev < items.length - 1 ? prev + 1 : prev));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setSelectedIndex(prev => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (items[selectedIndex]) {
-        onSelectTask(items[selectedIndex]);
-        onClose();
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev < items.length - 1 ? prev + 1 : prev));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : prev));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (items[selectedIndex]) {
+          onSelectTask(items[selectedIndex]);
+          onClose();
+        }
       }
-    }
-  }, [items, selectedIndex, onSelectTask, onClose]);
+    },
+    [items, selectedIndex, onSelectTask, onClose],
+  );
 
   // Render Item ItemIcon
   const renderItemIcon = (item: INotePage) => {
@@ -122,7 +124,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                   ref={inputRef}
                   className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
                   placeholder="Search notes, sections, or content..."
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={e => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   value={query}
                 />
@@ -160,7 +162,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                 </div>
               </div>
 
-              {(query === '' && items.length === 0) && (
+              {query === '' && items.length === 0 && (
                 <div className="py-14 text-center text-sm sm:px-14">
                   <FolderIcon className="mx-auto h-6 w-6 text-gray-300" aria-hidden="true" />
                   <p className="mt-4 font-semibold text-gray-900">Search your second brain</p>
@@ -173,25 +175,29 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                   {items.map((item, index) => (
                     <li
                       key={item._id}
-                      className={`cursor-default select-none px-4 py-2 group ${selectedIndex === index ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'
-                        }`}
+                      className={`cursor-default select-none px-4 py-2 group ${
+                        selectedIndex === index ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'
+                      }`}
                       onClick={() => {
                         onSelectTask(item);
                         onClose();
                       }}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                    >
+                      onMouseEnter={() => setSelectedIndex(index)}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`flex items-center justify-center h-8 w-8 rounded-lg ${selectedIndex === index ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'
+                          <div
+                            className={`flex items-center justify-center h-8 w-8 rounded-lg ${
+                              selectedIndex === index ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-500'
                             }`}>
                             {renderItemIcon(item)}
                           </div>
                           <div className="flex flex-col">
-                            <span className={`font-semibold ${selectedIndex === index ? 'text-white' : 'text-gray-900'}`}>
+                            <span
+                              className={`font-semibold ${selectedIndex === index ? 'text-white' : 'text-gray-900'}`}>
                               {item.title || 'Untitled'}
                             </span>
-                            <span className={`text-xs ${selectedIndex === index ? 'text-indigo-200' : 'text-gray-500'}`}>
+                            <span
+                              className={`text-xs ${selectedIndex === index ? 'text-indigo-200' : 'text-gray-500'}`}>
                               {(item.sectionId as any)?.name ? (item.sectionId as any).name : 'Unfiled'}
                             </span>
                           </div>
@@ -200,9 +206,7 @@ const SearchModal: React.FC<SearchModalProps> = React.memo(({ fetchItems, isOpen
                           <span className={`text-xs ${selectedIndex === index ? 'text-indigo-200' : 'text-gray-400'}`}>
                             {new Date(item.updatedAt).toLocaleDateString()}
                           </span>
-                          {selectedIndex === index && (
-                            <ArrowRightIcon className="h-4 w-4 text-white" />
-                          )}
+                          {selectedIndex === index && <ArrowRightIcon className="h-4 w-4 text-white" />}
                         </div>
                       </div>
                     </li>

@@ -7,7 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {
   CalendarIcon,
   CheckIcon,
@@ -20,14 +20,14 @@ import {
   FolderArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
-import { useBadgeSettings } from './BadgeSettingsContext';
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {useBadgeSettings} from './BadgeSettingsContext';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface PageListProps {
   pages: INotePage[];
@@ -41,22 +41,22 @@ interface PageListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+  badgeCounts?: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
 }
 
 const PageItem = React.memo<{
-  page: INotePage & { type?: string };
+  page: INotePage & {type?: string};
   isSelected: boolean;
   onSelect: (id: string) => void;
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
   onMove: (page: INotePage) => void;
   isCollapsed: boolean;
-  badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
-}>(({ page, isSelected, onSelect, onEdit, onDelete, onMove, isCollapsed, badgeStats }) => {
+  badgeStats?: {todo: {count: number; minDays: number | null}; important: number; flagged: number};
+}>(({page, isSelected, onSelect, onEdit, onDelete, onMove, isCollapsed, badgeStats}) => {
   const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
 
-  const { getBadgeStyle } = useBadgeSettings();
+  const {getBadgeStyle} = useBadgeSettings();
 
   // ... (useMemo styles tailored to reduce change size, but I will replace the whole component block generally to ensure structure)
   const style = useMemo(
@@ -75,17 +75,16 @@ const PageItem = React.memo<{
 
   const renderBadges = () => {
     if (!badgeStats) return null;
-    const { todo } = badgeStats;
+    const {todo} = badgeStats;
     if (!todo || todo.count === 0) return null;
 
-    const { className, style } = getBadgeStyle(todo.minDays);
+    const {className, style} = getBadgeStyle(todo.minDays);
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
         <span
           className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${className}`}
-          style={style}
-        >
+          style={style}>
           {todo.count}
         </span>
       </div>
@@ -95,8 +94,9 @@ const PageItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
-          }`}
+        className={`relative p-2 rounded-lg transition-all ${
+          isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
+        }`}
         onClick={() => onSelect(page._id as string)}
         title={page.title || 'Untitled'}>
         {page.image ? (
@@ -122,13 +122,16 @@ const PageItem = React.memo<{
   return (
     <SortableItem id={page._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${isSelected
-          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
-          : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
-          }`}
+        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+          isSelected
+            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
+            : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
+        }`}
         onClick={() => onSelect(page._id as string)}>
         {/* Accent Bar */}
-        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />}
+        {isSelected && (
+          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />
+        )}
 
         <div className="flex items-center gap-2 overflow-hidden w-full">
           <div className="flex-shrink-0">
@@ -144,8 +147,9 @@ const PageItem = React.memo<{
               />
             ) : null}
             <PageIcon
-              className={`h-4 w-4 transition-colors ${page.image ? 'hidden' : ''} ${isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
-                }`}
+              className={`h-4 w-4 transition-colors ${page.image ? 'hidden' : ''} ${
+                isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
+              }`}
               style={style}
             />
           </div>
@@ -187,7 +191,6 @@ const PageItem = React.memo<{
     </SortableItem>
   );
 });
-
 
 PageItem.displayName = 'PageItem';
 
@@ -232,7 +235,7 @@ const PageList: React.FC<PageListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = pages.findIndex(p => p._id === active.id);
@@ -259,7 +262,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     }, [newPageTitle, newPageColor, newPageIcon, newPageImage, onAddPage]);
 
     const handleAddToday = useCallback(() => {
-      const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
       onAddPage(today, '#000000', 'Calendar', null);
     }, [onAddPage]);
 

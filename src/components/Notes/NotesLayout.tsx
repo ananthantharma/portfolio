@@ -17,18 +17,18 @@ import {
   SparklesIcon,
   TableCellsIcon,
   ArrowsPointingOutIcon, // For Focus Mode
-  ArrowsPointingInIcon,   // For Focus Mode Exit
+  ArrowsPointingInIcon, // For Focus Mode Exit
   DocumentPlusIcon,
   PlusCircleIcon,
-  BookmarkIcon
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
+import {useSession} from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
-import { INoteSection } from '@/models/NoteSection';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
+import {INoteSection} from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import SimpleRewriteModal from './SimpleRewriteModal';
@@ -45,15 +45,14 @@ import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
-import { BadgeSettingsProvider } from './BadgeSettingsContext';
-import { BadgeSettingsModal } from './BadgeSettingsModal';
+import {BadgeSettingsProvider} from './BadgeSettingsContext';
+import {BadgeSettingsModal} from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 
-
 import SourcingEventModal from './SourcingEventModal';
 import SourcingListModal from './SourcingListModal';
-import { TableAppModal } from './HighPerformanceTable/TableAppModal';
+import {TableAppModal} from './HighPerformanceTable/TableAppModal';
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 
 const NotesLayout: React.FC = React.memo(() => {
@@ -87,11 +86,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
-    pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    categories: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-  }>({ pages: {}, sections: {}, categories: {} });
-
+    pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    sections: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    categories: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+  }>({pages: {}, sections: {}, categories: {}});
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
@@ -235,7 +233,6 @@ const NotesLayout: React.FC = React.memo(() => {
     // Poll for badges
     const interval = setInterval(fetchBadgeStats, 30000); // 30s poll
     return () => clearInterval(interval);
-
   }, []);
 
   const formatBytes = (bytes: number, decimals = 2) => {
@@ -360,7 +357,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
+      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -370,7 +367,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -396,7 +393,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
+        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -428,7 +425,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -455,7 +452,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
+          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -491,7 +488,7 @@ const NotesLayout: React.FC = React.memo(() => {
       // 1. Fetch/Create 'Other Notes' Category
       let category = categories.find(c => c.name === 'Other Notes');
       if (!category) {
-        const catRes = await axios.post('/api/notes/categories', { name: 'Other Notes' });
+        const catRes = await axios.post('/api/notes/categories', {name: 'Other Notes'});
         category = catRes.data.data;
         setCategories(prev => [...prev, category as INoteCategory]);
       }
@@ -501,7 +498,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const secRes = await axios.get(`/api/notes/sections?categoryId=${category!._id}`);
       let section = secRes.data.data.find((s: INoteSection) => s.name === 'Other');
       if (!section) {
-        const createSecRes = await axios.post('/api/notes/sections', { name: 'Other', categoryId: category!._id });
+        const createSecRes = await axios.post('/api/notes/sections', {name: 'Other', categoryId: category!._id});
         section = createSecRes.data.data;
         if (selectedCategoryId === category!._id) {
           setSections(prev => [...prev, section]);
@@ -509,7 +506,7 @@ const NotesLayout: React.FC = React.memo(() => {
       }
 
       // 3. Create Page
-      const pageRes = await axios.post('/api/notes/pages', { title: 'New Note', sectionId: section._id });
+      const pageRes = await axios.post('/api/notes/pages', {title: 'New Note', sectionId: section._id});
       const newPage = pageRes.data.data;
 
       // 4. Navigate to new Quick Note
@@ -520,7 +517,6 @@ const NotesLayout: React.FC = React.memo(() => {
           setSelectedPageId(newPage._id as string);
         }, 150);
       }, 150);
-
     } catch (error) {
       console.error('Error creating quick note:', error);
       alert('Failed to create quick note.');
@@ -530,7 +526,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
+        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -554,24 +550,27 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const [selectedPageToMove, setSelectedPageToMove] = useState<INotePage | null>(null);
 
-  const handleMovePage = useCallback(async (pageId: string, destSectionId: string) => {
-    try {
-      await axios.put(`/api/notes/pages/${pageId}`, { sectionId: destSectionId });
-      if (selectedSectionId && destSectionId !== selectedSectionId) {
-        setPages(prev => prev.filter(p => p._id !== pageId));
-        if (selectedPageId === pageId) setSelectedPageId(null);
+  const handleMovePage = useCallback(
+    async (pageId: string, destSectionId: string) => {
+      try {
+        await axios.put(`/api/notes/pages/${pageId}`, {sectionId: destSectionId});
+        if (selectedSectionId && destSectionId !== selectedSectionId) {
+          setPages(prev => prev.filter(p => p._id !== pageId));
+          if (selectedPageId === pageId) setSelectedPageId(null);
+        }
+        setSelectedPageToMove(null);
+      } catch (error) {
+        console.error('Error moving page:', error);
+        alert('Failed to move page.');
       }
-      setSelectedPageToMove(null);
-    } catch (error) {
-      console.error('Error moving page:', error);
-      alert('Failed to move page.');
-    }
-  }, [selectedSectionId, selectedPageId]);
+    },
+    [selectedSectionId, selectedPageId],
+  );
 
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
-      const response = await axios.put(`/api/notes/pages/${id}`, { tabs: data });
+      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -583,7 +582,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -644,7 +643,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(true), []);
   const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
 
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
@@ -729,10 +728,13 @@ const NotesLayout: React.FC = React.memo(() => {
           <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-2 md:mx-4 my-2 rounded-xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-2 md:px-4 py-2.5 shadow-sm z-40 transition-all duration-300 gap-2 md:gap-0">
             <div className="flex items-center gap-1.5 text-[13px] text-gray-400 overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto pb-1 md:pb-0">
               <button
-                onClick={() => { setSelectedCategoryId(null); setSelectedSectionId(null); setSelectedPageId(null); }}
+                onClick={() => {
+                  setSelectedCategoryId(null);
+                  setSelectedSectionId(null);
+                  setSelectedPageId(null);
+                }}
                 className="flex items-center gap-1.5 hover:text-indigo-500 transition-colors"
-                title="Go to Workspace"
-              >
+                title="Go to Workspace">
                 <HomeIcon className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="font-medium text-gray-500 hover:text-indigo-500">Workspace</span>
               </button>
@@ -740,10 +742,12 @@ const NotesLayout: React.FC = React.memo(() => {
                 <>
                   <ChevronRightIcon className="h-3 w-3 flex-shrink-0" />
                   <button
-                    onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
+                    onClick={() => {
+                      setSelectedSectionId(null);
+                      setSelectedPageId(null);
+                    }}
                     className="font-medium text-gray-600 hover:text-indigo-500 transition-colors"
-                    title={`Go to ${currentCategory.name}`}
-                  >
+                    title={`Go to ${currentCategory.name}`}>
                     {currentCategory.name}
                   </button>
                 </>
@@ -752,10 +756,11 @@ const NotesLayout: React.FC = React.memo(() => {
                 <>
                   <ChevronRightIcon className="h-3 w-3 flex-shrink-0" />
                   <button
-                    onClick={() => { setSelectedPageId(null); }}
+                    onClick={() => {
+                      setSelectedPageId(null);
+                    }}
                     className="font-medium text-gray-600 hover:text-indigo-500 transition-colors"
-                    title={`Go to ${currentSection.name}`}
-                  >
+                    title={`Go to ${currentSection.name}`}>
                     {currentSection.name}
                   </button>
                 </>
@@ -786,7 +791,9 @@ const NotesLayout: React.FC = React.memo(() => {
                   title="Command Palette (Ctrl+K)">
                   <MagnifyingGlassIcon className="h-3.5 w-3.5 group-hover:text-sky-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Search</span>
-                  <kbd className="hidden lg:inline ml-0.5 text-[8px] text-slate-300 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-400 transition-colors">⌘K</kbd>
+                  <kbd className="hidden lg:inline ml-0.5 text-[8px] text-slate-300 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-400 transition-colors">
+                    ⌘K
+                  </kbd>
                 </button>
                 <button
                   className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
@@ -832,8 +839,7 @@ const NotesLayout: React.FC = React.memo(() => {
               <button
                 className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 border border-transparent hover:border-slate-200/50"
                 onClick={toggleFocusMode}
-                title="Focus Mode (Cmd+\)"
-              >
+                title="Focus Mode (Cmd+\)">
                 <ArrowsPointingOutIcon className="h-3.5 w-3.5 group-hover:text-amber-500 transition-colors duration-200" />
               </button>
 
@@ -846,24 +852,50 @@ const NotesLayout: React.FC = React.memo(() => {
                     {/* Rewrite Dropdown */}
                     <div className="relative" ref={rewriteDropdownRef}>
                       <button
-                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''}`}
+                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${
+                          isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''
+                        }`}
                         title="AI Rewrite Tools"
-                        onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}
-                      >
-                        <PencilSquareIcon className={`h-3.5 w-3.5 transition-colors duration-200 ${isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'}`} />
+                        onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}>
+                        <PencilSquareIcon
+                          className={`h-3.5 w-3.5 transition-colors duration-200 ${
+                            isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'
+                          }`}
+                        />
                         <span className="hidden xl:inline">Rewrite</span>
                       </button>
                       {isRewriteDropdownOpen && (
                         <div className="absolute right-0 top-full mt-1.5 w-48 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                          <button onClick={() => { handleOpenRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
-                            <PencilSquareIcon className="h-3 w-3 text-indigo-400" />Advanced Rewrite
+                          <button
+                            onClick={() => {
+                              handleOpenRewrite();
+                              setIsRewriteDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
+                            style={{width: 'calc(100% - 4px)'}}>
+                            <PencilSquareIcon className="h-3 w-3 text-indigo-400" />
+                            Advanced Rewrite
                           </button>
-                          <button onClick={() => { handleOpenSimpleRewrite(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
-                            <PencilSquareIcon className="h-3 w-3 text-purple-400" />Simple Rewrite
+                          <button
+                            onClick={() => {
+                              handleOpenSimpleRewrite();
+                              setIsRewriteDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
+                            style={{width: 'calc(100% - 4px)'}}>
+                            <PencilSquareIcon className="h-3 w-3 text-purple-400" />
+                            Simple Rewrite
                           </button>
                           <div className="h-px bg-slate-100 my-1 mx-2" />
-                          <button onClick={() => { handleOpenSimpleRewriteOpenAI(); setIsRewriteDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2" style={{ width: 'calc(100% - 4px)' }}>
-                            <SparklesIcon className="h-3 w-3 text-teal-400" />GPT Rewrite
+                          <button
+                            onClick={() => {
+                              handleOpenSimpleRewriteOpenAI();
+                              setIsRewriteDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
+                            style={{width: 'calc(100% - 4px)'}}>
+                            <SparklesIcon className="h-3 w-3 text-teal-400" />
+                            GPT Rewrite
                           </button>
                         </div>
                       )}
@@ -879,7 +911,19 @@ const NotesLayout: React.FC = React.memo(() => {
                       className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={handleOpenAssessment}
                       title="Document Assessment">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5 group-hover:text-cyan-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="h-3.5 w-3.5 group-hover:text-cyan-500 transition-colors duration-200">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                        />
+                      </svg>
                       <span className="hidden 2xl:inline">Assess</span>
                     </button>
                   </div>
@@ -892,17 +936,39 @@ const NotesLayout: React.FC = React.memo(() => {
                       className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
                       onClick={() => setIsSourcingListOpen(true)}
                       title="View All Sourcing Events">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 group-hover:text-blue-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-3.5 h-3.5 group-hover:text-blue-500 transition-colors duration-200">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"
+                        />
+                      </svg>
                       <span className="hidden lg:inline">Sourcing</span>
                       {sourcingEventCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white ring-2 ring-white">{sourcingEventCount}</span>
+                        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white ring-2 ring-white">
+                          {sourcingEventCount}
+                        </span>
                       )}
                     </button>
                     <button
                       className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                       onClick={() => setIsSourcingModalOpen(true)}
                       title="Create Sourcing Event">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 group-hover:text-emerald-500 transition-colors duration-200"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-3.5 h-3.5 group-hover:text-emerald-500 transition-colors duration-200">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
                     </button>
                     <button
                       className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
@@ -969,14 +1035,12 @@ const NotesLayout: React.FC = React.memo(() => {
         )}
 
         <div className="flex flex-1 overflow-hidden px-2 md:px-4 pb-4 gap-0 md:gap-3 relative">
-
           {/* Focus Mode Exit Button (Only visible in Focus Mode) */}
           {isFocusMode && (
             <button
               onClick={toggleFocusMode}
               className="absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-lg border border-slate-200 text-slate-500 hover:text-indigo-600 transition-all opacity-60 hover:opacity-100 group"
-              title="Exit Focus Mode"
-            >
+              title="Exit Focus Mode">
               <ArrowsPointingInIcon className="h-5 w-5" />
             </button>
           )}
@@ -984,10 +1048,10 @@ const NotesLayout: React.FC = React.memo(() => {
           {/* ─── 1. Categories Column ─── */}
           {/* Hidden in Focus Mode */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${isCategoryCollapsed ? 'w-14 items-center' : ''
-              } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}
-          >
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${
+              isCategoryCollapsed ? 'w-14 items-center' : ''
+            } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth}}>
             <CategoryList
               categories={categories}
               isCollapsed={isCategoryCollapsed}
@@ -1004,17 +1068,17 @@ const NotesLayout: React.FC = React.memo(() => {
             {!isCategoryCollapsed && !isFocusMode && (
               <div
                 className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
-                onMouseDown={(e) => startResizing(e, 'category')}
+                onMouseDown={e => startResizing(e, 'category')}
               />
             )}
           </div>
 
           {/* ─── 2. Sections Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isSectionCollapsed ? 'w-14 items-center' : ''
-              } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}
-          >
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
+              isSectionCollapsed ? 'w-14 items-center' : ''
+            } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth}}>
             <SectionList
               sections={sections}
               selectedSectionId={selectedSectionId}
@@ -1032,17 +1096,17 @@ const NotesLayout: React.FC = React.memo(() => {
             {!isSectionCollapsed && !isFocusMode && (
               <div
                 className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
-                onMouseDown={(e) => startResizing(e, 'section')}
+                onMouseDown={e => startResizing(e, 'section')}
               />
             )}
           </div>
 
           {/* ─── 3. Pages Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isPageCollapsed ? 'w-14 items-center' : ''
-              } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}
-          >
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
+              isPageCollapsed ? 'w-14 items-center' : ''
+            } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isPageCollapsed || isFocusMode ? undefined : pageWidth}}>
             <PageList
               pages={pages}
               selectedPageId={selectedPageId}
@@ -1061,13 +1125,16 @@ const NotesLayout: React.FC = React.memo(() => {
             {!isPageCollapsed && !isFocusMode && (
               <div
                 className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-slate-300 transition-colors z-10"
-                onMouseDown={(e) => startResizing(e, 'page')}
+                onMouseDown={e => startResizing(e, 'page')}
               />
             )}
           </div>
 
           {/* ─── 4. Editor Area ─── */}
-          <div className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
+          <div
+            className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${
+              !selectedPageId ? 'max-md:hidden' : ''
+            } ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
             {selectedPageId ? (
               <NoteEditor
                 key={selectedPageId}
@@ -1084,14 +1151,13 @@ const NotesLayout: React.FC = React.memo(() => {
               </div>
             )}
           </div>
-
         </div>
 
         {/* Access Modals */}
         <ToDoListModal
           isOpen={isToDoListOpen}
           onClose={handleCloseToDoList}
-          onNavigate={(task) => task ? handleJumpToTask(task) : undefined}
+          onNavigate={task => (task ? handleJumpToTask(task) : undefined)}
           isDirectCreateOpen={isDirectTaskCreateOpen}
           onCloseDirectCreate={() => setIsDirectTaskCreateOpen(false)}
         />
@@ -1150,15 +1216,9 @@ const NotesLayout: React.FC = React.memo(() => {
           defaultEventName={selectedPage?.title || ''}
           defaultDescription=""
         />
-        <SourcingListModal
-          isOpen={isSourcingListOpen}
-          onClose={() => setIsSourcingListOpen(false)}
-        />
+        <SourcingListModal isOpen={isSourcingListOpen} onClose={() => setIsSourcingListOpen(false)} />
 
-        <TableAppModal
-          isOpen={isTableAppOpen}
-          onClose={() => setIsTableAppOpen(false)}
-        />
+        <TableAppModal isOpen={isTableAppOpen} onClose={() => setIsTableAppOpen(false)} />
 
         {selectedPageToMove && (
           <MovePageModal
@@ -1171,11 +1231,7 @@ const NotesLayout: React.FC = React.memo(() => {
           />
         )}
 
-        <BadgeSettingsModal
-          isOpen={isSettingsOpen}
-          onClose={handleCloseSettings}
-        />
-
+        <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
       </div>
     </BadgeSettingsProvider>
   );

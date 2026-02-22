@@ -1,23 +1,12 @@
-import {
-  Bot,
-  FileText,
-  Loader2,
-  FilePenLine,
-  PlusCircle,
-  Trash2,
-  User,
-  Menu,
-  Settings,
-  X,
-} from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import React, { useEffect, useRef, useState } from 'react';
+import {Bot, FileText, Loader2, FilePenLine, PlusCircle, Trash2, User, Menu, Settings, X} from 'lucide-react';
+import {useSession} from 'next-auth/react';
+import React, {useEffect, useRef, useState} from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 
-import { getChatResponse } from '../lib/gemini';
+import {getChatResponse} from '../lib/gemini';
 import './ChatInterface.css';
 
 const plugins = [remarkGfm];
@@ -72,8 +61,8 @@ interface ChatInterfaceProps {
   onClearKey: () => void;
 }
 
-export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
-  const { data: session } = useSession();
+export function ChatInterface({apiKey, onClearKey}: ChatInterfaceProps) {
+  const {data: session} = useSession();
   // Session State
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -97,7 +86,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const [attachments, setAttachments] = useState<Attachment[]>([]); // Renamed from selectedImages
 
   const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
-  const [availableModels, setAvailableModels] = useState<{ id: string; label: string }[]>([]);
+  const [availableModels, setAvailableModels] = useState<{id: string; label: string}[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -139,7 +128,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const updateInitialSession = (instruction: string) => {
     setSessions(prev => {
       if (prev.length === 1 && prev[0].messages.length === 0 && prev[0].title === 'New Chat') {
-        return [{ ...prev[0], systemInstruction: instruction }];
+        return [{...prev[0], systemInstruction: instruction}];
       }
       return prev;
     });
@@ -155,22 +144,22 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
       try {
         const response = await fetch('/api/user/settings', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ systemInstruction: customInstruction }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({systemInstruction: customInstruction}),
         });
 
         if (!response.ok) throw new Error('Failed to save to DB');
       } catch (error) {
         console.error('Error saving to DB:', error);
         // Don't alert error if local save worked, just log it.
-        // Or alert user? "Saved locally, but sync failed." 
+        // Or alert user? "Saved locally, but sync failed."
         // Let's keep it silent for smoother UX unless critical.
       }
     }
 
     setShowSettings(false);
     if (currentSession?.messages.length === 0) {
-      updateCurrentSession(s => ({ ...s, systemInstruction: customInstruction }));
+      updateCurrentSession(s => ({...s, systemInstruction: customInstruction}));
     }
     alert('Settings saved!');
   };
@@ -179,9 +168,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   useEffect(() => {
     // We only care about Flash and Pro for now
     const models = [
-      { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
-      { id: 'gemini-pro-latest', label: 'Gemini Pro Latest' },
-      { id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest' },
+      {id: 'gemini-flash-latest', label: 'Gemini Flash Latest'},
+      {id: 'gemini-pro-latest', label: 'Gemini Pro Latest'},
+      {id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite Latest'},
     ];
     setAvailableModels(models);
     setSelectedModel('gemini-flash-latest');
@@ -197,7 +186,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   };
 
   useEffect(() => {
@@ -323,7 +312,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
   // Helper: Upload file to Oracle Object Storage
   const uploadToOracle = async (file: File): Promise<string> => {
     // URL Layout: https://objectstorage.REGION.oraclecloud.com/p/PAR_TOKEN/n/NAMESPACE/b/BUCKET/o/OBJECT_NAME
-    const PAR_URL_BASE = 'https://objectstorage.ca-toronto-1.oraclecloud.com/p/QLAWx8wCq1Wb3kBchcG9RCcy3TcngoiuartQbdYovOIXVvYxNVvBGtWE09o29MvG/n/yzo9jkinnwr6/b/bucket-20260103-1212/o/';
+    const PAR_URL_BASE =
+      'https://objectstorage.ca-toronto-1.oraclecloud.com/p/QLAWx8wCq1Wb3kBchcG9RCcy3TcngoiuartQbdYovOIXVvYxNVvBGtWE09o29MvG/n/yzo9jkinnwr6/b/bucket-20260103-1212/o/';
     const objectName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
     const uploadUrl = `${PAR_URL_BASE}${objectName}`;
 
@@ -332,8 +322,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         method: 'PUT',
         body: file,
         headers: {
-          'Content-Type': file.type || 'application/octet-stream'
-        }
+          'Content-Type': file.type || 'application/octet-stream',
+        },
       });
 
       if (!response.ok) {
@@ -384,7 +374,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 mimeType: 'application/pdf',
               });
             } catch (err) {
-              console.error("PDF Upload failed", err);
+              console.error('PDF Upload failed', err);
               alert(`Failed to upload ${file.name}`);
             }
             continue;
@@ -397,7 +387,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               reader.onload = async e => {
                 try {
                   const arrayBuffer = e.target?.result as ArrayBuffer;
-                  const result = await mammoth.extractRawText({ arrayBuffer });
+                  const result = await mammoth.extractRawText({arrayBuffer});
                   newAttachments.push({
                     type: 'text',
                     content: result.value, // Text is small, safe to send inline
@@ -420,7 +410,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               reader.onload = e => {
                 try {
                   const data = new Uint8Array(e.target?.result as ArrayBuffer);
-                  const workbook = XLSX.read(data, { type: 'array' });
+                  const workbook = XLSX.read(data, {type: 'array'});
                   const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                   const csv = XLSX.utils.sheet_to_csv(firstSheet);
                   newAttachments.push({
@@ -445,7 +435,6 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             content: text,
             name: file.name,
           });
-
         } catch (error) {
           console.error('Error processing file:', file.name, error);
           alert(`Failed to process ${file.name}`);
@@ -503,7 +492,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
     updateCurrentSession(session => {
       const newMessages = [
         ...session.messages,
-        { role: 'user', parts: userMessage, attachments: currentAttachments } as any,
+        {role: 'user', parts: userMessage, attachments: currentAttachments} as any,
       ];
 
       // Update title if it's the first message and still named "New Chat"
@@ -538,7 +527,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
       updateCurrentSession(s => ({
         ...s,
-        messages: [...s.messages, { role: 'model', parts: response }],
+        messages: [...s.messages, {role: 'model', parts: response}],
       }));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
@@ -582,34 +571,34 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
 
   const markdownComponents: any = {
     // Tables - Gemini-like styling (Clean, lighter borders)
-    table: ({ node, ...props }: any) => (
+    table: ({node, ...props}: any) => (
       <div className="overflow-x-auto my-4 rounded-xl border border-zinc-700/50 bg-zinc-800/20">
         <table className="min-w-full divide-y divide-zinc-700/50" {...props} />
       </div>
     ),
-    thead: ({ node, ...props }: any) => <thead className="bg-zinc-800" {...props} />,
-    tbody: ({ node, ...props }: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
-    tr: ({ node, ...props }: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
-    th: ({ node, ...props }: any) => (
+    thead: ({node, ...props}: any) => <thead className="bg-zinc-800" {...props} />,
+    tbody: ({node, ...props}: any) => <tbody className="divide-y divide-zinc-700 bg-zinc-900/50" {...props} />,
+    tr: ({node, ...props}: any) => <tr className="transition-colors hover:bg-zinc-800/30" {...props} />,
+    th: ({node, ...props}: any) => (
       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider" {...props} />
     ),
-    td: ({ node, ...props }: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
+    td: ({node, ...props}: any) => <td className="px-6 py-4 text-sm text-zinc-300 whitespace-normal" {...props} />,
 
     // Text & Lists
-    p: ({ node, ...props }: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
-    a: ({ node, ...props }: any) => (
+    p: ({node, ...props}: any) => <p className="mb-4 leading-7 last:mb-0" {...props} />,
+    a: ({node, ...props}: any) => (
       <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" target="_blank" {...props} />
     ),
-    ul: ({ node, ...props }: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
-    ol: ({ node, ...props }: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
-    li: ({ node, ...props }: any) => <li className="pl-2" {...props} />,
-    blockquote: ({ node, ...props }: any) => (
+    ul: ({node, ...props}: any) => <ul className="my-4 ml-6 list-disc space-y-2 marker:text-zinc-500" {...props} />,
+    ol: ({node, ...props}: any) => <ol className="my-4 ml-6 list-decimal space-y-2 marker:text-zinc-500" {...props} />,
+    li: ({node, ...props}: any) => <li className="pl-2" {...props} />,
+    blockquote: ({node, ...props}: any) => (
       <blockquote className="border-l-4 border-zinc-600 pl-4 my-4 italic text-zinc-400" {...props} />
     ),
-    hr: ({ node, ...props }: any) => <hr className="my-6 border-zinc-700" {...props} />,
+    hr: ({node, ...props}: any) => <hr className="my-6 border-zinc-700" {...props} />,
 
     // Code
-    code: ({ node, inline, className, children, ...props }: any) => {
+    code: ({node, inline, className, children, ...props}: any) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
         <div className="my-6 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900">
@@ -645,8 +634,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
     <div className="flex h-full bg-zinc-900 text-zinc-100 overflow-hidden">
       {/* Sidebar */}
       <div
-        className={`w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-300 absolute md:relative z-50 h-full ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          }`}>
+        className={`w-64 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-900 transition-transform duration-300 absolute md:relative z-50 h-full ${
+          showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}>
         <div className="p-4 border-b border-zinc-800">
           <button
             className="w-full flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-lg transition-colors border border-zinc-700 text-sm font-medium"
@@ -659,10 +649,11 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map(session => (
             <div
-              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${currentSessionId === session.id
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-                }`}
+              className={`group flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition-colors text-sm ${
+                currentSessionId === session.id
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+              }`}
               key={session.id}
               onClick={() => {
                 setCurrentSessionId(session.id);
@@ -708,8 +699,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             {/* Mobile Menu Toggle */}
             <button
               className="md:hidden p-1 text-zinc-400 hover:text-white"
-              onClick={() => setShowSidebar(!showSidebar)}
-            >
+              onClick={() => setShowSidebar(!showSidebar)}>
               <Menu className="w-6 h-6" />
             </button>
             <div className="flex items-center gap-2">
@@ -736,8 +726,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               </div>
             )}
             <button
-              className={`text-sm transition-colors flex items-center gap-2 ${currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
-                }`}
+              className={`text-sm transition-colors flex items-center gap-2 ${
+                currentSession.activeGem === 'Email Refiner' ? 'text-purple-400' : 'text-zinc-400 hover:text-purple-400'
+              }`}
               onClick={handleEmailRefine}
               title="Start Email Refiner Gem">
               <FilePenLine className="w-4 h-4" />
@@ -781,8 +772,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 <h3 className="text-lg font-semibold text-white">System Instructions</h3>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="text-zinc-400 hover:text-white transition-colors"
-                >
+                  className="text-zinc-400 hover:text-white transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -793,7 +783,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 <textarea
                   className="w-full h-64 bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none font-mono"
                   value={customInstruction}
-                  onChange={(e) => setCustomInstruction(e.target.value)}
+                  onChange={e => setCustomInstruction(e.target.value)}
                   placeholder="Enter system instructions..."
                 />
               </div>
@@ -802,14 +792,12 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                   onClick={() => {
                     setCustomInstruction(DEFAULT_SYSTEM_INSTRUCTION); // Reset to default
                   }}
-                  className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-                >
+                  className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">
                   Reset to Default
                 </button>
                 <button
                   onClick={handleSaveSettings}
-                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-500/20"
-                >
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium shadow-lg shadow-blue-500/20">
                   Save & Apply
                 </button>
               </div>
@@ -831,8 +819,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
             <div className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`} key={idx}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
-                    }`}>
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' ? 'bg-blue-600' : 'bg-emerald-600'
+                  }`}>
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
@@ -841,10 +830,11 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                 </div>
 
                 <div
-                  className={`px-4 py-3 rounded-2xl ${msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
-                    }`}>
+                  className={`px-4 py-3 rounded-2xl ${
+                    msg.role === 'user'
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700'
+                  }`}>
                   <div className="prose prose-invert max-w-none text-sm sm:text-base">
                     {/* Render User Images if present */}
                     {(msg as any).images?.map((img: string, i: number) => (
@@ -901,12 +891,7 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
               />
 
               {/* Search Toggle */}
-              <input
-                id="search"
-                type="checkbox"
-                checked={useSearch}
-                onChange={(e) => setUseSearch(e.target.checked)}
-              />
+              <input id="search" type="checkbox" checked={useSearch} onChange={e => setUseSearch(e.target.checked)} />
 
               {/* Note: Camera removed as requested */}
               {/* <input type="file" id="camera" accept="image/*" capture="environment" /> */}
@@ -918,11 +903,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                   width="30"
                   height="30"
                   fill="var(--neutral-color)"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
-                  ></path>
+                  viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"></path>
                 </svg>
               </label>
 
@@ -934,42 +916,32 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                   fill="var(--neutral-color)"
                   height="30"
                   width="30"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"
-                  ></path>
-                  <path
-                    d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"
-                  ></path>
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"></path>
+                  <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"></path>
                 </svg>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="30"
                   height="30"
                   fill="var(--neutral-color)"
-                  viewBox="0 0 16 16"
-                >
-                  <path
-                    d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3"
-                  ></path>
-                  <path
-                    d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z"
-                  ></path>
+                  viewBox="0 0 16 16">
+                  <path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3"></path>
+                  <path d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z"></path>
                 </svg>
               </label>
 
               <div className="chat-marquee">
                 <ul>
-                  <li onClick={() => setInput("Summerize this")}>Summerize this for me</li>
-                  <li onClick={() => setInput("Rewrite this - Casual")}>Rewrite this - Casual</li>
-                  <li onClick={() => setInput("Rewrite this - Professional")}>Rewrite this - Professional</li>
+                  <li onClick={() => setInput('Summerize this')}>Summerize this for me</li>
+                  <li onClick={() => setInput('Rewrite this - Casual')}>Rewrite this - Casual</li>
+                  <li onClick={() => setInput('Rewrite this - Professional')}>Rewrite this - Professional</li>
                 </ul>
                 {/* Duplicated for smooth marquee */}
                 <ul>
-                  <li onClick={() => setInput("Summerize this")}>Summerize this</li>
-                  <li onClick={() => setInput("Rewrite this - Casual")}>Rewrite this - Casual</li>
-                  <li onClick={() => setInput("Rewrite this - Professional")}>Rewrite this - Professional</li>
+                  <li onClick={() => setInput('Summerize this')}>Summerize this</li>
+                  <li onClick={() => setInput('Rewrite this - Casual')}>Rewrite this - Casual</li>
+                  <li onClick={() => setInput('Rewrite this - Professional')}>Rewrite this - Professional</li>
                 </ul>
               </div>
 
@@ -989,7 +961,14 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                               <FileText className="w-5 h-5 text-white" />
                             </div>
                           )}
-                          <button onClick={(e) => { e.preventDefault(); removeAttachment(idx); }} className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 w-4 h-4 flex items-center justify-center text-[10px] text-white">x</button>
+                          <button
+                            onClick={e => {
+                              e.preventDefault();
+                              removeAttachment(idx);
+                            }}
+                            className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5 w-4 h-4 flex items-center justify-center text-[10px] text-white">
+                            x
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -999,11 +978,10 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                     id="chat-input"
                     placeholder="Ask anything"
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
-                    ref={textareaRef}
-                  ></textarea>
+                    ref={textareaRef}></textarea>
 
                   <div className="button-bar">
                     <div className="left-buttons">
@@ -1014,11 +992,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                           width="20"
                           height="20"
                           fill="var(--neutral-color)"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"
-                          ></path>
+                          viewBox="0 0 16 16">
+                          <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"></path>
                         </svg>
                       </label>
                       <div id="appendix-bar">
@@ -1028,11 +1003,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                             width="30"
                             height="30"
                             fill="var(--primary-color)"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"
-                            ></path>
+                            viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"></path>
                           </svg>
                         </label>
                         {/* Camera removed */}
@@ -1043,12 +1015,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                             width="30"
                             height="30"
                             fill="var(--primary-color)"
-                            viewBox="0 0 16 16"
-                          >
+                            viewBox="0 0 16 16">
                             <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"></path>
-                            <path
-                              d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z"
-                            ></path>
+                            <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1z"></path>
                           </svg>
                         </label>
                         {/* Files - Trigger file input */}
@@ -1058,28 +1027,27 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                             width="30"
                             height="30"
                             fill="var(--primary-color)"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z"
-                            ></path>
+                            viewBox="0 0 16 16">
+                            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z"></path>
                           </svg>
                         </label>
                       </div>
 
                       {/* Search Checkbox */}
-                      <input id="search" type="checkbox" checked={useSearch} onChange={(e) => setUseSearch(e.target.checked)} />
+                      <input
+                        id="search"
+                        type="checkbox"
+                        checked={useSearch}
+                        onChange={e => setUseSearch(e.target.checked)}
+                      />
                       <label htmlFor="search" title="Enable Internet Search">
                         <svg
                           viewBox="0 0 16 16"
                           fill="var(--neutral-color)"
                           height="20"
                           width="20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z"
-                          ></path>
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z"></path>
                         </svg>
                       </label>
                     </div>
@@ -1091,14 +1059,9 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                           width="20"
                           height="20"
                           fill="var(--neutral-color)"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"
-                          ></path>
-                          <path
-                            d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"
-                          ></path>
+                          viewBox="0 0 16 16">
+                          <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"></path>
+                          <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3"></path>
                         </svg>
                       </label>
                       <button type="submit" disabled={(!input.trim() && attachments.length === 0) || isLoading}>
@@ -1107,11 +1070,8 @@ export function ChatInterface({ apiKey, onClearKey }: ChatInterfaceProps) {
                           width="30"
                           height="30"
                           fill="var(--neutral-color)"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"
-                          ></path>
+                          viewBox="0 0 16 16">
+                          <path d="M16 8A8 8 0 1 0 0 8a8 8 0 0 0 16 0m-7.5 3.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707z"></path>
                         </svg>
                       </button>
                     </div>

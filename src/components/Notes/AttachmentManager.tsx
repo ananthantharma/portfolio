@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-sort-props */
 'use client';
-import { PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
+import {PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon} from '@heroicons/react/24/outline';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 
 interface Attachment {
   _id: string;
@@ -28,7 +28,7 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({ pageId }) => {
+export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({pageId}) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           // 1. Initiate
           const initRes = await fetch('/api/drive/files', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
               action: 'initiate',
               name: file.name,
@@ -172,7 +172,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
               try {
                 const errText = await response.text();
                 if (errText) errMsg = errText;
-              } catch (e2) { }
+              } catch (e2) {}
             }
             throw new Error(`Upload failed: ${errMsg}`);
           }
@@ -250,7 +250,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this attachment?')) return;
     try {
-      const res = await fetch(`/api/attachments/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/attachments/${id}`, {method: 'DELETE'});
       if (res.ok) {
         setAttachments(prev => prev.filter(a => a._id !== id));
       } else {
@@ -263,8 +263,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
   return (
     <div
-      className={`border-t border-gray-200 p-4 transition-colors ${isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
-        }`}
+      className={`border-t border-gray-200 p-4 transition-colors ${
+        isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
+      }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}>
@@ -281,16 +282,18 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
                 key={type}
                 type="button"
                 onClick={() => setStorageType(type)}
-                className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${storageType === type ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}>
+                className={`px-3 py-1 text-[10px] font-medium rounded-md transition-all ${
+                  storageType === type ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}>
                 {type === 'local' ? 'Local' : type === 'drive' ? 'Drive' : 'Blob'}
               </button>
             ))}
           </div>
 
           <label
-            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${isUploading ? 'opacity-50 pointer-events-none' : ''
-              }`}>
+            className={`cursor-pointer inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded text-indigo-600 bg-white hover:bg-indigo-50 transition-colors ${
+              isUploading ? 'opacity-50 pointer-events-none' : ''
+            }`}>
             {isUploading ? 'Uploading...' : 'Add File'}
             <input type="file" className="hidden" onChange={handleUpload} disabled={isUploading} />
           </label>
@@ -323,8 +326,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
                 className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm group hover:border-indigo-300 transition-colors">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div
-                    className={`flex-shrink-0 h-8 w-8 rounded flex items-center justify-center font-bold text-xs uppercase ${isDrive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
-                      }`}>
+                    className={`flex-shrink-0 h-8 w-8 rounded flex items-center justify-center font-bold text-xs uppercase ${
+                      isDrive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
                     {isDrive ? <CloudArrowUpIcon className="h-5 w-5" /> : file.filename.split('.').pop() || '?'}
                   </div>
                   <div className="min-w-0">
@@ -341,10 +345,11 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
                     href={link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`p-1.5 rounded transition-colors ${isDrive
-                      ? 'text-blue-400 hover:text-blue-600 hover:bg-blue-50'
-                      : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
-                      }`}
+                    className={`p-1.5 rounded transition-colors ${
+                      isDrive
+                        ? 'text-blue-400 hover:text-blue-600 hover:bg-blue-50'
+                        : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
+                    }`}
                     title={isDrive ? 'Open in Drive' : 'Download'}>
                     <ArrowDownTrayIcon className="h-4 w-4" />
                   </a>

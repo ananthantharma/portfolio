@@ -1,4 +1,4 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, {Document, Model, Schema} from 'mongoose';
 
 export interface IUser extends Document {
   name?: string;
@@ -44,32 +44,32 @@ const UserSchema: Schema = new Schema(
     image: String,
     emailVerified: Date,
     lastLogin: Date,
-    googleApiEnabled: { type: Boolean, default: false },
-    openAiApiEnabled: { type: Boolean, default: false },
-    notesEnabled: { type: Boolean, default: false },
-    secureLoginEnabled: { type: Boolean, default: false },
-    financeEnabled: { type: Boolean, default: false },
-    invoiceEnabled: { type: Boolean, default: false },
-    organizePrompt: { type: String },
+    googleApiEnabled: {type: Boolean, default: false},
+    openAiApiEnabled: {type: Boolean, default: false},
+    notesEnabled: {type: Boolean, default: false},
+    secureLoginEnabled: {type: Boolean, default: false},
+    financeEnabled: {type: Boolean, default: false},
+    invoiceEnabled: {type: Boolean, default: false},
+    organizePrompt: {type: String},
 
-    systemInstruction: { type: String },
+    systemInstruction: {type: String},
     badgeSettings: {
       thresholds: {
-        critical: { type: Number, default: 3 },
-        urgent: { type: Number, default: 7 },
-        upcoming: { type: Number, default: 14 },
-        planned: { type: Number, default: 21 },
+        critical: {type: Number, default: 3},
+        urgent: {type: Number, default: 7},
+        upcoming: {type: Number, default: 14},
+        planned: {type: Number, default: 21},
       },
       colors: {
-        critical: { type: String, default: 'bg-red-500' },
-        urgent: { type: String, default: 'bg-red-500' },
-        upcoming: { type: String, default: 'bg-orange-500' },
-        planned: { type: String, default: 'bg-purple-500' },
-        longTerm: { type: String, default: 'bg-green-500' },
+        critical: {type: String, default: 'bg-red-500'},
+        urgent: {type: String, default: 'bg-red-500'},
+        upcoming: {type: String, default: 'bg-orange-500'},
+        planned: {type: String, default: 'bg-purple-500'},
+        longTerm: {type: String, default: 'bg-green-500'},
       },
       animations: {
-        critical: { type: String, default: '1s' },
-        urgent: { type: String, default: '3s' },
+        critical: {type: String, default: '1s'},
+        urgent: {type: String, default: '3s'},
       },
     },
   },

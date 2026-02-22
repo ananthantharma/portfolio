@@ -1,922 +1,1043 @@
-import React, { useState, useEffect, Fragment, useMemo } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PencilSquareIcon, TrashIcon, FunnelIcon, ChevronUpIcon, ChevronDownIcon, ArrowTopRightOnSquareIcon, PlusIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
+import React, {useState, useEffect, Fragment, useMemo} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {
+  XMarkIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  FunnelIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  ArrowTopRightOnSquareIcon,
+  PlusIcon,
+  ClipboardDocumentListIcon,
+} from '@heroicons/react/24/outline';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import SourcingEventModal from './SourcingEventModal';
 
 interface SourcingListModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onNavigateToPage?: (pageId: string) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onNavigateToPage?: (pageId: string) => void;
 }
 
-
 const DEFAULT_SOURCING_STATUSES = [
-    'Draft',
-    'NDA',
-    'Contract Negotiation',
-    'Drafting Terms & Condition',
-    'PR Approval',
-    'SSJ Approval',
-    'PO Creation'
+  'Draft',
+  'NDA',
+  'Contract Negotiation',
+  'Drafting Terms & Condition',
+  'PR Approval',
+  'SSJ Approval',
+  'PO Creation',
 ];
 
-export default function SourcingListModal({ isOpen, onClose, onNavigateToPage }: SourcingListModalProps) {
-    const [events, setEvents] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [editEvent, setEditEvent] = useState<any>(null);
+export default function SourcingListModal({isOpen, onClose, onNavigateToPage}: SourcingListModalProps) {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editEvent, setEditEvent] = useState<any>(null);
 
-    // Inline Editing State
-    const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null);
-    const [editValue, setEditValue] = useState<any>('');
-    const [config, setConfig] = useState<any>({
-        departments: [],
-        categoryLeads: [],
-        sourcingStatuses: []
+  // Inline Editing State
+  const [editingCell, setEditingCell] = useState<{id: string; field: string} | null>(null);
+  const [editValue, setEditValue] = useState<any>('');
+  const [config, setConfig] = useState<any>({
+    departments: [],
+    categoryLeads: [],
+    sourcingStatuses: [],
+  });
+
+  // Paste Modal State
+  const [showPasteModal, setShowPasteModal] = useState(false);
+  const [pasteInput, setPasteInput] = useState('');
+  const [isProcessingPaste, setIsProcessingPaste] = useState(false);
+
+  const handleStartEdit = (e: React.MouseEvent, event: any, field: string) => {
+    e.stopPropagation(); // Prevent row click
+    setEditingCell({id: event._id, field});
+
+    // Format initial value
+    let val = event[field];
+    if (field === 'needDate' && val) {
+      val = new Date(val).toISOString().split('T')[0];
+    }
+    setEditValue(val || '');
+  };
+
+  const handleInlineSave = async () => {
+    if (!editingCell) return;
+    const {id, field} = editingCell;
+
+    // Optimistic Update
+    const oldEvents = [...events];
+    const updatedEvents = events.map(e => {
+      if (e._id === id) {
+        return {...e, [field]: editValue};
+      }
+      return e;
     });
+    setEvents(updatedEvents);
+    setEditingCell(null);
 
-    // Paste Modal State
-    const [showPasteModal, setShowPasteModal] = useState(false);
-    const [pasteInput, setPasteInput] = useState('');
-    const [isProcessingPaste, setIsProcessingPaste] = useState(false);
+    try {
+      await axios.post('/api/sourcing/events', {_id: id, [field]: editValue});
+    } catch (e) {
+      console.error('Inline update failed', e);
+      setEvents(oldEvents); // Revert
+      alert('Failed to update');
+    }
+  };
 
-    const handleStartEdit = (e: React.MouseEvent, event: any, field: string) => {
-        e.stopPropagation(); // Prevent row click
-        setEditingCell({ id: event._id, field });
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      // Allow Shift+Enter for textarea
+      e.preventDefault();
+      handleInlineSave();
+    }
+    if (e.key === 'Escape') setEditingCell(null);
+  };
 
-        // Format initial value
-        let val = event[field];
-        if (field === 'needDate' && val) {
-            val = new Date(val).toISOString().split('T')[0];
-        }
-        setEditValue(val || '');
-    };
+  // Column Widths State
+  // Column Widths State - Using Percentages
+  const [colWidths] = useState<Record<string, string | number>>({
+    eventName: '14%',
+    department: '8%',
+    primaryLead: '7%',
+    categoryLead: '7%',
+    estimatedContractValue: '8%',
+    riskLevel: '5%',
+    onTrack: '10%',
+    sourcingStatus: '9%',
+    needDate: '7%',
+    notes: '18%',
+    actions: '7%',
+  });
 
-    const handleInlineSave = async () => {
-        if (!editingCell) return;
-        const { id, field } = editingCell;
+  // Sorting & Filtering State
+  const [sortConfig, setSortConfig] = useState<{key: string; direction: 'asc' | 'desc'} | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-        // Optimistic Update
-        const oldEvents = [...events];
-        const updatedEvents = events.map(e => {
-            if (e._id === id) {
-                return { ...e, [field]: editValue };
-            }
-            return e;
-        });
-        setEvents(updatedEvents);
-        setEditingCell(null);
+  // Multi-select state
+  const [filters, setFilters] = useState<{
+    search: string;
+    status: string[];
+    primaryLead: string[];
+    categoryLead: string[];
+    department: string[];
+    risk: string[];
+    onTrack: string[];
+  }>({
+    search: '',
+    status: ['Active'], // Default to Active
+    primaryLead: [],
+    categoryLead: [],
+    department: [],
+    risk: [],
+    onTrack: [],
+  });
 
-        try {
-            await axios.post('/api/sourcing/events', { _id: id, [field]: editValue });
-        } catch (e) {
-            console.error("Inline update failed", e);
-            setEvents(oldEvents); // Revert
-            alert("Failed to update");
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) { // Allow Shift+Enter for textarea
-            e.preventDefault();
-            handleInlineSave();
-        }
-        if (e.key === 'Escape') setEditingCell(null);
-    };
-
-    // Column Widths State
-    // Column Widths State - Using Percentages
-    const [colWidths] = useState<Record<string, string | number>>({
-        eventName: '14%',
-        department: '8%',
-        primaryLead: '7%',
-        categoryLead: '7%',
-        estimatedContractValue: '8%',
-        riskLevel: '5%',
-        onTrack: '10%',
-        sourcingStatus: '9%',
-        needDate: '7%',
-        notes: '18%',
-        actions: '7%'
+  // Extract unique leads for filter dropdowns
+  const {primaryLeads, categoryLeads} = useMemo(() => {
+    const pLeads = new Set<string>();
+    const cLeads = new Set<string>();
+    events.forEach(e => {
+      if (e.primaryLead) pLeads.add(e.primaryLead);
+      if (e.categoryLead) cLeads.add(e.categoryLead);
     });
-
-    // Sorting & Filtering State
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
-
-    // Multi-select state
-    const [filters, setFilters] = useState<{
-        search: string;
-        status: string[];
-        primaryLead: string[];
-        categoryLead: string[];
-        department: string[];
-        risk: string[];
-        onTrack: string[];
-    }>({
-        search: '',
-        status: ['Active'], // Default to Active
-        primaryLead: [],
-        categoryLead: [],
-        department: [],
-        risk: [],
-        onTrack: []
-    });
-
-    // Extract unique leads for filter dropdowns
-    const { primaryLeads, categoryLeads } = useMemo(() => {
-        const pLeads = new Set<string>();
-        const cLeads = new Set<string>();
-        events.forEach(e => {
-            if (e.primaryLead) pLeads.add(e.primaryLead);
-            if (e.categoryLead) cLeads.add(e.categoryLead);
-        });
-        return {
-            primaryLeads: Array.from(pLeads).sort(),
-            categoryLeads: Array.from(cLeads).sort()
-        };
-    }, [events]);
-
-    // Merge default statuses with custom ones
-    const mergedSourcingStatuses = useMemo(() => {
-        const custom = config.sourcingStatuses || [];
-        const combined = new Set([...DEFAULT_SOURCING_STATUSES, ...custom]);
-        return Array.from(combined);
-    }, [config.sourcingStatuses]);
-
-    useEffect(() => {
-        if (isOpen) {
-            loadData();
-        }
-    }, [isOpen]);
-
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const [eventsRes, configRes] = await Promise.all([
-                axios.get('/api/sourcing/events'),
-                axios.get('/api/sourcing/config')
-            ]);
-            setEvents(eventsRes.data);
-            setConfig(configRes.data || { departments: [], categoryLeads: [], sourcingStatuses: [] });
-        } catch (e) {
-            console.error("Failed to load data", e);
-        } finally {
-            setLoading(false);
-        }
+    return {
+      primaryLeads: Array.from(pLeads).sort(),
+      categoryLeads: Array.from(cLeads).sort(),
     };
+  }, [events]);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this event?")) return;
-        try {
-            await axios.delete(`/api/sourcing/events?id=${id}`);
-            setEvents(prev => prev.filter(e => e._id !== id));
-        } catch (e) {
-            console.error("Delete failed", e);
-        }
-    };
+  // Merge default statuses with custom ones
+  const mergedSourcingStatuses = useMemo(() => {
+    const custom = config.sourcingStatuses || [];
+    const combined = new Set([...DEFAULT_SOURCING_STATUSES, ...custom]);
+    return Array.from(combined);
+  }, [config.sourcingStatuses]);
 
-    const handleEdit = (event: any) => {
-        setEditEvent(event);
-    };
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+  }, [isOpen]);
 
-    const handleCreate = () => {
-        setEditEvent({}); // Empty object triggers create mode
-    };
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [eventsRes, configRes] = await Promise.all([
+        axios.get('/api/sourcing/events'),
+        axios.get('/api/sourcing/config'),
+      ]);
+      setEvents(eventsRes.data);
+      setConfig(configRes.data || {departments: [], categoryLeads: [], sourcingStatuses: []});
+    } catch (e) {
+      console.error('Failed to load data', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleSmartPaste = () => {
-        setPasteInput('');
-        setShowPasteModal(true);
-    };
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    try {
+      await axios.delete(`/api/sourcing/events?id=${id}`);
+      setEvents(prev => prev.filter(e => e._id !== id));
+    } catch (e) {
+      console.error('Delete failed', e);
+    }
+  };
 
-    const handleProcessPaste = async () => {
-        if (!pasteInput.trim()) return;
+  const handleEdit = (event: any) => {
+    setEditEvent(event);
+  };
 
-        setIsProcessingPaste(true);
-        try {
-            const res = await axios.post('/api/sourcing/parse-clipboard', {
-                text: pasteInput,
-                options: {
-                    departments: config.departments || [],
-                    categoryLeads: config.categoryLeads || []
-                }
-            });
-            const parsedData = res.data;
+  const handleCreate = () => {
+    setEditEvent({}); // Empty object triggers create mode
+  };
 
-            // Map single 'vendor' return to 'vendors' array if needed
-            if (parsedData.vendor) {
-                parsedData.vendors = [parsedData.vendor];
-                delete parsedData.vendor;
-            }
+  const handleSmartPaste = () => {
+    setPasteInput('');
+    setShowPasteModal(true);
+  };
 
-            // Close paste modal and open edit modal
-            setShowPasteModal(false);
-            setEditEvent(parsedData);
+  const handleProcessPaste = async () => {
+    if (!pasteInput.trim()) return;
 
-        } catch (error: any) {
-            console.error("Smart paste processing failed", error);
-            const msg = error.response?.data?.error || error.response?.data?.details || error.message || "Unknown error";
-            alert(`Failed to interpret data: ${msg}`);
-        } finally {
-            setIsProcessingPaste(false);
-        }
-    };
+    setIsProcessingPaste(true);
+    try {
+      const res = await axios.post('/api/sourcing/parse-clipboard', {
+        text: pasteInput,
+        options: {
+          departments: config.departments || [],
+          categoryLeads: config.categoryLeads || [],
+        },
+      });
+      const parsedData = res.data;
 
-    const handleSaveEdit = () => {
-        loadData(); // Reload all
-        setEditEvent(null);
-    };
+      // Map single 'vendor' return to 'vendors' array if needed
+      if (parsedData.vendor) {
+        parsedData.vendors = [parsedData.vendor];
+        delete parsedData.vendor;
+      }
 
-    const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-    };
+      // Close paste modal and open edit modal
+      setShowPasteModal(false);
+      setEditEvent(parsedData);
+    } catch (error: any) {
+      console.error('Smart paste processing failed', error);
+      const msg = error.response?.data?.error || error.response?.data?.details || error.message || 'Unknown error';
+      alert(`Failed to interpret data: ${msg}`);
+    } finally {
+      setIsProcessingPaste(false);
+    }
+  };
 
-    const handleExportExcel = () => {
-        const data = sortedAndFilteredEvents.map(e => ({
-            'Event Name': e.eventName,
-            'Description': e.description,
-            'Business Unit / Dept': e.department,
-            'Primary Lead': e.primaryLead,
-            'Category Lead': e.categoryLead,
-            'Est. Value': e.estimatedContractValue,
-            'Risk': e.riskLevel,
-            'Tracking': e.onTrack,
-            'Status': e.sourcingStatus,
-            'Need Date': e.needDate ? new Date(e.needDate).toLocaleDateString() : '',
-            'Notes': e.notes
-        }));
+  const handleSaveEdit = () => {
+    loadData(); // Reload all
+    setEditEvent(null);
+  };
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sourcing Events");
-        XLSX.writeFile(wb, `Sourcing_Events_${new Date().toISOString().split('T')[0]}.xlsx`);
-    };
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({key, direction});
+  };
 
-    const sortedAndFilteredEvents = useMemo(() => {
-        let items = [...events];
+  const handleExportExcel = () => {
+    const data = sortedAndFilteredEvents.map(e => ({
+      'Event Name': e.eventName,
+      Description: e.description,
+      'Business Unit / Dept': e.department,
+      'Primary Lead': e.primaryLead,
+      'Category Lead': e.categoryLead,
+      'Est. Value': e.estimatedContractValue,
+      Risk: e.riskLevel,
+      Tracking: e.onTrack,
+      Status: e.sourcingStatus,
+      'Need Date': e.needDate ? new Date(e.needDate).toLocaleDateString() : '',
+      Notes: e.notes,
+    }));
 
-        // Filtering
-        if (filters.search) {
-            const lowerSearch = filters.search.toLowerCase();
-            items = items.filter(item =>
-                (item.eventName?.toLowerCase().includes(lowerSearch)) ||
-                (item.description?.toLowerCase().includes(lowerSearch))
-            );
-        }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sourcing Events');
+    XLSX.writeFile(wb, `Sourcing_Events_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
-        // Multi-select filtering
-        if (filters.status.length > 0) {
-            items = items.filter(item => filters.status.includes(item.status));
-        }
-        if (filters.primaryLead.length > 0) {
-            const lowerFilters = filters.primaryLead.map(f => f.toLowerCase());
-            items = items.filter(item => item.primaryLead && lowerFilters.includes(item.primaryLead.toLowerCase()));
-        }
-        if (filters.categoryLead.length > 0) {
-            const lowerFilters = filters.categoryLead.map(f => f.toLowerCase());
-            items = items.filter(item => item.categoryLead && lowerFilters.includes(item.categoryLead.toLowerCase()));
-        }
-        if (filters.department.length > 0) {
-            items = items.filter(item => filters.department.includes(item.department));
-        }
-        if (filters.risk.length > 0) {
-            items = items.filter(item => filters.risk.includes(item.riskLevel));
-        }
-        if (filters.onTrack.length > 0) {
-            items = items.filter(item => filters.onTrack.includes(item.onTrack));
-        }
+  const sortedAndFilteredEvents = useMemo(() => {
+    let items = [...events];
 
+    // Filtering
+    if (filters.search) {
+      const lowerSearch = filters.search.toLowerCase();
+      items = items.filter(
+        item =>
+          item.eventName?.toLowerCase().includes(lowerSearch) || item.description?.toLowerCase().includes(lowerSearch),
+      );
+    }
 
-        // Sorting
-        if (sortConfig) {
-            items.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+    // Multi-select filtering
+    if (filters.status.length > 0) {
+      items = items.filter(item => filters.status.includes(item.status));
+    }
+    if (filters.primaryLead.length > 0) {
+      const lowerFilters = filters.primaryLead.map(f => f.toLowerCase());
+      items = items.filter(item => item.primaryLead && lowerFilters.includes(item.primaryLead.toLowerCase()));
+    }
+    if (filters.categoryLead.length > 0) {
+      const lowerFilters = filters.categoryLead.map(f => f.toLowerCase());
+      items = items.filter(item => item.categoryLead && lowerFilters.includes(item.categoryLead.toLowerCase()));
+    }
+    if (filters.department.length > 0) {
+      items = items.filter(item => filters.department.includes(item.department));
+    }
+    if (filters.risk.length > 0) {
+      items = items.filter(item => filters.risk.includes(item.riskLevel));
+    }
+    if (filters.onTrack.length > 0) {
+      items = items.filter(item => filters.onTrack.includes(item.onTrack));
+    }
 
-                if (aValue === bValue) return 0;
-                if (aValue === undefined || aValue === null) return 1;
-                if (bValue === undefined || bValue === null) return -1;
+    // Sorting
+    if (sortConfig) {
+      items.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
 
-                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
+        if (aValue === bValue) return 0;
+        if (aValue === undefined || aValue === null) return 1;
+        if (bValue === undefined || bValue === null) return -1;
 
-        return items;
-    }, [events, sortConfig, filters]);
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
 
-    const MultiSelect = ({ label, options, selected, onChange }: { label: string, options: string[], selected: string[], onChange: (val: string[]) => void }) => {
-        const isAllSelected = options.length > 0 && selected.length === options.length;
+    return items;
+  }, [events, sortConfig, filters]);
 
-        return (
-            <div className="relative group">
-                <button className="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm hover:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                    <span className="block truncate text-gray-700">
-                        {selected.length === 0 ? label : `${selected.length} selected`}
-                    </span>
-                    <ChevronDownIcon className="h-4 w-4 text-gray-400" />
-                </button>
-                {/* Dropdown Container with bridge for stable hover */}
-                <div className="absolute z-50 left-0 w-full min-w-[200px] pt-1 hidden group-hover:block hover:block">
-                    <div className="max-h-60 overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {/* Select All Option */}
-                        <div
-                            className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 mb-1 ${isAllSelected ? 'bg-indigo-50/50' : ''}`}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (isAllSelected) {
-                                    onChange([]);
-                                } else {
-                                    onChange([...options]);
-                                }
-                            }}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={isAllSelected}
-                                readOnly
-                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
-                            />
-                            <span className="block truncate font-bold text-indigo-900">
-                                Select All
-                            </span>
-                        </div>
-
-                        {options.map((option) => (
-                            <div
-                                key={option}
-                                className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer ${selected.includes(option) ? 'bg-indigo-50/50' : ''}`}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const newSelected = selected.includes(option)
-                                        ? selected.filter(s => s !== option)
-                                        : [...selected, option];
-                                    onChange(newSelected);
-                                }}
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={selected.includes(option)}
-                                    readOnly
-                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
-                                />
-                                <span className={`block truncate ${selected.includes(option) ? 'font-medium text-indigo-900' : 'text-gray-900'}`}>
-                                    {option}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const SortIcon = ({ column }: { column: string }) => {
-        if (sortConfig?.key !== column) return <div className="w-4 h-4 ml-1 inline-block opacity-0 group-hover:opacity-50">↕</div>;
-        return sortConfig.direction === 'asc'
-            ? <ChevronUpIcon className="w-4 h-4 ml-1 inline-block text-indigo-600" />
-            : <ChevronDownIcon className="w-4 h-4 ml-1 inline-block text-indigo-600" />;
-    };
-
-    const FixedHeader = ({ label, column }: { label: string, column: string }) => (
-        <th
-            className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative group select-none bg-gray-50 sticky top-0 z-10 shadow-sm transition-colors hover:bg-gray-100 cursor-pointer"
-            style={{ width: colWidths[column] }}
-            onClick={() => handleSort(column)}
-        >
-            <div className="flex items-center h-full w-full">
-                <span className="truncate">{label}</span>
-                <SortIcon column={column} />
-            </div>
-        </th>
-    );
-
-    const formatCurrency = (amount: number | undefined) => {
-        if (!amount) return '-';
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-    };
-
-    const renderRisk = (level: string) => {
-        switch (level) {
-            case 'High': return <span title="High Risk">🔴</span>;
-            case 'Medium': return <span title="Medium Risk">🟡</span>;
-            case 'Low': return <span title="Low Risk">🟢</span>;
-            default: return <span>⚪</span>;
-        }
-    };
-
-    const renderTracking = (status: string) => {
-        let bgClass = 'bg-gray-100 text-gray-800';
-        switch (status) {
-            case 'On Track': bgClass = 'bg-green-100 text-green-800'; break;
-            case 'At Risk': bgClass = 'bg-orange-100 text-orange-800'; break;
-            case 'Off Track': bgClass = 'bg-red-100 text-red-800'; break;
-            case 'Blocked / Critical': bgClass = 'bg-gray-900 text-white'; break;
-            case 'Not Started': bgClass = 'bg-gray-100 text-gray-800'; break;
-            case 'In Progress': bgClass = 'bg-blue-100 text-blue-800'; break;
-            case 'On Hold / Paused': bgClass = 'bg-orange-100 text-orange-800'; break;
-            case 'Pending Approval / Review': bgClass = 'bg-purple-100 text-purple-800'; break;
-            case 'Draft / Scoping': bgClass = 'bg-teal-100 text-teal-800'; break;
-            case 'Completed / Delivered': bgClass = 'bg-green-800 text-white'; break;
-            case 'Cancelled': bgClass = 'bg-gray-600 text-white'; break;
-            case 'Deferred': bgClass = 'bg-yellow-900 text-white'; break;
-            case 'Archived': bgClass = 'bg-slate-300 text-slate-800'; break;
-            default: bgClass = 'bg-gray-100 text-gray-800';
-        }
-
-        return (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${bgClass}`}>
-                {status || 'Not Started'}
-            </span>
-        );
-    };
-
-    const renderEditableCell = (event: any, field: string, type: 'text' | 'number' | 'select' | 'date' | 'textarea', options: string[] = []) => {
-        const isEditing = editingCell?.id === event._id && editingCell?.field === field;
-        const value = event[field];
-
-        if (isEditing) {
-            if (type === 'select') {
-                return (
-                    <select
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onBlur={handleInlineSave}
-                        onKeyDown={handleKeyDown}
-                        onClick={(e) => e.stopPropagation()}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1 h-full"
-                    >
-                        <option value="">-</option>
-                        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                );
-            }
-            if (type === 'textarea') {
-                return (
-                    <textarea
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onBlur={handleInlineSave}
-                        onKeyDown={handleKeyDown}
-                        onClick={(e) => e.stopPropagation()}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
-                        rows={3}
-                    />
-                );
-            }
-            if (type === 'date') {
-                return (
-                    <input
-                        type="date"
-                        autoFocus
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onBlur={handleInlineSave}
-                        onKeyDown={handleKeyDown}
-                        onClick={(e) => e.stopPropagation()}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
-                    />
-                );
-            }
-            return (
-                <input
-                    type={type}
-                    autoFocus
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    onBlur={handleInlineSave}
-                    onKeyDown={handleKeyDown}
-                    onClick={(e) => e.stopPropagation()}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
-                />
-            );
-        }
-
-        // Display Mode
-        let content;
-        if (type === 'select' && field === 'riskLevel') content = renderRisk(value);
-        else if (type === 'select' && field === 'onTrack') content = renderTracking(value);
-        else if (type === 'date') content = value ? new Date(value).toLocaleDateString() : '-';
-        else if (field === 'estimatedContractValue') content = formatCurrency(value);
-        else content = value || '-';
-
-        return (
-            <div
-                className="cursor-pointer hover:bg-gray-100 p-1 rounded min-h-[1.5rem]"
-                onClick={(e) => handleStartEdit(e, event, field)}
-                title="Click to edit"
-            >
-                {content}
-            </div>
-        );
-    };
-
-    // Helper to generate consistent colors from strings
-    const getColorForName = (name: string) => {
-        const colors = [
-            'bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-            'bg-lime-500', 'bg-green-500', 'bg-emerald-500', 'bg-teal-500',
-            'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-indigo-500',
-            'bg-violet-500', 'bg-purple-500', 'bg-fuchsia-500', 'bg-pink-500', 'bg-rose-500'
-        ];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length];
-    };
-
-    const toggleCategoryLeadFilter = (lead: string) => {
-        setFilters(prev => {
-            const isActive = prev.categoryLead.includes(lead);
-            if (isActive) {
-                return { ...prev, categoryLead: prev.categoryLead.filter(l => l !== lead) };
-            } else {
-                return { ...prev, categoryLead: [...prev.categoryLead, lead] };
-            }
-        });
-    };
+  const MultiSelect = ({
+    label,
+    options,
+    selected,
+    onChange,
+  }: {
+    label: string;
+    options: string[];
+    selected: string[];
+    onChange: (val: string[]) => void;
+  }) => {
+    const isAllSelected = options.length > 0 && selected.length === options.length;
 
     return (
-        <>
-            <Transition.Root show={isOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={onClose}>
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                    <div className="fixed inset-0 z-10 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                            <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-[95vw] h-[90vh] flex flex-col">
-                                <div className="bg-white px-4 py-5 sm:px-6 border-b flex flex-col gap-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-4">
-                                            <Dialog.Title className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                                All Sourcing Events
-                                                <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
-                                                    {sortedAndFilteredEvents.length}
-                                                </span>
-                                            </Dialog.Title>
+      <div className="relative group">
+        <button className="flex items-center justify-between w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm hover:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <span className="block truncate text-gray-700">
+            {selected.length === 0 ? label : `${selected.length} selected`}
+          </span>
+          <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+        </button>
+        {/* Dropdown Container with bridge for stable hover */}
+        <div className="absolute z-50 left-0 w-full min-w-[200px] pt-1 hidden group-hover:block hover:block">
+          <div className="max-h-60 overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            {/* Select All Option */}
+            <div
+              className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 mb-1 ${
+                isAllSelected ? 'bg-indigo-50/50' : ''
+              }`}
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isAllSelected) {
+                  onChange([]);
+                } else {
+                  onChange([...options]);
+                }
+              }}>
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                readOnly
+                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+              />
+              <span className="block truncate font-bold text-indigo-900">Select All</span>
+            </div>
 
-                                            {/* Category Lead Avatars */}
-                                            <div className="flex items-center -space-x-1 overflow-visible ml-4">
-                                                {categoryLeads.map((lead) => {
-                                                    const isSelected = filters.categoryLead.includes(lead);
-                                                    return (
-                                                        <button
-                                                            key={lead}
-                                                            onClick={() => toggleCategoryLeadFilter(lead)}
-                                                            className={`
+            {options.map(option => (
+              <div
+                key={option}
+                className={`flex items-center px-4 py-2 hover:bg-indigo-50 cursor-pointer ${
+                  selected.includes(option) ? 'bg-indigo-50/50' : ''
+                }`}
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const newSelected = selected.includes(option)
+                    ? selected.filter(s => s !== option)
+                    : [...selected, option];
+                  onChange(newSelected);
+                }}>
+                <input
+                  type="checkbox"
+                  checked={selected.includes(option)}
+                  readOnly
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+                />
+                <span
+                  className={`block truncate ${
+                    selected.includes(option) ? 'font-medium text-indigo-900' : 'text-gray-900'
+                  }`}>
+                  {option}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const SortIcon = ({column}: {column: string}) => {
+    if (sortConfig?.key !== column)
+      return <div className="w-4 h-4 ml-1 inline-block opacity-0 group-hover:opacity-50">↕</div>;
+    return sortConfig.direction === 'asc' ? (
+      <ChevronUpIcon className="w-4 h-4 ml-1 inline-block text-indigo-600" />
+    ) : (
+      <ChevronDownIcon className="w-4 h-4 ml-1 inline-block text-indigo-600" />
+    );
+  };
+
+  const FixedHeader = ({label, column}: {label: string; column: string}) => (
+    <th
+      className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative group select-none bg-gray-50 sticky top-0 z-10 shadow-sm transition-colors hover:bg-gray-100 cursor-pointer"
+      style={{width: colWidths[column]}}
+      onClick={() => handleSort(column)}>
+      <div className="flex items-center h-full w-full">
+        <span className="truncate">{label}</span>
+        <SortIcon column={column} />
+      </div>
+    </th>
+  );
+
+  const formatCurrency = (amount: number | undefined) => {
+    if (!amount) return '-';
+    return new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'}).format(amount);
+  };
+
+  const renderRisk = (level: string) => {
+    switch (level) {
+      case 'High':
+        return <span title="High Risk">🔴</span>;
+      case 'Medium':
+        return <span title="Medium Risk">🟡</span>;
+      case 'Low':
+        return <span title="Low Risk">🟢</span>;
+      default:
+        return <span>⚪</span>;
+    }
+  };
+
+  const renderTracking = (status: string) => {
+    let bgClass = 'bg-gray-100 text-gray-800';
+    switch (status) {
+      case 'On Track':
+        bgClass = 'bg-green-100 text-green-800';
+        break;
+      case 'At Risk':
+        bgClass = 'bg-orange-100 text-orange-800';
+        break;
+      case 'Off Track':
+        bgClass = 'bg-red-100 text-red-800';
+        break;
+      case 'Blocked / Critical':
+        bgClass = 'bg-gray-900 text-white';
+        break;
+      case 'Not Started':
+        bgClass = 'bg-gray-100 text-gray-800';
+        break;
+      case 'In Progress':
+        bgClass = 'bg-blue-100 text-blue-800';
+        break;
+      case 'On Hold / Paused':
+        bgClass = 'bg-orange-100 text-orange-800';
+        break;
+      case 'Pending Approval / Review':
+        bgClass = 'bg-purple-100 text-purple-800';
+        break;
+      case 'Draft / Scoping':
+        bgClass = 'bg-teal-100 text-teal-800';
+        break;
+      case 'Completed / Delivered':
+        bgClass = 'bg-green-800 text-white';
+        break;
+      case 'Cancelled':
+        bgClass = 'bg-gray-600 text-white';
+        break;
+      case 'Deferred':
+        bgClass = 'bg-yellow-900 text-white';
+        break;
+      case 'Archived':
+        bgClass = 'bg-slate-300 text-slate-800';
+        break;
+      default:
+        bgClass = 'bg-gray-100 text-gray-800';
+    }
+
+    return (
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${bgClass}`}>
+        {status || 'Not Started'}
+      </span>
+    );
+  };
+
+  const renderEditableCell = (
+    event: any,
+    field: string,
+    type: 'text' | 'number' | 'select' | 'date' | 'textarea',
+    options: string[] = [],
+  ) => {
+    const isEditing = editingCell?.id === event._id && editingCell?.field === field;
+    const value = event[field];
+
+    if (isEditing) {
+      if (type === 'select') {
+        return (
+          <select
+            autoFocus
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleInlineSave}
+            onKeyDown={handleKeyDown}
+            onClick={e => e.stopPropagation()}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1 h-full">
+            <option value="">-</option>
+            {options.map(opt => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        );
+      }
+      if (type === 'textarea') {
+        return (
+          <textarea
+            autoFocus
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleInlineSave}
+            onKeyDown={handleKeyDown}
+            onClick={e => e.stopPropagation()}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+            rows={3}
+          />
+        );
+      }
+      if (type === 'date') {
+        return (
+          <input
+            type="date"
+            autoFocus
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={handleInlineSave}
+            onKeyDown={handleKeyDown}
+            onClick={e => e.stopPropagation()}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+          />
+        );
+      }
+      return (
+        <input
+          type={type}
+          autoFocus
+          value={editValue}
+          onChange={e => setEditValue(e.target.value)}
+          onBlur={handleInlineSave}
+          onKeyDown={handleKeyDown}
+          onClick={e => e.stopPropagation()}
+          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs py-1 px-1"
+        />
+      );
+    }
+
+    // Display Mode
+    let content;
+    if (type === 'select' && field === 'riskLevel') content = renderRisk(value);
+    else if (type === 'select' && field === 'onTrack') content = renderTracking(value);
+    else if (type === 'date') content = value ? new Date(value).toLocaleDateString() : '-';
+    else if (field === 'estimatedContractValue') content = formatCurrency(value);
+    else content = value || '-';
+
+    return (
+      <div
+        className="cursor-pointer hover:bg-gray-100 p-1 rounded min-h-[1.5rem]"
+        onClick={e => handleStartEdit(e, event, field)}
+        title="Click to edit">
+        {content}
+      </div>
+    );
+  };
+
+  // Helper to generate consistent colors from strings
+  const getColorForName = (name: string) => {
+    const colors = [
+      'bg-red-500',
+      'bg-orange-500',
+      'bg-amber-500',
+      'bg-yellow-500',
+      'bg-lime-500',
+      'bg-green-500',
+      'bg-emerald-500',
+      'bg-teal-500',
+      'bg-cyan-500',
+      'bg-sky-500',
+      'bg-blue-500',
+      'bg-indigo-500',
+      'bg-violet-500',
+      'bg-purple-500',
+      'bg-fuchsia-500',
+      'bg-pink-500',
+      'bg-rose-500',
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const toggleCategoryLeadFilter = (lead: string) => {
+    setFilters(prev => {
+      const isActive = prev.categoryLead.includes(lead);
+      if (isActive) {
+        return {...prev, categoryLead: prev.categoryLead.filter(l => l !== lead)};
+      } else {
+        return {...prev, categoryLead: [...prev.categoryLead, lead]};
+      }
+    });
+  };
+
+  return (
+    <>
+      <Transition.Root show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={onClose}>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 z-10 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-[95vw] h-[90vh] flex flex-col">
+                <div className="bg-white px-4 py-5 sm:px-6 border-b flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <Dialog.Title className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        All Sourcing Events
+                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                          {sortedAndFilteredEvents.length}
+                        </span>
+                      </Dialog.Title>
+
+                      {/* Category Lead Avatars */}
+                      <div className="flex items-center -space-x-1 overflow-visible ml-4">
+                        {categoryLeads.map(lead => {
+                          const isSelected = filters.categoryLead.includes(lead);
+                          return (
+                            <button
+                              key={lead}
+                              onClick={() => toggleCategoryLeadFilter(lead)}
+                              className={`
                                                                 relative inline-flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs font-bold text-white shadow-sm transition-all hover:z-10 focus:outline-none
                                                                 ${getColorForName(lead)}
-                                                                ${isSelected ? 'border-indigo-600 ring-2 ring-indigo-600 z-10 scale-110' : 'border-white opacity-80 hover:opacity-100 hover:scale-105'}
+                                                                ${
+                                                                  isSelected
+                                                                    ? 'border-indigo-600 ring-2 ring-indigo-600 z-10 scale-110'
+                                                                    : 'border-white opacity-80 hover:opacity-100 hover:scale-105'
+                                                                }
                                                             `}
-                                                            title={`Filter by ${lead}`}
-                                                        >
-                                                            {lead.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                                                        </button>
-                                                    );
-                                                })}
-                                                {filters.categoryLead.length > 0 && (
-                                                    <button
-                                                        onClick={() => setFilters(prev => ({ ...prev, categoryLead: [] }))}
-                                                        className="ml-2 text-xs text-gray-400 hover:text-indigo-600 underline"
-                                                        title="Clear Lead Filters"
-                                                    >
-                                                        Clear
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-4">
-                                            <button
-                                                onClick={() => setShowFilters(!showFilters)}
-                                                className={`p-2 rounded-md transition-colors ${showFilters ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'}`}
-                                                title="Toggle Filters"
-                                            >
-                                                <FunnelIcon className="w-5 h-5" />
-                                            </button>
-                                            <button
-                                                onClick={handleExportExcel}
-                                                className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-green-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium"
-                                                title="Export to Excel"
-                                            >
-                                                <ArrowTopRightOnSquareIcon className="w-4 h-4 text-green-600" />
-                                                Export
-                                            </button>
-                                            <button
-                                                onClick={handleSmartPaste}
-                                                className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium mr-2"
-                                                title="Paste row from Excel/Email"
-                                            >
-                                                <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-500" />
-                                                Smart Paste
-                                            </button>
-                                            <button
-                                                onClick={handleCreate}
-                                                className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium"
-                                            >
-                                                <PlusIcon className="w-4 h-4" />
-                                                New Event
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
-                                                onClick={onClose}
-                                            >
-                                                <span className="sr-only">Close</span>
-                                                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Filters Bar */}
-                                    {showFilters && (
-                                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn z-30 relative overflow-visible">
-                                            <input
-                                                type="text"
-                                                placeholder="Search..."
-                                                value={filters.search}
-                                                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            />
-
-                                            <MultiSelect
-                                                label="All Pri Leads"
-                                                options={primaryLeads}
-                                                selected={filters.primaryLead}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, primaryLead: val }))}
-                                            />
-
-                                            <MultiSelect
-                                                label="All Cat Leads"
-                                                options={categoryLeads}
-                                                selected={filters.categoryLead}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, categoryLead: val }))}
-                                            />
-
-                                            <MultiSelect
-                                                label="Business Unit / Dept"
-                                                options={config.departments || []}
-                                                selected={filters.department}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, department: val }))}
-                                            />
-
-                                            <MultiSelect
-                                                label="All Statuses"
-                                                options={mergedSourcingStatuses}
-                                                selected={filters.status}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, status: val }))}
-                                            />
-
-                                            <MultiSelect
-                                                label="All Risks"
-                                                options={['Low', 'Medium', 'High']}
-                                                selected={filters.risk}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, risk: val }))}
-                                            />
-
-                                            <MultiSelect
-                                                label="All Tracking"
-                                                options={[
-                                                    'On Track',
-                                                    'At Risk',
-                                                    'Off Track',
-                                                    'Blocked / Critical',
-                                                    'Not Started',
-                                                    'In Progress',
-                                                    'On Hold / Paused',
-                                                    'Pending Approval / Review',
-                                                    'Draft / Scoping',
-                                                    'Completed / Delivered',
-                                                    'Cancelled',
-                                                    'Deferred',
-                                                    'Archived'
-                                                ]}
-                                                selected={filters.onTrack}
-                                                onChange={(val) => setFilters(prev => ({ ...prev, onTrack: val }))}
-                                            />
-
-                                            <div className="md:col-span-6 text-right">
-                                                <button
-                                                    onClick={() => setFilters({ search: '', status: ['Active'], primaryLead: [], categoryLead: [], department: [], risk: [], onTrack: [] })}
-                                                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-                                                >
-                                                    Reset Filters
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="flex-1 overflow-auto">
-                                    <table className="min-w-full divide-y divide-gray-200 table-fixed">
-                                        <thead>
-                                            <tr>
-                                                <FixedHeader label="Event Name" column="eventName" />
-                                                <FixedHeader label="BU / Dept" column="department" />
-                                                <FixedHeader label="Pri. Lead" column="primaryLead" />
-                                                <FixedHeader label="Cat. Lead" column="categoryLead" />
-                                                <FixedHeader label="Value" column="estimatedContractValue" />
-                                                <FixedHeader label="Risk" column="riskLevel" />
-                                                <FixedHeader label="Tracking" column="onTrack" />
-                                                <FixedHeader label="Sourcing Status" column="sourcingStatus" />
-                                                <FixedHeader label="Date" column="needDate" />
-                                                <FixedHeader label="Notes" column="notes" />
-                                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50 z-10 shadow-sm" style={{ width: colWidths.actions }}>
-                                                    Actions
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {loading ? (
-                                                <tr><td colSpan={10} className="p-4 text-center text-gray-500">Loading events...</td></tr>
-                                            ) : sortedAndFilteredEvents.length === 0 ? (
-                                                <tr><td colSpan={10} className="p-4 text-center text-gray-500">No events found.</td></tr>
-                                            ) : (
-                                                sortedAndFilteredEvents.map((event) => (
-                                                    <tr key={event._id} className="hover:bg-gray-50 transition-colors">
-
-                                                        {/* Event Name */}
-                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top whitespace-normal" style={{ width: colWidths.eventName }}>
-                                                            <div className="flex items-start gap-2">
-                                                                <div
-                                                                    className={`font-medium text-indigo-600 break-words min-w-0 ${event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''}`}
-                                                                    title={event.eventName}
-                                                                    onClick={() => {
-                                                                        if (event.sourcePageId && onNavigateToPage) {
-                                                                            onNavigateToPage(event.sourcePageId);
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {event.eventName || 'Untitled Event'}
-                                                                </div>
-                                                                {event.sourcePageId && onNavigateToPage && (
-                                                                    <ArrowTopRightOnSquareIcon
-                                                                        className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600 flex-shrink-0 mt-0.5"
-                                                                        onClick={() => onNavigateToPage(event.sourcePageId)}
-                                                                        title="Go to Page"
-                                                                    />
-                                                                )}
-                                                            </div>
-                                                            <div className="text-gray-500 text-xs mt-1 whitespace-normal break-words">
-                                                                {renderEditableCell(event, 'description', 'textarea')}
-                                                            </div>
-                                                        </td>
-
-                                                        {/* Business Unit / Dept */}
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.department }}>
-                                                            {renderEditableCell(event, 'department', 'select', config.departments)}
-                                                        </td>
-
-                                                        {/* Leads */}
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.primaryLead }}>
-                                                            {renderEditableCell(event, 'primaryLead', 'text')}
-                                                        </td>
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top truncate" style={{ width: colWidths.categoryLead }}>
-                                                            {renderEditableCell(event, 'categoryLead', 'select', config.categoryLeads)}
-                                                        </td>
-
-                                                        {/* Value */}
-                                                        <td className="px-3 py-4 text-sm text-gray-900 align-top font-medium font-mono truncate" style={{ width: colWidths.estimatedContractValue }}>
-                                                            {renderEditableCell(event, 'estimatedContractValue', 'number')}
-                                                        </td>
-
-                                                        {/* Risk */}
-                                                        <td className="px-3 py-4 text-sm text-center align-top text-lg" style={{ width: colWidths.riskLevel }}>
-                                                            {renderEditableCell(event, 'riskLevel', 'select', ['Low', 'Medium', 'High'])}
-                                                        </td>
-
-                                                        {/* Tracking */}
-                                                        <td className="px-3 py-4 text-sm align-top" style={{ width: colWidths.onTrack }}>
-                                                            {renderEditableCell(event, 'onTrack', 'select', [
-                                                                'On Track',
-                                                                'At Risk',
-                                                                'Off Track',
-                                                                'Blocked / Critical',
-                                                                'Not Started',
-                                                                'In Progress',
-                                                                'On Hold / Paused',
-                                                                'Pending Approval / Review',
-                                                                'Draft / Scoping',
-                                                                'Completed / Delivered',
-                                                                'Cancelled',
-                                                                'Deferred',
-                                                                'Archived'
-                                                            ])}
-                                                        </td>
-
-                                                        {/* Sourcing Status */}
-                                                        <td className="px-3 py-4 text-sm align-top text-gray-700 truncate" style={{ width: colWidths.sourcingStatus }}>
-                                                            {renderEditableCell(event, 'sourcingStatus', 'select', mergedSourcingStatuses)}
-                                                        </td>
-
-                                                        {/* Date */}
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top whitespace-nowrap" style={{ width: colWidths.needDate }}>
-                                                            {renderEditableCell(event, 'needDate', 'date')}
-                                                        </td>
-
-                                                        {/* Notes */}
-                                                        <td className="px-3 py-4 text-sm text-gray-500 align-top" style={{ width: colWidths.notes }}>
-                                                            {renderEditableCell(event, 'notes', 'textarea')}
-                                                        </td>
-
-                                                        {/* Actions */}
-                                                        <td className="px-3 py-4 text-right text-sm font-medium align-top" style={{ width: colWidths.actions }}>
-                                                            <div className="flex justify-end gap-2">
-                                                                <button onClick={() => handleEdit(event)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-md">
-                                                                    <PencilSquareIcon className="w-4 h-4" />
-                                                                </button>
-                                                                <button onClick={() => handleDelete(event._id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-md">
-                                                                    <TrashIcon className="w-4 h-4" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </Dialog.Panel>
-                        </div>
+                              title={`Filter by ${lead}`}>
+                              {lead
+                                .split(' ')
+                                .map(n => n[0])
+                                .join('')
+                                .substring(0, 2)
+                                .toUpperCase()}
+                            </button>
+                          );
+                        })}
+                        {filters.categoryLead.length > 0 && (
+                          <button
+                            onClick={() => setFilters(prev => ({...prev, categoryLead: []}))}
+                            className="ml-2 text-xs text-gray-400 hover:text-indigo-600 underline"
+                            title="Clear Lead Filters">
+                            Clear
+                          </button>
+                        )}
+                      </div>
                     </div>
-                </Dialog>
-            </Transition.Root>
 
-            {/* Edit Modal (Nested) */}
-            {editEvent && (
-                <SourcingEventModal
-                    isOpen={!!editEvent}
-                    onClose={() => setEditEvent(null)}
-                    initialData={editEvent._id ? editEvent : undefined}
-                    onSave={handleSaveEdit}
-                    defaultDescription={editEvent.description}
-                    defaultEventName={editEvent.eventName}
-                />
-            )}
-
-            {/* Smart Paste Data Input Modal */}
-            <Transition.Root show={showPasteModal} as={Fragment}>
-                <Dialog as="div" className="relative z-[60]" onClose={() => setShowPasteModal(false)}>
-                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-                    <div className="fixed inset-0 z-10 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                            <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                                    <div className="sm:flex sm:items-start">
-                                        <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
-                                            <ClipboardDocumentListIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
-                                        </div>
-                                        <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                            <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                                                Smart Paste
-                                            </Dialog.Title>
-                                            <div className="mt-2">
-                                                <p className="text-sm text-gray-500 mb-2">
-                                                    Paste your row data (from Excel, Email, or Slack) below. The AI will attempt to map the fields for you.
-                                                </p>
-                                                <textarea
-                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                                                    rows={6}
-                                                    placeholder="Paste text here..."
-                                                    value={pasteInput}
-                                                    onChange={(e) => setPasteInput(e.target.value)}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                                    <button
-                                        type="button"
-                                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto disabled:opacity-50"
-                                        onClick={handleProcessPaste}
-                                        disabled={isProcessingPaste || !pasteInput.trim()}
-                                    >
-                                        {isProcessingPaste ? 'Processing...' : 'Parse & Create'}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                                        onClick={() => setShowPasteModal(false)}
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </Dialog.Panel>
-                        </div>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`p-2 rounded-md transition-colors ${
+                          showFilters
+                            ? 'bg-indigo-100 text-indigo-700'
+                            : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100'
+                        }`}
+                        title="Toggle Filters">
+                        <FunnelIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-green-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium"
+                        title="Export to Excel">
+                        <ArrowTopRightOnSquareIcon className="w-4 h-4 text-green-600" />
+                        Export
+                      </button>
+                      <button
+                        onClick={handleSmartPaste}
+                        className="flex items-center gap-1 bg-white text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50 border border-gray-300 transition-colors shadow-sm text-sm font-medium mr-2"
+                        title="Paste row from Excel/Email">
+                        <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-500" />
+                        Smart Paste
+                      </button>
+                      <button
+                        onClick={handleCreate}
+                        className="flex items-center gap-1 bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium">
+                        <PlusIcon className="w-4 h-4" />
+                        New Event
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                        onClick={onClose}>
+                        <span className="sr-only">Close</span>
+                        <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      </button>
                     </div>
-                </Dialog>
-            </Transition.Root>
-        </>
-    );
+                  </div>
+
+                  {/* Filters Bar */}
+                  {showFilters && (
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg animate-fadeIn z-30 relative overflow-visible">
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        value={filters.search}
+                        onChange={e => setFilters(prev => ({...prev, search: e.target.value}))}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+
+                      <MultiSelect
+                        label="All Pri Leads"
+                        options={primaryLeads}
+                        selected={filters.primaryLead}
+                        onChange={val => setFilters(prev => ({...prev, primaryLead: val}))}
+                      />
+
+                      <MultiSelect
+                        label="All Cat Leads"
+                        options={categoryLeads}
+                        selected={filters.categoryLead}
+                        onChange={val => setFilters(prev => ({...prev, categoryLead: val}))}
+                      />
+
+                      <MultiSelect
+                        label="Business Unit / Dept"
+                        options={config.departments || []}
+                        selected={filters.department}
+                        onChange={val => setFilters(prev => ({...prev, department: val}))}
+                      />
+
+                      <MultiSelect
+                        label="All Statuses"
+                        options={mergedSourcingStatuses}
+                        selected={filters.status}
+                        onChange={val => setFilters(prev => ({...prev, status: val}))}
+                      />
+
+                      <MultiSelect
+                        label="All Risks"
+                        options={['Low', 'Medium', 'High']}
+                        selected={filters.risk}
+                        onChange={val => setFilters(prev => ({...prev, risk: val}))}
+                      />
+
+                      <MultiSelect
+                        label="All Tracking"
+                        options={[
+                          'On Track',
+                          'At Risk',
+                          'Off Track',
+                          'Blocked / Critical',
+                          'Not Started',
+                          'In Progress',
+                          'On Hold / Paused',
+                          'Pending Approval / Review',
+                          'Draft / Scoping',
+                          'Completed / Delivered',
+                          'Cancelled',
+                          'Deferred',
+                          'Archived',
+                        ]}
+                        selected={filters.onTrack}
+                        onChange={val => setFilters(prev => ({...prev, onTrack: val}))}
+                      />
+
+                      <div className="md:col-span-6 text-right">
+                        <button
+                          onClick={() =>
+                            setFilters({
+                              search: '',
+                              status: ['Active'],
+                              primaryLead: [],
+                              categoryLead: [],
+                              department: [],
+                              risk: [],
+                              onTrack: [],
+                            })
+                          }
+                          className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                          Reset Filters
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 overflow-auto">
+                  <table className="min-w-full divide-y divide-gray-200 table-fixed">
+                    <thead>
+                      <tr>
+                        <FixedHeader label="Event Name" column="eventName" />
+                        <FixedHeader label="BU / Dept" column="department" />
+                        <FixedHeader label="Pri. Lead" column="primaryLead" />
+                        <FixedHeader label="Cat. Lead" column="categoryLead" />
+                        <FixedHeader label="Value" column="estimatedContractValue" />
+                        <FixedHeader label="Risk" column="riskLevel" />
+                        <FixedHeader label="Tracking" column="onTrack" />
+                        <FixedHeader label="Sourcing Status" column="sourcingStatus" />
+                        <FixedHeader label="Date" column="needDate" />
+                        <FixedHeader label="Notes" column="notes" />
+                        <th
+                          className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 bg-gray-50 z-10 shadow-sm"
+                          style={{width: colWidths.actions}}>
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {loading ? (
+                        <tr>
+                          <td colSpan={10} className="p-4 text-center text-gray-500">
+                            Loading events...
+                          </td>
+                        </tr>
+                      ) : sortedAndFilteredEvents.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="p-4 text-center text-gray-500">
+                            No events found.
+                          </td>
+                        </tr>
+                      ) : (
+                        sortedAndFilteredEvents.map(event => (
+                          <tr key={event._id} className="hover:bg-gray-50 transition-colors">
+                            {/* Event Name */}
+                            <td
+                              className="px-3 py-4 text-sm text-gray-900 align-top whitespace-normal"
+                              style={{width: colWidths.eventName}}>
+                              <div className="flex items-start gap-2">
+                                <div
+                                  className={`font-medium text-indigo-600 break-words min-w-0 ${
+                                    event.sourcePageId && onNavigateToPage ? 'cursor-pointer hover:underline' : ''
+                                  }`}
+                                  title={event.eventName}
+                                  onClick={() => {
+                                    if (event.sourcePageId && onNavigateToPage) {
+                                      onNavigateToPage(event.sourcePageId);
+                                    }
+                                  }}>
+                                  {event.eventName || 'Untitled Event'}
+                                </div>
+                                {event.sourcePageId && onNavigateToPage && (
+                                  <ArrowTopRightOnSquareIcon
+                                    className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-600 flex-shrink-0 mt-0.5"
+                                    onClick={() => onNavigateToPage(event.sourcePageId)}
+                                    title="Go to Page"
+                                  />
+                                )}
+                              </div>
+                              <div className="text-gray-500 text-xs mt-1 whitespace-normal break-words">
+                                {renderEditableCell(event, 'description', 'textarea')}
+                              </div>
+                            </td>
+
+                            {/* Business Unit / Dept */}
+                            <td
+                              className="px-3 py-4 text-sm text-gray-500 align-top truncate"
+                              style={{width: colWidths.department}}>
+                              {renderEditableCell(event, 'department', 'select', config.departments)}
+                            </td>
+
+                            {/* Leads */}
+                            <td
+                              className="px-3 py-4 text-sm text-gray-500 align-top truncate"
+                              style={{width: colWidths.primaryLead}}>
+                              {renderEditableCell(event, 'primaryLead', 'text')}
+                            </td>
+                            <td
+                              className="px-3 py-4 text-sm text-gray-500 align-top truncate"
+                              style={{width: colWidths.categoryLead}}>
+                              {renderEditableCell(event, 'categoryLead', 'select', config.categoryLeads)}
+                            </td>
+
+                            {/* Value */}
+                            <td
+                              className="px-3 py-4 text-sm text-gray-900 align-top font-medium font-mono truncate"
+                              style={{width: colWidths.estimatedContractValue}}>
+                              {renderEditableCell(event, 'estimatedContractValue', 'number')}
+                            </td>
+
+                            {/* Risk */}
+                            <td
+                              className="px-3 py-4 text-sm text-center align-top text-lg"
+                              style={{width: colWidths.riskLevel}}>
+                              {renderEditableCell(event, 'riskLevel', 'select', ['Low', 'Medium', 'High'])}
+                            </td>
+
+                            {/* Tracking */}
+                            <td className="px-3 py-4 text-sm align-top" style={{width: colWidths.onTrack}}>
+                              {renderEditableCell(event, 'onTrack', 'select', [
+                                'On Track',
+                                'At Risk',
+                                'Off Track',
+                                'Blocked / Critical',
+                                'Not Started',
+                                'In Progress',
+                                'On Hold / Paused',
+                                'Pending Approval / Review',
+                                'Draft / Scoping',
+                                'Completed / Delivered',
+                                'Cancelled',
+                                'Deferred',
+                                'Archived',
+                              ])}
+                            </td>
+
+                            {/* Sourcing Status */}
+                            <td
+                              className="px-3 py-4 text-sm align-top text-gray-700 truncate"
+                              style={{width: colWidths.sourcingStatus}}>
+                              {renderEditableCell(event, 'sourcingStatus', 'select', mergedSourcingStatuses)}
+                            </td>
+
+                            {/* Date */}
+                            <td
+                              className="px-3 py-4 text-sm text-gray-500 align-top whitespace-nowrap"
+                              style={{width: colWidths.needDate}}>
+                              {renderEditableCell(event, 'needDate', 'date')}
+                            </td>
+
+                            {/* Notes */}
+                            <td className="px-3 py-4 text-sm text-gray-500 align-top" style={{width: colWidths.notes}}>
+                              {renderEditableCell(event, 'notes', 'textarea')}
+                            </td>
+
+                            {/* Actions */}
+                            <td
+                              className="px-3 py-4 text-right text-sm font-medium align-top"
+                              style={{width: colWidths.actions}}>
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleEdit(event)}
+                                  className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-md">
+                                  <PencilSquareIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(event._id)}
+                                  className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-md">
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Edit Modal (Nested) */}
+      {editEvent && (
+        <SourcingEventModal
+          isOpen={!!editEvent}
+          onClose={() => setEditEvent(null)}
+          initialData={editEvent._id ? editEvent : undefined}
+          onSave={handleSaveEdit}
+          defaultDescription={editEvent.description}
+          defaultEventName={editEvent.eventName}
+        />
+      )}
+
+      {/* Smart Paste Data Input Modal */}
+      <Transition.Root show={showPasteModal} as={Fragment}>
+        <Dialog as="div" className="relative z-[60]" onClose={() => setShowPasteModal(false)}>
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 z-10 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                      <ClipboardDocumentListIcon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+                    </div>
+                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                        Smart Paste
+                      </Dialog.Title>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500 mb-2">
+                          Paste your row data (from Excel, Email, or Slack) below. The AI will attempt to map the fields
+                          for you.
+                        </p>
+                        <textarea
+                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                          rows={6}
+                          placeholder="Paste text here..."
+                          value={pasteInput}
+                          onChange={e => setPasteInput(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <button
+                    type="button"
+                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto disabled:opacity-50"
+                    onClick={handleProcessPaste}
+                    disabled={isProcessingPaste || !pasteInput.trim()}>
+                    {isProcessingPaste ? 'Processing...' : 'Parse & Create'}
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    onClick={() => setShowPasteModal(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
+    </>
+  );
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import {NextResponse} from 'next/server';
 // import { getServerSession } from 'next-auth';
 // import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
@@ -7,70 +7,75 @@ import GanttChart from '@/models/GanttChart';
 import mongoose from 'mongoose';
 
 export async function GET(_req: Request) {
-    // UPDATE THIS STRING TO FORCE DEPLOYMENT
-    const VERSION = "2026-01-08-FIX-V4-NO-AUTH";
-    const logs: string[] = [];
-    logs.push(`Script Version: ${VERSION}`);
+  // UPDATE THIS STRING TO FORCE DEPLOYMENT
+  const VERSION = '2026-01-08-FIX-V4-NO-AUTH';
+  const logs: string[] = [];
+  logs.push(`Script Version: ${VERSION}`);
 
+  try {
+    // const session = await getServerSession(authOptions);
+    // if (!session) logs.push("WARNING: No session found (Auth check bypassed for debug)");
+
+    logs.push('Connecting to DB...');
+    await dbConnect();
+    logs.push('DB Connected.');
+
+    // Access collection safely
+    const db = mongoose.connection.db;
+    if (!db) throw new Error('Mongoose connection.db is undefined');
+
+    const collection = db.collection('ganttcharts');
+    logs.push("Collection 'ganttcharts' accessed.");
+
+    // 1. List indexes before
     try {
-        // const session = await getServerSession(authOptions);
-        // if (!session) logs.push("WARNING: No session found (Auth check bypassed for debug)");
+      const indexesBefore = await collection.indexes();
+      logs.push(`Indexes found: ${indexesBefore.length}`);
+      indexesBefore.forEach(idx => logs.push(`- ${idx.name} (Unique: ${idx.unique || false})`));
+    } catch (e) {
+      logs.push('Could not list indexes (might be dropped already)');
+    }
 
-        logs.push("Connecting to DB...");
-        await dbConnect();
-        logs.push("DB Connected.");
+    // 2. Aggressive Drop Attempts
 
-        // Access collection safely
-        const db = mongoose.connection.db;
-        if (!db) throw new Error("Mongoose connection.db is undefined");
+    // Attempt A: By Name "userId_1"
+    try {
+      await collection.dropIndex('userId_1');
+      logs.push("SUCCESS: Dropped index by name 'userId_1'");
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logs.push(`Attempt A (Name) failed: ${(e as any).message}`);
+    }
 
-        const collection = db.collection('ganttcharts');
-        logs.push("Collection 'ganttcharts' accessed.");
+    // Attempt B: By naming convention "userId_1_unique" (just in case)
+    try {
+      await collection.dropIndex('userId_1_unique');
+      logs.push("SUCCESS: Dropped index by name 'userId_1_unique'");
+    } catch (e) {
+      // Ignored
+    }
 
-        // 1. List indexes before
-        try {
-            const indexesBefore = await collection.indexes();
-            logs.push(`Indexes found: ${indexesBefore.length}`);
-            indexesBefore.forEach(idx => logs.push(`- ${idx.name} (Unique: ${idx.unique || false})`));
-        } catch (e) { logs.push("Could not list indexes (might be dropped already)"); }
+    // Attempt C: By Specification (Mongoose/Mongo driver supports dropping by spec)
+    try {
+      // @ts-ignore - dropIndex signature allows object in some driver versions, trying just in case
+      await collection.dropIndex({userId: 1});
+      logs.push('SUCCESS: Dropped index by specification { userId: 1 }');
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logs.push(`Attempt C (Spec) failed: ${(e as any).message}`);
+    }
 
-        // 2. Aggressive Drop Attempts
+    // 3. List indexes after
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let indexesAfter: any[] = [];
+    try {
+      indexesAfter = await collection.indexes();
+    } catch (e) {
+      logs.push('Could not list indexes after op');
+    }
 
-        // Attempt A: By Name "userId_1"
-        try {
-            await collection.dropIndex("userId_1");
-            logs.push("SUCCESS: Dropped index by name 'userId_1'");
-        } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            logs.push(`Attempt A (Name) failed: ${(e as any).message}`);
-        }
-
-        // Attempt B: By naming convention "userId_1_unique" (just in case)
-        try {
-            await collection.dropIndex("userId_1_unique");
-            logs.push("SUCCESS: Dropped index by name 'userId_1_unique'");
-        } catch (e) {
-            // Ignored
-        }
-
-        // Attempt C: By Specification (Mongoose/Mongo driver supports dropping by spec)
-        try {
-            // @ts-ignore - dropIndex signature allows object in some driver versions, trying just in case
-            await collection.dropIndex({ userId: 1 });
-            logs.push("SUCCESS: Dropped index by specification { userId: 1 }");
-        } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            logs.push(`Attempt C (Spec) failed: ${(e as any).message}`);
-        }
-
-        // 3. List indexes after
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let indexesAfter: any[] = [];
-        try {
-            indexesAfter = await collection.indexes();
-        } catch (e) { logs.push("Could not list indexes after op"); }
-
-        return new NextResponse(`
+    return new NextResponse(
+      `
             <html>
                 <body style="font-family: sans-serif; padding: 20px; background: #f3f4f6;">
                     <div style="max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
@@ -82,10 +87,16 @@ export async function GET(_req: Request) {
                         </div>
                         
                         <h3 style="color: #374151;">Operation Logs:</h3>
-                        <pre style="background: #1f2937; color: #e5e7eb; padding: 15px; border-radius: 8px; overflow-x: auto;">${logs.join('\n')}</pre>
+                        <pre style="background: #1f2937; color: #e5e7eb; padding: 15px; border-radius: 8px; overflow-x: auto;">${logs.join(
+                          '\n',
+                        )}</pre>
                         
                         <h3 style="color: #374151;">Current Indexes:</h3>
-                        <pre style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">${JSON.stringify(indexesAfter, null, 2)}</pre>
+                        <pre style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb;">${JSON.stringify(
+                          indexesAfter,
+                          null,
+                          2,
+                        )}</pre>
                         
                         <div style="margin-top: 20px; padding: 15px; background: #ecfdf5; color: #065f46; border-radius: 8px; border: 1px solid #6ee7b7;">
                             <strong>✅ Steps Completed.</strong> If you see "SUCCESS" in the logs above, try "Save As" again.
@@ -93,12 +104,18 @@ export async function GET(_req: Request) {
                     </div>
                 </body>
             </html>
-        `, { headers: { 'Content-Type': 'text/html' } });
-
-    } catch (error) {
-        console.error("Error fixing DB:", error);
-        return new NextResponse(`
-            <html><body><h1>Error Running Script</h1><pre>${error instanceof Error ? error.message : JSON.stringify(error)}</pre></body></html>
-        `, { status: 500, headers: { 'Content-Type': 'text/html' } });
-    }
+        `,
+      {headers: {'Content-Type': 'text/html'}},
+    );
+  } catch (error) {
+    console.error('Error fixing DB:', error);
+    return new NextResponse(
+      `
+            <html><body><h1>Error Running Script</h1><pre>${
+              error instanceof Error ? error.message : JSON.stringify(error)
+            }</pre></body></html>
+        `,
+      {status: 500, headers: {'Content-Type': 'text/html'}},
+    );
+  }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-sort-props, simple-import-sort/imports, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   MagnifyingGlassIcon,
   PencilIcon,
@@ -16,8 +16,8 @@ import {
   ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
-import { CONTACT_DEPARTMENTS, CONTACT_POSITIONS, IContactBase as IContact } from '@/lib/contact-constants';
-import ContactFormModal, { ContactFormData } from './ContactFormModal';
+import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, IContactBase as IContact} from '@/lib/contact-constants';
+import ContactFormModal, {ContactFormData} from './ContactFormModal';
 
 interface ContactListModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ interface ContactListModalProps {
 type SortField = 'name' | 'company' | 'recent';
 
 // Avatar with auto-generated color
-const ContactAvatar = React.memo(({ name, image }: { name: string; image?: string }) => {
+const ContactAvatar = React.memo(({name, image}: {name: string; image?: string}) => {
   // Generate a consistent color from the name
   const getColor = (str: string) => {
     const colors = [
@@ -68,8 +68,9 @@ const ContactAvatar = React.memo(({ name, image }: { name: string; image?: strin
         />
       ) : null}
       <div
-        className={`h-11 w-11 rounded-full flex items-center justify-center text-sm font-bold ${getColor(name)} ${image ? 'hidden' : ''
-          }`}>
+        className={`h-11 w-11 rounded-full flex items-center justify-center text-sm font-bold ${getColor(name)} ${
+          image ? 'hidden' : ''
+        }`}>
         {initials || '?'}
       </div>
     </div>
@@ -78,25 +79,28 @@ const ContactAvatar = React.memo(({ name, image }: { name: string; image?: strin
 ContactAvatar.displayName = 'ContactAvatar';
 
 // Filter Pill
-const FilterPill = React.memo(({
-  label, active, onClick, count,
-}: {
-  label: string; active: boolean; onClick: () => void; count?: number;
-}) => (
-  <button
-    className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-all duration-150 flex items-center gap-1 ${active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'
+const FilterPill = React.memo(
+  ({label, active, onClick, count}: {label: string; active: boolean; onClick: () => void; count?: number}) => (
+    <button
+      className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-all duration-150 flex items-center gap-1 ${
+        active ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-200'
       }`}
-    onClick={onClick}>
-    {label}
-    {count !== undefined && count > 0 && (
-      <span className={`text-[9px] px-1 py-0.5 rounded-full leading-none ${active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
-        }`}>{count}</span>
-    )}
-  </button>
-));
+      onClick={onClick}>
+      {label}
+      {count !== undefined && count > 0 && (
+        <span
+          className={`text-[9px] px-1 py-0.5 rounded-full leading-none ${
+            active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-400'
+          }`}>
+          {count}
+        </span>
+      )}
+    </button>
+  ),
+);
 FilterPill.displayName = 'FilterPill';
 
-const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, onClose }) => {
+const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, onClose}) => {
   const [contacts, setContacts] = useState<IContact[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -140,7 +144,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
     if (!confirm('Are you sure you want to delete this contact?')) return;
     try {
       setContacts(prev => prev.filter(c => c._id !== id));
-      await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+      await fetch(`/api/contacts/${id}`, {method: 'DELETE'});
     } catch (error) {
       console.error('Error deleting contact:', error);
       fetchContacts();
@@ -152,13 +156,13 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
       if (editingContact) {
         await fetch(`/api/contacts/${editingContact._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data),
         });
       } else {
         await fetch('/api/contacts', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data),
         });
       }
@@ -206,10 +210,14 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
     try {
       const res = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           apiKey: 'GEMINI_SCOPED',
-          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position (MUST be one of: ${CONTACT_POSITIONS.join(', ')}), department (MUST be one of: ${CONTACT_DEPARTMENTS.join(', ')}), type ("Internal" or "External"). Pick the closest matching position and department from those lists. Do NOT wrap in markdown code blocks. Return ONLY the raw JSON object, nothing else.\n\nText:\n${pasteText}`,
+          prompt: `Extract contact information from the following text and return ONLY a JSON object with these fields (use empty string if not found): name, company, phone, email, notes, position (MUST be one of: ${CONTACT_POSITIONS.join(
+            ', ',
+          )}), department (MUST be one of: ${CONTACT_DEPARTMENTS.join(
+            ', ',
+          )}), type ("Internal" or "External"). Pick the closest matching position and department from those lists. Do NOT wrap in markdown code blocks. Return ONLY the raw JSON object, nothing else.\n\nText:\n${pasteText}`,
         }),
       });
       const data = await res.json();
@@ -254,10 +262,14 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
     // Sort
     result.sort((a, b) => {
       switch (sortField) {
-        case 'name': return (a.name || '').localeCompare(b.name || '');
-        case 'company': return (a.company || '').localeCompare(b.company || '');
-        case 'recent': return 0; // Keep API order (most recent first)
-        default: return 0;
+        case 'name':
+          return (a.name || '').localeCompare(b.name || '');
+        case 'company':
+          return (a.company || '').localeCompare(b.company || '');
+        case 'recent':
+          return 0; // Keep API order (most recent first)
+        default:
+          return 0;
       }
     });
 
@@ -285,7 +297,12 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
   return (
     <>
       <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-50" onClose={() => { if (!isContactFormOpen && !isPasteModalOpen) onClose(); }}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => {
+            if (!isContactFormOpen && !isPasteModalOpen) onClose();
+          }}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-200"
@@ -308,7 +325,6 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95">
                 <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[94vh] flex flex-col">
-
                   {/* Header */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
                     <div className="flex items-center gap-4">
@@ -348,7 +364,9 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                         New Contact
                       </button>
                       <div className="w-px h-6 bg-gray-200 mx-1" />
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors" onClick={onClose}>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                        onClick={onClose}>
                         <XMarkIcon className="h-4 w-4" />
                       </button>
                     </div>
@@ -358,20 +376,48 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                   <div className="px-6 py-2.5 flex items-center gap-4 border-b border-gray-50 flex-shrink-0 bg-gray-50/30">
                     {/* Type */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">Type</span>
-                      <FilterPill label="All" active={filterType === 'All'} onClick={() => setFilterType('All')} count={contacts.length} />
-                      <FilterPill label="Internal" active={filterType === 'Internal'} onClick={() => setFilterType('Internal')} count={internalCount} />
-                      <FilterPill label="External" active={filterType === 'External'} onClick={() => setFilterType('External')} count={externalCount} />
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
+                        Type
+                      </span>
+                      <FilterPill
+                        label="All"
+                        active={filterType === 'All'}
+                        onClick={() => setFilterType('All')}
+                        count={contacts.length}
+                      />
+                      <FilterPill
+                        label="Internal"
+                        active={filterType === 'Internal'}
+                        onClick={() => setFilterType('Internal')}
+                        count={internalCount}
+                      />
+                      <FilterPill
+                        label="External"
+                        active={filterType === 'External'}
+                        onClick={() => setFilterType('External')}
+                        count={externalCount}
+                      />
                     </div>
 
                     <div className="w-px h-5 bg-gray-200" />
 
                     {/* Department */}
                     <div className="flex items-center gap-1.5 overflow-x-auto">
-                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1 flex-shrink-0">Dept</span>
-                      <FilterPill label="All" active={filterDepartment === 'All'} onClick={() => setFilterDepartment('All')} />
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1 flex-shrink-0">
+                        Dept
+                      </span>
+                      <FilterPill
+                        label="All"
+                        active={filterDepartment === 'All'}
+                        onClick={() => setFilterDepartment('All')}
+                      />
                       {CONTACT_DEPARTMENTS.slice(0, 6).map(dept => (
-                        <FilterPill key={dept} label={dept} active={filterDepartment === dept} onClick={() => setFilterDepartment(dept)} />
+                        <FilterPill
+                          key={dept}
+                          label={dept}
+                          active={filterDepartment === dept}
+                          onClick={() => setFilterDepartment(dept)}
+                        />
                       ))}
                     </div>
 
@@ -384,8 +430,9 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                         <button
                           key={field}
                           onClick={() => setSortField(field)}
-                          className={`px-2 py-1 text-[10px] font-medium rounded-md capitalize transition-colors ${sortField === field ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'
-                            }`}>
+                          className={`px-2 py-1 text-[10px] font-medium rounded-md capitalize transition-colors ${
+                            sortField === field ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'
+                          }`}>
                           {field}
                         </button>
                       ))}
@@ -403,7 +450,8 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                       <div className="text-center py-12 text-red-500 bg-red-50 rounded-xl border border-red-100">
                         <p className="font-medium">Unable to load contacts</p>
                         <p className="text-sm mt-1 mb-3">{error}</p>
-                        <button onClick={fetchContacts}
+                        <button
+                          onClick={fetchContacts}
                           className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-700 bg-white border border-red-200 hover:bg-red-50 transition-colors">
                           Try Again
                         </button>
@@ -418,7 +466,8 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                           {searchQuery ? 'Try a different search term' : 'Add your first contact to get started'}
                         </p>
                         {!searchQuery && (
-                          <button onClick={handleCreate}
+                          <button
+                            onClick={handleCreate}
                             className="mt-4 flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium">
                             <PlusIcon className="h-3.5 w-3.5" />
                             Add Contact
@@ -431,7 +480,6 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                           <div
                             className="group relative bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:shadow-sm transition-all duration-150"
                             key={contact._id}>
-
                             <div className="flex items-start gap-3">
                               <ContactAvatar name={contact.name} image={contact.image} />
 
@@ -440,9 +488,11 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                                   <h4 className="text-[13px] font-semibold text-gray-900 truncate">
                                     {highlightMatch(contact.name, searchQuery)}
                                   </h4>
-                                  <span className={`flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${contact.type === 'Internal'
-                                    ? 'bg-emerald-50 text-emerald-600'
-                                    : 'bg-sky-50 text-sky-600'
+                                  <span
+                                    className={`flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                                      contact.type === 'Internal'
+                                        ? 'bg-emerald-50 text-emerald-600'
+                                        : 'bg-sky-50 text-sky-600'
                                     }`}>
                                     {contact.type}
                                   </span>
@@ -580,13 +630,17 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({ isOpen, 
                     <button
                       type="button"
                       className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      onClick={() => { setIsPasteModalOpen(false); setPasteText(''); }}>
+                      onClick={() => {
+                        setIsPasteModalOpen(false);
+                        setPasteText('');
+                      }}>
                       Cancel
                     </button>
                     <button
                       type="button"
-                      className={`px-4 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-1.5 ${isParsing ? 'opacity-70 cursor-wait' : ''
-                        }`}
+                      className={`px-4 py-1.5 text-xs font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-1.5 ${
+                        isParsing ? 'opacity-70 cursor-wait' : ''
+                      }`}
                       disabled={isParsing || !pasteText.trim()}
                       onClick={handleAIPaste}>
                       <SparklesIcon className={`h-3.5 w-3.5 ${isParsing ? 'animate-spin' : ''}`} />

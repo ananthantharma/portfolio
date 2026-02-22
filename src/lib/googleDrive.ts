@@ -1,8 +1,8 @@
-import { google } from 'googleapis';
+import {google} from 'googleapis';
 
 export const getOAuth2Client = (accessToken: string, refreshToken?: string) => {
   const auth = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
-  const credentials: any = { access_token: accessToken };
+  const credentials: any = {access_token: accessToken};
   if (refreshToken) {
     credentials.refresh_token = refreshToken;
   }
@@ -12,7 +12,7 @@ export const getOAuth2Client = (accessToken: string, refreshToken?: string) => {
 
 export const getDriveClient = (accessToken: string, refreshToken?: string) => {
   const auth = getOAuth2Client(accessToken, refreshToken);
-  return google.drive({ version: 'v3', auth });
+  return google.drive({version: 'v3', auth});
 };
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

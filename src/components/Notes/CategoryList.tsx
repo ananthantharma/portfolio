@@ -7,16 +7,16 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import React, { useCallback, useMemo, useState } from 'react';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useMemo, useState} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
+import {INoteCategory} from '@/models/NoteCategory';
 
-import { useBadgeSettings } from './BadgeSettingsContext';
-import { ColorPicker } from './ColorPicker';
-import { ICON_options, IconPicker } from './IconPicker';
-import { SortableItem } from './SortableItem';
+import {useBadgeSettings} from './BadgeSettingsContext';
+import {ColorPicker} from './ColorPicker';
+import {ICON_options, IconPicker} from './IconPicker';
+import {SortableItem} from './SortableItem';
 
 interface CategoryListProps {
   categories: INoteCategory[];
@@ -29,7 +29,7 @@ interface CategoryListProps {
   loading: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  badgeCounts?: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+  badgeCounts?: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
 }
 
 // Extracted Item Component to handle memoization
@@ -40,10 +40,10 @@ const CategoryItem = React.memo<{
   onEdit: (category: INoteCategory) => void;
   onDelete: (id: string) => void;
   isCollapsed: boolean;
-  badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
-}>(({ category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
+  badgeStats?: {todo: {count: number; minDays: number | null}; important: number; flagged: number};
+}>(({category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats}) => {
   const CategoryIcon = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options.Folder;
-  const { getBadgeStyle } = useBadgeSettings(); // Added hook call
+  const {getBadgeStyle} = useBadgeSettings(); // Added hook call
 
   const style = useMemo(
     () => ({
@@ -61,18 +61,17 @@ const CategoryItem = React.memo<{
 
   const renderBadges = () => {
     if (!badgeStats) return null;
-    const { todo } = badgeStats;
+    const {todo} = badgeStats;
     if (!todo || todo.count === 0) return null;
 
     // Replaced custom badge logic with getBadgeStyle
-    const { className, style } = getBadgeStyle(todo.minDays);
+    const {className, style} = getBadgeStyle(todo.minDays);
 
     return (
       <div className={`flex items-center gap-1 ${isCollapsed ? 'absolute -top-1 -right-2' : 'flex-shrink-0'}`}>
         <span
           className={`flex h-3 min-w-[12px] items-center justify-center rounded-full px-1 text-[8px] font-bold text-white shadow-sm ring-1 ring-white ${className}`}
-          style={style}
-        >
+          style={style}>
           {todo.count}
         </span>
       </div>
@@ -82,8 +81,9 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
-          }`}
+        className={`relative p-2 rounded-lg transition-all ${
+          isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
+        }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
         {category.image ? (
@@ -109,13 +109,16 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${isSelected
-          ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
-          : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
-          }`}
+        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+          isSelected
+            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
+            : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
+        }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
-        {isSelected && <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />}
+        {isSelected && (
+          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />
+        )}
 
         <div className="flex items-center gap-3 overflow-hidden">
           {category.image ? (
@@ -130,8 +133,9 @@ const CategoryItem = React.memo<{
             />
           ) : null}
           <CategoryIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
-              }`}
+            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${
+              isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
+            }`}
             style={style}
           />
           <span className="truncate">{category.name}</span>
@@ -201,7 +205,6 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     // ...
 
-
     const sensors = useSensors(
       useSensor(PointerSensor, {
         activationConstraint: {
@@ -215,7 +218,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
-        const { active, over } = event;
+        const {active, over} = event;
 
         if (over && active.id !== over.id) {
           const oldIndex = categories.findIndex(c => c._id === active.id);
