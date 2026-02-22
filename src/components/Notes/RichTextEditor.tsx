@@ -13,7 +13,33 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 // Lexical Nodes & Commands
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
-import { LinkNode } from '@lexical/link';
+import { LinkNode, AutoLinkNode } from '@lexical/link';
+import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
+import { TRANSFORMERS } from '@lexical/markdown';
+
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin';
+
+const URL_REGEX =
+  /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
+
+const EMAIL_REGEX =
+  /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
+
+const MATCHERS = [
+  createLinkMatcherWithRegExp(URL_REGEX, (text) => {
+    return text.startsWith('http') ? text : `https://${text}`;
+  }),
+  createLinkMatcherWithRegExp(EMAIL_REGEX, (text) => {
+    return `mailto:${text}`;
+  }),
+];
 import {
   $getRoot,
   FORMAT_TEXT_COMMAND,
@@ -241,7 +267,17 @@ const RichTextEditor = React.memo(
   forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
     const editorConfig = {
       namespace: 'NotesEditor',
-      nodes: [HeadingNode, QuoteNode, ListItemNode, ListNode, LinkNode],
+      nodes: [
+        HeadingNode,
+        QuoteNode,
+        ListItemNode,
+        ListNode,
+        LinkNode,
+        AutoLinkNode,
+        TableNode,
+        TableCellNode,
+        TableRowNode
+      ],
       // Adding basic themes to match our Tailwind / old Quill styling inside the content editable area
       theme: {
         paragraph: 'mb-3',
@@ -294,6 +330,16 @@ const RichTextEditor = React.memo(
                 ErrorBoundary={LexicalErrorBoundary}
               />
               <HistoryPlugin />
+              <ListPlugin />
+              <CheckListPlugin />
+              <TablePlugin />
+              <LinkPlugin />
+              <AutoLinkPlugin matchers={MATCHERS} />
+              <TabIndentationPlugin />
+              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+              <TableOfContentsPlugin>
+                {() => <></>}
+              </TableOfContentsPlugin>
               <ValueSyncPlugin value={value} onChange={onChange} />
             </div>
           </div>
