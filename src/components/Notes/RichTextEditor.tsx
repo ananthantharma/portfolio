@@ -56,7 +56,7 @@ import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHEC
 import { INSERT_TABLE_COMMAND } from '@lexical/table';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $createCodeNode } from '@lexical/code';
-import { $setBlocksType } from '@lexical/selection';
+import { $setBlocksType, $patchStyleText } from '@lexical/selection';
 
 // UI components for Toolbar
 import {
@@ -77,7 +77,10 @@ import {
   Code,
   Link as LinkIcon,
   Table,
+  Baseline,
+  PaintBucket,
 } from 'lucide-react';
+
 
 export interface RichTextEditorProps {
   onChange: (value: string, delta: any, source: string, editor: any) => void;
@@ -138,6 +141,37 @@ function ToolbarPlugin() {
   const insertTable = () => {
     editor.dispatchCommand(INSERT_TABLE_COMMAND, { columns: '3', rows: '3', includeHeaders: false });
   };
+
+  const applyTextColor = (color: string) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { color });
+      }
+    });
+  };
+
+  const applyHighlight = (color: string) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $patchStyleText(selection, { 'background-color': color });
+      }
+    });
+  };
+
+  // Common colors palette
+  const textColors = [
+    '#000000', '#374151', '#6B7280', '#EF4444', '#F97316',
+    '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899',
+    '#DC2626', '#D97706', '#15803D', '#1D4ED8', '#7C3AED',
+    '#ffffff',
+  ];
+  const highlightColors = [
+    '#FEF08A', '#BEF264', '#6EE7B7', '#93C5FD', '#F9A8D4',
+    '#FCA5A5', '#FCD34D', '#A5F3FC', '#C4B5FD', '#FDE68A',
+    'transparent',
+  ];
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-white">
@@ -202,6 +236,49 @@ function ToolbarPlugin() {
         title="Strikethrough">
         <Strikethrough className="w-4 h-4" />
       </button>
+
+      {/* Text Color + Highlight */}
+      {/* Text Color Picker */}
+      <div className="relative group">
+        <button
+          className="flex flex-col items-center justify-center p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+          title="Text Color">
+          <Baseline className="w-4 h-4" />
+        </button>
+        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{ width: '108px' }}>
+          {textColors.map(c => (
+            <button
+              key={c}
+              onClick={() => applyTextColor(c)}
+              style={{ backgroundColor: c, border: c === '#ffffff' ? '1px solid #e5e7eb' : 'none' }}
+              className="w-6 h-6 rounded-sm hover:scale-110 transition-transform"
+              title={c}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Highlight Picker */}
+      <div className="relative group">
+        <button
+          className="flex flex-col items-center justify-center p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+          title="Highlight Color">
+          <PaintBucket className="w-4 h-4" />
+        </button>
+        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{ width: '108px' }}>
+          {highlightColors.map(c => (
+            <button
+              key={c}
+              onClick={() => applyHighlight(c === 'transparent' ? '' : c)}
+              style={{ backgroundColor: c === 'transparent' ? '#fff' : c, border: '1px solid #e5e7eb' }}
+              className="w-6 h-6 rounded-sm hover:scale-110 transition-transform text-xs"
+              title={c === 'transparent' ? 'Remove highlight' : c}
+            >
+              {c === 'transparent' ? '✕' : ''}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="w-px h-4 bg-gray-200 mx-1 border-none" />
 

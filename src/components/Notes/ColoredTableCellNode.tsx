@@ -1,13 +1,13 @@
 /**
  * ColoredTableCellNode - overrides TableCellNode's importDOM to preserve
- * backgroundColor (and other inline styles) when pasting HTML from Excel.
+ * backgroundColor, text color, and inline text styles from Excel paste.
  *
  * We use Lexical's node replacement API so this node registers under the
  * same type 'tablecell', keeping all internal plugins (TablePlugin, etc.)
  * fully functional.
  */
 import { TableCellNode, TableCellHeaderStates, $createTableCellNode } from '@lexical/table';
-import { DOMConversionMap, DOMConversionOutput, LexicalNode, $applyNodeReplacement } from 'lexical';
+import { DOMConversionMap, DOMConversionOutput, LexicalNode, $applyNodeReplacement, $isTextNode } from 'lexical';
 
 export class ColoredTableCellNode extends TableCellNode {
     // Keep the SAME type string so Lexical internals still find it as 'tablecell'
@@ -80,17 +80,21 @@ function convertColoredTableCellElement(domNode: Node): DOMConversionOutput {
     const hasStrike = textDecoration.includes('line-through');
     const hasItalic = style.fontStyle === 'italic';
     const hasUnderline = textDecoration.includes('underline');
+    // ✅ Preserve text color set on the <td>/<th> cell itself
+    const cellTextColor = el.style.color;
 
     return {
         after: (children: LexicalNode[]) => {
-            // Apply inline text formatting to direct TextNode children
             for (const child of children) {
-                if ((child as any).__text !== undefined) {
-                    // TextNode
-                    if (hasBold) (child as any).toggleFormat('bold');
-                    if (hasStrike) (child as any).toggleFormat('strikethrough');
-                    if (hasItalic) (child as any).toggleFormat('italic');
-                    if (hasUnderline) (child as any).toggleFormat('underline');
+                if ($isTextNode(child)) {
+                    if (hasBold) child.toggleFormat('bold');
+                    if (hasStrike) child.toggleFormat('strikethrough');
+                    if (hasItalic) child.toggleFormat('italic');
+                    if (hasUnderline) child.toggleFormat('underline');
+                    // Apply cell-level text color only if the text node has no own color
+                    if (cellTextColor && !child.getStyle().includes('color:')) {
+                        child.setStyle(`${child.getStyle()}color: ${cellTextColor};`);
+                    }
                 }
             }
             return children;
