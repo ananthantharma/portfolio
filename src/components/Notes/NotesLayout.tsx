@@ -18,7 +18,8 @@ import {
   TableCellsIcon,
   ArrowsPointingOutIcon, // For Focus Mode
   ArrowsPointingInIcon,   // For Focus Mode Exit
-  DocumentPlusIcon
+  DocumentPlusIcon,
+  PlusCircleIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
@@ -609,6 +610,8 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenContactList = useCallback(() => setIsContactListOpen(true), []);
   const handleCloseContactList = useCallback(() => setIsContactListOpen(false), []);
 
+  const [isDirectTaskCreateOpen, setIsDirectTaskCreateOpen] = useState(false);
+
   const handleToggleCategoryCollapse = useCallback(
     () => setIsCategoryCollapsed(!isCategoryCollapsed),
     [isCategoryCollapsed],
@@ -794,6 +797,13 @@ const NotesLayout: React.FC = React.memo(() => {
                       </span>
                     </>
                   )}
+                </button>
+                <button
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  onClick={() => setIsDirectTaskCreateOpen(true)}
+                  title="New Task">
+                  <PlusCircleIcon className="h-3.5 w-3.5 group-hover:text-rose-500 transition-colors duration-200" />
+                  <span className="hidden lg:inline">New Task</span>
                 </button>
                 <button
                   className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
@@ -1071,6 +1081,8 @@ const NotesLayout: React.FC = React.memo(() => {
           isOpen={isToDoListOpen}
           onClose={handleCloseToDoList}
           onNavigate={(task) => task ? handleJumpToTask(task) : undefined}
+          isDirectCreateOpen={isDirectTaskCreateOpen}
+          onCloseDirectCreate={() => setIsDirectTaskCreateOpen(false)}
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
 

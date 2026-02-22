@@ -29,6 +29,8 @@ interface ToDoListModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
+  isDirectCreateOpen?: boolean;
+  onCloseDirectCreate?: () => void;
 }
 
 type SortField = 'priority' | 'dueDate' | 'title' | 'category';
@@ -92,7 +94,7 @@ const FilterPill = React.memo(({
 });
 FilterPill.displayName = 'FilterPill';
 
-const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClose, onNavigate }) => {
+const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate }) => {
   const [todos, setTodos] = useState<IToDo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,10 +119,18 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
   const [isAIPrioritizing, setIsAIPrioritizing] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || isDirectCreateOpen) {
       fetchTodos();
     }
-  }, [isOpen]);
+  }, [isOpen, isDirectCreateOpen]);
+
+  useEffect(() => {
+    if (isDirectCreateOpen) {
+      setEditingTask(null);
+      setPrefilledData(undefined);
+      setIsTaskFormOpen(true);
+    }
+  }, [isDirectCreateOpen]);
 
   const fetchTodos = async () => {
     setLoading(true);
@@ -763,7 +773,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
       <div className="relative z-[60]">
         <TaskFormModal
           isOpen={isTaskFormOpen}
-          onClose={() => setIsTaskFormOpen(false)}
+          onClose={() => {
+            setIsTaskFormOpen(false);
+            if (isDirectCreateOpen && onCloseDirectCreate) {
+              onCloseDirectCreate();
+            }
+          }}
           onSave={handleSaveTask}
           initialData={prefilledData ? { ...prefilledData } as any : editingTask || undefined}
           title={editingTask ? 'Edit Task' : 'New Task'}
