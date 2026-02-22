@@ -15,7 +15,7 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { CodeNode, CodeHighlightNode } from '@lexical/code';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
-import { TableNode, TableRowNode } from '@lexical/table';
+import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
 import { ColoredTableCellNode } from './ColoredTableCellNode';
 import { TRANSFORMERS } from '@lexical/markdown';
 
@@ -336,7 +336,17 @@ const RichTextEditor = React.memo(
         LinkNode,
         AutoLinkNode,
         TableNode,
-        ColoredTableCellNode,
+        // Use node replacement so TablePlugin internals keep working
+        // while our subclass intercepts DOM import to preserve Excel colors
+        {
+          replace: TableCellNode, with: (node: TableCellNode) =>
+            new ColoredTableCellNode(
+              node.__headerState,
+              node.__colSpan,
+              node.__width,
+              node.__key,
+            )
+        },
         TableRowNode,
         CodeNode,
         CodeHighlightNode
