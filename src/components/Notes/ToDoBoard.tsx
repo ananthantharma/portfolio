@@ -67,6 +67,15 @@ const COLUMNS: {
             emptyText: 'Waiting on others',
         },
         {
+            id: 'escalation-required', title: 'Escalation Required',
+            icon: <div className="h-2.5 w-2.5 rounded-sm bg-rose-500" />,
+            dotColor: 'bg-rose-500', headerGradient: 'from-rose-50 to-rose-100/30',
+            headerText: 'text-rose-700', borderColor: 'border-rose-200',
+            dropHighlight: 'ring-rose-300 bg-rose-50/30',
+            emptyIcon: <ExclamationTriangleIcon className="h-6 w-6 text-rose-200" />,
+            emptyText: 'Needs review',
+        },
+        {
             id: 'done', title: 'Done',
             icon: <div className="h-2.5 w-2.5 rounded-sm bg-emerald-400" />,
             dotColor: 'bg-emerald-400', headerGradient: 'from-emerald-50 to-emerald-100/30',
