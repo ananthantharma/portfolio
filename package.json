@@ -17,6 +17,7 @@
     "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^1.7.16",
     "@heroicons/react": "^2.0.18",
+    "@lexical/code": "^0.40.0",
     "@lexical/html": "^0.40.0",
     "@lexical/link": "^0.40.0",
     "@lexical/list": "^0.40.0",

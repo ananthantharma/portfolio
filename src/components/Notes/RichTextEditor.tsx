@@ -12,6 +12,7 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 
 // Lexical Nodes & Commands
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { CodeNode, CodeHighlightNode } from '@lexical/code';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
@@ -276,7 +277,9 @@ const RichTextEditor = React.memo(
         AutoLinkNode,
         TableNode,
         TableCellNode,
-        TableRowNode
+        TableRowNode,
+        CodeNode,
+        CodeHighlightNode
       ],
       // Adding basic themes to match our Tailwind / old Quill styling inside the content editable area
       theme: {
