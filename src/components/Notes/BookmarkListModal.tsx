@@ -65,7 +65,7 @@ export default function BookmarkListModal({ isOpen, onClose }: BookmarkListModal
     const handleCreate = async () => {
         const newBookmark = {
             title: 'New Bookmark',
-            url: 'https://',
+            url: '',
             description: '',
             category: selectedCategory === 'All' ? 'Other' : selectedCategory
         };

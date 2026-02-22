@@ -31,10 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       let hostname = '';
-      try {
-        hostname = new URL(url).hostname;
-      } catch (e) {
-        // Safe fallback for invalid URLs
+      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+        try {
+          hostname = new URL(url).hostname;
+        } catch (e) {
+          // Safe fallback for invalid URLs
+        }
       }
 
       const newBookmark = {

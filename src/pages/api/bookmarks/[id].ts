@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { title, url, category, description } = req.body;
 
       let hostname = '';
-      if (url) {
+      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
         try {
           hostname = new URL(url).hostname;
         } catch (e) {
