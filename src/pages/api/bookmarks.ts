@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       let hostname = '';
-      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      if (url && (url.startsWith('http://') || url.startsWith('https://')) && url.length > 8) {
         try {
           hostname = new URL(url).hostname;
         } catch (e) {
