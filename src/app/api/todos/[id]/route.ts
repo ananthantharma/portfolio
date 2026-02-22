@@ -83,7 +83,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         keptAttachments = JSON.parse(existingAttachmentsJson);
       }
 
-      data.attachments = [...keptAttachments, ...newAttachments];
+      // 3. New Drive/Blob attachments
+      const driveAttachmentsRaw = formData.get('driveAttachments') as string;
+      const driveAttachments = driveAttachmentsRaw ? JSON.parse(driveAttachmentsRaw) : [];
+
+      const blobAttachmentsRaw = formData.get('blobAttachments') as string;
+      const blobAttachments = blobAttachmentsRaw ? JSON.parse(blobAttachmentsRaw) : [];
+
+      data.attachments = [...keptAttachments, ...newAttachments, ...driveAttachments, ...blobAttachments];
     } else {
       // JSON fallback
       const body = await req.json();

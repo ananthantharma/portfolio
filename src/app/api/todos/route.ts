@@ -52,8 +52,11 @@ export async function POST(req: Request) {
       const driveAttachmentsRaw = formData.get('driveAttachments') as string;
       const driveAttachments = driveAttachmentsRaw ? JSON.parse(driveAttachmentsRaw) : [];
 
+      const blobAttachmentsRaw = formData.get('blobAttachments') as string;
+      const blobAttachments = blobAttachmentsRaw ? JSON.parse(blobAttachmentsRaw) : [];
+
       const files = formData.getAll('files') as File[];
-      const attachments = [...driveAttachments]; // Start with Drive files
+      const attachments = [...driveAttachments, ...blobAttachments]; // Start with Drive and Blob files
 
       for (const file of files) {
         console.log(`Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`);

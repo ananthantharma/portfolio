@@ -260,6 +260,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
         formData.append('driveAttachments', JSON.stringify(data.driveAttachments));
       }
 
+      if (data.blobAttachments) {
+        formData.append('blobAttachments', JSON.stringify(data.blobAttachments));
+      }
+
       if (editingTask && data.attachments) {
         formData.append('existingAttachments', JSON.stringify(data.attachments));
       }

@@ -168,7 +168,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
             try {
               const errData = await response.json();
               if (errData.error) errMsg = errData.error;
-            } catch (e) { }
+            } catch (e) {
+              try {
+                const errText = await response.text();
+                if (errText) errMsg = errText;
+              } catch (e2) { }
+            }
             throw new Error(`Upload failed: ${errMsg}`);
           }
 
