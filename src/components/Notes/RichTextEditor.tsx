@@ -51,7 +51,10 @@ import {
   $isRangeSelection,
 } from 'lexical';
 import { $createHeadingNode } from '@lexical/rich-text';
-import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
+import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
+import { INSERT_TABLE_COMMAND } from '@lexical/table';
+import { TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { $createCodeNode } from '@lexical/code';
 import { $setBlocksType } from '@lexical/selection';
 
 // UI components for Toolbar
@@ -66,9 +69,13 @@ import {
   AlignJustify,
   List,
   ListOrdered,
+  CheckSquare,
   Undo,
   Redo,
   Type,
+  Code,
+  Link as LinkIcon,
+  Table,
 } from 'lucide-react';
 
 export interface RichTextEditorProps {
@@ -105,6 +112,30 @@ function ToolbarPlugin() {
 
   const formatNumberedList = () => {
     editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+  };
+
+  const formatCheckList = () => {
+    editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+  };
+
+  const formatCodeBlock = () => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        $setBlocksType(selection, () => $createCodeNode());
+      }
+    });
+  };
+
+  const insertLink = () => {
+    const url = prompt('Enter link URL (e.g., https://google.com):');
+    if (url) {
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+    }
+  };
+
+  const insertTable = () => {
+    editor.dispatchCommand(INSERT_TABLE_COMMAND, { columns: '3', rows: '3', includeHeaders: false });
   };
 
   return (
@@ -213,6 +244,34 @@ function ToolbarPlugin() {
         className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
         title="Numbered List">
         <ListOrdered className="w-4 h-4" />
+      </button>
+      <button
+        onClick={formatCheckList}
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+        title="Check List">
+        <CheckSquare className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-4 bg-gray-200 mx-1 border-none" />
+
+      {/* Advanced */}
+      <button
+        onClick={formatCodeBlock}
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+        title="Code Block">
+        <Code className="w-4 h-4" />
+      </button>
+      <button
+        onClick={insertLink}
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+        title="Insert Link">
+        <LinkIcon className="w-4 h-4" />
+      </button>
+      <button
+        onClick={insertTable}
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+        title="Insert Table">
+        <Table className="w-4 h-4" />
       </button>
     </div>
   );
