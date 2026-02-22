@@ -17,6 +17,8 @@ import { ListItemNode, ListNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
 import { ColoredTableCellNode } from './ColoredTableCellNode';
+import { ImageNode, $createImageNode } from './ImageNode';
+import { ImagePastePlugin } from './ImagePastePlugin';
 import { TRANSFORMERS } from '@lexical/markdown';
 
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
@@ -79,6 +81,7 @@ import {
   Table,
   Baseline,
   PaintBucket,
+  ImagePlus,
 } from 'lucide-react';
 
 
@@ -351,6 +354,33 @@ function ToolbarPlugin() {
         title="Insert Table">
         <Table className="w-4 h-4" />
       </button>
+
+      {/* Insert Image from file */}
+      <label
+        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 cursor-pointer"
+        title="Insert Image">
+        <ImagePlus className="w-4 h-4" />
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+              const src = reader.result as string;
+              editor.update(() => {
+                const node = $createImageNode({ src, altText: file.name });
+                const sel = $getSelection();
+                if ($isRangeSelection(sel)) sel.insertNodes([node]);
+              });
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+          }}
+        />
+      </label>
     </div>
   );
 }
@@ -412,6 +442,7 @@ const RichTextEditor = React.memo(
         ListNode,
         LinkNode,
         AutoLinkNode,
+        ImageNode,
         TableNode,
         // Use node replacement so TablePlugin internals keep working
         // while our subclass intercepts DOM import to preserve Excel colors
@@ -448,6 +479,11 @@ const RichTextEditor = React.memo(
           strikethrough: 'line-through',
           underlineStrikethrough: 'underline line-through',
         },
+        // Table: give all cells a 1px border so Excel tables look right
+        table: 'lexical-table',
+        tableRow: 'lexical-table-row',
+        tableCell: 'lexical-table-cell',
+        tableCellHeader: 'lexical-table-cell lexical-table-cell-header',
       },
       onError(error: Error) {
         console.error('Lexical Error:', error);
@@ -491,6 +527,7 @@ const RichTextEditor = React.memo(
                 {() => <></>}
               </TableOfContentsPlugin>
               <ValueSyncPlugin value={value} onChange={onChange} />
+              <ImagePastePlugin />
             </div>
           </div>
         </LexicalComposer>

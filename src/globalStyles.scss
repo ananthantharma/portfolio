@@ -3,14 +3,17 @@
 @tailwind utilities;
 
 @layer utilities {
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
 
   .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }
 
@@ -47,5 +50,33 @@ th {
 }
 
 th {
+  font-weight: 600;
+}
+
+/* ── Lexical editor: table borders ─────────────────────────────────────────── */
+.lexical-table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  margin: 8px 0;
+  overflow-x: auto;
+  table-layout: fixed;
+}
+
+.lexical-table-cell {
+  border: 1px solid #d1d5db;
+  /* gray-300 */
+  padding: 6px 10px;
+  min-width: 75px;
+  vertical-align: top;
+  text-align: start;
+  outline: none;
+  /* Preserve inline background-color set by Lexical from Excel paste */
+  background-color: inherit;
+}
+
+.lexical-table-cell-header {
+  background-color: #f3f4f6;
+  /* gray-100 */
   font-weight: 600;
 }
