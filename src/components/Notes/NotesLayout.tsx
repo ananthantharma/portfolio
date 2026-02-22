@@ -974,7 +974,7 @@ const NotesLayout: React.FC = React.memo(() => {
           {isFocusMode && (
             <button
               onClick={toggleFocusMode}
-              className="absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-slate-400 hover:text-indigo-600 transition-all opacity-0 hover:opacity-100 group"
+              className="absolute top-4 right-4 z-50 p-2 bg-white rounded-full shadow-lg border border-slate-200 text-slate-500 hover:text-indigo-600 transition-all opacity-60 hover:opacity-100 group"
               title="Exit Focus Mode"
             >
               <ArrowsPointingInIcon className="h-5 w-5" />
