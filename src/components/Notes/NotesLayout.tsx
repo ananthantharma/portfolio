@@ -660,33 +660,49 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Top Navigation / Breadcrumbs Bar */}
 
         {!isFocusMode && (
-          <div className="flex flex-shrink-0 items-center justify-between mx-4 my-2 rounded-xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-4 py-2.5 shadow-sm z-40 transition-all duration-300">
-            <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
-              <HomeIcon className="h-3.5 w-3.5" />
-              <span className="font-medium text-gray-500">Workspace</span>
+          <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-2 md:mx-4 my-2 rounded-xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-2 md:px-4 py-2.5 shadow-sm z-40 transition-all duration-300 gap-2 md:gap-0">
+            <div className="flex items-center gap-1.5 text-[13px] text-gray-400 overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto pb-1 md:pb-0">
+              <button
+                onClick={() => { setSelectedCategoryId(null); setSelectedSectionId(null); setSelectedPageId(null); }}
+                className="flex items-center gap-1.5 hover:text-indigo-500 transition-colors"
+                title="Go to Workspace"
+              >
+                <HomeIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="font-medium text-gray-500 hover:text-indigo-500">Workspace</span>
+              </button>
               {currentCategory && (
                 <>
-                  <ChevronRightIcon className="h-3 w-3" />
-                  <span className="font-medium text-gray-600">
+                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0" />
+                  <button
+                    onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
+                    className="font-medium text-gray-600 hover:text-indigo-500 transition-colors"
+                    title={`Go to ${currentCategory.name}`}
+                  >
                     {currentCategory.name}
-                  </span>
+                  </button>
                 </>
               )}
               {currentSection && (
                 <>
-                  <ChevronRightIcon className="h-3 w-3" />
-                  <span className="font-medium text-gray-600">{currentSection.name}</span>
+                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0" />
+                  <button
+                    onClick={() => { setSelectedPageId(null); }}
+                    className="font-medium text-gray-600 hover:text-indigo-500 transition-colors"
+                    title={`Go to ${currentSection.name}`}
+                  >
+                    {currentSection.name}
+                  </button>
                 </>
               )}
               {selectedPage && (
                 <>
-                  <ChevronRightIcon className="h-3 w-3" />
+                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0" />
                   <span className="font-semibold text-gray-900">{selectedPage.title || 'Untitled'}</span>
                 </>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
               {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight mr-1">{dbSize}</span>}
 
               {/* ── Core Tools ── */}
@@ -865,7 +881,7 @@ const NotesLayout: React.FC = React.memo(() => {
           </div>
         )}
 
-        <div className="flex flex-1 overflow-hidden px-4 pb-4 gap-3 relative">
+        <div className="flex flex-1 overflow-hidden px-2 md:px-4 pb-4 gap-0 md:gap-3 relative">
 
           {/* Focus Mode Exit Button (Only visible in Focus Mode) */}
           {isFocusMode && (
@@ -881,8 +897,8 @@ const NotesLayout: React.FC = React.memo(() => {
           {/* ─── 1. Categories Column ─── */}
           {/* Hidden in Focus Mode */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${isCategoryCollapsed ? 'w-14 items-center' : ''
-              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${isCategoryCollapsed ? 'w-14 items-center' : ''
+              } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
             style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}
           >
             <CategoryList
@@ -908,8 +924,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 2. Sections Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative ${isSectionCollapsed ? 'w-14 items-center' : ''
-              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isSectionCollapsed ? 'w-14 items-center' : ''
+              } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
             style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}
           >
             <SectionList
@@ -936,8 +952,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 3. Pages Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative ${isPageCollapsed ? 'w-14 items-center' : ''
-              } ${isFocusMode ? 'hidden' : 'flex'}`}
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isPageCollapsed ? 'w-14 items-center' : ''
+              } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
             style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}
           >
             <PageList
@@ -963,7 +979,7 @@ const NotesLayout: React.FC = React.memo(() => {
           </div>
 
           {/* ─── 4. Editor Area ─── */}
-          <div className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm ml-3 flex flex-col overflow-hidden relative transition-all duration-500 ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
+          <div className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
             {selectedPageId ? (
               <NoteEditor
                 key={selectedPageId}
