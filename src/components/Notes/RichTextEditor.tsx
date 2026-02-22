@@ -15,7 +15,8 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { CodeNode, CodeHighlightNode } from '@lexical/code';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
-import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
+import { TableNode, TableRowNode } from '@lexical/table';
+import { ColoredTableCellNode } from './ColoredTableCellNode';
 import { TRANSFORMERS } from '@lexical/markdown';
 
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
@@ -335,7 +336,7 @@ const RichTextEditor = React.memo(
         LinkNode,
         AutoLinkNode,
         TableNode,
-        TableCellNode,
+        ColoredTableCellNode,
         TableRowNode,
         CodeNode,
         CodeHighlightNode

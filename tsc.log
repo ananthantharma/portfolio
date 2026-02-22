@@ -1,0 +1,3 @@
+src/components/Notes/ColoredTableCellNode.tsx(2,49): error TS6133: 'NodeKey' is declared but its value is never read.
+src/components/Notes/ColoredTableCellNode.tsx(20,18): error TS6133: 'node' is declared but its value is never read.
+src/components/Notes/ColoredTableCellNode.tsx(24,18): error TS6133: 'node' is declared but its value is never read.
