@@ -437,7 +437,17 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
             });
 
             if (!response.ok) {
-                throw new Error(`Oracle Upload Failed: ${response.statusText}`);
+                let errMsg = response.statusText;
+                try {
+                    const errData = await response.json();
+                    if (errData.error) errMsg = errData.error;
+                } catch (e) {
+                    try {
+                        const errText = await response.text();
+                        if (errText) errMsg = errText;
+                    } catch (e2) { }
+                }
+                throw new Error(`Oracle Upload Failed: ${errMsg}`);
             }
             return uploadUrl;
         }, []);

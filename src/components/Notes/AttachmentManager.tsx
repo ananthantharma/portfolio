@@ -164,7 +164,12 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           });
 
           if (!response.ok) {
-            throw new Error(`Upload failed: ${response.statusText}`);
+            let errMsg = response.statusText;
+            try {
+              const errData = await response.json();
+              if (errData.error) errMsg = errData.error;
+            } catch (e) { }
+            throw new Error(`Upload failed: ${errMsg}`);
           }
 
           const newBlob = await response.json();
