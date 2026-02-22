@@ -22,13 +22,13 @@ import {
   PlusCircleIcon,
   BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import {useSession} from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
-import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
-import {INotePage} from '@/models/NotePage';
-import {INoteSection} from '@/models/NoteSection';
+import { INoteCategory } from '@/models/NoteCategory';
+import { INotePage } from '@/models/NotePage';
+import { INoteSection } from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import SimpleRewriteModal from './SimpleRewriteModal';
@@ -45,14 +45,14 @@ import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
-import {BadgeSettingsProvider} from './BadgeSettingsContext';
-import {BadgeSettingsModal} from './BadgeSettingsModal';
+import { BadgeSettingsProvider } from './BadgeSettingsContext';
+import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 
 import SourcingEventModal from './SourcingEventModal';
 import SourcingListModal from './SourcingListModal';
-import {TableAppModal} from './HighPerformanceTable/TableAppModal';
+import { TableAppModal } from './HighPerformanceTable/TableAppModal';
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 
 const NotesLayout: React.FC = React.memo(() => {
@@ -86,10 +86,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
-    pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
-    sections: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
-    categories: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
-  }>({pages: {}, sections: {}, categories: {}});
+    pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+    sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+    categories: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
+  }>({ pages: {}, sections: {}, categories: {} });
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
@@ -357,7 +357,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
+      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -367,7 +367,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
+        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -393,7 +393,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
+        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -425,7 +425,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
+        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -452,7 +452,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
+          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -488,7 +488,7 @@ const NotesLayout: React.FC = React.memo(() => {
       // 1. Fetch/Create 'Other Notes' Category
       let category = categories.find(c => c.name === 'Other Notes');
       if (!category) {
-        const catRes = await axios.post('/api/notes/categories', {name: 'Other Notes'});
+        const catRes = await axios.post('/api/notes/categories', { name: 'Other Notes' });
         category = catRes.data.data;
         setCategories(prev => [...prev, category as INoteCategory]);
       }
@@ -498,7 +498,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const secRes = await axios.get(`/api/notes/sections?categoryId=${category!._id}`);
       let section = secRes.data.data.find((s: INoteSection) => s.name === 'Other');
       if (!section) {
-        const createSecRes = await axios.post('/api/notes/sections', {name: 'Other', categoryId: category!._id});
+        const createSecRes = await axios.post('/api/notes/sections', { name: 'Other', categoryId: category!._id });
         section = createSecRes.data.data;
         if (selectedCategoryId === category!._id) {
           setSections(prev => [...prev, section]);
@@ -506,7 +506,7 @@ const NotesLayout: React.FC = React.memo(() => {
       }
 
       // 3. Create Page
-      const pageRes = await axios.post('/api/notes/pages', {title: 'New Note', sectionId: section._id});
+      const pageRes = await axios.post('/api/notes/pages', { title: 'New Note', sectionId: section._id });
       const newPage = pageRes.data.data;
 
       // 4. Navigate to new Quick Note
@@ -526,7 +526,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
+        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -553,7 +553,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleMovePage = useCallback(
     async (pageId: string, destSectionId: string) => {
       try {
-        await axios.put(`/api/notes/pages/${pageId}`, {sectionId: destSectionId});
+        await axios.put(`/api/notes/pages/${pageId}`, { sectionId: destSectionId });
         if (selectedSectionId && destSectionId !== selectedSectionId) {
           setPages(prev => prev.filter(p => p._id !== pageId));
           if (selectedPageId === pageId) setSelectedPageId(null);
@@ -570,7 +570,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
-      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
+      const response = await axios.put(`/api/notes/pages/${id}`, { tabs: data });
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -582,7 +582,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -643,7 +643,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(true), []);
   const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
 
-  const {data: session} = useSession();
+  const { data: session } = useSession();
 
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
@@ -773,7 +773,7 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+            <div className="flex items-center gap-1.5 w-full md:w-auto pb-1 md:pb-0 scrollbar-hide" style={{ overflowX: 'auto', overflowY: 'visible' }}>
               {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight mr-1">{dbSize}</span>}
 
               {/* ── Core Tools ── */}
@@ -852,27 +852,26 @@ const NotesLayout: React.FC = React.memo(() => {
                     {/* Rewrite Dropdown */}
                     <div className="relative" ref={rewriteDropdownRef}>
                       <button
-                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${
-                          isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''
-                        }`}
+                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''
+                          }`}
                         title="AI Rewrite Tools"
                         onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}>
                         <PencilSquareIcon
-                          className={`h-3.5 w-3.5 transition-colors duration-200 ${
-                            isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'
-                          }`}
+                          className={`h-3.5 w-3.5 transition-colors duration-200 ${isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'
+                            }`}
                         />
                         <span className="hidden xl:inline">Rewrite</span>
                       </button>
                       {isRewriteDropdownOpen && (
-                        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div className="fixed mt-1.5 w-52 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-2xl py-1 z-[9999] animate-in fade-in slide-in-from-top-1 duration-150"
+                          style={{ top: rewriteDropdownRef.current ? rewriteDropdownRef.current.getBoundingClientRect().bottom + 6 : undefined, right: rewriteDropdownRef.current ? window.innerWidth - rewriteDropdownRef.current.getBoundingClientRect().right : undefined }}>
                           <button
                             onClick={() => {
                               handleOpenRewrite();
                               setIsRewriteDropdownOpen(false);
                             }}
                             className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{width: 'calc(100% - 4px)'}}>
+                            style={{ width: 'calc(100% - 4px)' }}>
                             <PencilSquareIcon className="h-3 w-3 text-indigo-400" />
                             Advanced Rewrite
                           </button>
@@ -882,7 +881,7 @@ const NotesLayout: React.FC = React.memo(() => {
                               setIsRewriteDropdownOpen(false);
                             }}
                             className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{width: 'calc(100% - 4px)'}}>
+                            style={{ width: 'calc(100% - 4px)' }}>
                             <PencilSquareIcon className="h-3 w-3 text-purple-400" />
                             Simple Rewrite
                           </button>
@@ -893,7 +892,7 @@ const NotesLayout: React.FC = React.memo(() => {
                               setIsRewriteDropdownOpen(false);
                             }}
                             className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{width: 'calc(100% - 4px)'}}>
+                            style={{ width: 'calc(100% - 4px)' }}>
                             <SparklesIcon className="h-3 w-3 text-teal-400" />
                             GPT Rewrite
                           </button>
@@ -1048,10 +1047,9 @@ const NotesLayout: React.FC = React.memo(() => {
           {/* ─── 1. Categories Column ─── */}
           {/* Hidden in Focus Mode */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${
-              isCategoryCollapsed ? 'w-14 items-center' : ''
-            } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth}}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${isCategoryCollapsed ? 'w-14 items-center' : ''
+              } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}>
             <CategoryList
               categories={categories}
               isCollapsed={isCategoryCollapsed}
@@ -1075,10 +1073,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 2. Sections Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
-              isSectionCollapsed ? 'w-14 items-center' : ''
-            } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth}}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isSectionCollapsed ? 'w-14 items-center' : ''
+              } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}>
             <SectionList
               sections={sections}
               selectedSectionId={selectedSectionId}
@@ -1103,10 +1100,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 3. Pages Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
-              isPageCollapsed ? 'w-14 items-center' : ''
-            } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{width: isPageCollapsed || isFocusMode ? undefined : pageWidth}}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isPageCollapsed ? 'w-14 items-center' : ''
+              } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}>
             <PageList
               pages={pages}
               selectedPageId={selectedPageId}
@@ -1132,9 +1128,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 4. Editor Area ─── */}
           <div
-            className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${
-              !selectedPageId ? 'max-md:hidden' : ''
-            } ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
+            className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''
+              } ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
             {selectedPageId ? (
               <NoteEditor
                 key={selectedPageId}
@@ -1232,6 +1227,35 @@ const NotesLayout: React.FC = React.memo(() => {
         )}
 
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+
+        {/* ── Floating Action Button: New Task ── */}
+        <div className="fixed bottom-6 right-6 z-[9998] group">
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-3 px-3 py-1.5 bg-gray-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-y-1 group-hover:translate-y-0">
+            New Task
+            <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-900/90" />
+          </div>
+
+          {/* Ping ring */}
+          {activeTaskCount === 0 && (
+            <span className="absolute inset-0 rounded-full bg-rose-400 opacity-30 animate-ping" />
+          )}
+
+          {/* Button */}
+          <button
+            onClick={() => setIsDirectTaskCreateOpen(true)}
+            className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+            title="New Task"
+          >
+            {/* Task count badge */}
+            {activeTaskCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rose-600 ring-2 ring-rose-500 shadow-sm">
+                {activeTaskCount > 9 ? '9+' : activeTaskCount}
+              </span>
+            )}
+            <PlusCircleIcon className="h-7 w-7 drop-shadow-sm" />
+          </button>
+        </div>
       </div>
     </BadgeSettingsProvider>
   );
