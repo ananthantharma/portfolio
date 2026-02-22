@@ -6,7 +6,8 @@ import {
     TrashIcon,
     LinkIcon,
     MagnifyingGlassIcon,
-    BookmarkIcon
+    BookmarkIcon,
+    ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
@@ -173,19 +174,23 @@ export default function BookmarkListModal({ isOpen, onClose }: BookmarkListModal
 
                                 {/* Toolbar */}
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-b border-gray-100 bg-white flex-shrink-0">
-                                    <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide">
-                                        {allCategories.map(cat => (
-                                            <button
-                                                key={cat}
-                                                onClick={() => setSelectedCategory(cat)}
-                                                className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-all ${selectedCategory === cat
-                                                        ? 'bg-indigo-600 text-white shadow-sm'
-                                                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                                                    }`}
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                        <div className="relative min-w-[160px]">
+                                            <select
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-1.5 pl-3 pr-10 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-sm hover:border-gray-300"
                                             >
-                                                {cat}
-                                            </button>
-                                        ))}
+                                                {allCategories.map(cat => (
+                                                    <option key={cat} value={cat}>
+                                                        {cat === 'All' ? '📂 All Categories' : cat}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                                                <ChevronDownIcon className="h-4 w-4" />
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="flex items-center gap-3 w-full sm:w-auto">
