@@ -208,6 +208,39 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
     }
   };
 
+  const handleAddDays = async (id: string, days: number) => {
+    const todo = todos.find(t => t._id === id);
+    if (!todo) return;
+    const newDueDate = new Date(todo.dueDate);
+    newDueDate.setDate(newDueDate.getDate() + days);
+
+    setTodos(prev => prev.map(t => t._id === id ? { ...t, dueDate: newDueDate.toISOString() } as any : t));
+    try {
+      await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dueDate: newDueDate.toISOString() })
+      });
+    } catch (error) {
+      console.error('Failed to update due date', error);
+      fetchTodos();
+    }
+  };
+
+  const handleUpdateNotes = async (id: string, newNotes: string) => {
+    setTodos(prev => prev.map(t => t._id === id ? { ...t, notes: newNotes } as any : t));
+    try {
+      await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: newNotes })
+      });
+    } catch (error) {
+      console.error('Failed to update notes', error);
+      fetchTodos();
+    }
+  };
+
   const handleSaveTask = async (data: TaskFormData) => {
     try {
       const formData = new FormData();
@@ -586,6 +619,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleComplete={handleToggleComplete}
+                        onAddDays={handleAddDays}
+                        onNotesChange={handleUpdateNotes}
                         onNavigate={onNavigate}
                         onClose={onClose}
                       />
@@ -651,6 +686,28 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(({ isOpen, onClos
                                     <CalendarDaysIcon className="h-3 w-3" />
                                     {dateInfo.text}
                                   </span>
+                                  {!todo.isCompleted && (
+                                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 border-l border-gray-200 pl-1.5 flex-shrink-0">
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAddDays(todo._id, 1); }}
+                                        className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                        title="Add 1 Day">
+                                        +1
+                                      </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAddDays(todo._id, 3); }}
+                                        className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                        title="Add 3 Days">
+                                        +3
+                                      </button>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleAddDays(todo._id, 7); }}
+                                        className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                        title="Add 7 Days">
+                                        +7
+                                      </button>
+                                    </div>
+                                  )}
                                   {typeof todo.sourcePageId !== 'string' && todo.sourcePageId?.title && (
                                     <button
                                       className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 transition-colors"

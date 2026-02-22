@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, simple-import-sort/imports */
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
     DndContext, DragOverlay, useDraggable, useDroppable,
     DragStartEvent, DragEndEvent, PointerSensor, useSensor, useSensors,
@@ -21,6 +21,8 @@ interface ToDoBoardProps {
     onEdit: (todo: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (todo: IToDo) => void;
+    onAddDays: (id: string, days: number) => void;
+    onNotesChange: (id: string, notes: string) => void;
     onNavigate: (page: INotePage, tabId?: string) => void;
     onClose: () => void;
 }
@@ -112,7 +114,7 @@ const getRelativeDate = (dateString: Date) => {
 /*  BOARD                                                                      */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, onDelete, onToggleComplete, onNavigate, onClose }) => {
+const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, onDelete, onToggleComplete, onAddDays, onNotesChange, onNavigate, onClose }) => {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -215,6 +217,8 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
                             onEdit={onEdit}
                             onDelete={onDelete}
                             onToggleComplete={onToggleComplete}
+                            onAddDays={onAddDays}
+                            onNotesChange={onNotesChange}
                             onNavigate={onNavigate}
                             onClose={onClose}
                             activeId={activeId}
@@ -235,12 +239,14 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({ todos, onStatusChange, onEdit, on
 /*  COLUMN                                                                     */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, onNavigate, onClose, activeId }: {
+const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, onAddDays, onNotesChange, onNavigate, onClose, activeId }: {
     col: typeof COLUMNS[0];
     todos: IToDo[];
     onEdit: (t: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (t: IToDo) => void;
+    onAddDays: (id: string, days: number) => void;
+    onNotesChange: (id: string, notes: string) => void;
     onNavigate: (page: INotePage, tabId?: string) => void;
     onClose: () => void;
     activeId: string | null;
@@ -292,6 +298,8 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, onNavigate, on
                         onEdit={onEdit}
                         onDelete={onDelete}
                         onToggleComplete={onToggleComplete}
+                        onAddDays={onAddDays}
+                        onNotesChange={onNotesChange}
                         onNavigate={onNavigate}
                         onClose={onClose}
                         isBeingDragged={activeId === todo._id}
@@ -306,11 +314,13 @@ const Column = ({ col, todos, onEdit, onDelete, onToggleComplete, onNavigate, on
 /*  DRAGGABLE WRAPPER                                                          */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, onNavigate, onClose, isBeingDragged }: {
+const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, onAddDays, onNotesChange, onNavigate, onClose, isBeingDragged }: {
     todo: IToDo;
     onEdit: (t: IToDo) => void;
     onDelete: (id: string) => void;
     onToggleComplete: (t: IToDo) => void;
+    onAddDays: (id: string, days: number) => void;
+    onNotesChange: (id: string, notes: string) => void;
     onNavigate: (page: INotePage, tabId?: string) => void;
     onClose: () => void;
     isBeingDragged: boolean;
@@ -336,6 +346,8 @@ const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, onNavigate, o
                 onEdit={() => onEdit(todo)}
                 onDelete={() => onDelete(todo._id)}
                 onToggleComplete={() => onToggleComplete(todo)}
+                onAddDays={(days) => onAddDays(todo._id, days)}
+                onNotesChange={(notes) => onNotesChange(todo._id, notes)}
                 onNavigate={onNavigate}
                 onClose={onClose}
             />
@@ -347,12 +359,14 @@ const DraggableTask = ({ todo, onEdit, onDelete, onToggleComplete, onNavigate, o
 /*  TASK CARD                                                                  */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onNavigate, onClose }: {
+const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onAddDays, onNotesChange, onNavigate, onClose }: {
     todo: IToDo;
     isOverlay?: boolean;
     onEdit?: () => void;
     onDelete?: () => void;
     onToggleComplete?: () => void;
+    onAddDays?: (days: number) => void;
+    onNotesChange?: (notes: string) => void;
     onNavigate?: (page: INotePage, tabId?: string) => void;
     onClose?: () => void;
 }) => {
@@ -362,6 +376,20 @@ const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onNavig
     const subtaskDone = todo.subtasks?.filter(s => s.isCompleted).length || 0;
     const subtaskPct = subtaskCount > 0 ? Math.round((subtaskDone / subtaskCount) * 100) : 0;
     const prio = priorityLabel[todo.priority] || priorityLabel.None;
+
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [notesValue, setNotesValue] = useState(todo.notes || '');
+
+    useEffect(() => {
+        setNotesValue(todo.notes || '');
+    }, [todo.notes]);
+
+    const handleSaveNotes = () => {
+        setIsEditingNotes(false);
+        if (notesValue !== todo.notes && onNotesChange) {
+            onNotesChange(notesValue);
+        }
+    };
 
     return (
         <div
@@ -449,6 +477,41 @@ const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onNavig
                     )}
                 </div>
 
+                {/* Notes Inline Edit */}
+                {!isOverlay && onNotesChange && (
+                    <div className="mt-2 text-xs text-gray-500">
+                        {isEditingNotes ? (
+                            <div onPointerDown={e => e.stopPropagation()}>
+                                <textarea
+                                    value={notesValue}
+                                    onChange={e => setNotesValue(e.target.value)}
+                                    onBlur={handleSaveNotes}
+                                    autoFocus
+                                    className="w-full text-xs p-1.5 mt-1 border border-indigo-200 rounded-md bg-indigo-50/50 resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                    placeholder="Add notes..."
+                                />
+                            </div>
+                        ) : (
+                            <div
+                                onClick={(e) => { e.stopPropagation(); setIsEditingNotes(true); }}
+                                onPointerDown={e => e.stopPropagation()}
+                                className="mt-1 cursor-text hover:bg-gray-50 p-1.5 -mx-1.5 rounded-md transition-colors"
+                            >
+                                {todo.notes ? (
+                                    <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500">{todo.notes}</p>
+                                ) : (
+                                    <p className="text-[11px] text-gray-400 italic">Add note...</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+                {isOverlay && todo.notes && (
+                    <div className="mt-2 text-xs text-gray-500">
+                        <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500">{todo.notes}</p>
+                    </div>
+                )}
+
                 {/* Bottom row: date, subtasks, attachments */}
                 <div className="mt-2.5 flex items-center justify-between text-[11px] text-gray-400">
                     <div className="flex items-center gap-3">
@@ -457,6 +520,31 @@ const TaskCard = ({ todo, isOverlay, onEdit, onDelete, onToggleComplete, onNavig
                                 <CalendarIcon className="h-3 w-3" />
                                 {dateInfo.text}
                             </span>
+                        )}
+                        {!isOverlay && onAddDays && (
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={e => { e.stopPropagation(); e.preventDefault(); onAddDays(1); }}
+                                    onPointerDown={e => e.stopPropagation()}
+                                    className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                    title="Add 1 Day">
+                                    +1
+                                </button>
+                                <button
+                                    onClick={e => { e.stopPropagation(); e.preventDefault(); onAddDays(3); }}
+                                    onPointerDown={e => e.stopPropagation()}
+                                    className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                    title="Add 3 Days">
+                                    +3
+                                </button>
+                                <button
+                                    onClick={e => { e.stopPropagation(); e.preventDefault(); onAddDays(7); }}
+                                    onPointerDown={e => e.stopPropagation()}
+                                    className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                    title="Add 7 Days">
+                                    +7
+                                </button>
+                            </div>
                         )}
                         {todo.attachments && todo.attachments.length > 0 && (
                             <div className="flex items-center gap-1">
