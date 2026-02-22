@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import {Dialog, Transition, Menu} from '@headlessui/react';
+import { Dialog, Transition, Menu } from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -22,11 +22,11 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import {useSession} from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick'; // Import useSession
-import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
+import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 
-import {INotePage} from '@/models/NotePage';
+import { INotePage } from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
@@ -34,10 +34,10 @@ import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import {renderToStaticMarkup} from 'react-dom/server';
-import {AttachmentManager} from './AttachmentManager';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { AttachmentManager } from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
-import {useBadgeSettings} from './BadgeSettingsContext'; // Added import
+import { useBadgeSettings } from './BadgeSettingsContext'; // Added import
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
@@ -65,8 +65,8 @@ interface NoteEditorProps {
   initialTabId?: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId}) => {
-  const {data: session} = useSession(); // Get session data
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initialTabId }) => {
+  const { data: session } = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<
     {
@@ -82,7 +82,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
-  const {getBadgeStyle} = useBadgeSettings(); // Hook
+  const { getBadgeStyle } = useBadgeSettings(); // Hook
 
   // Badge/ToDo State
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,7 +142,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     setTabs(prev =>
       prev.map(t => {
         if (t._id === activeTabId || t.title === activeTabId) {
-          return {...t, isImportant: !t.isImportant};
+          return { ...t, isImportant: !t.isImportant };
         }
         return t;
       }),
@@ -154,7 +154,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     setTabs(prev =>
       prev.map(t => {
         if (t._id === activeTabId || t.title === activeTabId) {
-          return {...t, isFlagged: !t.isFlagged};
+          return { ...t, isFlagged: !t.isFlagged };
         }
         return t;
       }),
@@ -164,7 +164,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
   const [generatedText, setGeneratedText] = useState('');
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
-  const [insertionRange, setInsertionRange] = useState<{index: number; length: number} | null>(null);
+  // insertionRange removed — was Quill-only, no longer needed with Lexical
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const setInsertionRange = (_: unknown) => { }; // no-op shim so callers don't break
 
   const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
   const [rewriteSelectedText, setRewriteSelectedText] = useState('');
@@ -175,7 +177,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   const [isToDoOpen, setIsToDoOpen] = useState(false);
 
   // Tab Indicator State
-  const [indicatorStyle, setIndicatorStyle] = useState({left: 0, width: 0});
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const tabsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -302,7 +304,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         isFlagged: t.isFlagged,
         order: t.order,
         // Only include _id if it's a real server ID
-        ...(!isTempId && t._id ? {_id: t._id} : {}),
+        ...(!isTempId && t._id ? { _id: t._id } : {}),
       };
     });
   };
@@ -311,7 +313,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return {...t, content: editorContent};
+        return { ...t, content: editorContent };
       }
       return t;
     });
@@ -359,7 +361,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     // Sync current content before modifying tabs array
     const currentSyncedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return {...t, content: editorContent};
+        return { ...t, content: editorContent };
       }
       return t;
     });
@@ -399,12 +401,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
       // Create a base object that has the latest content if it's the active tab
       let updatedTab = t;
       if (t._id === activeTabId || t.title === activeTabId) {
-        updatedTab = {...t, content: editorContent};
+        updatedTab = { ...t, content: editorContent };
       }
 
       // Now apply rename if it matches target
       if (updatedTab._id === tabId || (!updatedTab._id && updatedTab.title === tabId)) {
-        return {...updatedTab, title: newTitle};
+        return { ...updatedTab, title: newTitle };
       }
       return updatedTab;
     });
@@ -447,7 +449,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
       setTabs(prev =>
         prev.map(t => {
           if (t._id === activeTabId || t.title === activeTabId) {
-            return {...t, content: val};
+            return { ...t, content: val };
           }
           return t;
         }),
@@ -457,28 +459,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     [activeTabId],
   );
 
-  // Helper to get selected text
-  const getSelectedText = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    if (!quill) return null;
-
-    const range = quill.getSelection();
-    if (!range) return null;
-
-    const text = quill.getText(range.index, range.length);
-    return {text, range};
-  };
+  // Helper to get selected text — Lexical-compatible using window.getSelection()
+  // Note: kept for potential future use but handleOpenRewrite uses getSelection directly
 
   const handleOpenRewrite = () => {
-    const selection = getSelectedText();
-    if (!selection || !selection.text || selection.text.trim().length === 0) {
+    const text = window.getSelection()?.toString()?.trim();
+    if (!text) {
       alert('Please select some text to rewrite.');
       return;
     }
-
-    setRewriteSelectedText(selection.text);
-    setInsertionRange(selection.range);
+    setRewriteSelectedText(text);
+    setInsertionRange(null);
     setIsRewriteModalOpen(true);
   };
 
@@ -488,54 +479,30 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
   const handleRewrittenInsertMemo = useCallback(
     (newText: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const quill: any = quillRef.current?.getEditor();
-      if (quill && insertionRange) {
-        quill.deleteText(insertionRange.index, insertionRange.length);
-        quill.insertText(insertionRange.index, newText);
-      }
+      // Append rewritten text to the editor content (Lexical will pick it up)
+      const htmlToInsert = `<p>${newText.replace(/\n/g, '</p><p>')}</p>`;
+      setEditorContent(prev => prev + '\n' + htmlToInsert);
+      setTabs(prev =>
+        prev.map(t =>
+          t._id === activeTabId || t.title === activeTabId
+            ? { ...t, content: t.content + '\n' + htmlToInsert }
+            : t
+        )
+      );
+      setIsDirty(true);
     },
-    [insertionRange],
+    [activeTabId],
   );
 
   const handleRefineAI = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quillComponent: any = quillRef.current;
+    const text = window.getSelection()?.toString()?.trim() || '';
 
-    if (!quillComponent) return;
-
-    let quill;
-    try {
-      quill = quillComponent.getEditor();
-    } catch (e) {
-      console.error('Error getting editor from ref:', e);
-    }
-
-    if (!quill) return;
-
-    const range = quill.getSelection();
-    let text = '';
-
-    if (range && range.length > 0) {
-      text = quill.getText(range.index, range.length);
-    } else {
-      const windowSelection = window.getSelection();
-      if (windowSelection && windowSelection.toString().length > 0) {
-        text = windowSelection.toString();
-      }
-    }
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       alert('Please select some text to refine.');
       return;
     }
 
-    if (range) {
-      setInsertionRange(range);
-    } else {
-      setInsertionRange(null);
-    }
-
+    setInsertionRange(null); // No longer quill-range-based; we use selection info
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
@@ -546,7 +513,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -554,19 +521,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         }),
       });
       const data = await response.json();
-      console.log('Refine AI Response:', data);
 
       if (!response.ok) {
-        console.error('Refine AI Error Details:', data);
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
-
-      if (data.text) {
-        setGeneratedText(data.text);
-      } else {
-        setGeneratedText('Failed to refine content.');
-      }
+      setGeneratedText(data.text || 'Failed to refine content.');
     } catch (error) {
       console.error(error);
       setGeneratedText('Error connecting to Gemini.');
@@ -576,27 +536,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   };
 
   const handleSummarizeAI = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    if (!quill) return;
+    // Use selection or full editor HTML content
+    const selectedText = window.getSelection()?.toString()?.trim();
+    const text = selectedText || (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
-    const range = quill.getSelection();
-    let text = '';
-
-    // Use selection if available, otherwise use whole text
-    if (range && range.length > 0) {
-      text = quill.getText(range.index, range.length);
-      setInsertionRange(range);
-    } else {
-      text = quill.getText();
-      setInsertionRange(null);
-    }
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       alert('No text found to summarize.');
       return;
     }
 
+    setInsertionRange(null);
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
@@ -607,7 +556,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -620,12 +569,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
-
-      if (data.text) {
-        setGeneratedText(data.text);
-      } else {
-        setGeneratedText('Failed to summarize content.');
-      }
+      setGeneratedText(data.text || 'Failed to summarize content.');
     } catch (error) {
       console.error(error);
       setGeneratedText('Error connecting to Gemini.');
@@ -635,27 +579,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   };
 
   const handleSuggestAI = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    if (!quill) return;
+    const selectedText = window.getSelection()?.toString()?.trim();
+    const text = selectedText || (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
-    const range = quill.getSelection();
-    let text = '';
-
-    // Use selection if available, otherwise use whole text
-    if (range && range.length > 0) {
-      text = quill.getText(range.index, range.length);
-      setInsertionRange(range);
-    } else {
-      text = quill.getText();
-      setInsertionRange(null);
-    }
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       alert('No text found to analyze.');
       return;
     }
 
+    setInsertionRange(null);
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
@@ -666,7 +598,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -679,12 +611,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
-
-      if (data.text) {
-        setGeneratedText(data.text);
-      } else {
-        setGeneratedText('Failed to generate suggestions.');
-      }
+      setGeneratedText(data.text || 'Failed to generate suggestions.');
     } catch (error) {
       console.error(error);
       setGeneratedText('Error connecting to Gemini.');
@@ -694,53 +621,23 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   };
 
   const handleOrganizeAI = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quillComponent: any = quillRef.current;
+    const text = window.getSelection()?.toString()?.trim();
 
-    if (!quillComponent) return;
-
-    let quill;
-    try {
-      quill = quillComponent.getEditor();
-    } catch (e) {
-      console.error('Error getting editor from ref:', e);
-    }
-
-    if (!quill) return;
-
-    const range = quill.getSelection();
-    let text = '';
-
-    if (range && range.length > 0) {
-      text = quill.getText(range.index, range.length);
-    } else {
-      const windowSelection = window.getSelection();
-      if (windowSelection && windowSelection.toString().length > 0) {
-        text = windowSelection.toString();
-      }
-    }
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       alert('Please select some text to organize.');
       return;
     }
 
-    if (range) {
-      setInsertionRange(range);
-    } else {
-      setInsertionRange(null);
-    }
-
+    setInsertionRange(null);
     setIsPromptEditorOpen(true);
   };
 
   const handleRunOrganize = async (customPrompt: string) => {
-    // Save the prompt first (or in parallel)
     try {
       await fetch('/api/prompts/organize', {
         method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: customPrompt}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: customPrompt }),
       });
       setOrganizePrompt(customPrompt);
     } catch (e) {
@@ -752,23 +649,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     setGeneratedText('');
     setIsMarkdownResponse(true);
 
-    // Get text again (or use state if we stored it, but getting from quill is safer if reference held)
-    // We already set insertionRange but not the text content in state.
-    // Let's grab it from Quill again using insertionRange or just re-grab selection logic if safe.
-    // Actually simpler: we need the text. Let's just grab it again safely.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    let text = '';
-    if (quill && insertionRange) {
-      text = quill.getText(insertionRange.index, insertionRange.length);
-    }
+    // Get selected text directly from window selection
+    const text = window.getSelection()?.toString()?.trim() ||
+      (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
     const fullPrompt = `${customPrompt}\n\n"${text}"`;
 
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -781,12 +671,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
-
-      if (data.text) {
-        setGeneratedText(data.text);
-      } else {
-        setGeneratedText('Failed to organize content.');
-      }
+      setGeneratedText(data.text || 'Failed to organize content.');
     } catch (error) {
       console.error(error);
       setGeneratedText('Error connecting to Gemini.');
@@ -796,52 +681,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   };
 
   const handleGenerateAI = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quillComponent: any = quillRef.current;
+    const text = window.getSelection()?.toString()?.trim();
 
-    if (!quillComponent) {
-      console.error('Quill ref is null');
-      return;
-    }
-
-    // React-Quill exposes getEditor() or sometimes accessing editor directly depends on version/wrapper
-    // If using dynamic import with ssr:false, the ref might be the component instance.
-    let quill;
-    try {
-      quill = quillComponent.getEditor();
-    } catch (e) {
-      console.error('Error getting editor from ref:', e);
-    }
-
-    if (!quill) {
-      console.error('Quill instance not found');
-      return;
-    }
-
-    const range = quill.getSelection();
-
-    let text = '';
-
-    if (range && range.length > 0) {
-      text = quill.getText(range.index, range.length);
-    } else {
-      const windowSelection = window.getSelection();
-      if (windowSelection && windowSelection.toString().length > 0) {
-        text = windowSelection.toString();
-      }
-    }
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       alert('Please select some text in the note to ask AI.');
       return;
     }
 
-    if (range) {
-      setInsertionRange(range);
-    } else {
-      setInsertionRange(null);
-    }
-
+    setInsertionRange(null);
     setIsModalOpen(true);
     setIsGenerating(true);
     setGeneratedText('');
@@ -850,23 +697,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest'}),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest' }),
       });
       const data = await response.json();
-      console.log('Gemini API Response:', data);
 
       if (!response.ok) {
-        console.error('Gemini API Error Details:', data);
         setGeneratedText(`Error: ${data.details || data.error || 'Unknown error'}`);
         return;
       }
-
-      if (data.text) {
-        setGeneratedText(data.text);
-      } else {
-        setGeneratedText('Failed to generate response.');
-      }
+      setGeneratedText(data.text || 'Failed to generate response.');
     } catch (error) {
       console.error(error);
       setGeneratedText('Error connecting to Gemini.');
@@ -876,40 +716,22 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   };
 
   const handleInsertAI = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
+    // For Lexical: append AI result to the editor content (HTML) state.
+    // The ValueSyncPlugin in RichTextEditor will re-sync the editor from the updated value.
+    const htmlToInsert = isMarkdownResponse
+      ? renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>)
+      : `<p>${generatedText.replace(/\n/g, '</p><p>')}</p>`;
 
-    if (quill) {
-      if (insertionRange) {
-        // Replace selected text
-        if (isMarkdownResponse) {
-          const htmlContent = renderToStaticMarkup(
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>,
-          );
-          quill.deleteText(insertionRange.index, insertionRange.length);
-          quill.clipboard.dangerouslyPasteHTML(insertionRange.index, htmlContent);
-        } else {
-          quill.deleteText(insertionRange.index, insertionRange.length);
-          quill.insertText(insertionRange.index, generatedText);
-        }
-      } else {
-        // Append to end if no selection context (e.g., Summary)
-        const length = quill.getLength();
-        quill.insertText(length, '\n\n'); // Add breathing room
-        const insertAt = length + 2;
-
-        if (isMarkdownResponse) {
-          const htmlContent = renderToStaticMarkup(
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>,
-          );
-          quill.clipboard.dangerouslyPasteHTML(insertAt, htmlContent);
-        } else {
-          quill.insertText(insertAt, generatedText);
-        }
-      }
-    } else {
-      alert('Could not access editor to insert text.');
-    }
+    // Append to current editor content
+    setEditorContent(prev => prev + '\n' + htmlToInsert);
+    setTabs(prev =>
+      prev.map(t =>
+        t._id === activeTabId || t.title === activeTabId
+          ? { ...t, content: t.content + '\n' + htmlToInsert }
+          : t
+      )
+    );
+    setIsDirty(true);
     setIsModalOpen(false);
   };
 
@@ -926,37 +748,34 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   }, []);
 
   const handleInsertSymbol = (symbol: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const quill: any = quillRef.current?.getEditor();
-    if (!quill) return;
-
-    const range = quill.getSelection(true); // true to focus if not focused, or just get selection
-    if (range) {
-      quill.insertText(range.index, symbol);
-      quill.setSelection(range.index + symbol.length);
-    } else {
-      // If no selection, append to end? Or just don't insert.
-      // Usually better to try to insert at end if no focus, or just focus.
-      const length = quill.getLength();
-      quill.insertText(length - 1, symbol);
-    }
+    // Append the symbol directly to the current HTML content of the active tab
+    const appended = editorContent + ' ' + symbol;
+    setEditorContent(appended);
+    setTabs(prev =>
+      prev.map(t =>
+        t._id === activeTabId || t.title === activeTabId
+          ? { ...t, content: appended }
+          : t
+      )
+    );
+    setIsDirty(true);
   };
 
   const SYMBOLS = [
-    {char: '🚨', tooltip: 'Instant Action Required'},
-    {char: '⏳', tooltip: 'Waiting'},
-    {char: '💡', tooltip: 'Good Idea'},
-    {char: '⚠️', tooltip: 'Warning'},
-    {char: '💰', tooltip: 'Money / Financial'},
-    {char: '📉', tooltip: 'Decrease / Loss'},
-    {char: '🤝', tooltip: 'Deal / Agreement'},
-    {char: '🗣️', tooltip: 'Speak / Announce'},
-    {char: '✅', tooltip: 'Complete'},
-    {char: '❌', tooltip: 'Cancel / Fail'},
+    { char: '🚨', tooltip: 'Instant Action Required' },
+    { char: '⏳', tooltip: 'Waiting' },
+    { char: '💡', tooltip: 'Good Idea' },
+    { char: '⚠️', tooltip: 'Warning' },
+    { char: '💰', tooltip: 'Money / Financial' },
+    { char: '📉', tooltip: 'Decrease / Loss' },
+    { char: '🤝', tooltip: 'Deal / Agreement' },
+    { char: '🗣️', tooltip: 'Speak / Announce' },
+    { char: '✅', tooltip: 'Complete' },
+    { char: '❌', tooltip: 'Cancel / Fail' },
   ];
 
   const handleSaveToDo = useCallback(
-    async (toDoData: {title: string; priority: string; dueDate: Date; category: string; notes: string}) => {
+    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
       try {
         if (!page) return;
 
@@ -964,7 +783,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
         const response = await fetch('/api/todos', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
@@ -1058,19 +877,18 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
               }
             }
 
-            const {className, style} = getBadgeStyle(minDays);
+            const { className, style } = getBadgeStyle(minDays);
 
             return (
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${
-                  isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                  }`}
                 onClick={() => {
                   const updatedTabs = tabs.map(t => {
                     if (t._id === activeTabId || t.title === activeTabId) {
-                      return {...t, content: editorContent};
+                      return { ...t, content: editorContent };
                     }
                     return t;
                   });
@@ -1107,7 +925,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
                     onChange={e => {
                       const newColor = e.target.value;
                       setTabs(
-                        tabs.map(t => (t._id === tab._id && t.title === tab.title ? {...t, color: newColor} : t)),
+                        tabs.map(t => (t._id === tab._id && t.title === tab.title ? { ...t, color: newColor } : t)),
                       );
                       setIsDirty(true);
                     }}
@@ -1115,25 +933,24 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
                   />
                   <div
                     className="w-full h-full rounded-full border border-gray-300"
-                    style={{backgroundColor: tab.color || '#ffffff'}}></div>
+                    style={{ backgroundColor: tab.color || '#ffffff' }}></div>
                 </div>
 
                 {/* Auto-width Container: Grid stack with invisible span and absolute input */}
-                <div className="grid place-items-center" style={{gridTemplateAreas: '"stack"'}}>
+                <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
                   {/* Invisible sizing span - dictates width */}
                   <span
                     className="invisible opacity-0 px-1 whitespace-pre leading-none pointer-events-none font-medium text-xs"
-                    style={{gridArea: 'stack'}}
+                    style={{ gridArea: 'stack' }}
                     aria-hidden="true">
                     {tab.title}
                   </span>
 
                   {/* Input for editing - absolute over the span */}
                   <input
-                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${
-                      isActive ? '' : 'pointer-events-none'
-                    }`}
-                    style={{gridArea: 'stack', minWidth: '2ch'}}
+                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${isActive ? '' : 'pointer-events-none'
+                      }`}
+                    style={{ gridArea: 'stack', minWidth: '2ch' }}
                     onChange={e => handleRenameTab(tab._id || tab.title, e.target.value)}
                     onClick={e => e.stopPropagation()}
                     value={tab.title}
@@ -1143,14 +960,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
                 {/* Tab Controls (Delete Only) */}
                 <div
-                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${
-                    isActive ? 'flex' : 'hidden group-hover:flex'
-                  }`}>
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'
+                    }`}>
                   {/* Delete Button */}
                   <button
-                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${
-                      tabs.length <= 1 ? '!hidden' : ''
-                    } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${tabs.length <= 1 ? '!hidden' : ''
+                      } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
                     disabled={isSaving}
                     onClick={e => {
                       e.stopPropagation();
@@ -1166,9 +981,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
         {/* Add Tab Button */}
         <button
-          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${
-            isSaving ? 'opacity-50 cursor-wait' : ''
-          }`}
+          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${isSaving ? 'opacity-50 cursor-wait' : ''
+            }`}
           onClick={handleAddTab}
           disabled={isSaving}
           title="Add Tab">
@@ -1212,12 +1026,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
               <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-xl bg-white shadow-lg ring-1 ring-black/[0.06] focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
                 {SYMBOLS.map(s => (
                   <Menu.Item key={s.char}>
-                    {({active}) => (
+                    {({ active }) => (
                       <button
                         type="button"
-                        className={`${
-                          active ? 'bg-gray-100' : ''
-                        } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
+                        className={`${active ? 'bg-gray-100' : ''
+                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
                         onClick={() => handleInsertSymbol(s.char)}
                         title={s.tooltip}>
                         {s.char}
@@ -1243,7 +1056,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
                 // Sync current state first!
                 const updatedTabs = tabs.map(t => {
                   if (t._id === activeTabId || t.title === activeTabId) {
-                    return {...t, content: editorContent};
+                    return { ...t, content: editorContent };
                   }
                   return t;
                 });
@@ -1264,9 +1077,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           {/* AI Actions Dropdown - Consolidated */}
           <div className="relative" ref={aiActionsRef}>
             <button
-              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${
-                isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''
-              }`}
+              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''
+                }`}
               type="button"
               onClick={() => setIsAIActionsOpen(!isAIActionsOpen)}>
               <SparklesIcon className="h-3.5 w-3.5" />
@@ -1348,11 +1160,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
             return (
               <>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${
-                    activeTab?.isImportant
-                      ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                      : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
-                  }`}
+                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isImportant
+                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                    : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
+                    }`}
                   onClick={handleToggleImportant}
                   title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
                   {activeTab?.isImportant ? (
@@ -1362,11 +1173,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
                   )}
                 </button>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${
-                    activeTab?.isFlagged
-                      ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                      : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
-                  }`}
+                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isFlagged
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                    : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
+                    }`}
                   onClick={handleToggleFlagged}
                   title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
                   {activeTab?.isFlagged ? <FlagIconSolid className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
@@ -1375,11 +1185,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
             );
           })()}
           <button
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
-              isDirty
-                ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
-                : 'bg-green-50 text-green-600 cursor-default'
-            } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${isDirty
+              ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
+              : 'bg-green-50 text-green-600 cursor-default'
+              } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
             disabled={!isDirty || isSaving}
             onClick={handleSave}>
             {isSaving ? (
