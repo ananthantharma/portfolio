@@ -17,7 +17,8 @@ import {
   SparklesIcon,
   TableCellsIcon,
   ArrowsPointingOutIcon, // For Focus Mode
-  ArrowsPointingInIcon   // For Focus Mode Exit
+  ArrowsPointingInIcon,   // For Focus Mode Exit
+  DocumentPlusIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
@@ -482,6 +483,47 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
+  const handleQuickNote = useCallback(async () => {
+    try {
+      // 1. Fetch/Create 'Other Notes' Category
+      let category = categories.find(c => c.name === 'Other Notes');
+      if (!category) {
+        const catRes = await axios.post('/api/notes/categories', { name: 'Other Notes' });
+        category = catRes.data.data;
+        setCategories(prev => [...prev, category as INoteCategory]);
+      }
+
+      // 2. Fetch/Create 'Other' Section
+      // Using API directly to make sure we don't rely only on local state which might be empty
+      const secRes = await axios.get(`/api/notes/sections?categoryId=${category!._id}`);
+      let section = secRes.data.data.find((s: INoteSection) => s.name === 'Other');
+      if (!section) {
+        const createSecRes = await axios.post('/api/notes/sections', { name: 'Other', categoryId: category!._id });
+        section = createSecRes.data.data;
+        if (selectedCategoryId === category!._id) {
+          setSections(prev => [...prev, section]);
+        }
+      }
+
+      // 3. Create Page
+      const pageRes = await axios.post('/api/notes/pages', { title: 'New Note', sectionId: section._id });
+      const newPage = pageRes.data.data;
+
+      // 4. Navigate to new Quick Note
+      setSelectedCategoryId(category!._id as string);
+      setTimeout(() => {
+        setSelectedSectionId(section._id as string);
+        setTimeout(() => {
+          setSelectedPageId(newPage._id as string);
+        }, 150);
+      }, 150);
+
+    } catch (error) {
+      console.error('Error creating quick note:', error);
+      alert('Failed to create quick note.');
+    }
+  }, [categories, selectedCategoryId]);
+
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
@@ -724,6 +766,13 @@ const NotesLayout: React.FC = React.memo(() => {
 
               {/* ── Core Tools ── */}
               <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200/50 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+                <button
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  onClick={handleQuickNote}
+                  title="Quick Note">
+                  <DocumentPlusIcon className="h-3.5 w-3.5 group-hover:text-emerald-500 transition-colors duration-200" />
+                  <span className="hidden lg:inline">Quick</span>
+                </button>
                 <button
                   className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
                   onClick={handleOpenSearch}
