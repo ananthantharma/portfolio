@@ -41,6 +41,7 @@ import PageList from './PageList';
 import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
+import MovePageModal from './MovePageModal';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
@@ -506,6 +507,22 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedPageId],
   );
 
+  const [selectedPageToMove, setSelectedPageToMove] = useState<INotePage | null>(null);
+
+  const handleMovePage = useCallback(async (pageId: string, destSectionId: string) => {
+    try {
+      await axios.put(`/api/notes/pages/${pageId}`, { sectionId: destSectionId });
+      if (selectedSectionId && destSectionId !== selectedSectionId) {
+        setPages(prev => prev.filter(p => p._id !== pageId));
+        if (selectedPageId === pageId) setSelectedPageId(null);
+      }
+      setSelectedPageToMove(null);
+    } catch (error) {
+      console.error('Error moving page:', error);
+      alert('Failed to move page.');
+    }
+  }, [selectedSectionId, selectedPageId]);
+
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
@@ -963,6 +980,7 @@ const NotesLayout: React.FC = React.memo(() => {
               onAddPage={handleAddPage}
               onRenamePage={handleRenamePage}
               onDeletePage={handleDeletePage}
+              onMovePage={setSelectedPageToMove}
               onReorderPages={handleReorderPages}
               isCollapsed={isPageCollapsed}
               onToggleCollapse={handleTogglePageCollapse}
@@ -1068,6 +1086,17 @@ const NotesLayout: React.FC = React.memo(() => {
           isOpen={isTableAppOpen}
           onClose={() => setIsTableAppOpen(false)}
         />
+
+        {selectedPageToMove && (
+          <MovePageModal
+            isOpen={!!selectedPageToMove}
+            onClose={() => setSelectedPageToMove(null)}
+            onMove={handleMovePage}
+            categories={categories}
+            pageId={selectedPageToMove._id as string}
+            currentSectionId={selectedSectionId as string}
+          />
+        )}
 
         <BadgeSettingsModal
           isOpen={isSettingsOpen}

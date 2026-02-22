@@ -17,6 +17,7 @@ import {
   PlusIcon,
   TrashIcon,
   XMarkIcon,
+  FolderArrowDownIcon,
 } from '@heroicons/react/24/outline';
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -35,6 +36,7 @@ interface PageListProps {
   onAddPage: (title: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
   onRenamePage: (id: string, title: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
   onDeletePage: (id: string) => Promise<void>;
+  onMovePage: (page: INotePage) => void;
   onReorderPages: (newOrder: INotePage[]) => void;
   loading: boolean;
   isCollapsed: boolean;
@@ -48,9 +50,10 @@ const PageItem = React.memo<{
   onSelect: (id: string) => void;
   onEdit: (page: INotePage) => void;
   onDelete: (id: string) => void;
+  onMove: (page: INotePage) => void;
   isCollapsed: boolean;
   badgeStats?: { todo: { count: number; minDays: number | null }; important: number; flagged: number };
-}>(({ page, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats }) => {
+}>(({ page, isSelected, onSelect, onEdit, onDelete, onMove, isCollapsed, badgeStats }) => {
   const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
 
   const { getBadgeStyle } = useBadgeSettings();
@@ -160,6 +163,15 @@ const PageItem = React.memo<{
               <PencilIcon className="h-3.5 w-3.5" />
             </button>
             <button
+              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+              onClick={e => {
+                e.stopPropagation();
+                onMove(page);
+              }}
+              title="Move Page">
+              <FolderArrowDownIcon className="h-3.5 w-3.5" />
+            </button>
+            <button
               className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
               onClick={e => {
                 e.stopPropagation();
@@ -185,6 +197,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     loading,
     onAddPage,
     onDeletePage,
+    onMovePage,
     onRenamePage,
     onReorderPages,
     onSelectPage,
@@ -415,6 +428,7 @@ const PageList: React.FC<PageListProps> = React.memo(
                       isSelected={selectedPageId === page._id}
                       key={page._id as string}
                       onDelete={onDeletePage}
+                      onMove={onMovePage}
                       onEdit={startEditing}
                       onSelect={onSelectPage}
                       page={page}
