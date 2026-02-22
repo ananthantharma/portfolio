@@ -19,7 +19,8 @@ import {
   ArrowsPointingOutIcon, // For Focus Mode
   ArrowsPointingInIcon,   // For Focus Mode Exit
   DocumentPlusIcon,
-  PlusCircleIcon
+  PlusCircleIcon,
+  BookmarkIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
@@ -47,6 +48,7 @@ import MovePageModal from './MovePageModal';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
+import BookmarkListModal from './BookmarkListModal';
 
 
 import SourcingEventModal from './SourcingEventModal';
@@ -612,6 +614,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const [isDirectTaskCreateOpen, setIsDirectTaskCreateOpen] = useState(false);
 
+  const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
+
   const handleToggleCategoryCollapse = useCallback(
     () => setIsCategoryCollapsed(!isCategoryCollapsed),
     [isCategoryCollapsed],
@@ -811,6 +815,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   title="Contacts">
                   <UsersIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
                   <span className="hidden xl:inline">Contacts</span>
+                </button>
+                <button
+                  className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  onClick={() => setIsBookmarksOpen(true)}
+                  title="Bookmarks">
+                  <BookmarkIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
+                  <span className="hidden xl:inline">Bookmarks</span>
                 </button>
               </div>
 
@@ -1085,6 +1096,7 @@ const NotesLayout: React.FC = React.memo(() => {
           onCloseDirectCreate={() => setIsDirectTaskCreateOpen(false)}
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
+        <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
 
         {/* Other Modals... */}
         <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
