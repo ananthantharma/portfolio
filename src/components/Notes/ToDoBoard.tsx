@@ -504,7 +504,7 @@ const TaskCard = ({
         }
       }}
       className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${todo.hasNeonBorder
-        ? 'isolate ring-0 border-transparent bg-white shadow-sm hover:shadow-md before:absolute before:-z-20 before:-inset-[100%] before:animate-[spin_3s_linear_infinite] before:bg-[conic-gradient(from_0deg,transparent,#ff9966,transparent)] before:content-[""] after:absolute after:inset-[1.5px] after:-z-10 after:bg-white after:rounded-[10.5px] after:content-[""]'
+        ? 'isolate ring-0 border-transparent bg-white shadow-sm hover:shadow-md before:absolute before:-z-20 before:-inset-[100%] before:animate-[spin_3s_linear_infinite] before:bg-[conic-gradient(from_0deg,transparent,#ff9966,transparent)] before:content-[""] after:absolute after:inset-[3px] after:-z-10 after:bg-white after:rounded-[9px] after:content-[""]'
         : isOverlay
           ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
           : isDone
