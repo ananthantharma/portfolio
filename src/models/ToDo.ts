@@ -22,6 +22,7 @@ export interface IToDo extends Document {
   aiGenerated?: boolean;
   aiContext?: string;
   tags?: string[];
+  hasNeonBorder?: boolean;
   attachments?: {
     name: string;
     type: string;
@@ -61,6 +62,7 @@ const ToDoSchema = new Schema<IToDo>(
       enum: ['todo', 'in-progress', 'action-with-others', 'escalation-required', 'parked', 'done'],
       default: 'todo',
     },
+    hasNeonBorder: { type: Boolean, default: false },
     subtasks: [
       {
         title: { type: String, required: true },

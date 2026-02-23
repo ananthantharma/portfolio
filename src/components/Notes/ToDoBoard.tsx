@@ -40,6 +40,7 @@ interface ToDoBoardProps {
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
+  onToggleNeonBorder?: (todo: IToDo) => void;
   onClose: () => void;
 }
 
@@ -176,6 +177,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onAddDays,
   onNotesChange,
   onNavigate,
+  onToggleNeonBorder,
   onClose,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -285,6 +287,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onAddDays={onAddDays}
               onNotesChange={onNotesChange}
               onNavigate={onNavigate}
+              onToggleNeonBorder={onToggleNeonBorder}
               onClose={onClose}
               activeId={activeId}
             />
@@ -311,6 +314,7 @@ const Column = ({
   onAddDays,
   onNotesChange,
   onNavigate,
+  onToggleNeonBorder,
   onClose,
   activeId,
 }: {
@@ -322,6 +326,7 @@ const Column = ({
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
+  onToggleNeonBorder?: (todo: IToDo) => void;
   onClose: () => void;
   activeId: string | null;
 }) => {
@@ -374,6 +379,7 @@ const Column = ({
             onAddDays={onAddDays}
             onNotesChange={onNotesChange}
             onNavigate={onNavigate}
+            onToggleNeonBorder={onToggleNeonBorder}
             onClose={onClose}
             isBeingDragged={activeId === todo._id}
           />
@@ -395,6 +401,7 @@ const DraggableTask = ({
   onAddDays,
   onNotesChange,
   onNavigate,
+  onToggleNeonBorder,
   onClose,
   isBeingDragged,
 }: {
@@ -405,6 +412,7 @@ const DraggableTask = ({
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
+  onToggleNeonBorder?: (todo: IToDo) => void;
   onClose: () => void;
   isBeingDragged: boolean;
 }) => {
@@ -432,6 +440,7 @@ const DraggableTask = ({
         onAddDays={days => onAddDays(todo._id, days)}
         onNotesChange={notes => onNotesChange(todo._id, notes)}
         onNavigate={onNavigate}
+        onToggleNeonBorder={() => onToggleNeonBorder?.(todo)}
         onClose={onClose}
       />
     </div>
@@ -451,6 +460,7 @@ const TaskCard = ({
   onAddDays,
   onNotesChange,
   onNavigate,
+  onToggleNeonBorder,
   onClose,
 }: {
   todo: IToDo;
@@ -461,6 +471,7 @@ const TaskCard = ({
   onAddDays?: (days: number) => void;
   onNotesChange?: (notes: string) => void;
   onNavigate?: (page: INotePage, tabId?: string) => void;
+  onToggleNeonBorder?: () => void;
   onClose?: () => void;
 }) => {
   const isDone = todo.status === 'done' || todo.isCompleted;
@@ -486,7 +497,15 @@ const TaskCard = ({
 
   return (
     <div
-      className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${isOverlay
+      onContextMenu={(e) => {
+        if (!isOverlay && onToggleNeonBorder) {
+          e.preventDefault();
+          onToggleNeonBorder();
+        }
+      }}
+      className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${todo.hasNeonBorder
+        ? 'isolate ring-0 border-transparent bg-[#151515] before:absolute before:-z-20 before:inset-[-120%] before:animate-[spin_4s_linear_infinite] before:bg-[linear-gradient(90deg,transparent,#ff9966,#ff9966,transparent)] before:content-[""] after:absolute after:inset-[1.5px] after:-z-10 after:bg-[#151515] after:rounded-[11px] after:content-[""] text-gray-200'
+        : isOverlay
           ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
           : isDone
             ? 'bg-gray-50/60 border-gray-100 opacity-55'
@@ -522,7 +541,9 @@ const TaskCard = ({
 
           <div className="flex-1 min-w-0">
             <h4
-              className={`text-[13px] font-medium leading-snug line-clamp-2 ${isDone ? 'line-through text-gray-400' : 'text-gray-800'
+              className={`text-[13px] font-medium leading-snug line-clamp-2 ${isDone
+                ? 'line-through text-gray-400'
+                : todo.hasNeonBorder ? 'text-gray-100' : 'text-gray-800'
                 }`}>
               {todo.title}
             </h4>

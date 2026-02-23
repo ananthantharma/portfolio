@@ -1186,33 +1186,54 @@ const NotesLayout: React.FC = React.memo(() => {
 
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
-        {/* ── Floating Action Button: New Task ── */}
-        <div className="fixed bottom-6 right-6 z-[9998] group">
-          {/* Tooltip */}
-          <div className="absolute bottom-full right-0 mb-3 px-3 py-1.5 bg-gray-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-y-1 group-hover:translate-y-0">
-            New Task
-            <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-900/90" />
+        {/* ── Floating Action Buttons ── */}
+        <div className="fixed bottom-6 right-6 z-[9998] flex flex-col items-center gap-4">
+
+          {/* Quick Note Button */}
+          <div className="group relative flex items-center justify-center">
+            {/* Tooltip */}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-gray-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-x-1 group-hover:translate-x-0">
+              Quick Note
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-gray-900/90" />
+            </div>
+
+            <button
+              onClick={handleQuickNote}
+              className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              title="Quick Note"
+            >
+              <DocumentPlusIcon className="h-6 w-6 drop-shadow-sm" />
+            </button>
           </div>
 
-          {/* Ping ring */}
-          {activeTaskCount === 0 && (
-            <span className="absolute inset-0 rounded-full bg-rose-400 opacity-30 animate-ping" />
-          )}
+          {/* New Task Button */}
+          <div className="group relative flex items-center justify-center">
+            {/* Tooltip */}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-gray-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-x-1 group-hover:translate-x-0">
+              New Task
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-gray-900/90" />
+            </div>
 
-          {/* Button */}
-          <button
-            onClick={() => setIsDirectTaskCreateOpen(true)}
-            className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
-            title="New Task"
-          >
-            {/* Task count badge */}
-            {activeTaskCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rose-600 ring-2 ring-rose-500 shadow-sm">
-                {activeTaskCount > 9 ? '9+' : activeTaskCount}
-              </span>
+            {/* Ping ring */}
+            {activeTaskCount === 0 && (
+              <span className="absolute inset-0 rounded-full bg-rose-400 opacity-30 animate-ping" />
             )}
-            <PlusCircleIcon className="h-7 w-7 drop-shadow-sm" />
-          </button>
+
+            {/* Button */}
+            <button
+              onClick={() => setIsDirectTaskCreateOpen(true)}
+              className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              title="New Task"
+            >
+              {/* Task count badge */}
+              {activeTaskCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rose-600 ring-2 ring-rose-500 shadow-sm">
+                  {activeTaskCount > 9 ? '9+' : activeTaskCount}
+                </span>
+              )}
+              <PlusCircleIcon className="h-7 w-7 drop-shadow-sm" />
+            </button>
+          </div>
         </div>
       </div>
     </BadgeSettingsProvider>
