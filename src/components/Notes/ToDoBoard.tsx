@@ -504,7 +504,7 @@ const TaskCard = ({
         }
       }}
       className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${todo.hasNeonBorder
-        ? 'isolate ring-0 border-transparent bg-[#151515] before:absolute before:-z-20 before:inset-[-120%] before:animate-[spin_4s_linear_infinite] before:bg-[linear-gradient(90deg,transparent,#ff9966,#ff9966,transparent)] before:content-[""] after:absolute after:inset-[1.5px] after:-z-10 after:bg-[#151515] after:rounded-[11px] after:content-[""] text-gray-200'
+        ? 'isolate ring-0 border-transparent bg-white shadow-sm hover:shadow-md before:absolute before:-z-20 before:-inset-[100%] before:animate-[spin_3s_linear_infinite] before:bg-[conic-gradient(from_0deg,transparent,#ff9966,transparent)] before:content-[""] after:absolute after:inset-[1.5px] after:-z-10 after:bg-white after:rounded-[10.5px] after:content-[""]'
         : isOverlay
           ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
           : isDone
@@ -543,7 +543,7 @@ const TaskCard = ({
             <h4
               className={`text-[13px] font-medium leading-snug line-clamp-2 ${isDone
                 ? 'line-through text-gray-400'
-                : todo.hasNeonBorder ? 'text-gray-100' : 'text-gray-800'
+                : 'text-gray-800'
                 }`}>
               {todo.title}
             </h4>
