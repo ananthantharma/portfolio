@@ -725,7 +725,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Top Navigation / Breadcrumbs Bar */}
 
         {!isFocusMode && (
-          <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-2 md:mx-4 my-2 rounded-xl border border-slate-200/60 bg-white/70 backdrop-blur-xl px-2 md:px-4 py-2.5 shadow-sm z-40 transition-all duration-300 gap-2 md:gap-0">
+          <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-3 md:mx-5 my-3 rounded-2xl border border-white/60 bg-white/60 backdrop-blur-2xl px-3 py-2 shadow-[0_8px_30px_rgb(0,0,0,0.06)] z-40 transition-all duration-300 gap-3 md:gap-0 ring-1 ring-slate-900/5">
             <div className="flex items-center gap-1.5 text-[13px] text-gray-400 overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto pb-1 md:pb-0">
               <button
                 onClick={() => {
@@ -773,30 +773,30 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 w-full md:w-auto pb-1 md:pb-0 scrollbar-hide" style={{ overflowX: 'auto', overflowY: 'visible' }}>
-              {dbSize && <span className="text-[10px] text-gray-300 font-mono tracking-tight mr-1">{dbSize}</span>}
+            <div className="flex items-center gap-2 w-full md:w-auto pb-1 md:pb-0 scrollbar-hide" style={{ overflowX: 'auto', overflowY: 'visible' }}>
+              {dbSize && <span className="text-[10px] text-slate-400 font-mono tracking-tight mr-1 bg-white/50 px-1.5 py-0.5 rounded-md ring-1 ring-slate-200/50">{dbSize}</span>}
 
               {/* ── Core Tools ── */}
-              <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200/50 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+              <div className="flex items-center gap-1 rounded-xl bg-white/50 p-1 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md">
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={handleQuickNote}
                   title="Quick Note">
                   <DocumentPlusIcon className="h-3.5 w-3.5 group-hover:text-emerald-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Quick</span>
                 </button>
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-sky-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={handleOpenSearch}
                   title="Command Palette (Ctrl+K)">
                   <MagnifyingGlassIcon className="h-3.5 w-3.5 group-hover:text-sky-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Search</span>
-                  <kbd className="hidden lg:inline ml-0.5 text-[8px] text-slate-300 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-400 transition-colors">
+                  <kbd className="hidden lg:inline ml-0.5 text-[9px] text-slate-400 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
                     ⌘K
                   </kbd>
                 </button>
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out relative"
                   onClick={handleOpenToDoList}>
                   <ClipboardDocumentListIcon className="h-3.5 w-3.5 group-hover:text-teal-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">Tasks</span>
@@ -810,21 +810,21 @@ const NotesLayout: React.FC = React.memo(() => {
                   )}
                 </button>
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-rose-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={() => setIsDirectTaskCreateOpen(true)}
                   title="New Task">
                   <PlusCircleIcon className="h-3.5 w-3.5 group-hover:text-rose-500 transition-colors duration-200" />
                   <span className="hidden lg:inline">New Task</span>
                 </button>
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={handleOpenContactList}
                   title="Contacts">
                   <UsersIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
                   <span className="hidden xl:inline">Contacts</span>
                 </button>
                 <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={() => setIsBookmarksOpen(true)}
                   title="Bookmarks">
                   <BookmarkIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
@@ -832,27 +832,22 @@ const NotesLayout: React.FC = React.memo(() => {
                 </button>
               </div>
 
-              {/* Thin Separator */}
-              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
-
               {/* Focus Mode */}
               <button
-                className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 border border-transparent hover:border-slate-200/50"
+                className="group rounded-xl p-1.5 text-slate-400 bg-white/50 hover:bg-white hover:text-amber-500 shadow-sm ring-1 ring-slate-200/50 hover:ring-amber-200 transition-all duration-300 ease-out"
                 onClick={toggleFocusMode}
                 title="Focus Mode (Cmd+\)">
-                <ArrowsPointingOutIcon className="h-3.5 w-3.5 group-hover:text-amber-500 transition-colors duration-200" />
+                <ArrowsPointingOutIcon className="h-4 w-4 transition-colors duration-200" />
               </button>
-
-              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
 
               {/* ── AI & Tools (Restricted) ── */}
               {session?.user?.email === 'lankanprinze@gmail.com' && (
                 <>
-                  <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-violet-50/50 to-purple-50/30 border border-violet-200/30 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-1 rounded-xl bg-violet-50/40 p-1 shadow-sm ring-1 ring-violet-200/50 backdrop-blur-md">
                     {/* Rewrite Dropdown */}
                     <div className="relative" ref={rewriteDropdownRef}>
                       <button
-                        className={`group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : ''
+                        className={`group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-violet-600 hover:shadow-sm ring-1 ring-transparent hover:ring-violet-200 transition-all duration-300 ease-out ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm ring-violet-200' : ''
                           }`}
                         title="AI Rewrite Tools"
                         onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}>
@@ -863,7 +858,7 @@ const NotesLayout: React.FC = React.memo(() => {
                         <span className="hidden xl:inline">Rewrite</span>
                       </button>
                       {isRewriteDropdownOpen && (
-                        <div className="fixed mt-1.5 w-52 bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-xl shadow-2xl py-1 z-[9999] animate-in fade-in slide-in-from-top-1 duration-150"
+                        <div className="fixed mt-1.5 w-52 bg-white/95 backdrop-blur-2xl border border-violet-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-1.5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
                           style={{ top: rewriteDropdownRef.current ? rewriteDropdownRef.current.getBoundingClientRect().bottom + 6 : undefined, right: rewriteDropdownRef.current ? window.innerWidth - rewriteDropdownRef.current.getBoundingClientRect().right : undefined }}>
                           <button
                             onClick={() => {
@@ -900,14 +895,14 @@ const NotesLayout: React.FC = React.memo(() => {
                       )}
                     </div>
                     <button
-                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-orange-600 hover:shadow-sm ring-1 ring-transparent hover:ring-orange-200 transition-all duration-300 ease-out"
                       onClick={handleOpenImageExtract}
                       title="Extract from Image">
                       <PhotoIcon className="h-3.5 w-3.5 group-hover:text-orange-500 transition-colors duration-200" />
                       <span className="hidden 2xl:inline">Image</span>
                     </button>
                     <button
-                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-cyan-600 hover:shadow-sm ring-1 ring-transparent hover:ring-cyan-200 transition-all duration-300 ease-out"
                       onClick={handleOpenAssessment}
                       title="Document Assessment">
                       <svg
@@ -927,12 +922,10 @@ const NotesLayout: React.FC = React.memo(() => {
                     </button>
                   </div>
 
-                  <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
-
                   {/* ── Sourcing & Apps ── */}
-                  <div className="flex items-center gap-0.5 rounded-xl bg-gradient-to-r from-sky-50/40 to-blue-50/30 border border-sky-200/30 p-1 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-1 rounded-xl bg-blue-50/40 p-1 shadow-sm ring-1 ring-blue-200/50 backdrop-blur-md">
                     <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200 relative"
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-blue-200 transition-all duration-300 ease-out relative"
                       onClick={() => setIsSourcingListOpen(true)}
                       title="View All Sourcing Events">
                       <svg
@@ -956,7 +949,7 @@ const NotesLayout: React.FC = React.memo(() => {
                       )}
                     </button>
                     <button
-                      className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                      className="group rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm ring-1 ring-transparent hover:ring-emerald-200 transition-all duration-300 ease-out"
                       onClick={() => setIsSourcingModalOpen(true)}
                       title="Create Sourcing Event">
                       <svg
@@ -970,7 +963,7 @@ const NotesLayout: React.FC = React.memo(() => {
                       </svg>
                     </button>
                     <button
-                      className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200"
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-indigo-200 transition-all duration-300 ease-out"
                       onClick={() => setIsTableAppOpen(true)}
                       title="Table App">
                       <TableCellsIcon className="w-3.5 h-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
@@ -980,21 +973,19 @@ const NotesLayout: React.FC = React.memo(() => {
 
                   {/* Chat — Premium Accent Button */}
                   <button
-                    className="group flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-md shadow-violet-500/20 hover:shadow-lg hover:shadow-violet-500/30 hover:from-indigo-600 hover:via-violet-600 hover:to-purple-600 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="group flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-[12px] font-medium text-white shadow-md shadow-slate-900/10 hover:bg-slate-800 hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-0.5 ml-1"
                     onClick={handleOpenAIChat}
                     title="Chat Assistant">
-                    <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-violet-300" />
                     <span className="hidden lg:inline">Chat</span>
                   </button>
                 </>
               )}
 
-              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
-
               {/* ── Flags & Settings ── */}
-              <div className="flex items-center gap-0.5">
+              <div className="flex items-center gap-1 rounded-xl bg-white/50 p-1 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md ml-auto md:ml-2">
                 <button
-                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-amber-50 hover:text-amber-500 hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 relative border border-transparent hover:border-amber-200/40"
+                  className="group rounded-lg p-1.5 text-slate-500 hover:bg-white hover:text-amber-500 hover:shadow-sm transition-all duration-300 ease-out relative ring-1 ring-transparent hover:ring-amber-200"
                   onClick={handleOpenImportant}
                   title="Important">
                   <ExclamationTriangleIcon className="h-4 w-4" />
@@ -1005,7 +996,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   )}
                 </button>
                 <button
-                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200 relative border border-transparent hover:border-rose-200/40"
+                  className="group rounded-lg p-1.5 text-slate-500 hover:bg-white hover:text-rose-500 hover:shadow-sm transition-all duration-300 ease-out relative ring-1 ring-transparent hover:ring-rose-200"
                   onClick={handleOpenKeyTasks}
                   title="Key Tasks">
                   <FlagIcon className="h-4 w-4" />
@@ -1015,18 +1006,17 @@ const NotesLayout: React.FC = React.memo(() => {
                     </span>
                   )}
                 </button>
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
                 <button
                   onClick={handleOpenSettings}
-                  className="group rounded-lg p-1.5 text-slate-300 hover:bg-slate-50 hover:text-slate-500 transition-all duration-200"
+                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-sm transition-all duration-300 ease-out ring-1 ring-transparent hover:ring-slate-200"
                   title="Settings">
-                  <Cog6ToothIcon className="h-3.5 w-3.5 group-hover:rotate-45 transition-transform duration-300" />
+                  <Cog6ToothIcon className="h-4 w-4 group-hover:rotate-45 transition-transform duration-300" />
                 </button>
               </div>
 
-              <div className="h-6 w-px bg-gradient-to-b from-transparent via-slate-200 to-transparent"></div>
-
               {/* User Profile */}
-              <div className="flex items-center">
+              <div className="flex items-center ml-1">
                 <UserProfileMenu />
               </div>
             </div>
