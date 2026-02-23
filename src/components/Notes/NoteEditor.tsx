@@ -479,9 +479,13 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   const handleRewrittenInsertMemo = useCallback(
     (newText: string) => {
-      // Append rewritten text to the editor content (Lexical will pick it up)
       const htmlToInsert = `<p>${newText.replace(/\n/g, '</p><p>')}</p>`;
-      setEditorContent(prev => prev + '\n' + htmlToInsert);
+      // ✅ Directly insert into Lexical via the ref
+      if (quillRef.current?.appendHtml) {
+        quillRef.current.appendHtml(htmlToInsert);
+      } else {
+        setEditorContent(prev => prev + '\n' + htmlToInsert);
+      }
       setTabs(prev =>
         prev.map(t =>
           t._id === activeTabId || t.title === activeTabId
@@ -716,14 +720,19 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   };
 
   const handleInsertAI = () => {
-    // For Lexical: append AI result to the editor content (HTML) state.
-    // The ValueSyncPlugin in RichTextEditor will re-sync the editor from the updated value.
     const htmlToInsert = isMarkdownResponse
       ? renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedText}</ReactMarkdown>)
       : `<p>${generatedText.replace(/\n/g, '</p><p>')}</p>`;
 
-    // Append to current editor content
-    setEditorContent(prev => prev + '\n' + htmlToInsert);
+    // ✅ Directly insert into Lexical via the ref (reliable, no stale-state risk)
+    if (quillRef.current?.appendHtml) {
+      quillRef.current.appendHtml(htmlToInsert);
+    } else {
+      // Fallback via state sync
+      setEditorContent(prev => prev + '\n' + htmlToInsert);
+    }
+
+    // Keep tabs state in sync so Save captures the new content
     setTabs(prev =>
       prev.map(t =>
         t._id === activeTabId || t.title === activeTabId

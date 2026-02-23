@@ -431,6 +431,16 @@ function CustomPlaceholder({ placeholder }: { placeholder?: string }) {
   );
 }
 
+// ── EditorRefPlugin: captures the Lexical editor instance into a ref ──────────
+function EditorRefPlugin({ editorRef }: { editorRef: React.MutableRefObject<any> }) {
+  const [editor] = useLexicalComposerContext();
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor, editorRef]);
+  return null;
+}
+
+
 const RichTextEditor = React.memo(
   forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
     const editorConfig = {
@@ -490,11 +500,27 @@ const RichTextEditor = React.memo(
       },
     };
 
+    const lexicalEditorRef = useRef<any>(null);
+
     useImperativeHandle(
       ref,
       () => ({
-        getEditor: () => null, // Deprecated for external use, returning null
+        getEditor: () => lexicalEditorRef.current,
+        /** Append rendered HTML to the END of the editor without clearing it */
+        appendHtml: (html: string) => {
+          const editor = lexicalEditorRef.current;
+          if (!editor) return;
+          editor.update(() => {
+            const parser = new DOMParser();
+            const dom = parser.parseFromString(html, 'text/html');
+            const nodes = $generateNodesFromDOM(editor, dom);
+            const root = $getRoot();
+            // Move cursor to end and append
+            nodes.forEach(node => root.append(node));
+          });
+        },
       }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [],
     );
 
@@ -528,6 +554,7 @@ const RichTextEditor = React.memo(
               </TableOfContentsPlugin>
               <ValueSyncPlugin value={value} onChange={onChange} />
               <ImagePastePlugin />
+              <EditorRefPlugin editorRef={lexicalEditorRef} />
             </div>
           </div>
         </LexicalComposer>
