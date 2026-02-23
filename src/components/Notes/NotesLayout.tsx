@@ -23,8 +23,7 @@ import {
   BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
-import useDetectOutsideClick from '@/hooks/useDetectOutsideClick';
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
 import { INoteCategory } from '@/models/NoteCategory';
 import { INotePage } from '@/models/NotePage';
@@ -627,9 +626,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Standalone Rewrite Modal
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
-  const [isRewriteDropdownOpen, setIsRewriteDropdownOpen] = useState(false);
-  const rewriteDropdownRef = useRef<HTMLDivElement>(null);
-  useDetectOutsideClick(rewriteDropdownRef, () => setIsRewriteDropdownOpen(false));
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
 
@@ -844,56 +840,28 @@ const NotesLayout: React.FC = React.memo(() => {
               {session?.user?.email === 'lankanprinze@gmail.com' && (
                 <>
                   <div className="flex items-center gap-1 rounded-xl bg-violet-50/40 p-1 shadow-sm ring-1 ring-violet-200/50 backdrop-blur-md">
-                    {/* Rewrite Dropdown */}
-                    <div className="relative" ref={rewriteDropdownRef}>
-                      <button
-                        className={`group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-violet-600 hover:shadow-sm ring-1 ring-transparent hover:ring-violet-200 transition-all duration-300 ease-out ${isRewriteDropdownOpen ? 'bg-white text-violet-600 shadow-sm ring-violet-200' : ''
-                          }`}
-                        title="AI Rewrite Tools"
-                        onClick={() => setIsRewriteDropdownOpen(!isRewriteDropdownOpen)}>
-                        <PencilSquareIcon
-                          className={`h-3.5 w-3.5 transition-colors duration-200 ${isRewriteDropdownOpen ? 'text-violet-500' : 'group-hover:text-violet-500'
-                            }`}
-                        />
-                        <span className="hidden xl:inline">Rewrite</span>
-                      </button>
-                      {isRewriteDropdownOpen && (
-                        <div className="fixed mt-1.5 w-52 bg-white/95 backdrop-blur-2xl border border-violet-100 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-1.5 z-[9999] animate-in fade-in slide-in-from-top-2 duration-200"
-                          style={{ top: rewriteDropdownRef.current ? rewriteDropdownRef.current.getBoundingClientRect().bottom + 6 : undefined, right: rewriteDropdownRef.current ? window.innerWidth - rewriteDropdownRef.current.getBoundingClientRect().right : undefined }}>
-                          <button
-                            onClick={() => {
-                              handleOpenRewrite();
-                              setIsRewriteDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{ width: 'calc(100% - 4px)' }}>
-                            <PencilSquareIcon className="h-3 w-3 text-indigo-400" />
-                            Advanced Rewrite
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleOpenSimpleRewrite();
-                              setIsRewriteDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{ width: 'calc(100% - 4px)' }}>
-                            <PencilSquareIcon className="h-3 w-3 text-purple-400" />
-                            Simple Rewrite
-                          </button>
-                          <div className="h-px bg-slate-100 my-1 mx-2" />
-                          <button
-                            onClick={() => {
-                              handleOpenSimpleRewriteOpenAI();
-                              setIsRewriteDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-[11px] text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg mx-0.5 flex items-center gap-2"
-                            style={{ width: 'calc(100% - 4px)' }}>
-                            <SparklesIcon className="h-3 w-3 text-teal-400" />
-                            GPT Rewrite
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    {/* Rewrite Tools As Buttons */}
+                    <button
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-indigo-200 transition-all duration-300 ease-out"
+                      title="Advanced Rewrite"
+                      onClick={handleOpenRewrite}>
+                      <PencilSquareIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
+                      <span className="hidden xl:inline">Advanced</span>
+                    </button>
+                    <button
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-purple-600 hover:shadow-sm ring-1 ring-transparent hover:ring-purple-200 transition-all duration-300 ease-out"
+                      title="Simple Rewrite"
+                      onClick={handleOpenSimpleRewrite}>
+                      <PencilSquareIcon className="h-3.5 w-3.5 group-hover:text-purple-500 transition-colors duration-200" />
+                      <span className="hidden xl:inline">Simple</span>
+                    </button>
+                    <button
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-teal-600 hover:shadow-sm ring-1 ring-transparent hover:ring-teal-200 transition-all duration-300 ease-out"
+                      title="GPT Rewrite"
+                      onClick={handleOpenSimpleRewriteOpenAI}>
+                      <SparklesIcon className="h-3.5 w-3.5 group-hover:text-teal-500 transition-colors duration-200" />
+                      <span className="hidden xl:inline">GPT</span>
+                    </button>
                     <button
                       className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-orange-600 hover:shadow-sm ring-1 ring-transparent hover:ring-orange-200 transition-all duration-300 ease-out"
                       onClick={handleOpenImageExtract}
