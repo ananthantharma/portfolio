@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition, Menu } from '@headlessui/react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -83,6 +83,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
   const { getBadgeStyle } = useBadgeSettings(); // Hook
+
+  // Emoji picker state
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [emojiSearch, setEmojiSearch] = useState('');
+  const [activeCategoryKey, setActiveCategoryKey] = useState('smileys');
+  const [recentEmojis, setRecentEmojis] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('recentEmojis') || '[]'); } catch { return []; }
+  });
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  useDetectOutsideClick(emojiPickerRef, () => setIsEmojiPickerOpen(false));
 
   // Badge/ToDo State
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -757,31 +767,67 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   }, []);
 
   const handleInsertSymbol = (symbol: string) => {
-    // Append the symbol directly to the current HTML content of the active tab
-    const appended = editorContent + ' ' + symbol;
-    setEditorContent(appended);
-    setTabs(prev =>
-      prev.map(t =>
-        t._id === activeTabId || t.title === activeTabId
-          ? { ...t, content: appended }
-          : t
-      )
-    );
+    // Insert via Lexical editor ref at current cursor position
+    if (quillRef.current?.insertText) {
+      quillRef.current.insertText(symbol);
+    } else {
+      // Fallback: append to content state
+      const appended = editorContent + ' ' + symbol;
+      setEditorContent(appended);
+      setTabs(prev =>
+        prev.map(t =>
+          t._id === activeTabId || t.title === activeTabId
+            ? { ...t, content: appended }
+            : t
+        )
+      );
+    }
     setIsDirty(true);
   };
 
-  const SYMBOLS = [
-    { char: '🚨', tooltip: 'Instant Action Required' },
-    { char: '⏳', tooltip: 'Waiting' },
-    { char: '💡', tooltip: 'Good Idea' },
-    { char: '⚠️', tooltip: 'Warning' },
-    { char: '💰', tooltip: 'Money / Financial' },
-    { char: '📉', tooltip: 'Decrease / Loss' },
-    { char: '🤝', tooltip: 'Deal / Agreement' },
-    { char: '🗣️', tooltip: 'Speak / Announce' },
-    { char: '✅', tooltip: 'Complete' },
-    { char: '❌', tooltip: 'Cancel / Fail' },
+  const EMOJI_CATEGORIES = [
+    {
+      label: '🕐 Recent', key: 'recent',
+      emojis: [] as string[], // populated from recentEmojis state
+    },
+    {
+      label: '😀 Smileys', key: 'smileys',
+      emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👾', '🤖'],
+    },
+    {
+      label: '👋 People', key: 'people',
+      emojis: ['👋', '🤚', '🖐️', '✋', '🖖', '🤙', '💪', '🦾', '🖕', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💃', '🕺', '👶', '🧒', '👦', '👧', '🧑', '👱', '👩', '👨', '🧓', '👴', '👵', '🧔', '👱‍♀️', '👮', '👷', '💂', '🕵️', '👩‍⚕️', '👨‍⚕️', '👩‍🌾', '👨‍🌾', '👩‍🍳', '👨‍🍳', '👩‍🎓', '👨‍🎓', '👩‍🎤', '👨‍🎤', '👩‍🏫', '👨‍🏫', '👩‍🏭', '👨‍🏭', '👩‍💻', '👨‍💻', '👩‍💼', '👨‍💼', '👩‍🔧', '👨‍🔧', '👩‍🔬', '👨‍🔬', '👩‍🎨', '👨‍🎨', '👩‍✈️', '👨‍✈️', '👩‍🚀', '👨‍🚀', '👩‍🚒', '👨‍🚒'],
+    },
+    {
+      label: '🐶 Animals', key: 'animals',
+      emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐟', '🐠', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦬', '🦍', '🦧', '🦣', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐈', '🦤', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🐿️'],
+    },
+    {
+      label: '🍕 Food', key: 'food',
+      emojis: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥮', '🍢', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🧃', '🥤', '🧋', '☕', '🫖', '🍵', '🧉', '🍺', '🍻', '🥂', '🍷', '🫗', '🥃', '🍸', '🍹', '🧊', '🥄', '🍴', '🍽️'],
+    },
+    {
+      label: '✈️ Travel', key: 'travel',
+      emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚏', '🛣️', '🛤️', '⛽', '🚨', '🚥', '🚦', '🛑', '🏗️', '🚢', '✈️', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🚀', '🛸', '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🗺️', '🧭', '⛰️', '🌋', '🗻', '🏕️', '🏖️', '🏜️', '🏝️', '🏞️', '🏟️', '🏛️', '🏗️', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '🗼', '🗽', '🗾', '🎌', '🏳️', '🏴'],
+    },
+    {
+      label: '⚽ Activities', key: 'activities',
+      emojis: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🥍', '🏑', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🏇', '🧘', '🎗️', '🎟️', '🎫', '🎖️', '🏆', '🥇', '🥈', '🥉', '⚽', '🏅', '🎪', '🤹', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩'],
+    },
+    {
+      label: '💡 Objects', key: 'objects',
+      emojis: ['💡', '🔦', '🕯️', '🪔', '📱', '💻', '🖥️', '🖨️', '⌨️', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🧭', '⏰', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🗑️', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️', '🧰', '🪛', '🔧', '🪚', '🔨', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🛡️', '🔫', '🪃', '🏹', '🪤', '🪣', '🔑', '🗝️', '🔒', '🔓', '🚪', '🪟', '🛋️', '🪑', '🚿', '🛁', '🧴', '🪠', '🧹', '🧺', '🧻', '🪣', '🧼', '🫧', '🪥', '🧽', '🪒', '🧻', '🛒', '🚬', '🗺️', '📦', '📬', '📭', '📮', '🏷️', '📝', '📖'],
+    },
+    {
+      label: '🔣 Symbols', key: 'symbols',
+      emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎', '🔀', '🔁', '🔂', '▶️', '⏩', '⏭️', '⏯️', '◀️', '⏪', '⏮️', '🔼', '⏫', '🔽', '⏬', '⏸️', '⏹️', '⏺️', '🎦', '🔅', '🔆', '📶', '📳', '📴', '📵', '📳', '🔇', '🔈', '🔉', '🔊', '📢', '📣', '🔔', '🔕', '✅', '❌', '❎', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪', '🟤', '🔺', '🔻', '🔷', '🔶', '🔹', '🔸', '🔲', '🔳', '▪️', '▫️', '◾', '◽', '◼️', '◻️', '⬛', '⬜'],
+    },
+    {
+      label: '💼 Work', key: 'work',
+      emojis: ['📊', '📈', '📉', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '🖥️', '💻', '⌨️', '📱', '📞', '☎️', '📟', '📠', '📡', '🔭', '🔬', '🧫', '🧪', '🧬', '🔍', '🔎', '💡', '🔦', '💰', '💵', '💴', '💶', '💷', '💸', '💳', '🧾', '⚖️', '🏦', '🏢', '🤝', '📊', '🗃️', '📋', '📌', '🖊️', '✅', '❎', '🚨', '⚠️', '🔔', '🔕', '📢', '📣', '🔑', '🗝️'],
+    },
   ];
+
 
   const handleSaveToDo = useCallback(
     async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
@@ -1017,39 +1063,91 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           </span>
         </div>
         <div className="flex gap-2">
-          {/* Symbol Toolbar */}
-
-          {/* Symbol Toolbar - Dropdown */}
-          <Menu as="div" className="relative text-left">
-            <Menu.Button className="flex items-center rounded-lg bg-gray-50 px-2.5 py-1.5 text-[11px] font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-700">
+          {/* Emoji Picker */}
+          <div className="relative" ref={emojiPickerRef}>
+            <button
+              className="flex items-center rounded-lg bg-gray-50 px-2.5 py-1.5 text-[11px] font-medium text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-700"
+              onClick={() => setIsEmojiPickerOpen(prev => !prev)}
+              title="Insert Emoji"
+              type="button">
               <FaceSmileIcon className="h-4 w-4" />
-            </Menu.Button>
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95">
-              <Menu.Items className="absolute left-0 mt-2 w-56 origin-top-left divide-y divide-gray-100 rounded-xl bg-white shadow-lg ring-1 ring-black/[0.06] focus:outline-none z-10 grid grid-cols-5 gap-1 p-2">
-                {SYMBOLS.map(s => (
-                  <Menu.Item key={s.char}>
-                    {({ active }) => (
-                      <button
-                        type="button"
-                        className={`${active ? 'bg-gray-100' : ''
-                          } group flex w-full items-center justify-center rounded-md p-2 text-xl transition-all grayscale hover:grayscale-0`}
-                        onClick={() => handleInsertSymbol(s.char)}
-                        title={s.tooltip}>
-                        {s.char}
-                      </button>
+            </button>
+
+            {isEmojiPickerOpen && (() => {
+              const allCategories = EMOJI_CATEGORIES.map(c =>
+                c.key === 'recent' ? { ...c, emojis: recentEmojis } : c
+              ).filter(c => c.key !== 'recent' || c.emojis.length > 0);
+
+              const currentCat = allCategories.find(c => c.key === activeCategoryKey) || allCategories[0];
+              const allEmojis = EMOJI_CATEGORIES.flatMap(c => c.emojis).filter((e, i, arr) => arr.indexOf(e) === i);
+              const displayEmojis = emojiSearch.trim()
+                ? allEmojis.filter(e => e.includes(emojiSearch))
+                : (currentCat?.emojis ?? []);
+
+              return (
+                <div className="absolute left-0 top-full mt-1.5 z-[9999] w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-200/60 flex flex-col overflow-hidden" style={{ maxHeight: '360px' }}>
+                  {/* Search */}
+                  <div className="p-2 border-b border-gray-100 flex-shrink-0">
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Search emojis..."
+                      value={emojiSearch}
+                      onChange={e => setEmojiSearch(e.target.value)}
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </div>
+
+                  {/* Category tabs */}
+                  {!emojiSearch.trim() && (
+                    <div className="flex gap-0.5 px-1.5 py-1 border-b border-gray-100 overflow-x-auto scrollbar-hide flex-shrink-0">
+                      {allCategories.map(cat => (
+                        <button
+                          key={cat.key}
+                          onClick={() => setActiveCategoryKey(cat.key)}
+                          className={`flex-shrink-0 px-2 py-1 rounded-lg text-[14px] transition-all ${activeCategoryKey === cat.key
+                            ? 'bg-indigo-100 text-indigo-700'
+                            : 'text-gray-500 hover:bg-gray-100'
+                            }`}
+                          title={cat.label}>
+                          {cat.label.split(' ')[0]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Emoji grid */}
+                  <div className="flex-1 overflow-y-auto p-2">
+                    {displayEmojis.length === 0 ? (
+                      <p className="text-center text-gray-400 text-[12px] py-6">No emojis found</p>
+                    ) : (
+                      <div className="grid grid-cols-8 gap-0.5">
+                        {displayEmojis.map((emoji, i) => (
+                          <button
+                            key={`${emoji}-${i}`}
+                            onClick={() => {
+                              handleInsertSymbol(emoji);
+                              setRecentEmojis(prev => {
+                                const updated = [emoji, ...prev.filter(e => e !== emoji)].slice(0, 24);
+                                try { localStorage.setItem('recentEmojis', JSON.stringify(updated)); } catch { }
+                                return updated;
+                              });
+                              setIsEmojiPickerOpen(false);
+                              setEmojiSearch('');
+                            }}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg text-[18px] hover:bg-gray-100 transition-colors leading-none"
+                            title={emoji}>
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
                     )}
-                  </Menu.Item>
-                ))}
-              </Menu.Items>
-            </Transition>
-          </Menu>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
 
           {/* Recover Legacy Content Button - Only show if legacy content exists */}
           {page.content && page.content.trim().length > 0 && (

@@ -46,12 +46,15 @@ const MATCHERS = [
 ];
 import {
   $getRoot,
+  $isElementNode,
+  $createParagraphNode,
   FORMAT_TEXT_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   UNDO_COMMAND,
   REDO_COMMAND,
   $getSelection,
   $isRangeSelection,
+  $createTextNode,
 } from 'lexical';
 import { $createHeadingNode } from '@lexical/rich-text';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
@@ -506,6 +509,29 @@ const RichTextEditor = React.memo(
       ref,
       () => ({
         getEditor: () => lexicalEditorRef.current,
+        /** Insert text at the current cursor selection in the editor */
+        insertText: (text: string) => {
+          const editor = lexicalEditorRef.current;
+          if (!editor) return;
+          editor.update(() => {
+            const selection = $getSelection();
+            if ($isRangeSelection(selection)) {
+              selection.insertText(text);
+            } else {
+              // No selection — append to end in a new paragraph
+              const root = $getRoot();
+              const lastChild = root.getLastChild();
+              if (lastChild && $isElementNode(lastChild)) {
+                const textNode = $createTextNode(text);
+                lastChild.append(textNode);
+              } else {
+                const para = $createParagraphNode();
+                para.append($createTextNode(text));
+                root.append(para);
+              }
+            }
+          });
+        },
         /** Append rendered HTML to the END of the editor without clearing it */
         appendHtml: (html: string) => {
           const editor = lexicalEditorRef.current;
@@ -515,8 +541,17 @@ const RichTextEditor = React.memo(
             const dom = parser.parseFromString(html, 'text/html');
             const nodes = $generateNodesFromDOM(editor, dom);
             const root = $getRoot();
-            // Move cursor to end and append
-            nodes.forEach(node => root.append(node));
+            nodes.forEach(node => {
+              if ($isElementNode(node)) {
+                // Block nodes (paragraphs, headings, tables, lists) go directly on root
+                root.append(node);
+              } else {
+                // Inline nodes (text, image, etc.) must be wrapped in a paragraph
+                const para = $createParagraphNode();
+                para.append(node);
+                root.append(para);
+              }
+            });
           });
         },
       }),
