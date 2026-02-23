@@ -41,6 +41,12 @@ export function ImagePastePlugin() {
 
                 if (imageItems.length === 0) return false; // Let Lexical handle text/HTML pastes
 
+                // ✅ KEY FIX: If the clipboard also has HTML (e.g. Excel table copy),
+                // the image is just a bitmap preview. Let Lexical handle it as HTML
+                // so the table structure is preserved.
+                const hasHtml = Array.from(items).some(item => item.type === 'text/html');
+                if (hasHtml) return false;
+
                 // We found images — prevent the default Lexical paste and handle ourselves
                 event.preventDefault();
 
