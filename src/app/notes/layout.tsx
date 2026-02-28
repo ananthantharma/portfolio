@@ -7,6 +7,10 @@ import { useEffect } from 'react';
 
 const Header = dynamic(() => import('@/components/Sections/Header'), { ssr: false });
 
+// The floating navbar is: 12px top-padding + 48px bar height = 60px total.
+// We use position:fixed on the content wrapper to start exactly at 60px.
+const NAVBAR_HEIGHT = 60;
+
 export default function NotesLayout({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
   const router = useRouter();
@@ -26,15 +30,22 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gray-100">
-      {/* Shared modern navbar */}
+    <>
+      {/* Shared modern navbar (fixed, sits above everything) */}
       <Header />
-      {/* Main content sits below the fixed 56px navbar (h-14 + 12px top padding = ~68px) */}
-      <main className="flex-1 overflow-hidden" style={{ paddingTop: '68px' }}>
-        <div className="w-full h-full">
-          {children}
-        </div>
-      </main>
-    </div>
+
+      {/* Content area occupies exactly the space below the navbar */}
+      <div
+        style={{
+          position: 'fixed',
+          top: `${NAVBAR_HEIGHT}px`,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden',
+        }}>
+        {children}
+      </div>
+    </>
   );
 }
