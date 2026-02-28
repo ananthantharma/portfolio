@@ -1,13 +1,14 @@
 'use client';
 
-import {DocumentTextIcon, HomeIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
-import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useSession} from 'next-auth/react';
-import {useEffect} from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
-export default function NotesLayout({children}: {children: React.ReactNode}) {
-  const {status} = useSession();
+const Header = dynamic(() => import('@/components/Sections/Header'), { ssr: false });
+
+export default function NotesLayout({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -25,43 +26,14 @@ export default function NotesLayout({children}: {children: React.ReactNode}) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <nav className="border-b border-gray-800 bg-gray-900">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <span className="text-xl font-bold text-orange-500">Ananthan's Notes</span>
-              </div>
-              <div className="hidden md:block">
-                <div className="ml-10 flex items-baseline space-x-4">
-                  <Link
-                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
-                    href="/">
-                    <HomeIcon className="h-5 w-5" />
-                    Home
-                  </Link>
-                  <Link
-                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
-                    href="/dashboard">
-                    <Squares2X2Icon className="h-5 w-5" />
-                    Main Dashboard
-                  </Link>
-                  <Link
-                    aria-current="page"
-                    className="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white flex items-center gap-2"
-                    href="/notes">
-                    <DocumentTextIcon className="h-5 w-5" />
-                    Notes
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="flex h-screen flex-col bg-gray-100">
+      {/* Shared modern navbar */}
+      <Header />
+      {/* Main content sits below the fixed 56px navbar (h-14 + 12px top padding = ~68px) */}
+      <main className="flex-1 overflow-hidden" style={{ paddingTop: '68px' }}>
+        <div className="w-full h-full">
+          {children}
         </div>
-      </nav>
-      <main>
-        <div className="w-full h-[calc(100vh-64px)]">{children}</div>
       </main>
     </div>
   );
