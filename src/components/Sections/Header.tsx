@@ -1,7 +1,6 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import classNames from 'classnames';
 import Link from 'next/link';
 import { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -55,7 +54,6 @@ const Header: FC = memo(() => {
 const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSection: _cs }) => {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -160,8 +158,6 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                 <Link
                   key={item.label}
                   href={item.href}
-                  onMouseEnter={() => setHoveredItem(item.label)}
-                  onMouseLeave={() => setHoveredItem(null)}
                   className="nav-link-pill relative flex items-center rounded-xl px-3 py-1.5 text-[13px] font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                   style={{
                     color: isActive ? '#ffffff' : 'rgba(160,160,180,1)',
