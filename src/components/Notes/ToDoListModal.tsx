@@ -1,6 +1,6 @@
 /* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, {Fragment, useEffect, useMemo, useState} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowDownIcon,
   ArrowTopRightOnSquareIcon,
@@ -17,10 +17,10 @@ import {
   SparklesIcon,
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
-import { INotePage } from '@/models/NotePage';
-import { IToDo } from '@/models/ToDo';
-import TaskFormModal, { TaskFormData } from './TaskFormModal';
+import {CheckCircleIcon as CheckCircleIconSolid} from '@heroicons/react/24/solid';
+import {INotePage} from '@/models/NotePage';
+import {IToDo} from '@/models/ToDo';
+import TaskFormModal, {TaskFormData} from './TaskFormModal';
 import SmartInput from './SmartInput';
 import ToDoBoard from './ToDoBoard';
 import EmailTaskModal from './EmailTaskModal';
@@ -39,7 +39,7 @@ type SortDirection = 'asc' | 'desc';
 const CATEGORIES = ['Urgent!', 'Sourcing!', 'Boss!', 'Staff! (Team)', 'Projects!', 'Admin!', 'Personal!'];
 
 // Progress Ring SVG Component
-const ProgressRing = React.memo(({ completed, total }: { completed: number; total: number }) => {
+const ProgressRing = React.memo(({completed, total}: {completed: number; total: number}) => {
   const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
   const radius = 18;
   const circumference = 2 * Math.PI * radius;
@@ -116,7 +116,7 @@ const FilterPill = React.memo(
 FilterPill.displayName = 'FilterPill';
 
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
-  ({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate }) => {
+  ({isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate}) => {
     const [todos, setTodos] = useState<IToDo[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -176,11 +176,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const handleToggleComplete = async (todo: IToDo) => {
       try {
         const newStatus = !todo.isCompleted;
-        setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, isCompleted: newStatus } as IToDo) : t)));
+        setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, isCompleted: newStatus} as IToDo) : t)));
         await fetch(`/api/todos/${todo._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isCompleted: newStatus }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({isCompleted: newStatus}),
         });
       } catch (error) {
         console.error('Error updating status:', error);
@@ -192,7 +192,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       if (!confirm('Are you sure you want to delete this task?')) return;
       try {
         setTodos(prev => prev.filter(t => t._id !== id));
-        await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+        await fetch(`/api/todos/${id}`, {method: 'DELETE'});
       } catch (error) {
         console.error('Error deleting task:', error);
         fetchTodos();
@@ -211,7 +211,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       setIsTaskFormOpen(true);
     };
 
-    const handleSmartAdd = (data: { title: string; priority: string; dueDate: Date | null }) => {
+    const handleSmartAdd = (data: {title: string; priority: string; dueDate: Date | null}) => {
       setEditingTask(null);
       setPrefilledData({
         title: data.title,
@@ -227,12 +227,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     };
 
     const handleStatusChange = async (id: string, newStatus: IToDo['status']) => {
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, status: newStatus } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, status: newStatus} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({status: newStatus}),
         });
       } catch (error) {
         console.error('Failed to update status', error);
@@ -243,11 +243,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const handleToggleNeonBorder = async (todo: IToDo) => {
       try {
         const newValue = !todo.hasNeonBorder;
-        setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, hasNeonBorder: newValue } as any) : t)));
+        setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, hasNeonBorder: newValue} as any) : t)));
         await fetch(`/api/todos/${todo._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hasNeonBorder: newValue }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({hasNeonBorder: newValue}),
         });
       } catch (error) {
         console.error('Error updating neon border:', error);
@@ -261,12 +261,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       const newDueDate = new Date(todo.dueDate);
       newDueDate.setDate(newDueDate.getDate() + days);
 
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, dueDate: newDueDate.toISOString() } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, dueDate: newDueDate.toISOString()} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dueDate: newDueDate.toISOString() }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({dueDate: newDueDate.toISOString()}),
         });
       } catch (error) {
         console.error('Failed to update due date', error);
@@ -275,12 +275,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     };
 
     const handleUpdateNotes = async (id: string, newNotes: string) => {
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, notes: newNotes } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, notes: newNotes} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notes: newNotes }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({notes: newNotes}),
         });
       } catch (error) {
         console.error('Failed to update notes', error);
@@ -367,7 +367,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
         const res = await fetch('/api/gemini/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             prompt: `You are a task prioritization assistant. Analyze these tasks and assign priorities (High, Medium, or Low) based on urgency, due date proximity, and category importance. Return ONLY a JSON array like [{"title":"exact task title","priority":"High|Medium|Low"}].\n\nTasks:\n${taskList}`,
           }),
@@ -387,8 +387,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
             if (matchingTodo && ['High', 'Medium', 'Low'].includes(suggestion.priority)) {
               await fetch(`/api/todos/${matchingTodo._id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priority: suggestion.priority }),
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({priority: suggestion.priority}),
               });
             }
           }
@@ -415,7 +415,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         let comparison = 0;
         switch (sortField) {
           case 'priority': {
-            const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1, None: 0 };
+            const priorityOrder: Record<string, number> = {High: 3, Medium: 2, Low: 1, None: 0};
             comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
             break;
           }
@@ -472,12 +472,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays < 0)
-        return { text: `${Math.abs(diffDays)}d overdue`, className: 'text-red-600 font-semibold', isOverdue: true };
-      if (diffDays === 0) return { text: 'Today', className: 'text-amber-600 font-semibold', isOverdue: false };
-      if (diffDays === 1) return { text: 'Tomorrow', className: 'text-amber-500', isOverdue: false };
-      if (diffDays <= 7) return { text: `${diffDays}d left`, className: 'text-gray-600', isOverdue: false };
+        return {text: `${Math.abs(diffDays)}d overdue`, className: 'text-red-600 font-semibold', isOverdue: true};
+      if (diffDays === 0) return {text: 'Today', className: 'text-amber-600 font-semibold', isOverdue: false};
+      if (diffDays === 1) return {text: 'Tomorrow', className: 'text-amber-500', isOverdue: false};
+      if (diffDays <= 7) return {text: `${diffDays}d left`, className: 'text-gray-600', isOverdue: false};
       return {
-        text: new Date(dateString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        text: new Date(dateString).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}),
         className: 'text-gray-400',
         isOverdue: false,
       };
@@ -530,14 +530,16 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                         {/* Active/Completed Toggle */}
                         <div className="flex bg-gray-100 rounded-lg p-0.5 mr-2">
                           <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                              }`}
+                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                              !showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                            }`}
                             onClick={() => setShowCompleted(false)}>
                             Active
                           </button>
                           <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                              }`}
+                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                              showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                            }`}
                             onClick={() => setShowCompleted(true)}>
                             Completed
                           </button>
@@ -546,19 +548,21 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                         {/* View Mode Toggle */}
                         <div className="flex bg-gray-100 rounded-lg p-0.5">
                           <button
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
+                            className={`p-1.5 rounded-md transition-all ${
+                              viewMode === 'list'
                                 ? 'bg-white shadow-sm text-gray-800'
                                 : 'text-gray-400 hover:text-gray-600'
-                              }`}
+                            }`}
                             onClick={() => setViewMode('list')}
                             title="List View">
                             <ListBulletIcon className="h-4 w-4" />
                           </button>
                           <button
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'board'
+                            className={`p-1.5 rounded-md transition-all ${
+                              viewMode === 'board'
                                 ? 'bg-white shadow-sm text-gray-800'
                                 : 'text-gray-400 hover:text-gray-600'
-                              }`}
+                            }`}
                             onClick={() => setViewMode('board')}
                             title="Kanban Board">
                             <Squares2X2Icon className="h-4 w-4" />
@@ -673,8 +677,9 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           </span>
                           {(['priority', 'dueDate', 'title', 'category'] as SortField[]).map(field => (
                             <button
-                              className={`px-2 py-1 text-[10px] font-medium rounded-md flex items-center gap-1 capitalize transition-colors ${sortField === field ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'
-                                }`}
+                              className={`px-2 py-1 text-[10px] font-medium rounded-md flex items-center gap-1 capitalize transition-colors ${
+                                sortField === field ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'
+                              }`}
                               key={field}
                               onClick={() => handleSort(field)}>
                               {field === 'dueDate' ? 'Due' : field}
@@ -738,12 +743,13 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                             const dateInfo = getDateInfo(todo.dueDate);
                             return (
                               <div
-                                className={`group relative flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${todo.isCompleted
+                                className={`group relative flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${
+                                  todo.isCompleted
                                     ? 'bg-gray-50/50 opacity-60'
                                     : dateInfo.isOverdue
-                                      ? 'bg-white hover:bg-red-50/30 border border-red-100 hover:border-red-200'
-                                      : 'bg-white hover:bg-gray-50/80 border border-gray-100 hover:border-gray-200'
-                                  }`}
+                                    ? 'bg-white hover:bg-red-50/30 border border-red-100 hover:border-red-200'
+                                    : 'bg-white hover:bg-gray-50/80 border border-gray-100 hover:border-gray-200'
+                                }`}
                                 key={todo._id}>
                                 {/* Overdue accent */}
                                 {dateInfo.isOverdue && !todo.isCompleted && (
@@ -752,8 +758,9 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
                                 {/* Checkbox */}
                                 <button
-                                  className={`flex-shrink-0 transition-colors ${todo.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-gray-500'
-                                    }`}
+                                  className={`flex-shrink-0 transition-colors ${
+                                    todo.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-gray-500'
+                                  }`}
                                   onClick={() => handleToggleComplete(todo)}>
                                   {todo.isCompleted ? (
                                     <CheckCircleIconSolid className="h-5 w-5" />
@@ -767,8 +774,9 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                   <div className="flex items-center gap-2">
                                     {getPriorityDot(todo.priority)}
                                     <h4
-                                      className={`text-[13px] font-medium truncate ${todo.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'
-                                        }`}>
+                                      className={`text-[13px] font-medium truncate ${
+                                        todo.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'
+                                      }`}>
                                       {todo.title}
                                     </h4>
                                     {todo.category && (
@@ -792,10 +800,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                               href={link}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className={`transition-colors ${isDrive
+                                              className={`transition-colors ${
+                                                isDrive
                                                   ? 'text-blue-400 hover:text-blue-600'
                                                   : 'text-gray-300 hover:text-gray-500'
-                                                }`}
+                                              }`}
                                               title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
                                               onClick={e => e.stopPropagation()}>
                                               <PaperClipIcon className="h-3 w-3" />
@@ -850,8 +859,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                         onClick={() => {
                                           const targetId =
                                             todo.tabId &&
-                                              !todo.tabId.startsWith('new-') &&
-                                              !todo.tabId.startsWith('default-')
+                                            !todo.tabId.startsWith('new-') &&
+                                            !todo.tabId.startsWith('default-')
                                               ? todo.tabId
                                               : todo.tabName;
                                           onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
@@ -906,7 +915,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               }
             }}
             onSave={handleSaveTask}
-            initialData={prefilledData ? ({ ...prefilledData } as any) : editingTask || undefined}
+            initialData={prefilledData ? ({...prefilledData} as any) : editingTask || undefined}
             title={editingTask ? 'Edit Task' : 'New Task'}
           />
           <EmailTaskModal

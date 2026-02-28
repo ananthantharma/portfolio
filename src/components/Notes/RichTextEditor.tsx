@@ -1,33 +1,33 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useRef} from 'react';
 
 // Lexical Core
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {ContentEditable} from '@lexical/react/LexicalContentEditable';
+import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
+import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
 
 // Lexical Nodes & Commands
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { CodeNode, CodeHighlightNode } from '@lexical/code';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { LinkNode, AutoLinkNode } from '@lexical/link';
-import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
-import { ImageNode, $createImageNode } from './ImageNode';
-import { ImagePastePlugin } from './ImagePastePlugin';
-import { TRANSFORMERS } from '@lexical/markdown';
+import {HeadingNode, QuoteNode} from '@lexical/rich-text';
+import {CodeNode, CodeHighlightNode} from '@lexical/code';
+import {ListItemNode, ListNode} from '@lexical/list';
+import {LinkNode, AutoLinkNode} from '@lexical/link';
+import {TableNode, TableCellNode, TableRowNode} from '@lexical/table';
+import {ImageNode, $createImageNode} from './ImageNode';
+import {ImagePastePlugin} from './ImagePastePlugin';
+import {TRANSFORMERS} from '@lexical/markdown';
 
-import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
-import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
-import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
-import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
-import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import { TableOfContentsPlugin } from '@lexical/react/LexicalTableOfContentsPlugin';
+import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
+import {CheckListPlugin} from '@lexical/react/LexicalCheckListPlugin';
+import {ListPlugin} from '@lexical/react/LexicalListPlugin';
+import {LinkPlugin} from '@lexical/react/LexicalLinkPlugin';
+import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
+import {AutoLinkPlugin, createLinkMatcherWithRegExp} from '@lexical/react/LexicalAutoLinkPlugin';
+import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import {TableOfContentsPlugin} from '@lexical/react/LexicalTableOfContentsPlugin';
 
 const URL_REGEX =
   /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
@@ -36,10 +36,10 @@ const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 
 const MATCHERS = [
-  createLinkMatcherWithRegExp(URL_REGEX, (text) => {
+  createLinkMatcherWithRegExp(URL_REGEX, text => {
     return text.startsWith('http') ? text : `https://${text}`;
   }),
-  createLinkMatcherWithRegExp(EMAIL_REGEX, (text) => {
+  createLinkMatcherWithRegExp(EMAIL_REGEX, text => {
     return `mailto:${text}`;
   }),
 ];
@@ -55,12 +55,12 @@ import {
   $isRangeSelection,
   $createTextNode,
 } from 'lexical';
-import { $createHeadingNode } from '@lexical/rich-text';
-import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
-import { INSERT_TABLE_COMMAND } from '@lexical/table';
-import { TOGGLE_LINK_COMMAND } from '@lexical/link';
-import { $createCodeNode } from '@lexical/code';
-import { $setBlocksType, $patchStyleText } from '@lexical/selection';
+import {$createHeadingNode} from '@lexical/rich-text';
+import {INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND} from '@lexical/list';
+import {INSERT_TABLE_COMMAND} from '@lexical/table';
+import {TOGGLE_LINK_COMMAND} from '@lexical/link';
+import {$createCodeNode} from '@lexical/code';
+import {$setBlocksType, $patchStyleText} from '@lexical/selection';
 
 // UI components for Toolbar
 import {
@@ -85,7 +85,6 @@ import {
   PaintBucket,
   ImagePlus,
 } from 'lucide-react';
-
 
 export interface RichTextEditorProps {
   onChange: (value: string, delta: any, source: string, editor: any) => void;
@@ -144,14 +143,14 @@ function ToolbarPlugin() {
   };
 
   const insertTable = () => {
-    editor.dispatchCommand(INSERT_TABLE_COMMAND, { columns: '3', rows: '3', includeHeaders: false });
+    editor.dispatchCommand(INSERT_TABLE_COMMAND, {columns: '3', rows: '3', includeHeaders: false});
   };
 
   const applyTextColor = (color: string) => {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        $patchStyleText(selection, { color });
+        $patchStyleText(selection, {color});
       }
     });
   };
@@ -160,21 +159,41 @@ function ToolbarPlugin() {
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
-        $patchStyleText(selection, { 'background-color': color });
+        $patchStyleText(selection, {'background-color': color});
       }
     });
   };
 
   // Common colors palette
   const textColors = [
-    '#000000', '#374151', '#6B7280', '#EF4444', '#F97316',
-    '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899',
-    '#DC2626', '#D97706', '#15803D', '#1D4ED8', '#7C3AED',
+    '#000000',
+    '#374151',
+    '#6B7280',
+    '#EF4444',
+    '#F97316',
+    '#EAB308',
+    '#22C55E',
+    '#3B82F6',
+    '#8B5CF6',
+    '#EC4899',
+    '#DC2626',
+    '#D97706',
+    '#15803D',
+    '#1D4ED8',
+    '#7C3AED',
     '#ffffff',
   ];
   const highlightColors = [
-    '#FEF08A', '#BEF264', '#6EE7B7', '#93C5FD', '#F9A8D4',
-    '#FCA5A5', '#FCD34D', '#A5F3FC', '#C4B5FD', '#FDE68A',
+    '#FEF08A',
+    '#BEF264',
+    '#6EE7B7',
+    '#93C5FD',
+    '#F9A8D4',
+    '#FCA5A5',
+    '#FCD34D',
+    '#A5F3FC',
+    '#C4B5FD',
+    '#FDE68A',
     'transparent',
   ];
 
@@ -250,12 +269,14 @@ function ToolbarPlugin() {
           title="Text Color">
           <Baseline className="w-4 h-4" />
         </button>
-        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{ width: '108px' }}>
+        <div
+          className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2"
+          style={{width: '108px'}}>
           {textColors.map(c => (
             <button
               key={c}
               onClick={() => applyTextColor(c)}
-              style={{ backgroundColor: c, border: c === '#ffffff' ? '1px solid #e5e7eb' : 'none' }}
+              style={{backgroundColor: c, border: c === '#ffffff' ? '1px solid #e5e7eb' : 'none'}}
               className="w-6 h-6 rounded-sm hover:scale-110 transition-transform"
               title={c}
             />
@@ -270,15 +291,16 @@ function ToolbarPlugin() {
           title="Highlight Color">
           <PaintBucket className="w-4 h-4" />
         </button>
-        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{ width: '108px' }}>
+        <div
+          className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2"
+          style={{width: '108px'}}>
           {highlightColors.map(c => (
             <button
               key={c}
               onClick={() => applyHighlight(c === 'transparent' ? '' : c)}
-              style={{ backgroundColor: c === 'transparent' ? '#fff' : c, border: '1px solid #e5e7eb' }}
+              style={{backgroundColor: c === 'transparent' ? '#fff' : c, border: '1px solid #e5e7eb'}}
               className="w-6 h-6 rounded-sm hover:scale-110 transition-transform text-xs"
-              title={c === 'transparent' ? 'Remove highlight' : c}
-            >
+              title={c === 'transparent' ? 'Remove highlight' : c}>
               {c === 'transparent' ? '✕' : ''}
             </button>
           ))}
@@ -366,14 +388,14 @@ function ToolbarPlugin() {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => {
+          onChange={e => {
             const file = e.target.files?.[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = () => {
               const src = reader.result as string;
               editor.update(() => {
-                const node = $createImageNode({ src, altText: file.name });
+                const node = $createImageNode({src, altText: file.name});
                 const sel = $getSelection();
                 if ($isRangeSelection(sel)) sel.insertNodes([node]);
               });
@@ -388,7 +410,7 @@ function ToolbarPlugin() {
 }
 
 // Logic Plugin for State Sync
-function ValueSyncPlugin({ value, onChange }: { value: string; onChange: any }) {
+function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
   const [editor] = useLexicalComposerContext();
   const lastUpdateValue = useRef('');
   const isInitializing = useRef(true);
@@ -425,16 +447,16 @@ function ValueSyncPlugin({ value, onChange }: { value: string; onChange: any }) 
   );
 }
 
-function CustomPlaceholder({ placeholder }: { placeholder?: string }) {
+function CustomPlaceholder({placeholder}: {placeholder?: string}) {
   return (
-    <div className="absolute top-[24px] left-[32px] text-gray-400 pointer-events-none" style={{ fontSize: '15px' }}>
+    <div className="absolute top-[24px] left-[32px] text-gray-400 pointer-events-none" style={{fontSize: '15px'}}>
       {placeholder || 'Start typing...'}
     </div>
   );
 }
 
 // ── EditorRefPlugin: captures the Lexical editor instance into a ref ──────────
-function EditorRefPlugin({ editorRef }: { editorRef: React.MutableRefObject<any> }) {
+function EditorRefPlugin({editorRef}: {editorRef: React.MutableRefObject<any>}) {
   const [editor] = useLexicalComposerContext();
   useEffect(() => {
     editorRef.current = editor;
@@ -442,9 +464,8 @@ function EditorRefPlugin({ editorRef }: { editorRef: React.MutableRefObject<any>
   return null;
 }
 
-
 const RichTextEditor = React.memo(
-  forwardRef<any, RichTextEditorProps>(({ onChange, onBlur, placeholder, value }, ref) => {
+  forwardRef<any, RichTextEditorProps>(({onChange, onBlur, placeholder, value}, ref) => {
     const editorConfig = {
       namespace: 'NotesEditor',
       nodes: [
@@ -459,7 +480,7 @@ const RichTextEditor = React.memo(
         TableCellNode,
         TableRowNode,
         CodeNode,
-        CodeHighlightNode
+        CodeHighlightNode,
       ],
       // Adding basic themes to match our Tailwind / old Quill styling inside the content editable area
       theme: {
@@ -573,9 +594,7 @@ const RichTextEditor = React.memo(
               <AutoLinkPlugin matchers={MATCHERS} />
               <TabIndentationPlugin />
               <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <TableOfContentsPlugin>
-                {() => <></>}
-              </TableOfContentsPlugin>
+              <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
               <ValueSyncPlugin value={value} onChange={onChange} />
               <ImagePastePlugin />
               <EditorRefPlugin editorRef={lexicalEditorRef} />

@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 'use client';
 
-import { Dialog, Transition } from '@headlessui/react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowPathIcon,
   CheckIcon,
@@ -22,11 +22,11 @@ import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
   FlagIcon as FlagIconSolid,
 } from '@heroicons/react/24/solid';
-import { useSession } from 'next-auth/react';
+import {useSession} from 'next-auth/react';
 import useDetectOutsideClick from '@/hooks/useDetectOutsideClick'; // Import useSession
-import React, { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 
-import { INotePage } from '@/models/NotePage';
+import {INotePage} from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
 
@@ -34,10 +34,10 @@ import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { AttachmentManager } from './AttachmentManager';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {AttachmentManager} from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
-import { useBadgeSettings } from './BadgeSettingsContext'; // Added import
+import {useBadgeSettings} from './BadgeSettingsContext'; // Added import
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
 
@@ -65,8 +65,8 @@ interface NoteEditorProps {
   initialTabId?: string;
 }
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initialTabId }) => {
-  const { data: session } = useSession(); // Get session data
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId}) => {
+  const {data: session} = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<
     {
@@ -82,14 +82,18 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   // We still need a content state for the editor to bind to, which syncs with active tab
   const [editorContent, setEditorContent] = useState('');
-  const { getBadgeStyle } = useBadgeSettings(); // Hook
+  const {getBadgeStyle} = useBadgeSettings(); // Hook
 
   // Emoji picker state
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [emojiSearch, setEmojiSearch] = useState('');
   const [activeCategoryKey, setActiveCategoryKey] = useState('smileys');
   const [recentEmojis, setRecentEmojis] = useState<string[]>(() => {
-    try { return JSON.parse(localStorage.getItem('recentEmojis') || '[]'); } catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem('recentEmojis') || '[]');
+    } catch {
+      return [];
+    }
   });
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   useDetectOutsideClick(emojiPickerRef, () => setIsEmojiPickerOpen(false));
@@ -152,7 +156,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     setTabs(prev =>
       prev.map(t => {
         if (t._id === activeTabId || t.title === activeTabId) {
-          return { ...t, isImportant: !t.isImportant };
+          return {...t, isImportant: !t.isImportant};
         }
         return t;
       }),
@@ -164,7 +168,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     setTabs(prev =>
       prev.map(t => {
         if (t._id === activeTabId || t.title === activeTabId) {
-          return { ...t, isFlagged: !t.isFlagged };
+          return {...t, isFlagged: !t.isFlagged};
         }
         return t;
       }),
@@ -176,7 +180,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [isMarkdownResponse, setIsMarkdownResponse] = useState(false);
   // insertionRange removed — was Quill-only, no longer needed with Lexical
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const setInsertionRange = (_: unknown) => { }; // no-op shim so callers don't break
+  const setInsertionRange = (_: unknown) => {}; // no-op shim so callers don't break
 
   const [isRewriteModalOpen, setIsRewriteModalOpen] = useState(false);
   const [rewriteSelectedText, setRewriteSelectedText] = useState('');
@@ -187,7 +191,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const [isToDoOpen, setIsToDoOpen] = useState(false);
 
   // Tab Indicator State
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [indicatorStyle, setIndicatorStyle] = useState({left: 0, width: 0});
   const tabsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -314,7 +318,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
         isFlagged: t.isFlagged,
         order: t.order,
         // Only include _id if it's a real server ID
-        ...(!isTempId && t._id ? { _id: t._id } : {}),
+        ...(!isTempId && t._id ? {_id: t._id} : {}),
       };
     });
   };
@@ -323,7 +327,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // 1. Sync current content to active tab before adding new one
     const updatedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, content: editorContent };
+        return {...t, content: editorContent};
       }
       return t;
     });
@@ -371,7 +375,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // Sync current content before modifying tabs array
     const currentSyncedTabs = tabs.map(t => {
       if (t._id === activeTabId || t.title === activeTabId) {
-        return { ...t, content: editorContent };
+        return {...t, content: editorContent};
       }
       return t;
     });
@@ -411,12 +415,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       // Create a base object that has the latest content if it's the active tab
       let updatedTab = t;
       if (t._id === activeTabId || t.title === activeTabId) {
-        updatedTab = { ...t, content: editorContent };
+        updatedTab = {...t, content: editorContent};
       }
 
       // Now apply rename if it matches target
       if (updatedTab._id === tabId || (!updatedTab._id && updatedTab.title === tabId)) {
-        return { ...updatedTab, title: newTitle };
+        return {...updatedTab, title: newTitle};
       }
       return updatedTab;
     });
@@ -459,7 +463,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       setTabs(prev =>
         prev.map(t => {
           if (t._id === activeTabId || t.title === activeTabId) {
-            return { ...t, content: val };
+            return {...t, content: val};
           }
           return t;
         }),
@@ -498,10 +502,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       }
       setTabs(prev =>
         prev.map(t =>
-          t._id === activeTabId || t.title === activeTabId
-            ? { ...t, content: t.content + '\n' + htmlToInsert }
-            : t
-        )
+          t._id === activeTabId || t.title === activeTabId ? {...t, content: t.content + '\n' + htmlToInsert} : t,
+        ),
       );
       setIsDirty(true);
     },
@@ -527,7 +529,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -552,7 +554,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
   const handleSummarizeAI = async () => {
     // Use selection or full editor HTML content
     const selectedText = window.getSelection()?.toString()?.trim();
-    const text = selectedText || (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
+    const text =
+      selectedText ||
+      (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
     if (!text) {
       alert('No text found to summarize.');
@@ -570,7 +574,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -594,7 +598,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   const handleSuggestAI = async () => {
     const selectedText = window.getSelection()?.toString()?.trim();
-    const text = selectedText || (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
+    const text =
+      selectedText ||
+      (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
     if (!text) {
       alert('No text found to analyze.');
@@ -612,7 +618,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -650,8 +656,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       await fetch('/api/prompts/organize', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: customPrompt}),
       });
       setOrganizePrompt(customPrompt);
     } catch (e) {
@@ -664,7 +670,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     setIsMarkdownResponse(true);
 
     // Get selected text directly from window selection
-    const text = window.getSelection()?.toString()?.trim() ||
+    const text =
+      window.getSelection()?.toString()?.trim() ||
       (editorContent ? new DOMParser().parseFromString(editorContent, 'text/html').body.innerText.trim() : '');
 
     const fullPrompt = `${customPrompt}\n\n"${text}"`;
@@ -672,7 +679,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -711,8 +718,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest' }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt: text, apiKey: 'MANAGED', model: 'gemini-flash-latest'}),
       });
       const data = await response.json();
 
@@ -745,10 +752,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
     // Keep tabs state in sync so Save captures the new content
     setTabs(prev =>
       prev.map(t =>
-        t._id === activeTabId || t.title === activeTabId
-          ? { ...t, content: t.content + '\n' + htmlToInsert }
-          : t
-      )
+        t._id === activeTabId || t.title === activeTabId ? {...t, content: t.content + '\n' + htmlToInsert} : t,
+      ),
     );
     setIsDirty(true);
     setIsModalOpen(false);
@@ -775,11 +780,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
       const appended = editorContent + ' ' + symbol;
       setEditorContent(appended);
       setTabs(prev =>
-        prev.map(t =>
-          t._id === activeTabId || t.title === activeTabId
-            ? { ...t, content: appended }
-            : t
-        )
+        prev.map(t => (t._id === activeTabId || t.title === activeTabId ? {...t, content: appended} : t)),
       );
     }
     setIsDirty(true);
@@ -787,50 +788,934 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
   const EMOJI_CATEGORIES = [
     {
-      label: '🕐 Recent', key: 'recent',
+      label: '🕐 Recent',
+      key: 'recent',
       emojis: [] as string[], // populated from recentEmojis state
     },
     {
-      label: '😀 Smileys', key: 'smileys',
-      emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '☺️', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👾', '🤖'],
+      label: '😀 Smileys',
+      key: 'smileys',
+      emojis: [
+        '😀',
+        '😃',
+        '😄',
+        '😁',
+        '😆',
+        '😅',
+        '🤣',
+        '😂',
+        '🙂',
+        '🙃',
+        '😉',
+        '😊',
+        '😇',
+        '🥰',
+        '😍',
+        '🤩',
+        '😘',
+        '😗',
+        '☺️',
+        '😚',
+        '😙',
+        '🥲',
+        '😋',
+        '😛',
+        '😜',
+        '🤪',
+        '😝',
+        '🤑',
+        '🤗',
+        '🤭',
+        '🤫',
+        '🤔',
+        '🤐',
+        '🤨',
+        '😐',
+        '😑',
+        '😶',
+        '😏',
+        '😒',
+        '🙄',
+        '😬',
+        '🤥',
+        '😌',
+        '😔',
+        '😪',
+        '🤤',
+        '😴',
+        '😷',
+        '🤒',
+        '🤕',
+        '🤢',
+        '🤮',
+        '🤧',
+        '🥵',
+        '🥶',
+        '🥴',
+        '😵',
+        '🤯',
+        '🤠',
+        '🥳',
+        '🥸',
+        '😎',
+        '🤓',
+        '🧐',
+        '😕',
+        '😟',
+        '🙁',
+        '☹️',
+        '😮',
+        '😯',
+        '😲',
+        '😳',
+        '🥺',
+        '😦',
+        '😧',
+        '😨',
+        '😰',
+        '😥',
+        '😢',
+        '😭',
+        '😱',
+        '😖',
+        '😣',
+        '😞',
+        '😓',
+        '😩',
+        '😫',
+        '🥱',
+        '😤',
+        '😡',
+        '😠',
+        '🤬',
+        '😈',
+        '👿',
+        '💀',
+        '☠️',
+        '💩',
+        '🤡',
+        '👹',
+        '👺',
+        '👻',
+        '👾',
+        '🤖',
+      ],
     },
     {
-      label: '👋 People', key: 'people',
-      emojis: ['👋', '🤚', '🖐️', '✋', '🖖', '🤙', '💪', '🦾', '🖕', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💃', '🕺', '👶', '🧒', '👦', '👧', '🧑', '👱', '👩', '👨', '🧓', '👴', '👵', '🧔', '👱‍♀️', '👮', '👷', '💂', '🕵️', '👩‍⚕️', '👨‍⚕️', '👩‍🌾', '👨‍🌾', '👩‍🍳', '👨‍🍳', '👩‍🎓', '👨‍🎓', '👩‍🎤', '👨‍🎤', '👩‍🏫', '👨‍🏫', '👩‍🏭', '👨‍🏭', '👩‍💻', '👨‍💻', '👩‍💼', '👨‍💼', '👩‍🔧', '👨‍🔧', '👩‍🔬', '👨‍🔬', '👩‍🎨', '👨‍🎨', '👩‍✈️', '👨‍✈️', '👩‍🚀', '👨‍🚀', '👩‍🚒', '👨‍🚒'],
+      label: '👋 People',
+      key: 'people',
+      emojis: [
+        '👋',
+        '🤚',
+        '🖐️',
+        '✋',
+        '🖖',
+        '🤙',
+        '💪',
+        '🦾',
+        '🖕',
+        '✌️',
+        '🤞',
+        '🤟',
+        '🤘',
+        '🤙',
+        '👈',
+        '👉',
+        '👆',
+        '🖕',
+        '👇',
+        '☝️',
+        '👍',
+        '👎',
+        '✊',
+        '👊',
+        '🤛',
+        '🤜',
+        '👏',
+        '🙌',
+        '👐',
+        '🤲',
+        '🤝',
+        '🙏',
+        '✍️',
+        '💅',
+        '🤳',
+        '💃',
+        '🕺',
+        '👶',
+        '🧒',
+        '👦',
+        '👧',
+        '🧑',
+        '👱',
+        '👩',
+        '👨',
+        '🧓',
+        '👴',
+        '👵',
+        '🧔',
+        '👱‍♀️',
+        '👮',
+        '👷',
+        '💂',
+        '🕵️',
+        '👩‍⚕️',
+        '👨‍⚕️',
+        '👩‍🌾',
+        '👨‍🌾',
+        '👩‍🍳',
+        '👨‍🍳',
+        '👩‍🎓',
+        '👨‍🎓',
+        '👩‍🎤',
+        '👨‍🎤',
+        '👩‍🏫',
+        '👨‍🏫',
+        '👩‍🏭',
+        '👨‍🏭',
+        '👩‍💻',
+        '👨‍💻',
+        '👩‍💼',
+        '👨‍💼',
+        '👩‍🔧',
+        '👨‍🔧',
+        '👩‍🔬',
+        '👨‍🔬',
+        '👩‍🎨',
+        '👨‍🎨',
+        '👩‍✈️',
+        '👨‍✈️',
+        '👩‍🚀',
+        '👨‍🚀',
+        '👩‍🚒',
+        '👨‍🚒',
+      ],
     },
     {
-      label: '🐶 Animals', key: 'animals',
-      emojis: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐟', '🐠', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦬', '🦍', '🦧', '🦣', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🦬', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐈', '🦤', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🐿️'],
+      label: '🐶 Animals',
+      key: 'animals',
+      emojis: [
+        '🐶',
+        '🐱',
+        '🐭',
+        '🐹',
+        '🐰',
+        '🦊',
+        '🐻',
+        '🐼',
+        '🐻‍❄️',
+        '🐨',
+        '🐯',
+        '🦁',
+        '🐮',
+        '🐷',
+        '🐸',
+        '🐵',
+        '🙈',
+        '🙉',
+        '🙊',
+        '🐔',
+        '🐧',
+        '🐦',
+        '🐤',
+        '🦆',
+        '🦅',
+        '🦉',
+        '🦇',
+        '🐺',
+        '🐗',
+        '🐴',
+        '🦄',
+        '🐝',
+        '🐛',
+        '🦋',
+        '🐌',
+        '🐞',
+        '🐜',
+        '🦟',
+        '🦗',
+        '🦂',
+        '🐢',
+        '🐍',
+        '🦎',
+        '🦖',
+        '🦕',
+        '🐙',
+        '🦑',
+        '🦐',
+        '🦞',
+        '🦀',
+        '🐡',
+        '🐟',
+        '🐠',
+        '🐬',
+        '🐳',
+        '🐋',
+        '🦈',
+        '🐊',
+        '🐅',
+        '🐆',
+        '🦓',
+        '🦬',
+        '🦍',
+        '🦧',
+        '🦣',
+        '🐘',
+        '🦛',
+        '🦏',
+        '🐪',
+        '🐫',
+        '🦒',
+        '🦘',
+        '🦬',
+        '🐃',
+        '🐂',
+        '🐄',
+        '🐎',
+        '🐖',
+        '🐏',
+        '🐑',
+        '🦙',
+        '🐐',
+        '🦌',
+        '🐕',
+        '🐩',
+        '🦮',
+        '🐈',
+        '🦤',
+        '🦚',
+        '🦜',
+        '🦢',
+        '🦩',
+        '🕊️',
+        '🐇',
+        '🦝',
+        '🦨',
+        '🦡',
+        '🦦',
+        '🦥',
+        '🐁',
+        '🐀',
+        '🐿️',
+      ],
     },
     {
-      label: '🍕 Food', key: 'food',
-      emojis: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🥕', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥮', '🍢', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🧃', '🥤', '🧋', '☕', '🫖', '🍵', '🧉', '🍺', '🍻', '🥂', '🍷', '🫗', '🥃', '🍸', '🍹', '🧊', '🥄', '🍴', '🍽️'],
+      label: '🍕 Food',
+      key: 'food',
+      emojis: [
+        '🍎',
+        '🍐',
+        '🍊',
+        '🍋',
+        '🍌',
+        '🍉',
+        '🍇',
+        '🍓',
+        '🫐',
+        '🍈',
+        '🍒',
+        '🍑',
+        '🥭',
+        '🍍',
+        '🥥',
+        '🥝',
+        '🍅',
+        '🍆',
+        '🥑',
+        '🥦',
+        '🥬',
+        '🥒',
+        '🌶️',
+        '🫑',
+        '🥕',
+        '🧄',
+        '🧅',
+        '🥔',
+        '🍠',
+        '🥐',
+        '🥯',
+        '🍞',
+        '🥖',
+        '🥨',
+        '🧀',
+        '🥚',
+        '🍳',
+        '🧈',
+        '🥞',
+        '🧇',
+        '🥓',
+        '🥩',
+        '🍗',
+        '🍖',
+        '🌭',
+        '🍔',
+        '🍟',
+        '🍕',
+        '🫓',
+        '🥪',
+        '🥙',
+        '🧆',
+        '🌮',
+        '🌯',
+        '🫔',
+        '🥗',
+        '🥘',
+        '🫕',
+        '🍝',
+        '🍜',
+        '🍲',
+        '🍛',
+        '🍣',
+        '🍱',
+        '🥟',
+        '🦪',
+        '🍤',
+        '🍙',
+        '🍚',
+        '🍘',
+        '🍥',
+        '🥮',
+        '🍢',
+        '🧁',
+        '🍰',
+        '🎂',
+        '🍮',
+        '🍭',
+        '🍬',
+        '🍫',
+        '🍿',
+        '🍩',
+        '🍪',
+        '🌰',
+        '🥜',
+        '🍯',
+        '🧃',
+        '🥤',
+        '🧋',
+        '☕',
+        '🫖',
+        '🍵',
+        '🧉',
+        '🍺',
+        '🍻',
+        '🥂',
+        '🍷',
+        '🫗',
+        '🥃',
+        '🍸',
+        '🍹',
+        '🧊',
+        '🥄',
+        '🍴',
+        '🍽️',
+      ],
     },
     {
-      label: '✈️ Travel', key: 'travel',
-      emojis: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '🛴', '🛹', '🛼', '🚏', '🛣️', '🛤️', '⛽', '🚨', '🚥', '🚦', '🛑', '🏗️', '🚢', '✈️', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🚀', '🛸', '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🗺️', '🧭', '⛰️', '🌋', '🗻', '🏕️', '🏖️', '🏜️', '🏝️', '🏞️', '🏟️', '🏛️', '🏗️', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '🗼', '🗽', '🗾', '🎌', '🏳️', '🏴'],
+      label: '✈️ Travel',
+      key: 'travel',
+      emojis: [
+        '🚗',
+        '🚕',
+        '🚙',
+        '🚌',
+        '🚎',
+        '🏎️',
+        '🚓',
+        '🚑',
+        '🚒',
+        '🚐',
+        '🛻',
+        '🚚',
+        '🚛',
+        '🚜',
+        '🏍️',
+        '🛵',
+        '🚲',
+        '🛴',
+        '🛹',
+        '🛼',
+        '🚏',
+        '🛣️',
+        '🛤️',
+        '⛽',
+        '🚨',
+        '🚥',
+        '🚦',
+        '🛑',
+        '🏗️',
+        '🚢',
+        '✈️',
+        '🛩️',
+        '🛫',
+        '🛬',
+        '🪂',
+        '💺',
+        '🚁',
+        '🚟',
+        '🚠',
+        '🚡',
+        '🛰️',
+        '🚀',
+        '🛸',
+        '🛶',
+        '⛵',
+        '🚤',
+        '🛥️',
+        '🛳️',
+        '⛴️',
+        '🚂',
+        '🚃',
+        '🚄',
+        '🚅',
+        '🚆',
+        '🚇',
+        '🚈',
+        '🚉',
+        '🚊',
+        '🚝',
+        '🚞',
+        '🗺️',
+        '🧭',
+        '⛰️',
+        '🌋',
+        '🗻',
+        '🏕️',
+        '🏖️',
+        '🏜️',
+        '🏝️',
+        '🏞️',
+        '🏟️',
+        '🏛️',
+        '🏗️',
+        '🧱',
+        '🏘️',
+        '🏚️',
+        '🏠',
+        '🏡',
+        '🏢',
+        '🏣',
+        '🏤',
+        '🏥',
+        '🏦',
+        '🏨',
+        '🏩',
+        '🏪',
+        '🏫',
+        '🏬',
+        '🏭',
+        '🏯',
+        '🏰',
+        '🗼',
+        '🗽',
+        '🗾',
+        '🎌',
+        '🏳️',
+        '🏴',
+      ],
     },
     {
-      label: '⚽ Activities', key: 'activities',
-      emojis: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🥍', '🏑', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🏇', '🧘', '🎗️', '🎟️', '🎫', '🎖️', '🏆', '🥇', '🥈', '🥉', '⚽', '🏅', '🎪', '🤹', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩'],
+      label: '⚽ Activities',
+      key: 'activities',
+      emojis: [
+        '⚽',
+        '🏀',
+        '🏈',
+        '⚾',
+        '🥎',
+        '🎾',
+        '🏐',
+        '🏉',
+        '🥏',
+        '🎱',
+        '🪀',
+        '🏓',
+        '🏸',
+        '🏒',
+        '🥍',
+        '🏑',
+        '🏏',
+        '🪃',
+        '🥅',
+        '⛳',
+        '🪁',
+        '🏹',
+        '🎣',
+        '🤿',
+        '🥊',
+        '🥋',
+        '🎽',
+        '🛹',
+        '🛷',
+        '⛸️',
+        '🥌',
+        '🎿',
+        '⛷️',
+        '🏂',
+        '🪂',
+        '🏋️',
+        '🤼',
+        '🤸',
+        '⛹️',
+        '🤺',
+        '🏇',
+        '🧘',
+        '🎗️',
+        '🎟️',
+        '🎫',
+        '🎖️',
+        '🏆',
+        '🥇',
+        '🥈',
+        '🥉',
+        '⚽',
+        '🏅',
+        '🎪',
+        '🤹',
+        '🎭',
+        '🎨',
+        '🎬',
+        '🎤',
+        '🎧',
+        '🎼',
+        '🎹',
+        '🥁',
+        '🪘',
+        '🎷',
+        '🎺',
+        '🎸',
+        '🪕',
+        '🎻',
+        '🎲',
+        '♟️',
+        '🎯',
+        '🎳',
+        '🎮',
+        '🎰',
+        '🧩',
+      ],
     },
     {
-      label: '💡 Objects', key: 'objects',
-      emojis: ['💡', '🔦', '🕯️', '🪔', '📱', '💻', '🖥️', '🖨️', '⌨️', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🧭', '⏰', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🗑️', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️', '🧰', '🪛', '🔧', '🪚', '🔨', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🛡️', '🔫', '🪃', '🏹', '🪤', '🪣', '🔑', '🗝️', '🔒', '🔓', '🚪', '🪟', '🛋️', '🪑', '🚿', '🛁', '🧴', '🪠', '🧹', '🧺', '🧻', '🪣', '🧼', '🫧', '🪥', '🧽', '🪒', '🧻', '🛒', '🚬', '🗺️', '📦', '📬', '📭', '📮', '🏷️', '📝', '📖'],
+      label: '💡 Objects',
+      key: 'objects',
+      emojis: [
+        '💡',
+        '🔦',
+        '🕯️',
+        '🪔',
+        '📱',
+        '💻',
+        '🖥️',
+        '🖨️',
+        '⌨️',
+        '🖱️',
+        '🖲️',
+        '💽',
+        '💾',
+        '💿',
+        '📀',
+        '📷',
+        '📸',
+        '📹',
+        '🎥',
+        '📽️',
+        '🎞️',
+        '📞',
+        '☎️',
+        '📟',
+        '📠',
+        '📺',
+        '📻',
+        '🧭',
+        '⏰',
+        '🕰️',
+        '⌚',
+        '📡',
+        '🔋',
+        '🔌',
+        '💡',
+        '🔦',
+        '🕯️',
+        '🗑️',
+        '🛢️',
+        '💸',
+        '💵',
+        '💴',
+        '💶',
+        '💷',
+        '🪙',
+        '💰',
+        '💳',
+        '💎',
+        '⚖️',
+        '🧰',
+        '🪛',
+        '🔧',
+        '🪚',
+        '🔨',
+        '⛏️',
+        '⚒️',
+        '🛠️',
+        '🗡️',
+        '⚔️',
+        '🛡️',
+        '🔫',
+        '🪃',
+        '🏹',
+        '🪤',
+        '🪣',
+        '🔑',
+        '🗝️',
+        '🔒',
+        '🔓',
+        '🚪',
+        '🪟',
+        '🛋️',
+        '🪑',
+        '🚿',
+        '🛁',
+        '🧴',
+        '🪠',
+        '🧹',
+        '🧺',
+        '🧻',
+        '🪣',
+        '🧼',
+        '🫧',
+        '🪥',
+        '🧽',
+        '🪒',
+        '🧻',
+        '🛒',
+        '🚬',
+        '🗺️',
+        '📦',
+        '📬',
+        '📭',
+        '📮',
+        '🏷️',
+        '📝',
+        '📖',
+      ],
     },
     {
-      label: '🔣 Symbols', key: 'symbols',
-      emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎', '🔀', '🔁', '🔂', '▶️', '⏩', '⏭️', '⏯️', '◀️', '⏪', '⏮️', '🔼', '⏫', '🔽', '⏬', '⏸️', '⏹️', '⏺️', '🎦', '🔅', '🔆', '📶', '📳', '📴', '📵', '📳', '🔇', '🔈', '🔉', '🔊', '📢', '📣', '🔔', '🔕', '✅', '❌', '❎', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪', '🟤', '🔺', '🔻', '🔷', '🔶', '🔹', '🔸', '🔲', '🔳', '▪️', '▫️', '◾', '◽', '◼️', '◻️', '⬛', '⬜'],
+      label: '🔣 Symbols',
+      key: 'symbols',
+      emojis: [
+        '❤️',
+        '🧡',
+        '💛',
+        '💚',
+        '💙',
+        '💜',
+        '🖤',
+        '🤍',
+        '🤎',
+        '💔',
+        '❣️',
+        '💕',
+        '💞',
+        '💓',
+        '💗',
+        '💖',
+        '💘',
+        '💝',
+        '💟',
+        '☮️',
+        '✝️',
+        '☪️',
+        '🕉️',
+        '☸️',
+        '🔯',
+        '🕎',
+        '☯️',
+        '☦️',
+        '🛐',
+        '⛎',
+        '♈',
+        '♉',
+        '♊',
+        '♋',
+        '♌',
+        '♍',
+        '♎',
+        '♏',
+        '♐',
+        '♑',
+        '♒',
+        '♓',
+        '⛎',
+        '🔀',
+        '🔁',
+        '🔂',
+        '▶️',
+        '⏩',
+        '⏭️',
+        '⏯️',
+        '◀️',
+        '⏪',
+        '⏮️',
+        '🔼',
+        '⏫',
+        '🔽',
+        '⏬',
+        '⏸️',
+        '⏹️',
+        '⏺️',
+        '🎦',
+        '🔅',
+        '🔆',
+        '📶',
+        '📳',
+        '📴',
+        '📵',
+        '📳',
+        '🔇',
+        '🔈',
+        '🔉',
+        '🔊',
+        '📢',
+        '📣',
+        '🔔',
+        '🔕',
+        '✅',
+        '❌',
+        '❎',
+        '🔴',
+        '🟠',
+        '🟡',
+        '🟢',
+        '🔵',
+        '🟣',
+        '⚫',
+        '⚪',
+        '🟤',
+        '🔺',
+        '🔻',
+        '🔷',
+        '🔶',
+        '🔹',
+        '🔸',
+        '🔲',
+        '🔳',
+        '▪️',
+        '▫️',
+        '◾',
+        '◽',
+        '◼️',
+        '◻️',
+        '⬛',
+        '⬜',
+      ],
     },
     {
-      label: '💼 Work', key: 'work',
-      emojis: ['📊', '📈', '📉', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '🖥️', '💻', '⌨️', '📱', '📞', '☎️', '📟', '📠', '📡', '🔭', '🔬', '🧫', '🧪', '🧬', '🔍', '🔎', '💡', '🔦', '💰', '💵', '💴', '💶', '💷', '💸', '💳', '🧾', '⚖️', '🏦', '🏢', '🤝', '📊', '🗃️', '📋', '📌', '🖊️', '✅', '❎', '🚨', '⚠️', '🔔', '🔕', '📢', '📣', '🔑', '🗝️'],
+      label: '💼 Work',
+      key: 'work',
+      emojis: [
+        '📊',
+        '📈',
+        '📉',
+        '📋',
+        '📌',
+        '📍',
+        '📎',
+        '🖇️',
+        '📏',
+        '📐',
+        '✂️',
+        '🗃️',
+        '🗄️',
+        '🗑️',
+        '📁',
+        '📂',
+        '🗂️',
+        '📅',
+        '📆',
+        '🗒️',
+        '🗓️',
+        '📇',
+        '📈',
+        '📉',
+        '📊',
+        '📋',
+        '📌',
+        '📍',
+        '📎',
+        '🖇️',
+        '📏',
+        '📐',
+        '✂️',
+        '🗃️',
+        '🗄️',
+        '🗑️',
+        '📦',
+        '📫',
+        '📪',
+        '📬',
+        '📭',
+        '📮',
+        '🗳️',
+        '✏️',
+        '✒️',
+        '🖋️',
+        '🖊️',
+        '🖌️',
+        '🖍️',
+        '📝',
+        '💼',
+        '📁',
+        '📂',
+        '🗂️',
+        '🖥️',
+        '💻',
+        '⌨️',
+        '📱',
+        '📞',
+        '☎️',
+        '📟',
+        '📠',
+        '📡',
+        '🔭',
+        '🔬',
+        '🧫',
+        '🧪',
+        '🧬',
+        '🔍',
+        '🔎',
+        '💡',
+        '🔦',
+        '💰',
+        '💵',
+        '💴',
+        '💶',
+        '💷',
+        '💸',
+        '💳',
+        '🧾',
+        '⚖️',
+        '🏦',
+        '🏢',
+        '🤝',
+        '📊',
+        '🗃️',
+        '📋',
+        '📌',
+        '🖊️',
+        '✅',
+        '❎',
+        '🚨',
+        '⚠️',
+        '🔔',
+        '🔕',
+        '📢',
+        '📣',
+        '🔑',
+        '🗝️',
+      ],
     },
   ];
 
-
   const handleSaveToDo = useCallback(
-    async (toDoData: { title: string; priority: string; dueDate: Date; category: string; notes: string }) => {
+    async (toDoData: {title: string; priority: string; dueDate: Date; category: string; notes: string}) => {
       try {
         if (!page) return;
 
@@ -838,7 +1723,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         const response = await fetch('/api/todos', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             ...toDoData,
             sourcePageId: page._id,
@@ -932,18 +1817,19 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               }
             }
 
-            const { className, style } = getBadgeStyle(minDays);
+            const {className, style} = getBadgeStyle(minDays);
 
             return (
               <div
                 key={tab._id || tab.title}
                 ref={el => (tabsRef.current[index] = el)}
-                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                className={`group relative z-10 flex cursor-pointer items-center justify-center rounded-md pl-2 pr-7 py-1 text-[11px] font-medium leading-none transition-colors duration-200 select-none ${
+                  isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                }`}
                 onClick={() => {
                   const updatedTabs = tabs.map(t => {
                     if (t._id === activeTabId || t.title === activeTabId) {
-                      return { ...t, content: editorContent };
+                      return {...t, content: editorContent};
                     }
                     return t;
                   });
@@ -980,7 +1866,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                     onChange={e => {
                       const newColor = e.target.value;
                       setTabs(
-                        tabs.map(t => (t._id === tab._id && t.title === tab.title ? { ...t, color: newColor } : t)),
+                        tabs.map(t => (t._id === tab._id && t.title === tab.title ? {...t, color: newColor} : t)),
                       );
                       setIsDirty(true);
                     }}
@@ -988,24 +1874,25 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                   />
                   <div
                     className="w-full h-full rounded-full border border-gray-300"
-                    style={{ backgroundColor: tab.color || '#ffffff' }}></div>
+                    style={{backgroundColor: tab.color || '#ffffff'}}></div>
                 </div>
 
                 {/* Auto-width Container: Grid stack with invisible span and absolute input */}
-                <div className="grid place-items-center" style={{ gridTemplateAreas: '"stack"' }}>
+                <div className="grid place-items-center" style={{gridTemplateAreas: '"stack"'}}>
                   {/* Invisible sizing span - dictates width */}
                   <span
                     className="invisible opacity-0 px-1 whitespace-pre leading-none pointer-events-none font-medium text-xs"
-                    style={{ gridArea: 'stack' }}
+                    style={{gridArea: 'stack'}}
                     aria-hidden="true">
                     {tab.title}
                   </span>
 
                   {/* Input for editing - absolute over the span */}
                   <input
-                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${isActive ? '' : 'pointer-events-none'
-                      }`}
-                    style={{ gridArea: 'stack', minWidth: '2ch' }}
+                    className={`bg-transparent border-none outline-none ring-0 w-full text-center p-0 m-0 font-medium text-xs leading-none ${
+                      isActive ? '' : 'pointer-events-none'
+                    }`}
+                    style={{gridArea: 'stack', minWidth: '2ch'}}
                     onChange={e => handleRenameTab(tab._id || tab.title, e.target.value)}
                     onClick={e => e.stopPropagation()}
                     value={tab.title}
@@ -1015,12 +1902,14 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
                 {/* Tab Controls (Delete Only) */}
                 <div
-                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${isActive ? 'flex' : 'hidden group-hover:flex'
-                    }`}>
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 z-20 items-center justify-center rounded-full ${
+                    isActive ? 'flex' : 'hidden group-hover:flex'
+                  }`}>
                   {/* Delete Button */}
                   <button
-                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${tabs.length <= 1 ? '!hidden' : ''
-                      } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+                    className={`rounded-full p-0.5 text-gray-400 hover:bg-white hover:text-red-600 transition-all ${
+                      tabs.length <= 1 ? '!hidden' : ''
+                    } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
                     disabled={isSaving}
                     onClick={e => {
                       e.stopPropagation();
@@ -1036,8 +1925,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
 
         {/* Add Tab Button */}
         <button
-          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${isSaving ? 'opacity-50 cursor-wait' : ''
-            }`}
+          className={`rounded-full p-1.5 text-gray-300 hover:bg-white/80 hover:text-gray-500 transition-all ${
+            isSaving ? 'opacity-50 cursor-wait' : ''
+          }`}
           onClick={handleAddTab}
           disabled={isSaving}
           title="Add Tab">
@@ -1073,81 +1963,86 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
               <FaceSmileIcon className="h-4 w-4" />
             </button>
 
-            {isEmojiPickerOpen && (() => {
-              const allCategories = EMOJI_CATEGORIES.map(c =>
-                c.key === 'recent' ? { ...c, emojis: recentEmojis } : c
-              ).filter(c => c.key !== 'recent' || c.emojis.length > 0);
+            {isEmojiPickerOpen &&
+              (() => {
+                const allCategories = EMOJI_CATEGORIES.map(c =>
+                  c.key === 'recent' ? {...c, emojis: recentEmojis} : c,
+                ).filter(c => c.key !== 'recent' || c.emojis.length > 0);
 
-              const currentCat = allCategories.find(c => c.key === activeCategoryKey) || allCategories[0];
-              const allEmojis = EMOJI_CATEGORIES.flatMap(c => c.emojis).filter((e, i, arr) => arr.indexOf(e) === i);
-              const displayEmojis = emojiSearch.trim()
-                ? allEmojis.filter(e => e.includes(emojiSearch))
-                : (currentCat?.emojis ?? []);
+                const currentCat = allCategories.find(c => c.key === activeCategoryKey) || allCategories[0];
+                const allEmojis = EMOJI_CATEGORIES.flatMap(c => c.emojis).filter((e, i, arr) => arr.indexOf(e) === i);
+                const displayEmojis = emojiSearch.trim()
+                  ? allEmojis.filter(e => e.includes(emojiSearch))
+                  : currentCat?.emojis ?? [];
 
-              return (
-                <div className="absolute left-0 top-full mt-1.5 z-[9999] w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-200/60 flex flex-col overflow-hidden" style={{ maxHeight: '360px' }}>
-                  {/* Search */}
-                  <div className="p-2 border-b border-gray-100 flex-shrink-0">
-                    <input
-                      autoFocus
-                      type="text"
-                      placeholder="Search emojis..."
-                      value={emojiSearch}
-                      onChange={e => setEmojiSearch(e.target.value)}
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-                    />
-                  </div>
-
-                  {/* Category tabs */}
-                  {!emojiSearch.trim() && (
-                    <div className="flex gap-0.5 px-1.5 py-1 border-b border-gray-100 overflow-x-auto scrollbar-hide flex-shrink-0">
-                      {allCategories.map(cat => (
-                        <button
-                          key={cat.key}
-                          onClick={() => setActiveCategoryKey(cat.key)}
-                          className={`flex-shrink-0 px-2 py-1 rounded-lg text-[14px] transition-all ${activeCategoryKey === cat.key
-                            ? 'bg-indigo-100 text-indigo-700'
-                            : 'text-gray-500 hover:bg-gray-100'
-                            }`}
-                          title={cat.label}>
-                          {cat.label.split(' ')[0]}
-                        </button>
-                      ))}
+                return (
+                  <div
+                    className="absolute left-0 top-full mt-1.5 z-[9999] w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-200/60 flex flex-col overflow-hidden"
+                    style={{maxHeight: '360px'}}>
+                    {/* Search */}
+                    <div className="p-2 border-b border-gray-100 flex-shrink-0">
+                      <input
+                        autoFocus
+                        type="text"
+                        placeholder="Search emojis..."
+                        value={emojiSearch}
+                        onChange={e => setEmojiSearch(e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                      />
                     </div>
-                  )}
 
-                  {/* Emoji grid */}
-                  <div className="flex-1 overflow-y-auto p-2">
-                    {displayEmojis.length === 0 ? (
-                      <p className="text-center text-gray-400 text-[12px] py-6">No emojis found</p>
-                    ) : (
-                      <div className="grid grid-cols-8 gap-0.5">
-                        {displayEmojis.map((emoji, i) => (
+                    {/* Category tabs */}
+                    {!emojiSearch.trim() && (
+                      <div className="flex gap-0.5 px-1.5 py-1 border-b border-gray-100 overflow-x-auto scrollbar-hide flex-shrink-0">
+                        {allCategories.map(cat => (
                           <button
-                            key={`${emoji}-${i}`}
-                            onClick={() => {
-                              handleInsertSymbol(emoji);
-                              setRecentEmojis(prev => {
-                                const updated = [emoji, ...prev.filter(e => e !== emoji)].slice(0, 24);
-                                try { localStorage.setItem('recentEmojis', JSON.stringify(updated)); } catch { }
-                                return updated;
-                              });
-                              setIsEmojiPickerOpen(false);
-                              setEmojiSearch('');
-                            }}
-                            className="flex items-center justify-center w-8 h-8 rounded-lg text-[18px] hover:bg-gray-100 transition-colors leading-none"
-                            title={emoji}>
-                            {emoji}
+                            key={cat.key}
+                            onClick={() => setActiveCategoryKey(cat.key)}
+                            className={`flex-shrink-0 px-2 py-1 rounded-lg text-[14px] transition-all ${
+                              activeCategoryKey === cat.key
+                                ? 'bg-indigo-100 text-indigo-700'
+                                : 'text-gray-500 hover:bg-gray-100'
+                            }`}
+                            title={cat.label}>
+                            {cat.label.split(' ')[0]}
                           </button>
                         ))}
                       </div>
                     )}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
 
+                    {/* Emoji grid */}
+                    <div className="flex-1 overflow-y-auto p-2">
+                      {displayEmojis.length === 0 ? (
+                        <p className="text-center text-gray-400 text-[12px] py-6">No emojis found</p>
+                      ) : (
+                        <div className="grid grid-cols-8 gap-0.5">
+                          {displayEmojis.map((emoji, i) => (
+                            <button
+                              key={`${emoji}-${i}`}
+                              onClick={() => {
+                                handleInsertSymbol(emoji);
+                                setRecentEmojis(prev => {
+                                  const updated = [emoji, ...prev.filter(e => e !== emoji)].slice(0, 24);
+                                  try {
+                                    localStorage.setItem('recentEmojis', JSON.stringify(updated));
+                                  } catch {}
+                                  return updated;
+                                });
+                                setIsEmojiPickerOpen(false);
+                                setEmojiSearch('');
+                              }}
+                              className="flex items-center justify-center w-8 h-8 rounded-lg text-[18px] hover:bg-gray-100 transition-colors leading-none"
+                              title={emoji}>
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+          </div>
 
           {/* Recover Legacy Content Button - Only show if legacy content exists */}
           {page.content && page.content.trim().length > 0 && (
@@ -1163,7 +2058,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                 // Sync current state first!
                 const updatedTabs = tabs.map(t => {
                   if (t._id === activeTabId || t.title === activeTabId) {
-                    return { ...t, content: editorContent };
+                    return {...t, content: editorContent};
                   }
                   return t;
                 });
@@ -1184,8 +2079,9 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
           {/* AI Actions Dropdown - Consolidated */}
           <div className="relative" ref={aiActionsRef}>
             <button
-              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''
-                }`}
+              className={`flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-1.5 text-[11px] font-medium text-indigo-600 transition-all hover:from-indigo-100 hover:to-violet-100 ${
+                isAIActionsOpen ? 'ring-2 ring-indigo-100' : ''
+              }`}
               type="button"
               onClick={() => setIsAIActionsOpen(!isAIActionsOpen)}>
               <SparklesIcon className="h-3.5 w-3.5" />
@@ -1267,10 +2163,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             return (
               <>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isImportant
-                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                    : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
-                    }`}
+                  className={`rounded-full p-1.5 transition-colors ${
+                    activeTab?.isImportant
+                      ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
+                      : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
+                  }`}
                   onClick={handleToggleImportant}
                   title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
                   {activeTab?.isImportant ? (
@@ -1280,10 +2177,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
                   )}
                 </button>
                 <button
-                  className={`rounded-full p-1.5 transition-colors ${activeTab?.isFlagged
-                    ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                    : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
-                    }`}
+                  className={`rounded-full p-1.5 transition-colors ${
+                    activeTab?.isFlagged
+                      ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                      : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
+                  }`}
                   onClick={handleToggleFlagged}
                   title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
                   {activeTab?.isFlagged ? <FlagIconSolid className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
@@ -1292,10 +2190,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({ onSave, page, initia
             );
           })()}
           <button
-            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${isDirty
-              ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
-              : 'bg-green-50 text-green-600 cursor-default'
-              } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
+            className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+              isDirty
+                ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm'
+                : 'bg-green-50 text-green-600 cursor-default'
+            } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
             disabled={!isDirty || isSaving}
             onClick={handleSave}>
             {isSaving ? (
