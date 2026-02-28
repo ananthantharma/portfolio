@@ -717,7 +717,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="flex h-full w-full flex-col overflow-hidden bg-slate-50 text-slate-900 font-['Inter',system-ui,sans-serif]">
+      <div className="flex h-screen w-full flex-col overflow-hidden bg-slate-50 text-slate-900 font-['Inter',system-ui,sans-serif]">
         {/* Top Navigation / Breadcrumbs Bar */}
 
         {!isFocusMode && (

@@ -1,15 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
-
-const Header = dynamic(() => import('@/components/Sections/Header'), { ssr: false });
-
-// The floating navbar is: 12px top-padding + 48px bar height = 60px total.
-// We use position:fixed on the content wrapper to start exactly at 60px.
-const NAVBAR_HEIGHT = 60;
 
 export default function NotesLayout({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
@@ -31,19 +25,22 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      {/* Shared modern navbar (fixed, sits above everything) */}
-      <Header />
-
-      {/* Content area occupies exactly the space below the navbar */}
-      <div
+      {/* Floating home button — top-left corner */}
+      <Link
+        href="/"
+        aria-label="Go home"
+        className="fixed top-3 left-3 z-50 flex items-center justify-center rounded-xl transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         style={{
-          position: 'fixed',
-          top: `${NAVBAR_HEIGHT}px`,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          overflow: 'hidden',
+          width: '36px',
+          height: '36px',
+          background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+          boxShadow: '0 2px 12px rgba(249,115,22,0.45)',
         }}>
+        <span className="text-white text-sm font-black">A</span>
+      </Link>
+
+      {/* Notes content fills the full screen */}
+      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
         {children}
       </div>
     </>
