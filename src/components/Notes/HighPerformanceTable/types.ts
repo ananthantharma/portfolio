@@ -13,6 +13,7 @@ export interface ColumnDefinition {
   width: number;
   options?: StatusOption[]; // for status type
   align?: 'left' | 'center' | 'right';
+  iconOnly?: boolean; // for status columns: show coloured dot only, no label text
 }
 
 export interface TableRow {

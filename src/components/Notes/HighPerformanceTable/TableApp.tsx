@@ -54,7 +54,7 @@ const STATUS_COLORS: StatusOption[] = [
 
 const DEFAULT_COLUMNS: ColumnDefinition[] = [
   { id: 'name', label: 'Name', type: 'text', width: 280, align: 'left' },
-  { id: 'status', label: 'Status', type: 'status', width: 140, options: STATUS_COLORS, align: 'center' },
+  { id: 'status', label: 'Status', type: 'status', width: 90, options: STATUS_COLORS, align: 'center', iconOnly: true },
   { id: 'col3', label: 'Category', type: 'text', width: 160, align: 'left' },
   { id: 'col4', label: 'Value', type: 'currency', width: 120, align: 'right' },
   { id: 'col5', label: 'Date', type: 'date', width: 140, align: 'center' },
@@ -70,11 +70,13 @@ function SortableColumnHeader({
   onResizeStart,
   onRemove,
   onRename,
+  onToggleIconOnly,
 }: {
   column: ColumnDefinition;
   onResizeStart: (id: string) => void;
   onRemove: (id: string) => void;
   onRename: (id: string, label: string) => void;
+  onToggleIconOnly: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
@@ -148,12 +150,26 @@ function SortableColumnHeader({
       </div>
 
       {column.id !== 'name' && (
-        <button
-          onClick={e => { e.stopPropagation(); onRemove(column.id); }}
-          className="p-0.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
-          title="Remove column">
-          <XMarkIcon className="w-3 h-3" />
-        </button>
+        <div className="flex items-center gap-0.5 shrink-0">
+          {/* Icon-only toggle for status columns */}
+          {column.type === 'status' && (
+            <button
+              onClick={e => { e.stopPropagation(); onToggleIconOnly(column.id); }}
+              className={`p-0.5 rounded transition-all opacity-0 group-hover:opacity-100 ${column.iconOnly ? 'text-indigo-500 hover:text-indigo-700' : 'text-gray-300 hover:text-indigo-400'
+                }`}
+              title={column.iconOnly ? 'Show label (currently dot-only)' : 'Show dot only'}>
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 8 8">
+                <circle cx="4" cy="4" r="3.5" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={e => { e.stopPropagation(); onRemove(column.id); }}
+            className="p-0.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+            title="Remove column">
+            <XMarkIcon className="w-3 h-3" />
+          </button>
+        </div>
       )}
 
       {/* Resize handle */}
@@ -337,8 +353,8 @@ function AISmartImportModal({
               key={tab}
               onClick={() => setMode(tab)}
               className={`flex-1 py-2.5 text-xs font-medium capitalize transition-colors ${mode === tab
-                  ? 'text-violet-400 border-b-2 border-violet-400 bg-zinc-800/30'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                ? 'text-violet-400 border-b-2 border-violet-400 bg-zinc-800/30'
+                : 'text-zinc-500 hover:text-zinc-300'
                 }`}>
               {tab === 'text' ? '📝 Paste Text / Data' : '🖼️ Image / Screenshot'}
             </button>
@@ -582,6 +598,10 @@ export default function TableApp() {
 
   const renameColumn = (id: string, label: string) => {
     setColumns(prev => prev.map(c => (c.id === id ? { ...c, label } : c)));
+  };
+
+  const toggleIconOnly = (id: string) => {
+    setColumns(prev => prev.map(c => (c.id === id ? { ...c, iconOnly: !c.iconOnly } : c)));
   };
 
   // ========== Resizing ==========
@@ -881,19 +901,32 @@ export default function TableApp() {
       const isOpen = openStatusDropdown === dropdownKey;
 
       return (
-        <div className="relative w-full" data-status-dropdown>
+        <div className="relative w-full flex justify-center" data-status-dropdown>
           <button
-            className="w-full text-center focus:outline-none"
-            onClick={e => { e.stopPropagation(); setOpenStatusDropdown(isOpen ? null : dropdownKey); }}>
+            className="focus:outline-none"
+            onClick={e => { e.stopPropagation(); setOpenStatusDropdown(isOpen ? null : dropdownKey); }}
+            title={selected?.label}>
             {selected ? (
-              <span
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                style={{ background: `${selected.color}18`, color: selected.color, border: `1px solid ${selected.color}33` }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: selected.color }} />
-                {selected.label}
-              </span>
+              col.iconOnly ? (
+                // Large coloured circle — no text
+                <span
+                  className="inline-block rounded-full transition-transform hover:scale-110"
+                  style={{ width: 14, height: 14, background: selected.color, boxShadow: `0 0 0 2px ${selected.color}33` }}
+                />
+              ) : (
+                // Badge with label
+                <span
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                  style={{ background: `${selected.color}18`, color: selected.color, border: `1px solid ${selected.color}33` }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: selected.color }} />
+                  {selected.label}
+                </span>
+              )
             ) : (
-              <span className="text-gray-300 text-[11px] hover:text-gray-500 transition-colors">— select —</span>
+              <span
+                className="inline-block rounded-full border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors"
+                style={{ width: 14, height: 14 }}
+              />
             )}
           </button>
           {isOpen && (
@@ -905,7 +938,7 @@ export default function TableApp() {
                   key={opt.id}
                   onClick={e => { e.stopPropagation(); updateCell(row.id, col.id, opt.id); setOpenStatusDropdown(null); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-600 hover:bg-gray-50 transition-colors">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: opt.color }} />
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: opt.color }} />
                   {opt.label}
                 </button>
               ))}
@@ -972,12 +1005,52 @@ export default function TableApp() {
   // ========== Row Rendering ==========
 
   const renderRow = (row: TableRow, depth: number = 0) => {
-    const isGroup = row.type === 'stream';
+    const isGroup = row.type === 'stream' && depth === 0;
+
+    // ── Heading / group row: full-width single cell, no column dividers ──
+    if (isGroup) {
+      const nameValue = row.data['name'] || '';
+      return (
+        <React.Fragment key={row.id}>
+          <div className="flex border-b border-gray-200 group bg-gray-50 hover:bg-gray-100/80 transition-colors">
+            {/* Full-width cell — stretches across all columns */}
+            <div
+              className="relative flex items-center gap-2 px-4 py-2.5 flex-1 min-w-0 sticky left-0"
+              style={{ minWidth: columns.reduce((s, c) => s + c.width, 0) }}>
+              {/* Expand/collapse toggle */}
+              <button
+                onClick={() => toggleRow(row.id)}
+                className="p-0.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-700 transition-colors shrink-0">
+                {row.isExpanded
+                  ? <ChevronDownIcon className="w-3.5 h-3.5" />
+                  : <ChevronRightIcon className="w-3.5 h-3.5" />}
+              </button>
+              <input
+                className="bg-transparent text-gray-800 text-sm font-semibold outline-none flex-1 min-w-0 placeholder-gray-300"
+                value={nameValue}
+                placeholder="Group name..."
+                onChange={e => updateCell(row.id, 'name', e.target.value)}
+              />
+              {/* Row actions */}
+              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => addChildRow(row.id)} className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Add child row">
+                  <PlusIcon className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => deleteRow(row.id)} className="p-1 text-gray-400 hover:text-red-400 transition-colors" title="Delete group">
+                  <TrashIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+          {row.isExpanded && row.children?.map(child => renderRow(child, depth + 1))}
+        </React.Fragment>
+      );
+    }
+
+    // ── Regular row ──
     return (
       <React.Fragment key={row.id}>
-        <div
-          className={`flex border-b border-gray-100 group transition-colors ${isGroup && depth === 0 ? 'bg-gray-50 hover:bg-gray-100/70' : 'bg-white hover:bg-gray-50/60'
-            }`}>
+        <div className="flex border-b border-gray-100 group bg-white hover:bg-gray-50/60 transition-colors">
           {columns.map((col, idx) => (
             <div
               key={col.id}
@@ -1185,6 +1258,7 @@ export default function TableApp() {
                   onResizeStart={startResizing}
                   onRemove={removeColumn}
                   onRename={renameColumn}
+                  onToggleIconOnly={toggleIconOnly}
                 />
               ))}
             </SortableContext>
