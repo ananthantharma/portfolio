@@ -25,6 +25,7 @@ export interface IToDo extends Document {
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
+  order?: number;
   attachments?: {
     name: string;
     type: string;
@@ -71,6 +72,7 @@ const ToDoSchema = new Schema<IToDo>(
       default: null,
     },
     isMinimized: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
     subtasks: [
       {
         title: { type: String, required: true },

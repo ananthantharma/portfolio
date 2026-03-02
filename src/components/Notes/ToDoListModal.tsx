@@ -1,11 +1,11 @@
 /* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
-  ArrowDownIcon,
   ArrowTopRightOnSquareIcon,
-  ArrowUpIcon,
+  CalendarDaysIcon,
   CheckCircleIcon,
+  ChevronDownIcon,
   EnvelopeIcon,
   ListBulletIcon,
   PaperClipIcon,
@@ -15,7 +15,6 @@ import {
   TrashIcon,
   XMarkIcon,
   SparklesIcon,
-  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { INotePage } from '@/models/NotePage';
@@ -38,82 +37,122 @@ type SortDirection = 'asc' | 'desc';
 
 const CATEGORIES = ['Urgent!', 'Sourcing!', 'Boss!', 'Staff! (Team)', 'Projects!', 'Admin!', 'Personal!'];
 
-// Progress Ring SVG Component
-const ProgressRing = React.memo(({ completed, total }: { completed: number; total: number }) => {
-  const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-  const radius = 18;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative flex items-center gap-2">
-      <svg className="h-10 w-10 -rotate-90" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="3.5" />
-        <circle
-          cx="22"
-          cy="22"
-          r={radius}
-          fill="none"
-          stroke="#10b981"
-          strokeWidth="3.5"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          className="transition-all duration-500 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[10px] font-bold text-gray-600">{percentage}%</span>
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[11px] font-semibold text-gray-700">
-          {completed}/{total}
-        </span>
-        <span className="text-[10px] text-gray-400">done</span>
-      </div>
-    </div>
-  );
-});
-ProgressRing.displayName = 'ProgressRing';
-
-// Filter Pill Component
-const FilterPill = React.memo(
+// Compact dropdown for filters
+const FilterDropdown = React.memo(
   ({
     label,
-    active,
-    onClick,
-    variant = 'default',
+    value,
+    options,
+    onChange,
+    accentColor,
   }: {
     label: string;
-    active: boolean;
-    onClick: () => void;
-    variant?: 'default' | 'danger' | 'warning' | 'success';
+    value: string;
+    options: { label: string; value: string }[];
+    onChange: (v: string) => void;
+    accentColor?: string;
   }) => {
-    const colors = {
-      default: active
-        ? 'bg-gray-900 text-white shadow-sm'
-        : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200',
-      danger: active
-        ? 'bg-red-600 text-white shadow-sm'
-        : 'bg-white text-red-600 hover:bg-red-50 border border-red-200',
-      warning: active
-        ? 'bg-amber-500 text-white shadow-sm'
-        : 'bg-white text-amber-600 hover:bg-amber-50 border border-amber-200',
-      success: active
-        ? 'bg-emerald-600 text-white shadow-sm'
-        : 'bg-white text-emerald-600 hover:bg-emerald-50 border border-emerald-200',
-    };
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handler = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const current = options.find(o => o.value === value);
+    const isActive = value !== 'All' && value !== options[0]?.value;
 
     return (
-      <button
-        className={`px-3 py-1 text-xs font-medium rounded-full transition-all duration-150 ${colors[variant]}`}
-        onClick={onClick}>
-        {label}
-      </button>
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen(v => !v)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isActive
+            ? `${accentColor || 'bg-white/20 border-white/30'} text-white`
+            : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/15 hover:text-white'
+            }`}>
+          <span>{label}: <span className="font-semibold">{current?.label ?? value}</span></span>
+          <ChevronDownIcon className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div className="absolute top-full mt-1.5 left-0 z-50 min-w-[140px] bg-white rounded-xl shadow-xl border border-gray-100 py-1 overflow-hidden">
+            {options.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs transition-colors ${value === opt.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                  }`}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     );
   },
 );
-FilterPill.displayName = 'FilterPill';
+FilterDropdown.displayName = 'FilterDropdown';
+
+// Sort dropdown
+const SortDropdown = React.memo(
+  ({
+    sortField,
+    sortDirection,
+    onSort,
+  }: {
+    sortField: SortField;
+    sortDirection: SortDirection;
+    onSort: (f: SortField) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handler = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const fields: { value: SortField; label: string }[] = [
+      { value: 'dueDate', label: 'Due Date' },
+      { value: 'priority', label: 'Priority' },
+      { value: 'title', label: 'Title' },
+      { value: 'category', label: 'Category' },
+    ];
+    const current = fields.find(f => f.value === sortField);
+
+    return (
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 border border-white/15 text-white/70 hover:bg-white/15 hover:text-white transition-all">
+          Sort: <span className="text-white font-semibold">{current?.label}</span>
+          <span className="ml-0.5 text-[10px]">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+          <ChevronDownIcon className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {open && (
+          <div className="absolute top-full mt-1.5 left-0 z-50 min-w-[140px] bg-white rounded-xl shadow-xl border border-gray-100 py-1 overflow-hidden">
+            {fields.map(f => (
+              <button
+                key={f.value}
+                onClick={() => { onSort(f.value); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 text-xs transition-colors ${sortField === f.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                  }`}>
+                {f.label} {sortField === f.value && (sortDirection === 'asc' ? '↑' : '↓')}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+SortDropdown.displayName = 'SortDropdown';
 
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
   ({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate }) => {
@@ -236,6 +275,46 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         });
       } catch (error) {
         console.error('Failed to update status', error);
+        fetchTodos();
+      }
+    };
+
+    const handleReorder = async (activeId: string, overId: string) => {
+      // Find the column these tasks belong to
+      const colTodos = todos.filter(t => {
+        const activeTodo = todos.find(a => a._id === activeId);
+        return activeTodo && (t.status || (t.isCompleted ? 'done' : 'todo')) === (activeTodo.status || (activeTodo.isCompleted ? 'done' : 'todo'));
+      });
+
+      const sorted = [...colTodos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const activeIndex = sorted.findIndex(t => t._id === activeId);
+      const overIndex = sorted.findIndex(t => t._id === overId);
+
+      if (activeIndex === -1 || overIndex === -1) return;
+
+      // Reorder array
+      const reordered = [...sorted];
+      const [moved] = reordered.splice(activeIndex, 1);
+      reordered.splice(overIndex, 0, moved);
+
+      // Assign new order values
+      const updates = reordered.map((t, i) => ({ id: t._id, order: i }));
+
+      // Optimistic update
+      setTodos(prev => prev.map(t => {
+        const update = updates.find(u => u.id === t._id);
+        return update ? { ...t, order: update.order } as any : t;
+      }));
+
+      // Persist
+      try {
+        await fetch('/api/todos/reorder', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates }),
+        });
+      } catch (error) {
+        console.error('Error reordering todos:', error);
         fetchTodos();
       }
     };
@@ -453,20 +532,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     }, [filteredTodos, sortField, sortDirection]);
 
     // Stats
-    const totalTasks = todos.length;
-    const completedTasks = todos.filter(t => t.isCompleted).length;
     const overdueTasks = todos.filter(t => !t.isCompleted && new Date(t.dueDate) < new Date()).length;
     const unprioritizedCount = todos.filter(t => !t.isCompleted && (!t.priority || t.priority === 'None')).length;
-
-    const getPriorityDot = (priority: string) => {
-      const colors: Record<string, string> = {
-        High: 'bg-red-500',
-        Medium: 'bg-amber-400',
-        Low: 'bg-emerald-500',
-        None: 'bg-gray-300',
-      };
-      return <span className={`inline-block h-2 w-2 rounded-full ${colors[priority] || colors.None}`} />;
-    };
 
     const getCategoryStyle = (categoryName: string | undefined) => {
       if (!categoryName) return 'bg-gray-50 text-gray-500';
@@ -532,192 +599,145 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   leave="ease-in duration-150"
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95">
-                  <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[94vh] flex flex-col">
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-                      <div className="flex items-center gap-5">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 tracking-tight">Tasks</h3>
-                          {overdueTasks > 0 && (
-                            <p className="text-[11px] text-red-500 font-medium mt-0.5">{overdueTasks} overdue</p>
+                  <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-[#0f1117] text-left shadow-2xl ring-1 ring-white/5 transition-all h-[94vh] flex flex-col">
+
+                    {/* ── Dark header ── */}
+                    <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
+                      {/* Row 1: title + actions */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
+                            {overdueTasks > 0 && (
+                              <p className="text-[10px] text-red-400 font-medium mt-0.5">{overdueTasks} overdue</p>
+                            )}
+                          </div>
+                          {/* Active / Done toggle */}
+                          <div className="flex bg-white/10 rounded-lg p-0.5">
+                            <button
+                              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                              onClick={() => setShowCompleted(false)}>
+                              Active
+                            </button>
+                            <button
+                              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                              onClick={() => setShowCompleted(true)}>
+                              Done
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* View toggle */}
+                          <div className="flex bg-white/10 rounded-lg p-0.5">
+                            <button
+                              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                              onClick={() => setViewMode('list')}
+                              title="List View">
+                              <ListBulletIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                              onClick={() => setViewMode('board')}
+                              title="Kanban">
+                              <Squares2X2Icon className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          {/* AI Priority */}
+                          {unprioritizedCount > 0 && (
+                            <button
+                              onClick={handleAIPrioritySuggest}
+                              disabled={isAIPrioritizing}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-300 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-400/20 rounded-lg transition-all disabled:opacity-50"
+                              title={`Auto-prioritize ${unprioritizedCount} tasks`}>
+                              <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
+                              {isAIPrioritizing ? 'Analyzing…' : `AI Prioritize`}
+                            </button>
+                          )}
+
+                          {/* Email */}
+                          <button
+                            onClick={() => setIsEmailModalOpen(true)}
+                            className="p-2 text-white/40 hover:text-white/70 rounded-lg hover:bg-white/10 transition-colors"
+                            title="Create from Email">
+                            <EnvelopeIcon className="h-4 w-4" />
+                          </button>
+
+                          {/* New Task */}
+                          <button
+                            onClick={handleCreateStandalone}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-colors text-xs font-semibold shadow-lg shadow-indigo-500/20">
+                            <PlusIcon className="h-3.5 w-3.5" />
+                            New Task
+                          </button>
+
+                          <div className="w-px h-5 bg-white/10" />
+
+                          <button
+                            className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                            onClick={onClose}>
+                            <XMarkIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Row 2: smart input */}
+                      <div className="mb-3">
+                        <SmartInput onAdd={handleSmartAdd} />
+                      </div>
+
+                      {/* Row 3: filter & sort dropdowns */}
+                      {!showCompleted && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <FilterDropdown
+                            label="Priority"
+                            value={filterPriority}
+                            options={[
+                              { label: 'All', value: 'All' },
+                              { label: '🔴 High', value: 'High' },
+                              { label: '🟡 Medium', value: 'Medium' },
+                              { label: '🟢 Low', value: 'Low' },
+                            ]}
+                            onChange={setFilterPriority}
+                            accentColor="bg-indigo-500/30 border-indigo-400/30"
+                          />
+                          <FilterDropdown
+                            label="Category"
+                            value={filterCategory}
+                            options={[
+                              { label: 'All', value: 'All' },
+                              ...CATEGORIES.map(c => ({ label: c.replace('!', ''), value: c })),
+                            ]}
+                            onChange={setFilterCategory}
+                            accentColor="bg-indigo-500/30 border-indigo-400/30"
+                          />
+                          <SortDropdown
+                            sortField={sortField}
+                            sortDirection={sortDirection}
+                            onSort={handleSort}
+                          />
+                          {/* Active filter count badge */}
+                          {(filterPriority !== 'All' || filterCategory !== 'All') && (
+                            <button
+                              onClick={() => { setFilterPriority('All'); setFilterCategory('All'); }}
+                              className="px-2 py-1 text-[10px] font-medium text-red-400 bg-red-500/15 border border-red-400/20 rounded-md hover:bg-red-500/25 transition-colors">
+                              Clear filters ×
+                            </button>
                           )}
                         </div>
-                        <ProgressRing completed={completedTasks} total={totalTasks} />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Active/Completed Toggle */}
-                        <div className="flex bg-gray-100 rounded-lg p-0.5 mr-2">
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                            onClick={() => setShowCompleted(false)}>
-                            Active
-                          </button>
-                          <button
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                            onClick={() => setShowCompleted(true)}>
-                            Completed
-                          </button>
-                        </div>
-
-                        {/* View Mode Toggle */}
-                        <div className="flex bg-gray-100 rounded-lg p-0.5">
-                          <button
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'list'
-                              ? 'bg-white shadow-sm text-gray-800'
-                              : 'text-gray-400 hover:text-gray-600'
-                              }`}
-                            onClick={() => setViewMode('list')}
-                            title="List View">
-                            <ListBulletIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            className={`p-1.5 rounded-md transition-all ${viewMode === 'board'
-                              ? 'bg-white shadow-sm text-gray-800'
-                              : 'text-gray-400 hover:text-gray-600'
-                              }`}
-                            onClick={() => setViewMode('board')}
-                            title="Kanban Board">
-                            <Squares2X2Icon className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        {/* AI Priority */}
-                        {unprioritizedCount > 0 && (
-                          <button
-                            onClick={handleAIPrioritySuggest}
-                            disabled={isAIPrioritizing}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors disabled:opacity-50"
-                            title={`Auto-prioritize ${unprioritizedCount} tasks`}>
-                            <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
-                            {isAIPrioritizing ? 'Analyzing...' : `Prioritize ${unprioritizedCount}`}
-                          </button>
-                        )}
-
-                        {/* Email Create */}
-                        <button
-                          onClick={() => setIsEmailModalOpen(true)}
-                          className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                          title="Create from Email">
-                          <EnvelopeIcon className="h-4 w-4" />
-                        </button>
-
-                        {/* Add Task */}
-                        <button
-                          onClick={handleCreateStandalone}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium"
-                          title="Add New Task">
-                          <PlusIcon className="h-3.5 w-3.5" />
-                          New Task
-                        </button>
-
-                        <div className="w-px h-6 bg-gray-200 mx-1" />
-
-                        <button
-                          className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                          onClick={onClose}>
-                          <XMarkIcon className="h-4 w-4" />
-                        </button>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Smart Input */}
-                    <div className="px-6 py-3 border-b border-gray-50 bg-gray-50/50">
-                      <SmartInput onAdd={handleSmartAdd} />
-                    </div>
-
-                    {/* Filter Pills */}
-                    {!showCompleted && (
-                      <div className="px-6 py-2.5 flex items-center gap-4 border-b border-gray-50 flex-shrink-0">
-                        {/* Priority Filters */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
-                            Priority
-                          </span>
-                          <FilterPill
-                            label="All"
-                            active={filterPriority === 'All'}
-                            onClick={() => setFilterPriority('All')}
-                          />
-                          <FilterPill
-                            label="High"
-                            active={filterPriority === 'High'}
-                            onClick={() => setFilterPriority('High')}
-                            variant="danger"
-                          />
-                          <FilterPill
-                            label="Medium"
-                            active={filterPriority === 'Medium'}
-                            onClick={() => setFilterPriority('Medium')}
-                            variant="warning"
-                          />
-                          <FilterPill
-                            label="Low"
-                            active={filterPriority === 'Low'}
-                            onClick={() => setFilterPriority('Low')}
-                            variant="success"
-                          />
-                        </div>
-
-                        <div className="w-px h-5 bg-gray-200" />
-
-                        {/* Category Filters */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto">
-                          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1 flex-shrink-0">
-                            Category
-                          </span>
-                          <FilterPill
-                            label="All"
-                            active={filterCategory === 'All'}
-                            onClick={() => setFilterCategory('All')}
-                          />
-                          {CATEGORIES.map(cat => (
-                            <FilterPill
-                              key={cat}
-                              label={cat.replace('!', '')}
-                              active={filterCategory === cat}
-                              onClick={() => setFilterCategory(cat)}
-                            />
-                          ))}
-                        </div>
-
-                        <div className="w-px h-5 bg-gray-200" />
-
-                        {/* Sort */}
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
-                            Sort
-                          </span>
-                          {(['priority', 'dueDate', 'title', 'category'] as SortField[]).map(field => (
-                            <button
-                              className={`px-2 py-1 text-[10px] font-medium rounded-md flex items-center gap-1 capitalize transition-colors ${sortField === field ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'
-                                }`}
-                              key={field}
-                              onClick={() => handleSort(field)}>
-                              {field === 'dueDate' ? 'Due' : field}
-                              {sortField === field &&
-                                (sortDirection === 'asc' ? (
-                                  <ArrowUpIcon className="h-2.5 w-2.5" />
-                                ) : (
-                                  <ArrowDownIcon className="h-2.5 w-2.5" />
-                                ))}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="flex-1 overflow-y-auto px-6 py-3">
+                    {/* ── Content (light bg) ── */}
+                    <div className="flex-1 overflow-y-auto bg-[#f8f9fb] min-h-0">
                       {loading ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-500 mb-3" />
-                          <p className="text-sm">Loading tasks...</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 mb-3" />
+                          <p className="text-sm">Loading tasks…</p>
                         </div>
                       ) : error ? (
-                        <div className="text-center py-12 text-red-500 bg-red-50 rounded-xl border border-red-100 mx-4">
+                        <div className="text-center py-12 text-red-500 bg-red-50 rounded-xl border border-red-100 mx-6 mt-4">
                           <p className="font-medium">Unable to load tasks</p>
                           <p className="text-sm mt-1 mb-3">{error}</p>
                           <button
@@ -726,76 +746,75 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                             Try Again
                           </button>
                         </div>
-                      ) : sortedTodos.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                          <CheckCircleIcon className="h-12 w-12 text-gray-200 mb-3" />
-                          <p className="text-sm font-medium text-gray-500">
-                            {showCompleted ? 'No completed tasks' : 'All caught up! 🎉'}
+                      ) : sortedTodos.length === 0 && viewMode === 'list' ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                            <CheckCircleIcon className="h-8 w-8 text-gray-300" />
+                          </div>
+                          <p className="text-sm font-semibold text-gray-500">
+                            {showCompleted ? 'No completed tasks yet' : 'All clear! 🎉'}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {showCompleted
-                              ? 'Complete some tasks to see them here'
-                              : 'Create a new task to get started'}
+                            {showCompleted ? 'Complete some tasks to see them here' : 'Add a task above to get started'}
                           </p>
                         </div>
                       ) : viewMode === 'board' ? (
-                        <ToDoBoard
-                          todos={filteredTodos}
-                          onStatusChange={handleStatusChange}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onToggleComplete={handleToggleComplete}
-                          onAddDays={handleAddDays}
-                          onNotesChange={handleUpdateNotes}
-                          onNavigate={onNavigate}
-                          onCycleNeonColor={handleCycleNeonColor}
-                          onToggleMinimize={handleToggleMinimize}
-                          onClose={onClose}
-                        />
+                        <div className="h-full p-4">
+                          <ToDoBoard
+                            todos={[...filteredTodos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}
+                            onStatusChange={handleStatusChange}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onToggleComplete={handleToggleComplete}
+                            onAddDays={handleAddDays}
+                            onNotesChange={handleUpdateNotes}
+                            onNavigate={onNavigate}
+                            onCycleNeonColor={handleCycleNeonColor}
+                            onToggleMinimize={handleToggleMinimize}
+                            onReorder={handleReorder}
+                            onClose={onClose}
+                          />
+                        </div>
                       ) : (
-                        <div className="space-y-1.5">
+                        <div className="p-4 space-y-1">
                           {sortedTodos.map(todo => {
                             const dateInfo = getDateInfo(todo.dueDate);
+                            const priorityAccent: Record<string, string> = {
+                              High: 'bg-red-500',
+                              Medium: 'bg-amber-400',
+                              Low: 'bg-emerald-400',
+                              None: 'bg-gray-200',
+                            };
                             return (
                               <div
-                                className={`group relative flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${todo.isCompleted
-                                  ? 'bg-gray-50/50 opacity-60'
+                                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${todo.isCompleted
+                                  ? 'bg-white/60 border-gray-100 opacity-55'
                                   : dateInfo.isOverdue
-                                    ? 'bg-white hover:bg-red-50/30 border border-red-100 hover:border-red-200'
-                                    : 'bg-white hover:bg-gray-50/80 border border-gray-100 hover:border-gray-200'
+                                    ? 'bg-white border-red-100 hover:border-red-200 hover:shadow-sm'
+                                    : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
                                   }`}
                                 key={todo._id}>
-                                {/* Overdue accent */}
-                                {dateInfo.isOverdue && !todo.isCompleted && (
-                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 bg-red-400 rounded-r-full" />
-                                )}
+                                {/* Priority bar */}
+                                <div className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
 
                                 {/* Checkbox */}
                                 <button
-                                  className={`flex-shrink-0 transition-colors ${todo.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-gray-500'
-                                    }`}
+                                  className={`flex-shrink-0 ml-1 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
                                   onClick={() => handleToggleComplete(todo)}>
-                                  {todo.isCompleted ? (
-                                    <CheckCircleIconSolid className="h-5 w-5" />
-                                  ) : (
-                                    <CheckCircleIcon className="h-5 w-5" />
-                                  )}
+                                  {todo.isCompleted
+                                    ? <CheckCircleIconSolid className="h-[18px] w-[18px]" />
+                                    : <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
+                                  }
                                 </button>
 
-                                {/* Main Content */}
+                                {/* Main content */}
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    {getPriorityDot(todo.priority)}
-                                    <h4
-                                      className={`text-[13px] font-medium truncate ${todo.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'
-                                        }`}>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className={`text-[13px] font-medium ${todo.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'}`}>
                                       {todo.title}
-                                    </h4>
+                                    </span>
                                     {todo.category && (
-                                      <span
-                                        className={`inline-block px-1.5 py-0.5 text-[10px] rounded-md font-medium ${getCategoryStyle(
-                                          todo.category,
-                                        )}`}>
+                                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getCategoryStyle(todo.category)}`}>
                                         {todo.category.replace('!', '')}
                                       </span>
                                     )}
@@ -803,19 +822,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                       <div className="flex items-center gap-1">
                                         {todo.attachments.map((att, idx) => {
                                           const isDrive = att.storageType === 'drive';
-                                          const link = isDrive
-                                            ? att.webViewLink
-                                            : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
+                                          const link = isDrive ? att.webViewLink : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
                                           return (
-                                            <a
-                                              key={idx}
-                                              href={link}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className={`transition-colors ${isDrive
-                                                ? 'text-blue-400 hover:text-blue-600'
-                                                : 'text-gray-300 hover:text-gray-500'
-                                                }`}
+                                            <a key={idx} href={link} target="_blank" rel="noopener noreferrer"
+                                              className={`transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}
                                               title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
                                               onClick={e => e.stopPropagation()}>
                                               <PaperClipIcon className="h-3 w-3" />
@@ -825,59 +835,31 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                       </div>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-3 mt-1">
-                                    <span className={`flex items-center gap-1 text-[11px] ${dateInfo.className}`}>
+                                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                                    <span className={`text-[11px] flex items-center gap-1 ${dateInfo.className}`}>
                                       <CalendarDaysIcon className="h-3 w-3" />
                                       {dateInfo.text}
                                     </span>
+                                    {/* Quick date nudge */}
                                     {!todo.isCompleted && (
-                                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 border-l border-gray-200 pl-1.5 flex-shrink-0">
-                                        <button
-                                          onClick={e => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            handleAddDays(todo._id, 1);
-                                          }}
-                                          className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                                          title="Add 1 Day">
-                                          +1
-                                        </button>
-                                        <button
-                                          onClick={e => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            handleAddDays(todo._id, 3);
-                                          }}
-                                          className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                                          title="Add 3 Days">
-                                          +3
-                                        </button>
-                                        <button
-                                          onClick={e => {
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                            handleAddDays(todo._id, 7);
-                                          }}
-                                          className="px-1 py-0.5 text-[9px] font-medium text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                                          title="Add 7 Days">
-                                          +7
-                                        </button>
+                                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity border-l border-gray-100 pl-2">
+                                        {[1, 3, 7].map(d => (
+                                          <button key={d}
+                                            onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }}
+                                            className="px-1.5 py-0.5 text-[9px] font-semibold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
+                                            +{d}d
+                                          </button>
+                                        ))}
                                       </div>
                                     )}
                                     {typeof todo.sourcePageId !== 'string' && todo.sourcePageId?.title && (
                                       <button
-                                        className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="flex items-center gap-0.5 text-[11px] text-gray-400 hover:text-indigo-500 transition-colors"
                                         onClick={() => {
-                                          const targetId =
-                                            todo.tabId &&
-                                              !todo.tabId.startsWith('new-') &&
-                                              !todo.tabId.startsWith('default-')
-                                              ? todo.tabId
-                                              : todo.tabName;
+                                          const targetId = todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-') ? todo.tabId : todo.tabName;
                                           onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
                                           onClose();
-                                        }}
-                                        title="Go to Note">
+                                        }}>
                                         <ArrowTopRightOnSquareIcon className="h-2.5 w-2.5" />
                                         {todo.sourcePageId.title}
                                       </button>
@@ -888,10 +870,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                   </div>
                                 </div>
 
-                                {/* Actions */}
+                                {/* Hover actions */}
                                 <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
-                                    className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                                    className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                                     onClick={() => handleEdit(todo)}
                                     title="Edit">
                                     <PencilIcon className="h-3.5 w-3.5" />

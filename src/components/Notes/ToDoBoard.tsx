@@ -3,7 +3,6 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
-  useDraggable,
   useDroppable,
   DragStartEvent,
   DragEndEvent,
@@ -12,6 +11,8 @@ import {
   useSensors,
   MeasuringStrategy,
 } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { IToDo } from '@/models/ToDo';
 import {
   FlagIcon,
@@ -42,6 +43,7 @@ interface ToDoBoardProps {
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
+  onReorder?: (activeId: string, overId: string) => void;
   onClose: () => void;
 }
 
@@ -180,6 +182,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onNavigate,
   onCycleNeonColor,
   onToggleMinimize,
+  onReorder,
   onClose,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -220,8 +223,19 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
 
         if (!targetColumn) {
           const overTask = todos.find(t => t._id === over.id);
-          if (overTask) {
+          const activeTask = todos.find(t => t._id === active.id);
+
+          if (overTask && activeTask) {
             newStatus = getStatus(overTask) as IToDo['status'];
+
+            // Check if within the same column
+            if (getStatus(activeTask) === newStatus) {
+              if (onReorder) {
+                onReorder(active.id as string, over.id as string);
+              }
+              setActiveId(null);
+              return; // Skip status change
+            }
           }
         }
 
@@ -235,7 +249,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
       }
       setActiveId(null);
     },
-    [todos, getStatus, onStatusChange],
+    [todos, getStatus, onStatusChange, onReorder],
   );
 
   // Column task counts
@@ -374,22 +388,24 @@ const Column = ({
             <span className="text-[11px] text-gray-300">{col.emptyText}</span>
           </div>
         )}
-        {todos.map(todo => (
-          <DraggableTask
-            key={todo._id}
-            todo={todo}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleComplete={onToggleComplete}
-            onAddDays={onAddDays}
-            onNotesChange={onNotesChange}
-            onNavigate={onNavigate}
-            onCycleNeonColor={onCycleNeonColor}
-            onToggleMinimize={onToggleMinimize}
-            onClose={onClose}
-            isBeingDragged={activeId === todo._id}
-          />
-        ))}
+        <SortableContext items={todos.map(t => t._id)} strategy={verticalListSortingStrategy}>
+          {todos.map(todo => (
+            <DraggableTask
+              key={todo._id}
+              todo={todo}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggleComplete={onToggleComplete}
+              onAddDays={onAddDays}
+              onNotesChange={onNotesChange}
+              onNavigate={onNavigate}
+              onCycleNeonColor={onCycleNeonColor}
+              onToggleMinimize={onToggleMinimize}
+              onClose={onClose}
+              isBeingDragged={activeId === todo._id}
+            />
+          ))}
+        </SortableContext>
       </div>
     </div>
   );
@@ -424,22 +440,26 @@ const DraggableTask = ({
   onClose: () => void;
   isBeingDragged: boolean;
 }) => {
-  const { attributes, listeners, setNodeRef } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: todo._id,
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   // When dragging: show a faded placeholder. The DragOverlay renders the visible card.
-  // DO NOT apply transform — that's what causes the offset jump.
   if (isBeingDragged) {
     return (
-      <div ref={setNodeRef} className="opacity-20 pointer-events-none">
+      <div ref={setNodeRef} style={style} className="opacity-20 pointer-events-none">
         <TaskCard todo={todo} />
       </div>
     );
   }
 
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes}>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
       <TaskCard
         todo={todo}
         onEdit={() => onEdit(todo)}
