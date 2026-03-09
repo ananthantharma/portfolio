@@ -30,6 +30,7 @@ interface ToDoListModalProps {
   onNavigate: (page: INotePage, tabId?: string) => void;
   isDirectCreateOpen?: boolean;
   onCloseDirectCreate?: () => void;
+  isStandalone?: boolean;
 }
 
 type SortField = 'priority' | 'dueDate' | 'title' | 'category';
@@ -155,7 +156,7 @@ const SortDropdown = React.memo(
 SortDropdown.displayName = 'SortDropdown';
 
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
-  ({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate }) => {
+  ({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate, isStandalone }) => {
     const [todos, setTodos] = useState<IToDo[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -569,8 +570,335 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       };
     };
 
+    const content = (
+      <div className={`w-full ${isStandalone ? 'h-screen flex flex-col' : 'max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/5 h-[94vh] flex flex-col'} bg-[#0f1117] text-left transition-all`}>
+
+        {/* ── Dark header ── */}
+        <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
+          {/* Row 1: title + actions */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
+                {overdueTasks > 0 && (
+                  <p className="text-[10px] text-red-400 font-medium mt-0.5">{overdueTasks} overdue</p>
+                )}
+              </div>
+              {/* Active / Done toggle */}
+              <div className="flex bg-white/10 rounded-lg p-0.5">
+                <button
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  onClick={() => setShowCompleted(false)}>
+                  Active
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  onClick={() => setShowCompleted(true)}>
+                  Done
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* View toggle */}
+              <div className="flex bg-white/10 rounded-lg p-0.5">
+                <button
+                  className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  onClick={() => setViewMode('list')}
+                  title="List View">
+                  <ListBulletIcon className="h-4 w-4" />
+                </button>
+                <button
+                  className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  onClick={() => setViewMode('board')}
+                  title="Kanban">
+                  <Squares2X2Icon className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* AI Priority */}
+              {unprioritizedCount > 0 && (
+                <button
+                  onClick={handleAIPrioritySuggest}
+                  disabled={isAIPrioritizing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-300 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-400/20 rounded-lg transition-all disabled:opacity-50"
+                  title={`Auto-prioritize ${unprioritizedCount} tasks`}>
+                  <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
+                  {isAIPrioritizing ? 'Analyzing…' : `AI Prioritize`}
+                </button>
+              )}
+
+              {/* Email */}
+              <button
+                onClick={() => setIsEmailModalOpen(true)}
+                className="p-2 text-white/40 hover:text-white/70 rounded-lg hover:bg-white/10 transition-colors"
+                title="Create from Email">
+                <EnvelopeIcon className="h-4 w-4" />
+              </button>
+
+              {/* New Task */}
+              <button
+                onClick={handleCreateStandalone}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-colors text-xs font-semibold shadow-lg shadow-indigo-500/20">
+                <PlusIcon className="h-3.5 w-3.5" />
+                New Task
+              </button>
+
+              <div className="w-px h-5 bg-white/10" />
+
+              <button
+                className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                onClick={onClose}>
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Row 2: smart input */}
+          <div className="mb-3">
+            <SmartInput onAdd={handleSmartAdd} />
+          </div>
+
+          {/* Row 3: filter & sort dropdowns */}
+          {!showCompleted && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <FilterDropdown
+                label="Priority"
+                value={filterPriority}
+                options={[
+                  { label: 'All', value: 'All' },
+                  { label: '🔴 High', value: 'High' },
+                  { label: '🟡 Medium', value: 'Medium' },
+                  { label: '🟢 Low', value: 'Low' },
+                ]}
+                onChange={setFilterPriority}
+                accentColor="bg-indigo-500/30 border-indigo-400/30"
+              />
+              <FilterDropdown
+                label="Category"
+                value={filterCategory}
+                options={[
+                  { label: 'All', value: 'All' },
+                  ...CATEGORIES.map(c => ({ label: c.replace('!', ''), value: c })),
+                ]}
+                onChange={setFilterCategory}
+                accentColor="bg-indigo-500/30 border-indigo-400/30"
+              />
+              <SortDropdown
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSort={handleSort}
+              />
+              {/* Active filter count badge */}
+              {(filterPriority !== 'All' || filterCategory !== 'All') && (
+                <button
+                  onClick={() => { setFilterPriority('All'); setFilterCategory('All'); }}
+                  className="px-2 py-1 text-[10px] font-medium text-red-400 bg-red-500/15 border border-red-400/20 rounded-md hover:bg-red-500/25 transition-colors">
+                  Clear filters ×
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Content (light bg) ── */}
+        <div className="flex-1 overflow-y-auto bg-[#f8f9fb] min-h-0">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 mb-3" />
+              <p className="text-sm">Loading tasks…</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500 bg-red-50 rounded-xl border border-red-100 mx-6 mt-4">
+              <p className="font-medium">Unable to load tasks</p>
+              <p className="text-sm mt-1 mb-3">{error}</p>
+              <button
+                onClick={fetchTodos}
+                className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-700 bg-white border border-red-200 hover:bg-red-50 transition-colors">
+                Try Again
+              </button>
+            </div>
+          ) : sortedTodos.length === 0 && viewMode === 'list' ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                <CheckCircleIcon className="h-8 w-8 text-gray-300" />
+              </div>
+              <p className="text-sm font-semibold text-gray-500">
+                {showCompleted ? 'No completed tasks yet' : 'All clear! 🎉'}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                {showCompleted ? 'Complete some tasks to see them here' : 'Add a task above to get started'}
+              </p>
+            </div>
+          ) : viewMode === 'board' ? (
+            <div className="h-full p-4">
+              <ToDoBoard
+                todos={[...filteredTodos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}
+                onStatusChange={handleStatusChange}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onToggleComplete={handleToggleComplete}
+                onAddDays={handleAddDays}
+                onNotesChange={handleUpdateNotes}
+                onNavigate={onNavigate}
+                onCycleNeonColor={handleCycleNeonColor}
+                onToggleMinimize={handleToggleMinimize}
+                onReorder={handleReorder}
+                onClose={onClose}
+              />
+            </div>
+          ) : (
+            <div className="p-4 space-y-1">
+              {sortedTodos.map(todo => {
+                const dateInfo = getDateInfo(todo.dueDate);
+                const priorityAccent: Record<string, string> = {
+                  High: 'bg-red-500',
+                  Medium: 'bg-amber-400',
+                  Low: 'bg-emerald-400',
+                  None: 'bg-gray-200',
+                };
+                return (
+                  <div
+                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${todo.isCompleted
+                      ? 'bg-white/60 border-gray-100 opacity-55'
+                      : dateInfo.isOverdue
+                        ? 'bg-white border-red-100 hover:border-red-200 hover:shadow-sm'
+                        : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                      }`}
+                    key={todo._id}>
+                    {/* Priority bar */}
+                    <div className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
+
+                    {/* Checkbox */}
+                    <button
+                      className={`flex-shrink-0 ml-1 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
+                      onClick={() => handleToggleComplete(todo)}>
+                      {todo.isCompleted
+                        ? <CheckCircleIconSolid className="h-[18px] w-[18px]" />
+                        : <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
+                      }
+                    </button>
+
+                    {/* Main content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[13px] font-medium ${todo.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                          {todo.title}
+                        </span>
+                        {todo.category && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getCategoryStyle(todo.category)}`}>
+                            {todo.category.replace('!', '')}
+                          </span>
+                        )}
+                        {todo.attachments && todo.attachments.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            {todo.attachments.map((att, idx) => {
+                              const isDrive = att.storageType === 'drive';
+                              const link = isDrive ? att.webViewLink : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
+                              return (
+                                <a key={idx} href={link} target="_blank" rel="noopener noreferrer"
+                                  className={`transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}
+                                  title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
+                                  onClick={e => e.stopPropagation()}>
+                                  <PaperClipIcon className="h-3 w-3" />
+                                </a>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                        <span className={`text-[11px] flex items-center gap-1 ${dateInfo.className}`}>
+                          <CalendarDaysIcon className="h-3 w-3" />
+                          {dateInfo.text}
+                        </span>
+                        {/* Quick date nudge */}
+                        {!todo.isCompleted && (
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity border-l border-gray-100 pl-2">
+                            {[1, 3, 7].map(d => (
+                              <button key={d}
+                                onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }}
+                                className="px-1.5 py-0.5 text-[9px] font-semibold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
+                                +{d}d
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {typeof todo.sourcePageId !== 'string' && todo.sourcePageId?.title && (
+                          <button
+                            className="flex items-center gap-0.5 text-[11px] text-gray-400 hover:text-indigo-500 transition-colors"
+                            onClick={() => {
+                              const targetId = todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-') ? todo.tabId : todo.tabName;
+                              onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
+                              onClose();
+                            }}>
+                            <ArrowTopRightOnSquareIcon className="h-2.5 w-2.5" />
+                            {todo.sourcePageId.title}
+                          </button>
+                        )}
+                        {todo.notes && (
+                          <p className="text-[11px] text-gray-400 truncate max-w-xs">{todo.notes}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Hover actions */}
+                    <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                        onClick={() => handleEdit(todo)}
+                        title="Edit">
+                        <PencilIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                        onClick={() => handleDelete(todo._id)}
+                        title="Delete">
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+
+    const helperModals = (
+      <div className="relative z-[60]">
+        <TaskFormModal
+          isOpen={isTaskFormOpen}
+          onClose={() => {
+            setIsTaskFormOpen(false);
+            if (isDirectCreateOpen && onCloseDirectCreate) {
+              onCloseDirectCreate();
+            }
+          }}
+          onSave={handleSaveTask}
+          initialData={prefilledData ? ({ ...prefilledData } as any) : editingTask || undefined}
+          title={editingTask ? 'Edit Task' : 'New Task'}
+        />
+        <EmailTaskModal
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          onProceed={handleEmailProceed}
+        />
+      </div>
+    );
+
+    if (isStandalone) {
+      return (
+        <React.Fragment>
+          {content}
+          {helperModals}
+        </React.Fragment>
+      );
+    }
+
     return (
-      <>
+      <React.Fragment>
         <Transition appear={true} as={Fragment} show={isOpen}>
           <Dialog
             as="div"
@@ -599,325 +927,16 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   leave="ease-in duration-150"
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95">
-                  <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-[#0f1117] text-left shadow-2xl ring-1 ring-white/5 transition-all h-[94vh] flex flex-col">
-
-                    {/* ── Dark header ── */}
-                    <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
-                      {/* Row 1: title + actions */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
-                            {overdueTasks > 0 && (
-                              <p className="text-[10px] text-red-400 font-medium mt-0.5">{overdueTasks} overdue</p>
-                            )}
-                          </div>
-                          {/* Active / Done toggle */}
-                          <div className="flex bg-white/10 rounded-lg p-0.5">
-                            <button
-                              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
-                              onClick={() => setShowCompleted(false)}>
-                              Active
-                            </button>
-                            <button
-                              className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
-                              onClick={() => setShowCompleted(true)}>
-                              Done
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {/* View toggle */}
-                          <div className="flex bg-white/10 rounded-lg p-0.5">
-                            <button
-                              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
-                              onClick={() => setViewMode('list')}
-                              title="List View">
-                              <ListBulletIcon className="h-4 w-4" />
-                            </button>
-                            <button
-                              className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
-                              onClick={() => setViewMode('board')}
-                              title="Kanban">
-                              <Squares2X2Icon className="h-4 w-4" />
-                            </button>
-                          </div>
-
-                          {/* AI Priority */}
-                          {unprioritizedCount > 0 && (
-                            <button
-                              onClick={handleAIPrioritySuggest}
-                              disabled={isAIPrioritizing}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-300 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-400/20 rounded-lg transition-all disabled:opacity-50"
-                              title={`Auto-prioritize ${unprioritizedCount} tasks`}>
-                              <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
-                              {isAIPrioritizing ? 'Analyzing…' : `AI Prioritize`}
-                            </button>
-                          )}
-
-                          {/* Email */}
-                          <button
-                            onClick={() => setIsEmailModalOpen(true)}
-                            className="p-2 text-white/40 hover:text-white/70 rounded-lg hover:bg-white/10 transition-colors"
-                            title="Create from Email">
-                            <EnvelopeIcon className="h-4 w-4" />
-                          </button>
-
-                          {/* New Task */}
-                          <button
-                            onClick={handleCreateStandalone}
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg transition-colors text-xs font-semibold shadow-lg shadow-indigo-500/20">
-                            <PlusIcon className="h-3.5 w-3.5" />
-                            New Task
-                          </button>
-
-                          <div className="w-px h-5 bg-white/10" />
-
-                          <button
-                            className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
-                            onClick={onClose}>
-                            <XMarkIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Row 2: smart input */}
-                      <div className="mb-3">
-                        <SmartInput onAdd={handleSmartAdd} />
-                      </div>
-
-                      {/* Row 3: filter & sort dropdowns */}
-                      {!showCompleted && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <FilterDropdown
-                            label="Priority"
-                            value={filterPriority}
-                            options={[
-                              { label: 'All', value: 'All' },
-                              { label: '🔴 High', value: 'High' },
-                              { label: '🟡 Medium', value: 'Medium' },
-                              { label: '🟢 Low', value: 'Low' },
-                            ]}
-                            onChange={setFilterPriority}
-                            accentColor="bg-indigo-500/30 border-indigo-400/30"
-                          />
-                          <FilterDropdown
-                            label="Category"
-                            value={filterCategory}
-                            options={[
-                              { label: 'All', value: 'All' },
-                              ...CATEGORIES.map(c => ({ label: c.replace('!', ''), value: c })),
-                            ]}
-                            onChange={setFilterCategory}
-                            accentColor="bg-indigo-500/30 border-indigo-400/30"
-                          />
-                          <SortDropdown
-                            sortField={sortField}
-                            sortDirection={sortDirection}
-                            onSort={handleSort}
-                          />
-                          {/* Active filter count badge */}
-                          {(filterPriority !== 'All' || filterCategory !== 'All') && (
-                            <button
-                              onClick={() => { setFilterPriority('All'); setFilterCategory('All'); }}
-                              className="px-2 py-1 text-[10px] font-medium text-red-400 bg-red-500/15 border border-red-400/20 rounded-md hover:bg-red-500/25 transition-colors">
-                              Clear filters ×
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ── Content (light bg) ── */}
-                    <div className="flex-1 overflow-y-auto bg-[#f8f9fb] min-h-0">
-                      {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-indigo-500 mb-3" />
-                          <p className="text-sm">Loading tasks…</p>
-                        </div>
-                      ) : error ? (
-                        <div className="text-center py-12 text-red-500 bg-red-50 rounded-xl border border-red-100 mx-6 mt-4">
-                          <p className="font-medium">Unable to load tasks</p>
-                          <p className="text-sm mt-1 mb-3">{error}</p>
-                          <button
-                            onClick={fetchTodos}
-                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg text-red-700 bg-white border border-red-200 hover:bg-red-50 transition-colors">
-                            Try Again
-                          </button>
-                        </div>
-                      ) : sortedTodos.length === 0 && viewMode === 'list' ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                            <CheckCircleIcon className="h-8 w-8 text-gray-300" />
-                          </div>
-                          <p className="text-sm font-semibold text-gray-500">
-                            {showCompleted ? 'No completed tasks yet' : 'All clear! 🎉'}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {showCompleted ? 'Complete some tasks to see them here' : 'Add a task above to get started'}
-                          </p>
-                        </div>
-                      ) : viewMode === 'board' ? (
-                        <div className="h-full p-4">
-                          <ToDoBoard
-                            todos={[...filteredTodos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))}
-                            onStatusChange={handleStatusChange}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onToggleComplete={handleToggleComplete}
-                            onAddDays={handleAddDays}
-                            onNotesChange={handleUpdateNotes}
-                            onNavigate={onNavigate}
-                            onCycleNeonColor={handleCycleNeonColor}
-                            onToggleMinimize={handleToggleMinimize}
-                            onReorder={handleReorder}
-                            onClose={onClose}
-                          />
-                        </div>
-                      ) : (
-                        <div className="p-4 space-y-1">
-                          {sortedTodos.map(todo => {
-                            const dateInfo = getDateInfo(todo.dueDate);
-                            const priorityAccent: Record<string, string> = {
-                              High: 'bg-red-500',
-                              Medium: 'bg-amber-400',
-                              Low: 'bg-emerald-400',
-                              None: 'bg-gray-200',
-                            };
-                            return (
-                              <div
-                                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${todo.isCompleted
-                                  ? 'bg-white/60 border-gray-100 opacity-55'
-                                  : dateInfo.isOverdue
-                                    ? 'bg-white border-red-100 hover:border-red-200 hover:shadow-sm'
-                                    : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
-                                  }`}
-                                key={todo._id}>
-                                {/* Priority bar */}
-                                <div className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
-
-                                {/* Checkbox */}
-                                <button
-                                  className={`flex-shrink-0 ml-1 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
-                                  onClick={() => handleToggleComplete(todo)}>
-                                  {todo.isCompleted
-                                    ? <CheckCircleIconSolid className="h-[18px] w-[18px]" />
-                                    : <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
-                                  }
-                                </button>
-
-                                {/* Main content */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={`text-[13px] font-medium ${todo.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                      {todo.title}
-                                    </span>
-                                    {todo.category && (
-                                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getCategoryStyle(todo.category)}`}>
-                                        {todo.category.replace('!', '')}
-                                      </span>
-                                    )}
-                                    {todo.attachments && todo.attachments.length > 0 && (
-                                      <div className="flex items-center gap-1">
-                                        {todo.attachments.map((att, idx) => {
-                                          const isDrive = att.storageType === 'drive';
-                                          const link = isDrive ? att.webViewLink : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
-                                          return (
-                                            <a key={idx} href={link} target="_blank" rel="noopener noreferrer"
-                                              className={`transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}
-                                              title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
-                                              onClick={e => e.stopPropagation()}>
-                                              <PaperClipIcon className="h-3 w-3" />
-                                            </a>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                                    <span className={`text-[11px] flex items-center gap-1 ${dateInfo.className}`}>
-                                      <CalendarDaysIcon className="h-3 w-3" />
-                                      {dateInfo.text}
-                                    </span>
-                                    {/* Quick date nudge */}
-                                    {!todo.isCompleted && (
-                                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity border-l border-gray-100 pl-2">
-                                        {[1, 3, 7].map(d => (
-                                          <button key={d}
-                                            onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }}
-                                            className="px-1.5 py-0.5 text-[9px] font-semibold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
-                                            +{d}d
-                                          </button>
-                                        ))}
-                                      </div>
-                                    )}
-                                    {typeof todo.sourcePageId !== 'string' && todo.sourcePageId?.title && (
-                                      <button
-                                        className="flex items-center gap-0.5 text-[11px] text-gray-400 hover:text-indigo-500 transition-colors"
-                                        onClick={() => {
-                                          const targetId = todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-') ? todo.tabId : todo.tabName;
-                                          onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
-                                          onClose();
-                                        }}>
-                                        <ArrowTopRightOnSquareIcon className="h-2.5 w-2.5" />
-                                        {todo.sourcePageId.title}
-                                      </button>
-                                    )}
-                                    {todo.notes && (
-                                      <p className="text-[11px] text-gray-400 truncate max-w-xs">{todo.notes}</p>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Hover actions */}
-                                <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-                                    onClick={() => handleEdit(todo)}
-                                    title="Edit">
-                                    <PencilIcon className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-                                    onClick={() => handleDelete(todo._id)}
-                                    title="Delete">
-                                    <TrashIcon className="h-3.5 w-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                  <Dialog.Panel as={Fragment}>
+                    {content}
                   </Dialog.Panel>
                 </Transition.Child>
               </div>
             </div>
           </Dialog>
         </Transition>
-
-        <div className="relative z-[60]">
-          <TaskFormModal
-            isOpen={isTaskFormOpen}
-            onClose={() => {
-              setIsTaskFormOpen(false);
-              if (isDirectCreateOpen && onCloseDirectCreate) {
-                onCloseDirectCreate();
-              }
-            }}
-            onSave={handleSaveTask}
-            initialData={prefilledData ? ({ ...prefilledData } as any) : editingTask || undefined}
-            title={editingTask ? 'Edit Task' : 'New Task'}
-          />
-          <EmailTaskModal
-            isOpen={isEmailModalOpen}
-            onClose={() => setIsEmailModalOpen(false)}
-            onProceed={handleEmailProceed}
-          />
-        </div>
-      </>
+        {helperModals}
+      </React.Fragment>
     );
   },
 );

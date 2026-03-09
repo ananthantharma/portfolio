@@ -27,6 +27,7 @@ const ananthanItems = [
   { label: 'Finance', href: '/finance', emoji: '💰', desc: 'Money tracker' },
   { label: 'Notes', href: '/notes', emoji: '📝', desc: 'Workspace' },
   { label: 'Gantt', href: '/gantt', emoji: '📊', desc: 'Projects' },
+  { label: 'Tasks', href: '/tasks', emoji: '✅', desc: 'To-do list' },
 ];
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
