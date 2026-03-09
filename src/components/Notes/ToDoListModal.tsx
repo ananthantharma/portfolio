@@ -173,7 +173,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const [editingTask, setEditingTask] = useState<IToDo | null>(null);
 
     // New Features State
-    const [viewMode, setViewMode] = useState<'list' | 'board'>('board');
+    const [viewMode, setViewMode] = useState<'list' | 'board'>(isStandalone ? 'list' : 'board');
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [prefilledData, setPrefilledData] = useState<Partial<TaskFormData> | undefined>(undefined);
 
@@ -576,8 +576,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         {/* ── Dark header ── */}
         <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
           {/* Row 1: title + actions */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+          <div className={`flex ${isStandalone ? 'flex-col sm:flex-row items-start sm:items-center gap-4' : 'items-center justify-between'} mb-3`}>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <div>
                 <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
                 {overdueTasks > 0 && (
@@ -585,7 +585,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 )}
               </div>
               {/* Active / Done toggle */}
-              <div className="flex bg-white/10 rounded-lg p-0.5">
+              <div className="flex bg-white/10 rounded-lg p-0.5 ml-auto sm:ml-0">
                 <button
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
                   onClick={() => setShowCompleted(false)}>
@@ -599,7 +599,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-2 ${isStandalone ? 'w-full overflow-x-auto pb-1 no-scrollbar justify-start' : ''}`}>
               {/* View toggle */}
               <div className="flex bg-white/10 rounded-lg p-0.5">
                 <button
@@ -644,13 +644,17 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 New Task
               </button>
 
-              <div className="w-px h-5 bg-white/10" />
+              {!isStandalone && (
+                <>
+                  <div className="w-px h-5 flex-shrink-0 bg-white/10" />
 
-              <button
-                className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
-                onClick={onClose}>
-                <XMarkIcon className="h-4 w-4" />
-              </button>
+                  <button
+                    className="p-2 flex-shrink-0 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                    onClick={onClose}>
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -748,7 +752,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               />
             </div>
           ) : (
-            <div className="p-4 space-y-1">
+            <div className={`p-4 ${isStandalone ? 'space-y-3 sm:space-y-4 max-w-3xl mx-auto' : 'space-y-1'}`}>
               {sortedTodos.map(todo => {
                 const dateInfo = getDateInfo(todo.dueDate);
                 const priorityAccent: Record<string, string> = {
@@ -757,6 +761,81 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   Low: 'bg-emerald-400',
                   None: 'bg-gray-200',
                 };
+
+                if (isStandalone) {
+                  return (
+                    <div
+                      className={`group relative flex items-start flex-col gap-3 px-4 py-4 sm:px-5 sm:py-5 rounded-3xl transition-all duration-200 border shadow-sm ${todo.isCompleted
+                        ? 'bg-slate-50 border-gray-100 opacity-60'
+                        : dateInfo.isOverdue
+                          ? 'bg-white border-red-200 hover:shadow-md'
+                          : 'bg-white border-gray-100/80 hover:border-indigo-100 hover:shadow-md'
+                        }`}
+                      key={todo._id}>
+                      {/* Priority left bar for mobile */}
+                      <div className={`absolute left-0 inset-y-4 w-1 rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
+
+                      <div className="flex gap-4 items-start w-full">
+                        {/* Checkbox */}
+                        <button
+                          className={`flex-shrink-0 mt-0.5 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
+                          onClick={() => handleToggleComplete(todo)}>
+                          {todo.isCompleted
+                            ? <CheckCircleIconSolid className="h-6 w-6" />
+                            : <div className="h-6 w-6 rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
+                          }
+                        </button>
+
+                        <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+                          <div className="flex justify-between items-start">
+                            <h4 className={`text-[15px] sm:text-[16px] font-semibold tracking-tight ${todo.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>{todo.title}</h4>
+                            <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              <button onClick={() => handleEdit(todo)} className="p-2 bg-gray-50 text-gray-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors">
+                                <PencilIcon className="h-3.5 w-3.5" />
+                              </button>
+                              <button onClick={() => handleDelete(todo._id)} className="p-2 bg-gray-50 text-gray-500 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                                <TrashIcon className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            {todo.priority && todo.priority !== 'None' && (
+                              <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${todo.priority === 'High' ? 'bg-red-50 text-red-600 border border-red-100' : todo.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                                {todo.priority}
+                              </span>
+                            )}
+                            {todo.category && (
+                              <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-medium border border-gray-100 ${getCategoryStyle(todo.category)}`}>
+                                {todo.category.replace('!', '')}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between mt-1">
+                            <span className={`text-[12px] flex items-center gap-1.5 font-medium ${dateInfo.className}`}>
+                              <CalendarDaysIcon className="h-4 w-4" />
+                              {dateInfo.text}
+                            </span>
+
+                            {/* Quick date nudge (Mobile friendly) */}
+                            {!todo.isCompleted && (
+                              <div className="flex items-center gap-1 pb-1 sm:pb-0">
+                                {[1, 3, 7].map(d => (
+                                  <button key={d} onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }} className="px-2 py-1 bg-gray-50 text-[10px] font-bold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-100 rounded-lg transition-colors">
+                                    +{d}d
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${todo.isCompleted
