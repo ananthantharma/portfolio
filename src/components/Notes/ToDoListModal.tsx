@@ -617,7 +617,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               </div>
 
               {/* AI Priority */}
-              {unprioritizedCount > 0 && (
+              {unprioritizedCount > 0 && !isStandalone && (
                 <button
                   onClick={handleAIPrioritySuggest}
                   disabled={isAIPrioritizing}
@@ -659,12 +659,14 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
           </div>
 
           {/* Row 2: smart input */}
-          <div className="mb-3">
-            <SmartInput onAdd={handleSmartAdd} />
-          </div>
+          {!isStandalone && (
+            <div className="mb-3">
+              <SmartInput onAdd={handleSmartAdd} />
+            </div>
+          )}
 
           {/* Row 3: filter & sort dropdowns */}
-          {!showCompleted && (
+          {!showCompleted && !isStandalone && (
             <div className="flex items-center gap-2 flex-wrap">
               <FilterDropdown
                 label="Priority"
