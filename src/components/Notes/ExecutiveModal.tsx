@@ -1,11 +1,11 @@
-import {Dialog, Transition} from '@headlessui/react';
-import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, memo, useState} from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { Fragment, memo, useState } from 'react';
 
 interface ExecutiveModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInsert: (text: string) => void;
+  onInsert?: (text: string) => void;
 }
 
 const SYSTEM_PROMPT = `Role: You are a strategic executive communications expert. Your task is to rewrite my draft email using the "2-Minute Revolution" framework, designed to persuade busy decision-makers.
@@ -38,7 +38,7 @@ The Re-ASK: Conclude the email by repeating the opening "ASK" word-for-word.
 
 Here is the draft email I need you to rewrite using these exact rules:`;
 
-const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({isOpen, onClose, onInsert}) => {
+const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({ isOpen, onClose, onInsert }) => {
   const [draftEmail, setDraftEmail] = useState('');
   const [rewrittenText, setRewrittenText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,7 +57,7 @@ const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({isOpen, onClose, on
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',
@@ -170,14 +170,16 @@ const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({isOpen, onClose, on
                           onClick={onClose}>
                           Cancel
                         </button>
-                        <button
-                          className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md font-medium"
-                          onClick={() => {
-                            if (rewrittenText) onInsert(rewrittenText);
-                            onClose();
-                          }}>
-                          Insert into Note
-                        </button>
+                        {onInsert && (
+                          <button
+                            className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md font-medium"
+                            onClick={() => {
+                              if (rewrittenText) onInsert(rewrittenText);
+                              onClose();
+                            }}>
+                            Insert into Note
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
