@@ -22,12 +22,12 @@ import {
   PlusCircleIcon,
   BookmarkIcon,
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import {useSession} from 'next-auth/react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
-import { INoteSection } from '@/models/NoteSection';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
+import {INoteSection} from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import SimpleRewriteModal from './SimpleRewriteModal';
@@ -44,14 +44,14 @@ import SectionList from './SectionList';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
-import { BadgeSettingsProvider } from './BadgeSettingsContext';
-import { BadgeSettingsModal } from './BadgeSettingsModal';
+import {BadgeSettingsProvider} from './BadgeSettingsContext';
+import {BadgeSettingsModal} from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 
 import SourcingEventModal from './SourcingEventModal';
 import SourcingListModal from './SourcingListModal';
-import { TableAppModal } from './HighPerformanceTable/TableAppModal';
+import {TableAppModal} from './HighPerformanceTable/TableAppModal';
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 
 const NotesLayout: React.FC = React.memo(() => {
@@ -85,10 +85,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
-    pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    categories: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-  }>({ pages: {}, sections: {}, categories: {} });
+    pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    sections: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    categories: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+  }>({pages: {}, sections: {}, categories: {}});
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
@@ -356,7 +356,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
+      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -366,7 +366,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -392,7 +392,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
+        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -424,7 +424,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -451,7 +451,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
+          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -487,7 +487,7 @@ const NotesLayout: React.FC = React.memo(() => {
       // 1. Fetch/Create 'Other Notes' Category
       let category = categories.find(c => c.name === 'Other Notes');
       if (!category) {
-        const catRes = await axios.post('/api/notes/categories', { name: 'Other Notes' });
+        const catRes = await axios.post('/api/notes/categories', {name: 'Other Notes'});
         category = catRes.data.data;
         setCategories(prev => [...prev, category as INoteCategory]);
       }
@@ -497,7 +497,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const secRes = await axios.get(`/api/notes/sections?categoryId=${category!._id}`);
       let section = secRes.data.data.find((s: INoteSection) => s.name === 'Other');
       if (!section) {
-        const createSecRes = await axios.post('/api/notes/sections', { name: 'Other', categoryId: category!._id });
+        const createSecRes = await axios.post('/api/notes/sections', {name: 'Other', categoryId: category!._id});
         section = createSecRes.data.data;
         if (selectedCategoryId === category!._id) {
           setSections(prev => [...prev, section]);
@@ -505,7 +505,7 @@ const NotesLayout: React.FC = React.memo(() => {
       }
 
       // 3. Create Page
-      const pageRes = await axios.post('/api/notes/pages', { title: 'New Note', sectionId: section._id });
+      const pageRes = await axios.post('/api/notes/pages', {title: 'New Note', sectionId: section._id});
       const newPage = pageRes.data.data;
 
       // 4. Navigate to new Quick Note
@@ -525,7 +525,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
+        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -552,7 +552,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleMovePage = useCallback(
     async (pageId: string, destSectionId: string) => {
       try {
-        await axios.put(`/api/notes/pages/${pageId}`, { sectionId: destSectionId });
+        await axios.put(`/api/notes/pages/${pageId}`, {sectionId: destSectionId});
         if (selectedSectionId && destSectionId !== selectedSectionId) {
           setPages(prev => prev.filter(p => p._id !== pageId));
           if (selectedPageId === pageId) setSelectedPageId(null);
@@ -569,7 +569,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
-      const response = await axios.put(`/api/notes/pages/${id}`, { tabs: data });
+      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -581,7 +581,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -639,7 +639,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(true), []);
   const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
 
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
@@ -771,7 +771,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
             <div
               className="flex items-center gap-2 w-full md:w-auto pb-1 md:pb-0 scrollbar-hide"
-              style={{ overflowX: 'auto', overflowY: 'visible' }}>
+              style={{overflowX: 'auto', overflowY: 'visible'}}>
               {dbSize && (
                 <span className="text-[10px] text-slate-400 font-mono tracking-tight mr-1 bg-white/50 px-1.5 py-0.5 rounded-md ring-1 ring-slate-200/50">
                   {dbSize}
@@ -1011,9 +1011,10 @@ const NotesLayout: React.FC = React.memo(() => {
           {/* ─── 1. Categories Column ─── */}
           {/* Hidden in Focus Mode */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${isCategoryCollapsed ? 'w-14 items-center' : ''
-              } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full ${
+              isCategoryCollapsed ? 'w-14 items-center' : ''
+            } ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth}}>
             <CategoryList
               categories={categories}
               isCollapsed={isCategoryCollapsed}
@@ -1037,9 +1038,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 2. Sections Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isSectionCollapsed ? 'w-14 items-center' : ''
-              } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
+              isSectionCollapsed ? 'w-14 items-center' : ''
+            } ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth}}>
             <SectionList
               sections={sections}
               selectedSectionId={selectedSectionId}
@@ -1064,9 +1066,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 3. Pages Column ─── */}
           <div
-            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isPageCollapsed ? 'w-14 items-center' : ''
-              } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}>
+            className={`flex flex-col bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${
+              isPageCollapsed ? 'w-14 items-center' : ''
+            } ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
+            style={{width: isPageCollapsed || isFocusMode ? undefined : pageWidth}}>
             <PageList
               pages={pages}
               selectedPageId={selectedPageId}
@@ -1092,8 +1095,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ─── 4. Editor Area ─── */}
           <div
-            className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''
-              } ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
+            className={`flex-1 min-w-0 bg-white rounded-2xl border border-slate-200/60 shadow-sm md:ml-3 flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${
+              !selectedPageId ? 'max-md:hidden' : ''
+            } ${isFocusMode ? 'max-w-4xl mx-auto border-transparent shadow-none' : ''}`}>
             {selectedPageId ? (
               <NoteEditor
                 key={selectedPageId}

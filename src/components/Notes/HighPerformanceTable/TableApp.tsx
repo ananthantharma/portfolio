@@ -1,7 +1,7 @@
 /* eslint-disable simple-import-sort/imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, {useState, useCallback, useEffect, useRef} from 'react';
 import {
   PlusIcon,
   TrashIcon,
@@ -37,28 +37,28 @@ import {
   horizontalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { ColumnDefinition, ColumnType, TableRow, StatusOption } from './types';
+import {CSS} from '@dnd-kit/utilities';
+import {ColumnDefinition, ColumnType, TableRow, StatusOption} from './types';
 import PDFExportModal from './PDFExportModal';
 
 // ============ Color Palette ============
 
 const STATUS_COLORS: StatusOption[] = [
-  { id: 'green', label: 'Active', color: '#22c55e' },
-  { id: 'blue', label: 'In Progress', color: '#3b82f6' },
-  { id: 'amber', label: 'Pending', color: '#f59e0b' },
-  { id: 'red', label: 'Blocked', color: '#ef4444' },
-  { id: 'violet', label: 'Review', color: '#8b5cf6' },
-  { id: 'slate', label: 'Done', color: '#64748b' },
+  {id: 'green', label: 'Active', color: '#22c55e'},
+  {id: 'blue', label: 'In Progress', color: '#3b82f6'},
+  {id: 'amber', label: 'Pending', color: '#f59e0b'},
+  {id: 'red', label: 'Blocked', color: '#ef4444'},
+  {id: 'violet', label: 'Review', color: '#8b5cf6'},
+  {id: 'slate', label: 'Done', color: '#64748b'},
 ];
 
 const DEFAULT_COLUMNS: ColumnDefinition[] = [
-  { id: 'name', label: 'Name', type: 'text', width: 280, align: 'left' },
-  { id: 'status', label: 'Status', type: 'status', width: 90, options: STATUS_COLORS, align: 'center', iconOnly: true },
-  { id: 'col3', label: 'Category', type: 'text', width: 160, align: 'left' },
-  { id: 'col4', label: 'Value', type: 'currency', width: 120, align: 'right' },
-  { id: 'col5', label: 'Date', type: 'date', width: 140, align: 'center' },
-  { id: 'notes', label: 'Notes', type: 'text', width: 220, align: 'left' },
+  {id: 'name', label: 'Name', type: 'text', width: 280, align: 'left'},
+  {id: 'status', label: 'Status', type: 'status', width: 90, options: STATUS_COLORS, align: 'center', iconOnly: true},
+  {id: 'col3', label: 'Category', type: 'text', width: 160, align: 'left'},
+  {id: 'col4', label: 'Value', type: 'currency', width: 120, align: 'right'},
+  {id: 'col5', label: 'Date', type: 'date', width: 140, align: 'center'},
+  {id: 'notes', label: 'Notes', type: 'text', width: 220, align: 'left'},
 ];
 
 const EMPTY_ROWS: TableRow[] = [];
@@ -78,7 +78,7 @@ function SortableColumnHeader({
   onRename: (id: string, label: string) => void;
   onToggleIconOnly: (id: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
     id: column.id,
   });
   const [editing, setEditing] = useState(false);
@@ -136,7 +136,10 @@ function SortableColumnHeader({
             onBlur={commitRename}
             onKeyDown={e => {
               if (e.key === 'Enter') commitRename();
-              if (e.key === 'Escape') { setLabel(column.label); setEditing(false); }
+              if (e.key === 'Escape') {
+                setLabel(column.label);
+                setEditing(false);
+              }
             }}
           />
         ) : (
@@ -154,9 +157,13 @@ function SortableColumnHeader({
           {/* Icon-only toggle for status columns */}
           {column.type === 'status' && (
             <button
-              onClick={e => { e.stopPropagation(); onToggleIconOnly(column.id); }}
-              className={`p-0.5 rounded transition-all opacity-0 group-hover:opacity-100 ${column.iconOnly ? 'text-indigo-500 hover:text-indigo-700' : 'text-gray-300 hover:text-indigo-400'
-                }`}
+              onClick={e => {
+                e.stopPropagation();
+                onToggleIconOnly(column.id);
+              }}
+              className={`p-0.5 rounded transition-all opacity-0 group-hover:opacity-100 ${
+                column.iconOnly ? 'text-indigo-500 hover:text-indigo-700' : 'text-gray-300 hover:text-indigo-400'
+              }`}
               title={column.iconOnly ? 'Show label (currently dot-only)' : 'Show dot only'}>
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 8 8">
                 <circle cx="4" cy="4" r="3.5" />
@@ -164,7 +171,10 @@ function SortableColumnHeader({
             </button>
           )}
           <button
-            onClick={e => { e.stopPropagation(); onRemove(column.id); }}
+            onClick={e => {
+              e.stopPropagation();
+              onRemove(column.id);
+            }}
             className="p-0.5 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
             title="Remove column">
             <XMarkIcon className="w-3 h-3" />
@@ -175,7 +185,11 @@ function SortableColumnHeader({
       {/* Resize handle */}
       <div
         className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-400/60 active:bg-indigo-500 transition-colors"
-        onMouseDown={e => { e.preventDefault(); e.stopPropagation(); onResizeStart(column.id); }}
+        onMouseDown={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          onResizeStart(column.id);
+        }}
       />
     </div>
   );
@@ -183,7 +197,7 @@ function SortableColumnHeader({
 
 // ============ Add Column Inline ============
 
-function AddColumnInline({ onAdd }: { onAdd: (col: ColumnDefinition) => void }) {
+function AddColumnInline({onAdd}: {onAdd: (col: ColumnDefinition) => void}) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState<ColumnType>('text');
@@ -239,8 +253,11 @@ function AddColumnInline({ onAdd }: { onAdd: (col: ColumnDefinition) => void }) 
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`px-2 py-1.5 rounded-lg text-[11px] font-medium capitalize transition-all ${type === t ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-800 hover:bg-gray-200'
-                  }`}>
+                className={`px-2 py-1.5 rounded-lg text-[11px] font-medium capitalize transition-all ${
+                  type === t
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:text-gray-800 hover:bg-gray-200'
+                }`}>
                 {t}
               </button>
             ))}
@@ -266,7 +283,7 @@ function AISmartImportModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (data: { columns: ColumnDefinition[]; rows: TableRow[] }) => void;
+  onImport: (data: {columns: ColumnDefinition[]; rows: TableRow[]}) => void;
 }) {
   const [input, setInput] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -304,11 +321,11 @@ function AISmartImportModal({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const payload: any = { prompt: input || 'Convert this data into a structured table.' };
+      const payload: any = {prompt: input || 'Convert this data into a structured table.'};
       if (mode === 'image' && imagePreview) {
         const base64 = imagePreview.split(',')[1];
         const mimeType = imagePreview.split(',')[0].match(/:(.*?);/)?.[1];
-        payload.image = { base64, mimeType };
+        payload.image = {base64, mimeType};
       }
       const res = await axios.post('/api/tables/generate', payload);
       if (res.data.success) {
@@ -352,10 +369,11 @@ function AISmartImportModal({
             <button
               key={tab}
               onClick={() => setMode(tab)}
-              className={`flex-1 py-2.5 text-xs font-medium capitalize transition-colors ${mode === tab
-                ? 'text-violet-400 border-b-2 border-violet-400 bg-zinc-800/30'
-                : 'text-zinc-500 hover:text-zinc-300'
-                }`}>
+              className={`flex-1 py-2.5 text-xs font-medium capitalize transition-colors ${
+                mode === tab
+                  ? 'text-violet-400 border-b-2 border-violet-400 bg-zinc-800/30'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}>
               {tab === 'text' ? '📝 Paste Text / Data' : '🖼️ Image / Screenshot'}
             </button>
           ))}
@@ -461,8 +479,8 @@ export default function TableApp() {
   const copyMenuRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
+    useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates}),
   );
 
   // Close menus on outside click
@@ -507,7 +525,7 @@ export default function TableApp() {
     setLoading(true);
     try {
       if (currentTableId) {
-        const res = await axios.put(`/api/tables/${currentTableId}`, { name: currentTableName, columns, rows });
+        const res = await axios.put(`/api/tables/${currentTableId}`, {name: currentTableName, columns, rows});
         if (res.data.success) fetchSavedTables();
       } else {
         const nameToUse =
@@ -516,7 +534,7 @@ export default function TableApp() {
           setLoading(false);
           return;
         }
-        const res = await axios.post('/api/tables', { name: nameToUse, columns, rows });
+        const res = await axios.post('/api/tables', {name: nameToUse, columns, rows});
         if (res.data.success) {
           setCurrentTableId(res.data.data._id);
           setCurrentTableName(res.data.data.name);
@@ -578,7 +596,7 @@ export default function TableApp() {
   // ========== Column Management ==========
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const {active, over} = event;
     if (active.id !== over?.id) {
       setColumns(items => {
         const oldIndex = items.findIndex(i => i.id === active.id);
@@ -597,11 +615,11 @@ export default function TableApp() {
   };
 
   const renameColumn = (id: string, label: string) => {
-    setColumns(prev => prev.map(c => (c.id === id ? { ...c, label } : c)));
+    setColumns(prev => prev.map(c => (c.id === id ? {...c, label} : c)));
   };
 
   const toggleIconOnly = (id: string) => {
-    setColumns(prev => prev.map(c => (c.id === id ? { ...c, iconOnly: !c.iconOnly } : c)));
+    setColumns(prev => prev.map(c => (c.id === id ? {...c, iconOnly: !c.iconOnly} : c)));
   };
 
   // ========== Resizing ==========
@@ -613,7 +631,7 @@ export default function TableApp() {
     (e: MouseEvent) => {
       if (!resizingColId) return;
       setColumns(prev =>
-        prev.map(col => (col.id === resizingColId ? { ...col, width: Math.max(60, col.width + e.movementX) } : col)),
+        prev.map(col => (col.id === resizingColId ? {...col, width: Math.max(60, col.width + e.movementX)} : col)),
       );
     },
     [resizingColId],
@@ -635,8 +653,8 @@ export default function TableApp() {
   const updateCell = (rowId: string, colId: string, value: any) => {
     const updateRecursive = (items: TableRow[]): TableRow[] =>
       items.map(row => {
-        if (row.id === rowId) return { ...row, data: { ...row.data, [colId]: value } };
-        if (row.children) return { ...row, children: updateRecursive(row.children) };
+        if (row.id === rowId) return {...row, data: {...row.data, [colId]: value}};
+        if (row.children) return {...row, children: updateRecursive(row.children)};
         return row;
       });
     setRows(prev => updateRecursive(prev));
@@ -645,8 +663,8 @@ export default function TableApp() {
   const toggleRow = (rowId: string) => {
     const toggle = (items: TableRow[]): TableRow[] =>
       items.map(row => {
-        if (row.id === rowId) return { ...row, isExpanded: !row.isExpanded };
-        if (row.children) return { ...row, children: toggle(row.children) };
+        if (row.id === rowId) return {...row, isExpanded: !row.isExpanded};
+        if (row.children) return {...row, children: toggle(row.children)};
         return row;
       });
     setRows(prev => toggle(prev));
@@ -673,9 +691,9 @@ export default function TableApp() {
             isExpanded: false,
             data: {},
           };
-          return { ...row, children: [...(row.children || []), child], isExpanded: true };
+          return {...row, children: [...(row.children || []), child], isExpanded: true};
         }
-        if (row.children) return { ...row, children: addRecursive(row.children) };
+        if (row.children) return {...row, children: addRecursive(row.children)};
         return row;
       });
     setRows(prev => addRecursive(prev));
@@ -685,7 +703,7 @@ export default function TableApp() {
     const deleteRecursive = (items: TableRow[]): TableRow[] =>
       items
         .filter(row => row.id !== rowId)
-        .map(row => (row.children ? { ...row, children: deleteRecursive(row.children) } : row));
+        .map(row => (row.children ? {...row, children: deleteRecursive(row.children)} : row));
     setRows(prev => deleteRecursive(prev));
   };
 
@@ -736,7 +754,7 @@ export default function TableApp() {
 
   // ========== AI Import ==========
 
-  const handleAIImport = (data: { columns: ColumnDefinition[]; rows: TableRow[] }) => {
+  const handleAIImport = (data: {columns: ColumnDefinition[]; rows: TableRow[]}) => {
     if (data.columns && data.rows) {
       setColumns(data.columns);
       setRows(data.rows);
@@ -777,9 +795,11 @@ export default function TableApp() {
       // Header
       html += '<thead><tr>';
       columns.forEach(col => {
-        html += `<th style="background:#f3f4f6;border:1px solid #d1d5db;padding:8px 14px;text-align:${col.align || 'left'
-          };font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#374151;">${col.label
-          }</th>`;
+        html += `<th style="background:#f3f4f6;border:1px solid #d1d5db;padding:8px 14px;text-align:${
+          col.align || 'left'
+        };font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#374151;">${
+          col.label
+        }</th>`;
       });
       html += '</tr></thead>';
 
@@ -810,7 +830,7 @@ export default function TableApp() {
               }
             }
           } else if (col.type === 'currency' && val) {
-            val = `$${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            val = `$${Number(val).toLocaleString('en-US', {minimumFractionDigits: 2})}`;
           }
 
           html += `<td style="${cellStyle}">${val}</td>`;
@@ -843,8 +863,8 @@ export default function TableApp() {
     rows.forEach(row => addPlainRow(row, 0));
 
     try {
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const textBlob = new Blob([plainText], { type: 'text/plain' });
+      const blob = new Blob([htmlContent], {type: 'text/html'});
+      const textBlob = new Blob([plainText], {type: 'text/plain'});
 
       await navigator.clipboard.write([
         new ClipboardItem({
@@ -875,12 +895,16 @@ export default function TableApp() {
     if (col.id === 'name') {
       return (
         <div className="flex items-center gap-1.5">
-          <div style={{ width: depth * 20 }} className="shrink-0" />
+          <div style={{width: depth * 20}} className="shrink-0" />
           {(row.children && row.children.length > 0) || row.type === 'stream' ? (
             <button
               onClick={() => toggleRow(row.id)}
               className="p-0.5 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors shrink-0">
-              {row.isExpanded ? <ChevronDownIcon className="w-3.5 h-3.5" /> : <ChevronRightIcon className="w-3.5 h-3.5" />}
+              {row.isExpanded ? (
+                <ChevronDownIcon className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronRightIcon className="w-3.5 h-3.5" />
+              )}
             </button>
           ) : (
             <div className="w-[18px] shrink-0" />
@@ -904,28 +928,40 @@ export default function TableApp() {
         <div className="relative w-full flex justify-center" data-status-dropdown>
           <button
             className="focus:outline-none"
-            onClick={e => { e.stopPropagation(); setOpenStatusDropdown(isOpen ? null : dropdownKey); }}
+            onClick={e => {
+              e.stopPropagation();
+              setOpenStatusDropdown(isOpen ? null : dropdownKey);
+            }}
             title={selected?.label}>
             {selected ? (
               col.iconOnly ? (
                 // Large coloured circle — no text
                 <span
                   className="inline-block rounded-full transition-transform hover:scale-110"
-                  style={{ width: 14, height: 14, background: selected.color, boxShadow: `0 0 0 2px ${selected.color}33` }}
+                  style={{
+                    width: 14,
+                    height: 14,
+                    background: selected.color,
+                    boxShadow: `0 0 0 2px ${selected.color}33`,
+                  }}
                 />
               ) : (
                 // Badge with label
                 <span
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                  style={{ background: `${selected.color}18`, color: selected.color, border: `1px solid ${selected.color}33` }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: selected.color }} />
+                  style={{
+                    background: `${selected.color}18`,
+                    color: selected.color,
+                    border: `1px solid ${selected.color}33`,
+                  }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{background: selected.color}} />
                   {selected.label}
                 </span>
               )
             ) : (
               <span
                 className="inline-block rounded-full border-2 border-dashed border-gray-200 hover:border-gray-400 transition-colors"
-                style={{ width: 14, height: 14 }}
+                style={{width: 14, height: 14}}
               />
             )}
           </button>
@@ -936,14 +972,22 @@ export default function TableApp() {
               {col.options?.map(opt => (
                 <button
                   key={opt.id}
-                  onClick={e => { e.stopPropagation(); updateCell(row.id, col.id, opt.id); setOpenStatusDropdown(null); }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    updateCell(row.id, col.id, opt.id);
+                    setOpenStatusDropdown(null);
+                  }}
                   className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-600 hover:bg-gray-50 transition-colors">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: opt.color }} />
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{background: opt.color}} />
                   {opt.label}
                 </button>
               ))}
               <button
-                onClick={e => { e.stopPropagation(); updateCell(row.id, col.id, null); setOpenStatusDropdown(null); }}
+                onClick={e => {
+                  e.stopPropagation();
+                  updateCell(row.id, col.id, null);
+                  setOpenStatusDropdown(null);
+                }}
                 className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-gray-400 hover:bg-gray-50 transition-colors border-t border-gray-100">
                 <XMarkIcon className="w-3 h-3" />
                 Clear
@@ -1016,14 +1060,16 @@ export default function TableApp() {
             {/* Full-width cell — stretches across all columns */}
             <div
               className="relative flex items-center gap-2 px-4 py-2.5 flex-1 min-w-0 sticky left-0"
-              style={{ minWidth: columns.reduce((s, c) => s + c.width, 0) }}>
+              style={{minWidth: columns.reduce((s, c) => s + c.width, 0)}}>
               {/* Expand/collapse toggle */}
               <button
                 onClick={() => toggleRow(row.id)}
                 className="p-0.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-700 transition-colors shrink-0">
-                {row.isExpanded
-                  ? <ChevronDownIcon className="w-3.5 h-3.5" />
-                  : <ChevronRightIcon className="w-3.5 h-3.5" />}
+                {row.isExpanded ? (
+                  <ChevronDownIcon className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronRightIcon className="w-3.5 h-3.5" />
+                )}
               </button>
               <input
                 className="bg-transparent text-gray-800 text-sm font-semibold outline-none flex-1 min-w-0 placeholder-gray-300"
@@ -1033,10 +1079,16 @@ export default function TableApp() {
               />
               {/* Row actions */}
               <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => addChildRow(row.id)} className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Add child row">
+                <button
+                  onClick={() => addChildRow(row.id)}
+                  className="p-1 text-gray-400 hover:text-indigo-500 transition-colors"
+                  title="Add child row">
                   <PlusIcon className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => deleteRow(row.id)} className="p-1 text-gray-400 hover:text-red-400 transition-colors" title="Delete group">
+                <button
+                  onClick={() => deleteRow(row.id)}
+                  className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                  title="Delete group">
                   <TrashIcon className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1054,23 +1106,36 @@ export default function TableApp() {
           {columns.map((col, idx) => (
             <div
               key={col.id}
-              className={`relative flex items-center px-3 py-2 text-sm border-r border-gray-100 last:border-r-0 ${idx === 0 ? 'sticky left-0 z-10 bg-inherit' : ''
-                }`}
-              style={{ width: col.width, minWidth: col.width, textAlign: col.align || 'left' }}>
+              className={`relative flex items-center px-3 py-2 text-sm border-r border-gray-100 last:border-r-0 ${
+                idx === 0 ? 'sticky left-0 z-10 bg-inherit' : ''
+              }`}
+              style={{width: col.width, minWidth: col.width, textAlign: col.align || 'left'}}>
               {renderCell(row, col, depth)}
 
               {idx === 0 && (
                 <div className="absolute right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 border border-gray-100 rounded-md px-0.5 shadow-sm">
-                  <button onClick={() => addChildRow(row.id)} className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Add child row">
+                  <button
+                    onClick={() => addChildRow(row.id)}
+                    className="p-1 text-gray-400 hover:text-indigo-500 transition-colors"
+                    title="Add child row">
                     <PlusIcon className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => indentRow(row.id)} className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Indent">
+                  <button
+                    onClick={() => indentRow(row.id)}
+                    className="p-1 text-gray-400 hover:text-indigo-500 transition-colors"
+                    title="Indent">
                     <ArrowRightIcon className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => outdentRow(row.id)} className="p-1 text-gray-400 hover:text-indigo-500 transition-colors" title="Outdent">
+                  <button
+                    onClick={() => outdentRow(row.id)}
+                    className="p-1 text-gray-400 hover:text-indigo-500 transition-colors"
+                    title="Outdent">
                     <ArrowLeftIcon className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => deleteRow(row.id)} className="p-1 text-gray-400 hover:text-red-400 transition-colors" title="Delete row">
+                  <button
+                    onClick={() => deleteRow(row.id)}
+                    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                    title="Delete row">
                     <TrashIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -1101,7 +1166,9 @@ export default function TableApp() {
               value={currentTableName}
               onChange={e => setCurrentTableName(e.target.value)}
               onBlur={() => setIsEditingName(false)}
-              onKeyDown={e => { if (e.key === 'Enter') setIsEditingName(false); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') setIsEditingName(false);
+              }}
             />
           ) : (
             <h2
@@ -1194,18 +1261,29 @@ export default function TableApp() {
           <div className="relative" ref={copyMenuRef}>
             <button
               onClick={() => setIsCopyMenuOpen(!isCopyMenuOpen)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${copySuccess ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-                }`}>
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                copySuccess ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              }`}>
               {copySuccess ? (
-                <><CheckIcon className="w-4 h-4" /><span className="hidden sm:inline">Copied!</span></>
+                <>
+                  <CheckIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Copied!</span>
+                </>
               ) : (
-                <><ClipboardDocumentIcon className="w-4 h-4" /><span className="hidden sm:inline">Copy</span><ChevronDownIcon className="w-3 h-3 hidden sm:inline" /></>
+                <>
+                  <ClipboardDocumentIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Copy</span>
+                  <ChevronDownIcon className="w-3 h-3 hidden sm:inline" />
+                </>
               )}
             </button>
             {isCopyMenuOpen && (
               <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50">
                 <button
-                  onClick={() => { setIsCopyMenuOpen(false); copyAsHTML('label'); }}
+                  onClick={() => {
+                    setIsCopyMenuOpen(false);
+                    copyAsHTML('label');
+                  }}
                   className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors">
                   <span className="flex items-center gap-1 shrink-0">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -1214,7 +1292,10 @@ export default function TableApp() {
                   <span className="text-gray-500">Color + Label</span>
                 </button>
                 <button
-                  onClick={() => { setIsCopyMenuOpen(false); copyAsHTML('color-only'); }}
+                  onClick={() => {
+                    setIsCopyMenuOpen(false);
+                    copyAsHTML('color-only');
+                  }}
                   className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100">
                   <span className="flex items-center gap-1 shrink-0">
                     <span className="w-3.5 h-3.5 rounded-full bg-green-500" />
@@ -1279,7 +1360,8 @@ export default function TableApp() {
             </div>
             <h3 className="text-sm font-semibold text-gray-500 mb-1">No data yet</h3>
             <p className="text-xs text-gray-400 mb-4 max-w-xs">
-              Add rows manually, or use <span className="text-violet-600 font-medium">AI Import</span> to paste text/images and auto-generate a table.
+              Add rows manually, or use <span className="text-violet-600 font-medium">AI Import</span> to paste
+              text/images and auto-generate a table.
             </p>
             <div className="flex gap-2">
               <button

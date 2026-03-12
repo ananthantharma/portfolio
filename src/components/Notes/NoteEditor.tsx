@@ -4,6 +4,7 @@
 import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowPathIcon,
+  BriefcaseIcon,
   CheckIcon,
   ClipboardDocumentListIcon,
   CodeBracketIcon, // Icon for Rewrite
@@ -37,6 +38,7 @@ import remarkGfm from 'remark-gfm';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {AttachmentManager} from './AttachmentManager';
 import RewriteModal from './RewriteModal'; // Import RewriteModal
+import ExecutiveModal from './ExecutiveModal';
 import {useBadgeSettings} from './BadgeSettingsContext'; // Added import
 
 const REFINE_PROMPT = `System: Act as a communications ghostwriter. Return ONLY the rewritten text. No intros, no outros, no quotes.
@@ -186,6 +188,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   const [rewriteSelectedText, setRewriteSelectedText] = useState('');
 
   const [isPromptEditorOpen, setIsPromptEditorOpen] = useState(false);
+  const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
   const [organizePrompt, setOrganizePrompt] = useState('');
 
   const [isToDoOpen, setIsToDoOpen] = useState(false);
@@ -2134,6 +2137,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
                   <SparklesIcon className="h-3.5 w-3.5" />
                   Question
                 </button>
+                <button
+                  onClick={() => {
+                    setIsExecutiveModalOpen(true);
+                    setIsAIActionsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-[11px] text-gray-600 hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center gap-2">
+                  <BriefcaseIcon className="h-3.5 w-3.5" />
+                  Executive
+                </button>
                 {isAuthorizedFull && (
                   <button
                     onClick={() => {
@@ -2300,6 +2312,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           </div>
         </Dialog>
       </Transition>
+
+      <ExecutiveModal
+        isOpen={isExecutiveModalOpen}
+        onClose={() => setIsExecutiveModalOpen(false)}
+        onInsert={handleRewrittenInsertMemo}
+      />
 
       <RewriteModal
         isOpen={isRewriteModalOpen}

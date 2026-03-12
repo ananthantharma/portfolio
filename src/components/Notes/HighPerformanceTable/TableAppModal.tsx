@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import React, {Fragment} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {XMarkIcon} from '@heroicons/react/24/outline';
 import TableApp from './TableApp';
 
 interface TableAppModalProps {
@@ -8,7 +8,7 @@ interface TableAppModalProps {
   onClose: () => void;
 }
 
-export const TableAppModal: React.FC<TableAppModalProps> = ({ isOpen, onClose }) => {
+export const TableAppModal: React.FC<TableAppModalProps> = ({isOpen, onClose}) => {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>

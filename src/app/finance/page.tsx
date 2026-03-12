@@ -1,12 +1,12 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import {useSession} from 'next-auth/react';
 import AccessDenied from '@/components/AccessDenied';
 
 /* eslint-disable simple-import-sort/imports */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import { ArrowTrendingUpIcon, BanknotesIcon, CreditCardIcon, WalletIcon } from '@heroicons/react/24/solid';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {PlusIcon} from '@heroicons/react/24/outline';
+import {ArrowTrendingUpIcon, BanknotesIcon, CreditCardIcon, WalletIcon} from '@heroicons/react/24/solid';
 
 import ActivityFeed from '@/components/Finance/ActivityFeed';
 import BudgetItemModal from '@/components/Finance/BudgetItemModal';
@@ -14,7 +14,7 @@ import BudgetListModal from '@/components/Finance/BudgetListModal';
 import BudgetOverview from '@/components/Finance/BudgetOverview';
 import CategoryDetailModal from '@/components/Finance/CategoryDetailModal';
 import CSVUploader from '@/components/Finance/CSVUploader';
-import InvestmentManager, { Investment } from '@/components/Finance/InvestmentManager';
+import InvestmentManager, {Investment} from '@/components/Finance/InvestmentManager';
 import MetricCard from '@/components/Finance/MetricCard';
 import MonthSelector from '@/components/Finance/MonthSelector';
 import SpendTrendChart from '@/components/Finance/SpendTrendChart';
@@ -22,8 +22,8 @@ import TopCategorySpend from '@/components/Finance/TopCategorySpend';
 import TransactionEditModal from '@/components/Finance/TransactionEditModal';
 import UpcomingExpenses from '@/components/Finance/UpcomingExpenses';
 import Header from '@/components/Sections/Header';
-import { getParentCategory } from '@/lib/categories';
-import { IBudgetItemData } from '@/models/BudgetItem';
+import {getParentCategory} from '@/lib/categories';
+import {IBudgetItemData} from '@/models/BudgetItem';
 
 interface Transaction {
   _id: string;
@@ -35,15 +35,15 @@ interface Transaction {
 }
 
 export default function FinanceDashboard() {
-  const { data: session, status } = useSession();
-  const [budgetItems, setBudgetItems] = useState<(IBudgetItemData & { _id: string })[]>([]);
+  const {data: session, status} = useSession();
+  const [budgetItems, setBudgetItems] = useState<(IBudgetItemData & {_id: string})[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Investment State
   const [investments, setInvestments] = useState<Investment[]>([]);
-  const [investmentPrices, setInvestmentPrices] = useState<{ [ticker: string]: number }>({});
+  const [investmentPrices, setInvestmentPrices] = useState<{[ticker: string]: number}>({});
   const [refreshingPrices, setRefreshingPrices] = useState(false);
 
   // Modal States
@@ -54,7 +54,7 @@ export default function FinanceDashboard() {
 
   // Selection States
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [editingItem, setEditingItem] = useState<(IBudgetItemData & { _id: string }) | null>(null); // For Budget Items
+  const [editingItem, setEditingItem] = useState<(IBudgetItemData & {_id: string}) | null>(null); // For Budget Items
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null); // For Transactions
 
   const [loading, setLoading] = useState(true);
@@ -69,7 +69,7 @@ export default function FinanceDashboard() {
   const fetchInvestmentPrices = useCallback(async (invs: Investment[]) => {
     setRefreshingPrices(true);
     const uniqueTickers = Array.from(new Set(invs.map(i => i.ticker)));
-    const newPrices: { [ticker: string]: number } = {};
+    const newPrices: {[ticker: string]: number} = {};
 
     await Promise.all(
       uniqueTickers.map(async ticker => {
@@ -85,7 +85,7 @@ export default function FinanceDashboard() {
       }),
     );
 
-    setInvestmentPrices(prev => ({ ...prev, ...newPrices }));
+    setInvestmentPrices(prev => ({...prev, ...newPrices}));
     setRefreshingPrices(false);
   }, []);
 
@@ -130,7 +130,7 @@ export default function FinanceDashboard() {
         const url = editingItem ? `/api/finance/budget/${editingItem._id}` : '/api/finance/budget';
         const res = await fetch(url, {
           method,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(newItem),
         });
         if (res.ok) {
@@ -165,7 +165,7 @@ export default function FinanceDashboard() {
     async (id: string) => {
       if (!confirm('Delete this budget item?')) return;
       try {
-        await fetch(`/api/finance/budget/${id}`, { method: 'DELETE' });
+        await fetch(`/api/finance/budget/${id}`, {method: 'DELETE'});
         fetchData();
       } catch (error) {
         console.error(error);
@@ -177,7 +177,7 @@ export default function FinanceDashboard() {
   const handleDeleteTransaction = useCallback(async (id: string) => {
     if (!confirm('Delete transaction?')) return;
     try {
-      await fetch(`/api/finance/transactions/${id}`, { method: 'DELETE' });
+      await fetch(`/api/finance/transactions/${id}`, {method: 'DELETE'});
       setTransactions(prev => prev.filter(t => t._id !== id));
     } catch (error) {
       console.error(error);
@@ -192,7 +192,7 @@ export default function FinanceDashboard() {
   const handleSaveTransactionCategory = useCallback(
     async (id: string, newCategory: string) => {
       // Optimistic update
-      setTransactions(prev => prev.map(t => (t._id === id ? { ...t, category: newCategory } : t)));
+      setTransactions(prev => prev.map(t => (t._id === id ? {...t, category: newCategory} : t)));
 
       // In a real app, you'd PUT to an API endpoint here to save specifically.
       // Assuming we might not have a specific PATCH endpoint for just category,
@@ -207,8 +207,8 @@ export default function FinanceDashboard() {
       try {
         await fetch(`/api/finance/transactions/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ category: newCategory }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({category: newCategory}),
         });
         fetchData(); // Refresh to be sure
       } catch (err) {
@@ -219,7 +219,7 @@ export default function FinanceDashboard() {
   );
 
   const handleBulkCategoryChange = useCallback(
-    async (updates: { [id: string]: { category: string; amount?: number; type?: 'Income' | 'Expense' | 'Transfer' } }) => {
+    async (updates: {[id: string]: {category: string; amount?: number; type?: 'Income' | 'Expense' | 'Transfer'}}) => {
       // Optimistic Update
       setTransactions(prev =>
         prev.map(t => {
@@ -240,7 +240,7 @@ export default function FinanceDashboard() {
       const updatePromises = Object.entries(updates).map(([id, data]) => {
         return fetch(`/api/finance/transactions/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data),
         });
       });
@@ -258,7 +258,7 @@ export default function FinanceDashboard() {
   const handleClearAllTransactions = useCallback(async () => {
     if (!confirm('Make sure you want to DELETE ALL transactions. This matches your "Clear" request.')) return;
     try {
-      await fetch('/api/finance/transactions', { method: 'DELETE' });
+      await fetch('/api/finance/transactions', {method: 'DELETE'});
       setTransactions([]);
       setLastUpdated(null);
     } catch (error) {
@@ -345,7 +345,7 @@ export default function FinanceDashboard() {
             return parent === mainCat || t.category === mainCat;
           })
           .reduce((s, t) => s + t.amount, 0);
-        return { name: mainCat, budgeted, spent };
+        return {name: mainCat, budgeted, spent};
       })
       .sort((a, b) => b.budgeted - a.budgeted);
   }, [budgetItems, filteredTransactions]);
@@ -369,7 +369,7 @@ export default function FinanceDashboard() {
 
   const handleCloseBudgetList = useCallback(() => setBudgetListType(null), []);
 
-  const handleEditBudgetItem = useCallback((item: IBudgetItemData & { _id: string }) => {
+  const handleEditBudgetItem = useCallback((item: IBudgetItemData & {_id: string}) => {
     setEditingItem(item);
     setIsBudgetModalOpen(true);
   }, []);
@@ -512,7 +512,7 @@ export default function FinanceDashboard() {
         {budgetListType && (
           <BudgetListModal
             isOpen={!!budgetListType}
-            items={budgetItems as (IBudgetItemData & { _id: string })[]}
+            items={budgetItems as (IBudgetItemData & {_id: string})[]}
             onAdd={handleAddNewBudgetItem}
             onClose={handleCloseBudgetList}
             onDelete={handleDeleteBudgetItem}

@@ -2,10 +2,10 @@
 'use client';
 
 import Link from 'next/link';
-import { FC, memo, useCallback, useEffect, useRef, useState } from 'react';
+import {FC, memo, useCallback, useEffect, useRef, useState} from 'react';
 
-import { SectionId } from '../../data/data';
-import { useNavObserver } from '../../hooks/useNavObserver';
+import {SectionId} from '../../data/data';
+import {useNavObserver} from '../../hooks/useNavObserver';
 import UserProfileMenu from '../UserProfileMenu';
 
 export const headerID = 'headerNav';
@@ -13,21 +13,21 @@ export const headerID = 'headerNav';
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
 const topLevelItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Contact', href: `/#${SectionId.Contact}` },
-  { label: 'AI Chat', href: '/chat' },
-  { label: 'Open', href: '/open' },
-  { label: 'Invoices', href: '/smart-invoices' },
+  {label: 'Home', href: '/'},
+  {label: 'Contact', href: `/#${SectionId.Contact}`},
+  {label: 'AI Chat', href: '/chat'},
+  {label: 'Open', href: '/open'},
+  {label: 'Invoices', href: '/smart-invoices'},
 ];
 
 const ananthanItems = [
-  { label: 'Drive', href: '/drive', emoji: '☁️', desc: 'File storage' },
-  { label: 'Bookmarks', href: '/bookmarks', emoji: '🔖', desc: 'Saved links' },
-  { label: 'Secure Login', href: '/dashboard', emoji: '🔐', desc: 'Vault' },
-  { label: 'Finance', href: '/finance', emoji: '💰', desc: 'Money tracker' },
-  { label: 'Notes', href: '/notes', emoji: '📝', desc: 'Workspace' },
-  { label: 'Gantt', href: '/gantt', emoji: '📊', desc: 'Projects' },
-  { label: 'Tasks', href: '/tasks', emoji: '✅', desc: 'To-do list' },
+  {label: 'Drive', href: '/drive', emoji: '☁️', desc: 'File storage'},
+  {label: 'Bookmarks', href: '/bookmarks', emoji: '🔖', desc: 'Saved links'},
+  {label: 'Secure Login', href: '/dashboard', emoji: '🔐', desc: 'Vault'},
+  {label: 'Finance', href: '/finance', emoji: '💰', desc: 'Money tracker'},
+  {label: 'Notes', href: '/notes', emoji: '📝', desc: 'Workspace'},
+  {label: 'Gantt', href: '/gantt', emoji: '📊', desc: 'Projects'},
+  {label: 'Tasks', href: '/tasks', emoji: '✅', desc: 'To-do list'},
 ];
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ const Header: FC = memo(() => {
 
 // ─── Desktop ───────────────────────────────────────────────────────────────────
 
-const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSection: _cs }) => {
+const DesktopNav: FC<{currentSection: SectionId | null}> = memo(({currentSection: _cs}) => {
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -72,9 +72,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const isAnanthanActive = ananthanItems.some(
-    item => pathname === item.href || pathname.startsWith(item.href + '/'),
-  );
+  const isAnanthanActive = ananthanItems.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
   if (!mounted) return null;
 
@@ -108,8 +106,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
       <header
         id={headerID}
         className="fixed top-0 z-50 hidden w-full sm:flex items-center justify-center"
-        style={{ paddingTop: '12px', paddingBottom: '0' }}>
-
+        style={{paddingTop: '12px', paddingBottom: '0'}}>
         {/* The floating bar */}
         <div
           className="flex h-12 items-center gap-2 px-2 mx-4 w-full max-w-5xl"
@@ -127,12 +124,8 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
             `,
             animation: 'nav-fade-in 0.4s ease both',
           }}>
-
           {/* ── Brand ── */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 flex-shrink-0 px-1 mr-1 group"
-            aria-label="Home">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 px-1 mr-1 group" aria-label="Home">
             <span
               className="flex h-7 w-7 items-center justify-center rounded-lg text-white text-xs font-black transition-all duration-300 group-hover:scale-110"
               style={{
@@ -145,7 +138,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
           </Link>
 
           {/* ── Divider ── */}
-          <div className="h-5 w-px flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <div className="h-5 w-px flex-shrink-0" style={{background: 'rgba(255,255,255,0.08)'}} />
 
           {/* ── Nav links ── */}
           <div className="flex items-center gap-0.5 flex-1">
@@ -166,7 +159,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                   {/* Hover background */}
                   <span
                     className="nav-pill-bg absolute inset-0 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                    style={{background: 'rgba(255,255,255,0.06)'}}
                   />
 
                   {/* Active glow background */}
@@ -186,7 +179,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                   {isActive && (
                     <span
                       className="relative z-10 ml-1.5 h-1 w-1 rounded-full flex-shrink-0"
-                      style={{ background: '#f97316', boxShadow: '0 0 4px #f97316' }}
+                      style={{background: '#f97316', boxShadow: '0 0 4px #f97316'}}
                     />
                   )}
                 </Link>
@@ -196,7 +189,6 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
 
           {/* ── Right side ── */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
-
             {/* Ananthan dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
@@ -206,12 +198,12 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                 className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                 style={{
                   color: isAnanthanActive || dropdownOpen ? '#fb923c' : 'rgba(200,200,215,1)',
-                  background: isAnanthanActive || dropdownOpen
-                    ? 'linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.08))'
-                    : 'transparent',
-                  border: isAnanthanActive || dropdownOpen
-                    ? '1px solid rgba(249,115,22,0.25)'
-                    : '1px solid transparent',
+                  background:
+                    isAnanthanActive || dropdownOpen
+                      ? 'linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.08))'
+                      : 'transparent',
+                  border:
+                    isAnanthanActive || dropdownOpen ? '1px solid rgba(249,115,22,0.25)' : '1px solid transparent',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={e => {
@@ -246,7 +238,10 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                     transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     opacity: 0.6,
                   }}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
@@ -261,13 +256,15 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                     background: 'linear-gradient(160deg, rgba(12,10,22,0.98) 0%, rgba(16,10,30,0.98) 100%)',
                     border: '1px solid rgba(255,255,255,0.09)',
                     borderRadius: '20px',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.2), 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset',
+                    boxShadow:
+                      '0 4px 6px rgba(0,0,0,0.2), 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset',
                     animation: 'dropdown-in 0.18s cubic-bezier(0.16,1,0.3,1) both',
                   }}>
-
                   {/* Header */}
-                  <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(120,100,160,1)' }}>
+                  <div className="px-4 pt-4 pb-3" style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.15em]"
+                      style={{color: 'rgba(120,100,160,1)'}}>
                       Ananthan's Apps
                     </p>
                   </div>
@@ -286,9 +283,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                             background: isActive
                               ? 'linear-gradient(135deg, rgba(249,115,22,0.18), rgba(234,88,12,0.1))'
                               : 'rgba(255,255,255,0.03)',
-                            border: isActive
-                              ? '1px solid rgba(249,115,22,0.25)'
-                              : '1px solid rgba(255,255,255,0.04)',
+                            border: isActive ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(255,255,255,0.04)',
                           }}
                           onMouseEnter={e => {
                             if (!isActive) {
@@ -311,10 +306,10 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
                           <div>
                             <p
                               className="text-[12px] font-semibold leading-tight"
-                              style={{ color: isActive ? '#fb923c' : 'rgba(220,215,235,1)' }}>
+                              style={{color: isActive ? '#fb923c' : 'rgba(220,215,235,1)'}}>
                               {item.label}
                             </p>
-                            <p className="text-[10px] mt-0.5" style={{ color: 'rgba(100,95,120,1)' }}>
+                            <p className="text-[10px] mt-0.5" style={{color: 'rgba(100,95,120,1)'}}>
                               {item.desc}
                             </p>
                           </div>
@@ -327,7 +322,7 @@ const DesktopNav: FC<{ currentSection: SectionId | null }> = memo(({ currentSect
             </div>
 
             {/* Thin separator */}
-            <div className="h-5 w-px mx-1" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <div className="h-5 w-px mx-1" style={{background: 'rgba(255,255,255,0.08)'}} />
 
             {/* User profile */}
             <UserProfileMenu />
@@ -361,9 +356,7 @@ const MobileNav: FC = memo(() => {
         onClick={() => setIsOpen(p => !p)}
         className="fixed right-3 top-3 z-50 sm:hidden flex h-10 w-10 items-center justify-center rounded-2xl transition-all duration-200 focus:outline-none"
         style={{
-          background: isOpen
-            ? 'rgba(255,255,255,0.1)'
-            : 'linear-gradient(135deg,#f97316,#ea580c)',
+          background: isOpen ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg,#f97316,#ea580c)',
           boxShadow: isOpen ? 'none' : '0 4px 16px rgba(249,115,22,0.4)',
           border: '1px solid rgba(255,255,255,0.1)',
         }}>
@@ -376,7 +369,7 @@ const MobileNav: FC = memo(() => {
           />
           <span
             className="block h-0.5 w-full rounded-full bg-white transition-all duration-300"
-            style={{ opacity: isOpen ? 0 : 1 }}
+            style={{opacity: isOpen ? 0 : 1}}
           />
           <span
             className="block h-0.5 w-full rounded-full bg-white transition-all duration-300"
@@ -392,7 +385,7 @@ const MobileNav: FC = memo(() => {
         <div
           className="fixed inset-0 z-40 sm:hidden"
           onClick={close}
-          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
+          style={{background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)'}}
         />
       )}
 
@@ -406,11 +399,10 @@ const MobileNav: FC = memo(() => {
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.3s cubic-bezier(0.16,1,0.3,1)',
         }}>
-
         {/* Top bar */}
         <div
           className="flex h-16 items-center justify-between px-5"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{borderBottom: '1px solid rgba(255,255,255,0.06)'}}>
           <div className="flex items-center gap-2.5">
             <span
               className="flex h-8 w-8 items-center justify-center rounded-xl text-white text-sm font-black"
@@ -420,8 +412,8 @@ const MobileNav: FC = memo(() => {
               }}>
               A
             </span>
-            <span className="text-sm font-semibold" style={{ color: 'rgba(220,215,235,0.9)' }}>
-              ananthan<span style={{ color: '#f97316' }}>.org</span>
+            <span className="text-sm font-semibold" style={{color: 'rgba(220,215,235,0.9)'}}>
+              ananthan<span style={{color: '#f97316'}}>.org</span>
             </span>
           </div>
           <UserProfileMenu />
@@ -431,7 +423,7 @@ const MobileNav: FC = memo(() => {
           {/* Main links section */}
           <p
             className="px-2 mb-2 text-[10px] font-bold uppercase tracking-[0.15em]"
-            style={{ color: 'rgba(100,90,130,1)' }}>
+            style={{color: 'rgba(100,90,130,1)'}}>
             Navigation
           </p>
 
@@ -450,16 +442,14 @@ const MobileNav: FC = memo(() => {
                   background: isActive
                     ? 'linear-gradient(135deg, rgba(249,115,22,0.18), rgba(234,88,12,0.08))'
                     : 'rgba(255,255,255,0.03)',
-                  border: isActive
-                    ? '1px solid rgba(249,115,22,0.25)'
-                    : '1px solid rgba(255,255,255,0.04)',
+                  border: isActive ? '1px solid rgba(249,115,22,0.25)' : '1px solid rgba(255,255,255,0.04)',
                   color: isActive ? '#fb923c' : 'rgba(195,190,215,1)',
                 }}>
                 <span>{item.label}</span>
                 {isActive && (
                   <span
                     className="ml-auto h-1.5 w-1.5 rounded-full flex-shrink-0"
-                    style={{ background: '#f97316', boxShadow: '0 0 6px #f97316' }}
+                    style={{background: '#f97316', boxShadow: '0 0 6px #f97316'}}
                   />
                 )}
               </Link>
@@ -467,7 +457,7 @@ const MobileNav: FC = memo(() => {
           })}
 
           {/* Separator */}
-          <div className="my-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} />
+          <div className="my-4" style={{borderTop: '1px solid rgba(255,255,255,0.05)'}} />
 
           {/* Ananthan group */}
           <button
@@ -483,7 +473,7 @@ const MobileNav: FC = memo(() => {
                 <span
                   key={i}
                   className="h-[4px] w-[4px] rounded-[1px]"
-                  style={{ background: 'currentColor', opacity: 0.7 }}
+                  style={{background: 'currentColor', opacity: 0.7}}
                 />
               ))}
             </span>
@@ -512,14 +502,12 @@ const MobileNav: FC = memo(() => {
                       background: isActive
                         ? 'linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.1))'
                         : 'rgba(255,255,255,0.04)',
-                      border: isActive
-                        ? '1px solid rgba(249,115,22,0.3)'
-                        : '1px solid rgba(255,255,255,0.05)',
+                      border: isActive ? '1px solid rgba(249,115,22,0.3)' : '1px solid rgba(255,255,255,0.05)',
                     }}>
                     <span className="text-xl leading-none">{item.emoji}</span>
                     <p
                       className="text-[11px] font-semibold leading-tight"
-                      style={{ color: isActive ? '#fb923c' : 'rgba(200,195,220,1)' }}>
+                      style={{color: isActive ? '#fb923c' : 'rgba(200,195,220,1)'}}>
                       {item.label}
                     </p>
                   </Link>

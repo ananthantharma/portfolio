@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import {useRouter} from 'next/navigation';
+import {useSession} from 'next-auth/react';
+import {useEffect} from 'react';
 
-export default function NotesLayout({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+export default function NotesLayout({children}: {children: React.ReactNode}) {
+  const {status} = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -40,9 +40,7 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
       </Link>
 
       {/* Notes content fills the full screen */}
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
-        {children}
-      </div>
+      <div style={{position: 'fixed', inset: 0, overflow: 'hidden'}}>{children}</div>
     </>
   );
 }

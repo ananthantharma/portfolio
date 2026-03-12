@@ -1,6 +1,6 @@
 /* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowTopRightOnSquareIcon,
   CalendarDaysIcon,
@@ -16,10 +16,10 @@ import {
   XMarkIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
-import { INotePage } from '@/models/NotePage';
-import { IToDo } from '@/models/ToDo';
-import TaskFormModal, { TaskFormData } from './TaskFormModal';
+import {CheckCircleIcon as CheckCircleIconSolid} from '@heroicons/react/24/solid';
+import {INotePage} from '@/models/NotePage';
+import {IToDo} from '@/models/ToDo';
+import TaskFormModal, {TaskFormData} from './TaskFormModal';
 import SmartInput from './SmartInput';
 import ToDoBoard from './ToDoBoard';
 import EmailTaskModal from './EmailTaskModal';
@@ -49,7 +49,7 @@ const FilterDropdown = React.memo(
   }: {
     label: string;
     value: string;
-    options: { label: string; value: string }[];
+    options: {label: string; value: string}[];
     onChange: (v: string) => void;
     accentColor?: string;
   }) => {
@@ -71,11 +71,14 @@ const FilterDropdown = React.memo(
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen(v => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${isActive
-            ? `${accentColor || 'bg-white/20 border-white/30'} text-white`
-            : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/15 hover:text-white'
-            }`}>
-          <span>{label}: <span className="font-semibold">{current?.label ?? value}</span></span>
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+            isActive
+              ? `${accentColor || 'bg-white/20 border-white/30'} text-white`
+              : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/15 hover:text-white'
+          }`}>
+          <span>
+            {label}: <span className="font-semibold">{current?.label ?? value}</span>
+          </span>
           <ChevronDownIcon className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
         {open && (
@@ -83,9 +86,13 @@ const FilterDropdown = React.memo(
             {options.map(opt => (
               <button
                 key={opt.value}
-                onClick={() => { onChange(opt.value); setOpen(false); }}
-                className={`w-full text-left px-3 py-2 text-xs transition-colors ${value === opt.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
-                  }`}>
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                  value === opt.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                }`}>
                 {opt.label}
               </button>
             ))}
@@ -119,11 +126,11 @@ const SortDropdown = React.memo(
       return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const fields: { value: SortField; label: string }[] = [
-      { value: 'dueDate', label: 'Due Date' },
-      { value: 'priority', label: 'Priority' },
-      { value: 'title', label: 'Title' },
-      { value: 'category', label: 'Category' },
+    const fields: {value: SortField; label: string}[] = [
+      {value: 'dueDate', label: 'Due Date'},
+      {value: 'priority', label: 'Priority'},
+      {value: 'title', label: 'Title'},
+      {value: 'category', label: 'Category'},
     ];
     const current = fields.find(f => f.value === sortField);
 
@@ -141,9 +148,13 @@ const SortDropdown = React.memo(
             {fields.map(f => (
               <button
                 key={f.value}
-                onClick={() => { onSort(f.value); setOpen(false); }}
-                className={`w-full text-left px-3 py-2 text-xs transition-colors ${sortField === f.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
-                  }`}>
+                onClick={() => {
+                  onSort(f.value);
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                  sortField === f.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                }`}>
                 {f.label} {sortField === f.value && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
             ))}
@@ -156,7 +167,7 @@ const SortDropdown = React.memo(
 SortDropdown.displayName = 'SortDropdown';
 
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
-  ({ isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate, isStandalone }) => {
+  ({isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate, isStandalone}) => {
     const [todos, setTodos] = useState<IToDo[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -216,11 +227,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const handleToggleComplete = async (todo: IToDo) => {
       try {
         const newStatus = !todo.isCompleted;
-        setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, isCompleted: newStatus } as IToDo) : t)));
+        setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, isCompleted: newStatus} as IToDo) : t)));
         await fetch(`/api/todos/${todo._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isCompleted: newStatus }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({isCompleted: newStatus}),
         });
       } catch (error) {
         console.error('Error updating status:', error);
@@ -232,7 +243,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       if (!confirm('Are you sure you want to delete this task?')) return;
       try {
         setTodos(prev => prev.filter(t => t._id !== id));
-        await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+        await fetch(`/api/todos/${id}`, {method: 'DELETE'});
       } catch (error) {
         console.error('Error deleting task:', error);
         fetchTodos();
@@ -251,7 +262,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       setIsTaskFormOpen(true);
     };
 
-    const handleSmartAdd = (data: { title: string; priority: string; dueDate: Date | null }) => {
+    const handleSmartAdd = (data: {title: string; priority: string; dueDate: Date | null}) => {
       setEditingTask(null);
       setPrefilledData({
         title: data.title,
@@ -267,12 +278,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     };
 
     const handleStatusChange = async (id: string, newStatus: IToDo['status']) => {
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, status: newStatus } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, status: newStatus} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({status: newStatus}),
         });
       } catch (error) {
         console.error('Failed to update status', error);
@@ -284,7 +295,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       // Find the column these tasks belong to
       const colTodos = todos.filter(t => {
         const activeTodo = todos.find(a => a._id === activeId);
-        return activeTodo && (t.status || (t.isCompleted ? 'done' : 'todo')) === (activeTodo.status || (activeTodo.isCompleted ? 'done' : 'todo'));
+        return (
+          activeTodo &&
+          (t.status || (t.isCompleted ? 'done' : 'todo')) ===
+            (activeTodo.status || (activeTodo.isCompleted ? 'done' : 'todo'))
+        );
       });
 
       const sorted = [...colTodos].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -299,20 +314,22 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       reordered.splice(overIndex, 0, moved);
 
       // Assign new order values
-      const updates = reordered.map((t, i) => ({ id: t._id, order: i }));
+      const updates = reordered.map((t, i) => ({id: t._id, order: i}));
 
       // Optimistic update
-      setTodos(prev => prev.map(t => {
-        const update = updates.find(u => u.id === t._id);
-        return update ? { ...t, order: update.order } as any : t;
-      }));
+      setTodos(prev =>
+        prev.map(t => {
+          const update = updates.find(u => u.id === t._id);
+          return update ? ({...t, order: update.order} as any) : t;
+        }),
+      );
 
       // Persist
       try {
         await fetch('/api/todos/reorder', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ updates }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({updates}),
         });
       } catch (error) {
         console.error('Error reordering todos:', error);
@@ -327,11 +344,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         const nextIndex = (currentIndex + 1) % colors.length;
         const newValue = colors[nextIndex];
 
-        setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, neonColor: newValue } as any) : t)));
+        setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, neonColor: newValue} as any) : t)));
         await fetch(`/api/todos/${todo._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ neonColor: newValue }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({neonColor: newValue}),
         });
       } catch (error) {
         console.error('Error cycling neon color:', error);
@@ -342,11 +359,11 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const handleToggleMinimize = async (todo: IToDo) => {
       try {
         const newValue = !(todo.isMinimized ?? true);
-        setTodos(prev => prev.map(t => (t._id === todo._id ? ({ ...t, isMinimized: newValue } as any) : t)));
+        setTodos(prev => prev.map(t => (t._id === todo._id ? ({...t, isMinimized: newValue} as any) : t)));
         await fetch(`/api/todos/${todo._id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isMinimized: newValue }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({isMinimized: newValue}),
         });
       } catch (error) {
         console.error('Error toggling minimize:', error);
@@ -360,12 +377,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       const newDueDate = new Date(todo.dueDate);
       newDueDate.setDate(newDueDate.getDate() + days);
 
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, dueDate: newDueDate.toISOString() } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, dueDate: newDueDate.toISOString()} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dueDate: newDueDate.toISOString() }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({dueDate: newDueDate.toISOString()}),
         });
       } catch (error) {
         console.error('Failed to update due date', error);
@@ -374,12 +391,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     };
 
     const handleUpdateNotes = async (id: string, newNotes: string) => {
-      setTodos(prev => prev.map(t => (t._id === id ? ({ ...t, notes: newNotes } as any) : t)));
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, notes: newNotes} as any) : t)));
       try {
         await fetch(`/api/todos/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notes: newNotes }),
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({notes: newNotes}),
         });
       } catch (error) {
         console.error('Failed to update notes', error);
@@ -466,7 +483,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
         const res = await fetch('/api/gemini/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             prompt: `You are a task prioritization assistant. Analyze these tasks and assign priorities (High, Medium, or Low) based on urgency, due date proximity, and category importance. Return ONLY a JSON array like [{"title":"exact task title","priority":"High|Medium|Low"}].\n\nTasks:\n${taskList}`,
           }),
@@ -486,8 +503,8 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
             if (matchingTodo && ['High', 'Medium', 'Low'].includes(suggestion.priority)) {
               await fetch(`/api/todos/${matchingTodo._id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priority: suggestion.priority }),
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({priority: suggestion.priority}),
               });
             }
           }
@@ -514,7 +531,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         let comparison = 0;
         switch (sortField) {
           case 'priority': {
-            const priorityOrder: Record<string, number> = { High: 3, Medium: 2, Low: 1, None: 0 };
+            const priorityOrder: Record<string, number> = {High: 3, Medium: 2, Low: 1, None: 0};
             comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
             break;
           }
@@ -559,24 +576,31 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays < 0)
-        return { text: `${Math.abs(diffDays)}d overdue`, className: 'text-red-600 font-semibold', isOverdue: true };
-      if (diffDays === 0) return { text: 'Today', className: 'text-amber-600 font-semibold', isOverdue: false };
-      if (diffDays === 1) return { text: 'Tomorrow', className: 'text-amber-500', isOverdue: false };
-      if (diffDays <= 7) return { text: `${diffDays}d left`, className: 'text-gray-600', isOverdue: false };
+        return {text: `${Math.abs(diffDays)}d overdue`, className: 'text-red-600 font-semibold', isOverdue: true};
+      if (diffDays === 0) return {text: 'Today', className: 'text-amber-600 font-semibold', isOverdue: false};
+      if (diffDays === 1) return {text: 'Tomorrow', className: 'text-amber-500', isOverdue: false};
+      if (diffDays <= 7) return {text: `${diffDays}d left`, className: 'text-gray-600', isOverdue: false};
       return {
-        text: new Date(dateString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        text: new Date(dateString).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}),
         className: 'text-gray-400',
         isOverdue: false,
       };
     };
 
     const content = (
-      <div className={`w-full ${isStandalone ? 'h-screen flex flex-col' : 'max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/5 h-[94vh] flex flex-col'} bg-[#0f1117] text-left transition-all`}>
-
+      <div
+        className={`w-full ${
+          isStandalone
+            ? 'h-screen flex flex-col'
+            : 'max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/5 h-[94vh] flex flex-col'
+        } bg-[#0f1117] text-left transition-all`}>
         {/* ── Dark header ── */}
         <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
           {/* Row 1: title + actions */}
-          <div className={`flex ${isStandalone ? 'flex-col sm:flex-row items-start sm:items-center gap-4' : 'items-center justify-between'} mb-3`}>
+          <div
+            className={`flex ${
+              isStandalone ? 'flex-col sm:flex-row items-start sm:items-center gap-4' : 'items-center justify-between'
+            } mb-3`}>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div>
                 <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
@@ -587,29 +611,40 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               {/* Active / Done toggle */}
               <div className="flex bg-white/10 rounded-lg p-0.5 ml-auto sm:ml-0">
                 <button
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${!showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                    !showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'
+                  }`}
                   onClick={() => setShowCompleted(false)}>
                   Active
                 </button>
                 <button
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                    showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'
+                  }`}
                   onClick={() => setShowCompleted(true)}>
                   Done
                 </button>
               </div>
             </div>
 
-            <div className={`flex items-center gap-2 ${isStandalone ? 'w-full overflow-x-auto pb-1 no-scrollbar justify-start' : ''}`}>
+            <div
+              className={`flex items-center gap-2 ${
+                isStandalone ? 'w-full overflow-x-auto pb-1 no-scrollbar justify-start' : ''
+              }`}>
               {/* View toggle */}
               <div className="flex bg-white/10 rounded-lg p-0.5">
                 <button
-                  className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  className={`p-1.5 rounded-md transition-all ${
+                    viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'
+                  }`}
                   onClick={() => setViewMode('list')}
                   title="List View">
                   <ListBulletIcon className="h-4 w-4" />
                 </button>
                 <button
-                  className={`p-1.5 rounded-md transition-all ${viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'}`}
+                  className={`p-1.5 rounded-md transition-all ${
+                    viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'
+                  }`}
                   onClick={() => setViewMode('board')}
                   title="Kanban">
                   <Squares2X2Icon className="h-4 w-4" />
@@ -672,10 +707,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 label="Priority"
                 value={filterPriority}
                 options={[
-                  { label: 'All', value: 'All' },
-                  { label: '🔴 High', value: 'High' },
-                  { label: '🟡 Medium', value: 'Medium' },
-                  { label: '🟢 Low', value: 'Low' },
+                  {label: 'All', value: 'All'},
+                  {label: '🔴 High', value: 'High'},
+                  {label: '🟡 Medium', value: 'Medium'},
+                  {label: '🟢 Low', value: 'Low'},
                 ]}
                 onChange={setFilterPriority}
                 accentColor="bg-indigo-500/30 border-indigo-400/30"
@@ -684,21 +719,20 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 label="Category"
                 value={filterCategory}
                 options={[
-                  { label: 'All', value: 'All' },
-                  ...CATEGORIES.map(c => ({ label: c.replace('!', ''), value: c })),
+                  {label: 'All', value: 'All'},
+                  ...CATEGORIES.map(c => ({label: c.replace('!', ''), value: c})),
                 ]}
                 onChange={setFilterCategory}
                 accentColor="bg-indigo-500/30 border-indigo-400/30"
               />
-              <SortDropdown
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={handleSort}
-              />
+              <SortDropdown sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
               {/* Active filter count badge */}
               {(filterPriority !== 'All' || filterCategory !== 'All') && (
                 <button
-                  onClick={() => { setFilterPriority('All'); setFilterCategory('All'); }}
+                  onClick={() => {
+                    setFilterPriority('All');
+                    setFilterCategory('All');
+                  }}
                   className="px-2 py-1 text-[10px] font-medium text-red-400 bg-red-500/15 border border-red-400/20 rounded-md hover:bg-red-500/25 transition-colors">
                   Clear filters ×
                 </button>
@@ -767,35 +801,52 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 if (isStandalone) {
                   return (
                     <div
-                      className={`group relative flex items-start flex-col gap-3 px-4 py-4 sm:px-5 sm:py-5 rounded-3xl transition-all duration-200 border shadow-sm ${todo.isCompleted
-                        ? 'bg-slate-50 border-gray-100 opacity-60'
-                        : dateInfo.isOverdue
+                      className={`group relative flex items-start flex-col gap-3 px-4 py-4 sm:px-5 sm:py-5 rounded-3xl transition-all duration-200 border shadow-sm ${
+                        todo.isCompleted
+                          ? 'bg-slate-50 border-gray-100 opacity-60'
+                          : dateInfo.isOverdue
                           ? 'bg-white border-red-200 hover:shadow-md'
                           : 'bg-white border-gray-100/80 hover:border-indigo-100 hover:shadow-md'
-                        }`}
+                      }`}
                       key={todo._id}>
                       {/* Priority left bar for mobile */}
-                      <div className={`absolute left-0 inset-y-4 w-1 rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
+                      <div
+                        className={`absolute left-0 inset-y-4 w-1 rounded-r-full ${
+                          priorityAccent[todo.priority] || priorityAccent.None
+                        }`}
+                      />
 
                       <div className="flex gap-4 items-start w-full">
                         {/* Checkbox */}
                         <button
-                          className={`flex-shrink-0 mt-0.5 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
+                          className={`flex-shrink-0 mt-0.5 transition-all ${
+                            todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'
+                          }`}
                           onClick={() => handleToggleComplete(todo)}>
-                          {todo.isCompleted
-                            ? <CheckCircleIconSolid className="h-6 w-6" />
-                            : <div className="h-6 w-6 rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
-                          }
+                          {todo.isCompleted ? (
+                            <CheckCircleIconSolid className="h-6 w-6" />
+                          ) : (
+                            <div className="h-6 w-6 rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
+                          )}
                         </button>
 
                         <div className="flex-1 min-w-0 flex flex-col gap-2.5">
                           <div className="flex justify-between items-start">
-                            <h4 className={`text-[15px] sm:text-[16px] font-semibold tracking-tight ${todo.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>{todo.title}</h4>
+                            <h4
+                              className={`text-[15px] sm:text-[16px] font-semibold tracking-tight ${
+                                todo.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
+                              }`}>
+                              {todo.title}
+                            </h4>
                             <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                              <button onClick={() => handleEdit(todo)} className="p-2 bg-gray-50 text-gray-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors">
+                              <button
+                                onClick={() => handleEdit(todo)}
+                                className="p-2 bg-gray-50 text-gray-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors">
                                 <PencilIcon className="h-3.5 w-3.5" />
                               </button>
-                              <button onClick={() => handleDelete(todo._id)} className="p-2 bg-gray-50 text-gray-500 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                              <button
+                                onClick={() => handleDelete(todo._id)}
+                                className="p-2 bg-gray-50 text-gray-500 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors">
                                 <TrashIcon className="h-3.5 w-3.5" />
                               </button>
                             </div>
@@ -803,12 +854,22 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
                           <div className="flex flex-wrap items-center gap-2">
                             {todo.priority && todo.priority !== 'None' && (
-                              <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${todo.priority === 'High' ? 'bg-red-50 text-red-600 border border-red-100' : todo.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                              <span
+                                className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                  todo.priority === 'High'
+                                    ? 'bg-red-50 text-red-600 border border-red-100'
+                                    : todo.priority === 'Medium'
+                                    ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                                    : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                }`}>
                                 {todo.priority}
                               </span>
                             )}
                             {todo.category && (
-                              <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-medium border border-gray-100 ${getCategoryStyle(todo.category)}`}>
+                              <span
+                                className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-medium border border-gray-100 ${getCategoryStyle(
+                                  todo.category,
+                                )}`}>
                                 {todo.category.replace('!', '')}
                               </span>
                             )}
@@ -824,14 +885,19 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                             {!todo.isCompleted && (
                               <div className="flex items-center gap-1 pb-1 sm:pb-0">
                                 {[1, 3, 7].map(d => (
-                                  <button key={d} onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }} className="px-2 py-1 bg-gray-50 text-[10px] font-bold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-100 rounded-lg transition-colors">
+                                  <button
+                                    key={d}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      handleAddDays(todo._id, d);
+                                    }}
+                                    className="px-2 py-1 bg-gray-50 text-[10px] font-bold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-100 rounded-lg transition-colors">
                                     +{d}d
                                   </button>
                                 ))}
                               </div>
                             )}
                           </div>
-
                         </div>
                       </div>
                     </div>
@@ -840,34 +906,48 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
                 return (
                   <div
-                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${todo.isCompleted
-                      ? 'bg-white/60 border-gray-100 opacity-55'
-                      : dateInfo.isOverdue
+                    className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 border ${
+                      todo.isCompleted
+                        ? 'bg-white/60 border-gray-100 opacity-55'
+                        : dateInfo.isOverdue
                         ? 'bg-white border-red-100 hover:border-red-200 hover:shadow-sm'
                         : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
-                      }`}
+                    }`}
                     key={todo._id}>
                     {/* Priority bar */}
-                    <div className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
+                    <div
+                      className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${
+                        priorityAccent[todo.priority] || priorityAccent.None
+                      }`}
+                    />
 
                     {/* Checkbox */}
                     <button
-                      className={`flex-shrink-0 ml-1 transition-all ${todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'}`}
+                      className={`flex-shrink-0 ml-1 transition-all ${
+                        todo.isCompleted ? 'text-emerald-500 scale-110' : 'text-gray-300 hover:text-emerald-400'
+                      }`}
                       onClick={() => handleToggleComplete(todo)}>
-                      {todo.isCompleted
-                        ? <CheckCircleIconSolid className="h-[18px] w-[18px]" />
-                        : <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
-                      }
+                      {todo.isCompleted ? (
+                        <CheckCircleIconSolid className="h-[18px] w-[18px]" />
+                      ) : (
+                        <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 hover:border-emerald-400 transition-colors" />
+                      )}
                     </button>
 
                     {/* Main content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-[13px] font-medium ${todo.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                        <span
+                          className={`text-[13px] font-medium ${
+                            todo.isCompleted ? 'line-through text-gray-400' : 'text-gray-800'
+                          }`}>
                           {todo.title}
                         </span>
                         {todo.category && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getCategoryStyle(todo.category)}`}>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getCategoryStyle(
+                              todo.category,
+                            )}`}>
                             {todo.category.replace('!', '')}
                           </span>
                         )}
@@ -875,10 +955,18 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           <div className="flex items-center gap-1">
                             {todo.attachments.map((att, idx) => {
                               const isDrive = att.storageType === 'drive';
-                              const link = isDrive ? att.webViewLink : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
+                              const link = isDrive
+                                ? att.webViewLink
+                                : `/api/todos/attachment?todoId=${todo._id}&index=${idx}`;
                               return (
-                                <a key={idx} href={link} target="_blank" rel="noopener noreferrer"
-                                  className={`transition-colors ${isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'}`}
+                                <a
+                                  key={idx}
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`transition-colors ${
+                                    isDrive ? 'text-blue-400 hover:text-blue-600' : 'text-gray-300 hover:text-gray-500'
+                                  }`}
                                   title={`${isDrive ? 'Drive' : 'Download'} - ${att.name}`}
                                   onClick={e => e.stopPropagation()}>
                                   <PaperClipIcon className="h-3 w-3" />
@@ -897,8 +985,12 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                         {!todo.isCompleted && (
                           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity border-l border-gray-100 pl-2">
                             {[1, 3, 7].map(d => (
-                              <button key={d}
-                                onClick={e => { e.stopPropagation(); handleAddDays(todo._id, d); }}
+                              <button
+                                key={d}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  handleAddDays(todo._id, d);
+                                }}
                                 className="px-1.5 py-0.5 text-[9px] font-semibold text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors">
                                 +{d}d
                               </button>
@@ -909,7 +1001,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           <button
                             className="flex items-center gap-0.5 text-[11px] text-gray-400 hover:text-indigo-500 transition-colors"
                             onClick={() => {
-                              const targetId = todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-') ? todo.tabId : todo.tabName;
+                              const targetId =
+                                todo.tabId && !todo.tabId.startsWith('new-') && !todo.tabId.startsWith('default-')
+                                  ? todo.tabId
+                                  : todo.tabName;
                               onNavigate(todo.sourcePageId as unknown as INotePage, targetId);
                               onClose();
                             }}>
@@ -917,9 +1012,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                             {todo.sourcePageId.title}
                           </button>
                         )}
-                        {todo.notes && (
-                          <p className="text-[11px] text-gray-400 truncate max-w-xs">{todo.notes}</p>
-                        )}
+                        {todo.notes && <p className="text-[11px] text-gray-400 truncate max-w-xs">{todo.notes}</p>}
                       </div>
                     </div>
 
@@ -958,7 +1051,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
             }
           }}
           onSave={handleSaveTask}
-          initialData={prefilledData ? ({ ...prefilledData } as any) : editingTask || undefined}
+          initialData={prefilledData ? ({...prefilledData} as any) : editingTask || undefined}
           title={editingTask ? 'Edit Task' : 'New Task'}
         />
         <EmailTaskModal
@@ -1008,9 +1101,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   leave="ease-in duration-150"
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95">
-                  <Dialog.Panel as={Fragment}>
-                    {content}
-                  </Dialog.Panel>
+                  <Dialog.Panel as={Fragment}>{content}</Dialog.Panel>
                 </Transition.Child>
               </div>
             </div>
