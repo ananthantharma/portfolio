@@ -404,7 +404,6 @@ const Column = ({
               onDelete={onDelete}
               onToggleComplete={onToggleComplete}
               onAddDays={onAddDays}
-              onNotesChange={onNotesChange}
               onSubtasksChange={onSubtasksChange}
               onNavigate={onNavigate}
               onCycleNeonColor={onCycleNeonColor}
@@ -429,7 +428,6 @@ const DraggableTask = ({
   onDelete,
   onToggleComplete,
   onAddDays,
-  onNotesChange,
   onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
@@ -442,7 +440,6 @@ const DraggableTask = ({
   onDelete: (id: string) => void;
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onNotesChange: (id: string, notes: string) => void;
   onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
@@ -497,7 +494,6 @@ const TaskCard = ({
   onDelete,
   onToggleComplete,
   onAddDays,
-  onNotesChange,
   onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
