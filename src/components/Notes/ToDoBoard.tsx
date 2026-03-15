@@ -303,7 +303,6 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onDelete={onDelete}
               onToggleComplete={onToggleComplete}
               onAddDays={onAddDays}
-              onNotesChange={onNotesChange}
               onSubtasksChange={onSubtasksChange}
               onNavigate={onNavigate}
               onCycleNeonColor={onCycleNeonColor}
@@ -332,7 +331,6 @@ const Column = ({
   onDelete,
   onToggleComplete,
   onAddDays,
-  onNotesChange,
   onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
@@ -346,7 +344,6 @@ const Column = ({
   onDelete: (id: string) => void;
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onNotesChange: (id: string, notes: string) => void;
   onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
