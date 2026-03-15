@@ -797,7 +797,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 onDelete={handleDelete}
                 onToggleComplete={handleToggleComplete}
                 onAddDays={handleAddDays}
-                onNotesChange={handleUpdateNotes}
                 onSubtasksChange={handleUpdateSubtasks}
                 onNavigate={onNavigate}
                 onCycleNeonColor={handleCycleNeonColor}

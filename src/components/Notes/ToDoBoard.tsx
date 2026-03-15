@@ -39,7 +39,6 @@ interface ToDoBoardProps {
   onDelete: (id: string) => void;
   onToggleComplete: (todo: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onNotesChange: (id: string, notes: string) => void;
   onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
@@ -179,7 +178,6 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onDelete,
   onToggleComplete,
   onAddDays,
-  onNotesChange,
   onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
