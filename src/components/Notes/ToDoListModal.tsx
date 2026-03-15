@@ -404,20 +404,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       }
     };
 
-    const handleUpdateNotes = async (id: string, newNotes: string) => {
-      setTodos(prev => prev.map(t => (t._id === id ? ({...t, notes: newNotes} as any) : t)));
-      try {
-        await fetch(`/api/todos/${id}`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({notes: newNotes}),
-        });
-      } catch (error) {
-        console.error('Failed to update notes', error);
-        fetchTodos();
-      }
-    };
-
     const handleSaveTask = async (data: TaskFormData) => {
       try {
         const formData = new FormData();
