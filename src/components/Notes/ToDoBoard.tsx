@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, simple-import-sort/imports */
-import React, {useMemo, useState, useCallback, useEffect} from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -40,6 +40,7 @@ interface ToDoBoardProps {
   onToggleComplete: (todo: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
+  onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
@@ -179,6 +180,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onToggleComplete,
   onAddDays,
   onNotesChange,
+  onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
   onToggleMinimize,
@@ -302,6 +304,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onToggleComplete={onToggleComplete}
               onAddDays={onAddDays}
               onNotesChange={onNotesChange}
+              onSubtasksChange={onSubtasksChange}
               onNavigate={onNavigate}
               onCycleNeonColor={onCycleNeonColor}
               onToggleMinimize={onToggleMinimize}
@@ -330,6 +333,7 @@ const Column = ({
   onToggleComplete,
   onAddDays,
   onNotesChange,
+  onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
   onToggleMinimize,
@@ -343,6 +347,7 @@ const Column = ({
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
+  onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
@@ -400,6 +405,7 @@ const Column = ({
               onToggleComplete={onToggleComplete}
               onAddDays={onAddDays}
               onNotesChange={onNotesChange}
+              onSubtasksChange={onSubtasksChange}
               onNavigate={onNavigate}
               onCycleNeonColor={onCycleNeonColor}
               onToggleMinimize={onToggleMinimize}
@@ -424,6 +430,7 @@ const DraggableTask = ({
   onToggleComplete,
   onAddDays,
   onNotesChange,
+  onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
   onToggleMinimize,
@@ -436,6 +443,7 @@ const DraggableTask = ({
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
   onNotesChange: (id: string, notes: string) => void;
+  onSubtasksChange?: (id: string, subtasks: any[]) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
@@ -468,7 +476,7 @@ const DraggableTask = ({
         onDelete={() => onDelete(todo._id)}
         onToggleComplete={() => onToggleComplete(todo)}
         onAddDays={days => onAddDays(todo._id, days)}
-        onNotesChange={notes => onNotesChange(todo._id, notes)}
+        onSubtasksChange={subtasks => onSubtasksChange?.(todo._id, subtasks)}
         onNavigate={onNavigate}
         onCycleNeonColor={() => onCycleNeonColor?.(todo)}
         onToggleMinimize={() => onToggleMinimize?.(todo)}
@@ -490,6 +498,7 @@ const TaskCard = ({
   onToggleComplete,
   onAddDays,
   onNotesChange,
+  onSubtasksChange,
   onNavigate,
   onCycleNeonColor,
   onToggleMinimize,
@@ -501,7 +510,7 @@ const TaskCard = ({
   onDelete?: () => void;
   onToggleComplete?: () => void;
   onAddDays?: (days: number) => void;
-  onNotesChange?: (notes: string) => void;
+  onSubtasksChange?: (subtasks: any[]) => void;
   onNavigate?: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: () => void;
   onToggleMinimize?: () => void;
@@ -515,19 +524,6 @@ const TaskCard = ({
   const subtaskPct = subtaskCount > 0 ? Math.round((subtaskDone / subtaskCount) * 100) : 0;
   const prio = priorityLabel[todo.priority] || priorityLabel.None;
 
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [notesValue, setNotesValue] = useState(todo.notes || '');
-
-  useEffect(() => {
-    setNotesValue(todo.notes || '');
-  }, [todo.notes]);
-
-  const handleSaveNotes = () => {
-    setIsEditingNotes(false);
-    if (notesValue !== todo.notes && onNotesChange) {
-      onNotesChange(notesValue);
-    }
-  };
 
   const neonColors = {
     red: 'before:bg-[conic-gradient(from_0deg,transparent,#ff3333,transparent)]',
@@ -590,6 +586,15 @@ const TaskCard = ({
               }`}>
               {todo.title}
             </h4>
+            {/* Next Task Preview (only if minimized and has pending subtasks) */}
+            {isMinimized && todo.subtasks && todo.subtasks.some(s => !s.isCompleted) && (
+              <div className="mt-1 flex items-center gap-1.5 py-1 px-2 rounded-lg bg-indigo-50/50 border border-indigo-100/50">
+                <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                <span className="text-[10px] font-medium text-indigo-600 truncate">
+                  {todo.subtasks.find(s => !s.isCompleted)?.title}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Hover actions */}
@@ -673,40 +678,57 @@ const TaskCard = ({
               )}
             </div>
 
-            {/* Notes Inline Edit */}
-            {!isOverlay && onNotesChange && (
-              <div className="mt-2 text-xs text-gray-500">
-                {isEditingNotes ? (
-                  <div onPointerDown={e => e.stopPropagation()}>
-                    <textarea
-                      value={notesValue}
-                      onChange={e => setNotesValue(e.target.value)}
-                      onBlur={handleSaveNotes}
-                      autoFocus
-                      className="w-full text-xs p-1.5 mt-1 border border-indigo-200 rounded-md bg-indigo-50/50 resize-y min-h-[60px] focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                      placeholder="Add notes..."
-                    />
-                  </div>
+            {/* Checklist Section */}
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                <span>Checklist</span>
+                {subtaskCount > 0 && <span>{subtaskPct}%</span>}
+              </div>
+
+              <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
+                {todo.subtasks && todo.subtasks.length > 0 ? (
+                  todo.subtasks.map((st, idx) => (
+                    <div
+                      key={st._id || idx}
+                      onPointerDown={e => e.stopPropagation()}
+                      className="flex items-start gap-2 group/st">
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (onSubtasksChange) {
+                            const newSt = [...(todo.subtasks || [])];
+                            newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
+                            onSubtasksChange(newSt);
+                          }
+                        }}
+                        className={`flex-shrink-0 mt-0.5 transition-colors ${
+                          st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
+                        }`}>
+                        {st.isCompleted ? (
+                          <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />
+                        ) : (
+                          <div className="h-3 w-3 rounded-sm border border-gray-300" />
+                        )}
+                      </button>
+                      <span
+                        className={`text-[11px] leading-tight flex-1 ${
+                          st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
+                        }`}>
+                        {st.title}
+                      </span>
+                    </div>
+                  ))
                 ) : (
-                  <div
-                    onClick={e => {
-                      e.stopPropagation();
-                      setIsEditingNotes(true);
-                    }}
-                    onPointerDown={e => e.stopPropagation()}
-                    className="mt-1 cursor-text hover:bg-gray-50 p-1.5 -mx-1.5 rounded-md transition-colors">
-                    {todo.notes ? (
-                      <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500">{todo.notes}</p>
-                    ) : (
-                      <p className="text-[11px] text-gray-400 italic">Add note...</p>
-                    )}
-                  </div>
+                  <p className="text-[11px] text-gray-400 italic">No checklist items</p>
                 )}
               </div>
-            )}
-            {isOverlay && todo.notes && (
-              <div className="mt-2 text-xs text-gray-500">
-                <p className="line-clamp-2 text-[11px] leading-relaxed text-gray-500">{todo.notes}</p>
+            </div>
+
+            {/* Notes Section (Secondary) */}
+            {todo.notes && (
+              <div className="mt-3 pt-3 border-t border-gray-50">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Notes</p>
+                <p className="text-[11px] leading-relaxed text-gray-500 line-clamp-2">{todo.notes}</p>
               </div>
             )}
 

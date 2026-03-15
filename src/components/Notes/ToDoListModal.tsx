@@ -390,6 +390,20 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       }
     };
 
+    const handleUpdateSubtasks = async (id: string, newSubtasks: any[]) => {
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, subtasks: newSubtasks} as any) : t)));
+      try {
+        await fetch(`/api/todos/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({subtasks: newSubtasks}),
+        });
+      } catch (error) {
+        console.error('Failed to update subtasks', error);
+        fetchTodos();
+      }
+    };
+
     const handleUpdateNotes = async (id: string, newNotes: string) => {
       setTodos(prev => prev.map(t => (t._id === id ? ({...t, notes: newNotes} as any) : t)));
       try {
@@ -425,6 +439,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
         if (data.blobAttachments) {
           formData.append('blobAttachments', JSON.stringify(data.blobAttachments));
+        }
+
+        if (data.subtasks) {
+          formData.append('subtasks', JSON.stringify(data.subtasks));
         }
 
         if (editingTask && data.attachments) {
@@ -780,6 +798,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 onToggleComplete={handleToggleComplete}
                 onAddDays={handleAddDays}
                 onNotesChange={handleUpdateNotes}
+                onSubtasksChange={handleUpdateSubtasks}
                 onNavigate={onNavigate}
                 onCycleNeonColor={handleCycleNeonColor}
                 onToggleMinimize={handleToggleMinimize}
@@ -836,8 +855,77 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                               className={`text-[15px] sm:text-[16px] font-semibold tracking-tight ${
                                 todo.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
                               }`}>
-                              {todo.title}
-                            </h4>
+                                {todo.title}
+                              </h4>
+
+                              {/* Subtasks Checklist */}
+                              <div className="mt-1 space-y-1">
+                                {todo.subtasks && todo.subtasks.length > 0 && (
+                                  <>
+                                    {/* Next Subtask / Summary View */}
+                                    {(todo.isMinimized ?? true) ? (
+                                      <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50 border border-gray-100/50 max-w-fit">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                                        <span className="text-[11px] text-gray-500 truncate max-w-[200px]">
+                                          {todo.subtasks.find(s => !s.isCompleted)?.title || 'All caught up!'}
+                                        </span>
+                                        <button
+                                          onClick={e => {
+                                            e.stopPropagation();
+                                            handleToggleMinimize(todo);
+                                          }}
+                                          className="text-[10px] text-indigo-500 font-semibold hover:underline ml-1">
+                                          Expand
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1.5 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                            Checklist
+                                          </span>
+                                          <button
+                                            onClick={e => {
+                                              e.stopPropagation();
+                                              handleToggleMinimize(todo);
+                                            }}
+                                            className="text-[10px] text-gray-400 hover:text-gray-600 font-medium">
+                                            Collapse
+                                          </button>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          {todo.subtasks.map((st, idx) => (
+                                            <div key={st._id || idx} className="flex items-start gap-2 group/st">
+                                              <button
+                                                onClick={e => {
+                                                  e.stopPropagation();
+                                                  const newSt = [...(todo.subtasks || [])];
+                                                  newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
+                                                  handleUpdateSubtasks(todo._id, newSt);
+                                                }}
+                                                className={`flex-shrink-0 mt-0.5 transition-colors ${
+                                                  st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
+                                                }`}>
+                                                {st.isCompleted ? (
+                                                  <CheckCircleIconSolid className="h-3.5 w-3.5" />
+                                                ) : (
+                                                  <div className="h-3 w-3 rounded-sm border border-gray-300" />
+                                                )}
+                                              </button>
+                                              <span
+                                                className={`text-[12px] leading-tight flex-1 ${
+                                                  st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
+                                                }`}>
+                                                {st.title}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                               <button
                                 onClick={() => handleEdit(todo)}
@@ -976,6 +1064,60 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           </div>
                         )}
                       </div>
+
+                      {/* Subtasks Checklist */}
+                      {todo.subtasks && todo.subtasks.length > 0 && (
+                        <div className="mt-1.5 flex flex-col gap-1">
+                          {(todo.isMinimized ?? true) ? (
+                            <div
+                              className="flex items-center gap-2 group/pv cursor-pointer"
+                              onClick={() => handleToggleMinimize(todo)}>
+                              <div className="h-1 w-1 rounded-full bg-gray-300 group-hover/pv:bg-indigo-400" />
+                              <span className="text-[11px] text-gray-400 truncate max-w-[300px]">
+                                {todo.subtasks.find(s => !s.isCompleted)?.title || 'All complete'}
+                              </span>
+                              <span className="text-[10px] text-indigo-400 opacity-0 group-hover/pv:opacity-100 transition-opacity">
+                                • Expand
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="mt-1 space-y-1.5 pl-3 border-l-2 border-indigo-100 mb-2 py-1">
+                              {todo.subtasks.map((st, idx) => (
+                                <div key={st._id || idx} className="flex items-start gap-2">
+                                  <button
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      const newSt = [...(todo.subtasks || [])];
+                                      newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
+                                      handleUpdateSubtasks(todo._id, newSt);
+                                    }}
+                                    className={`flex-shrink-0 mt-0.5 transition-colors ${
+                                      st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
+                                    }`}>
+                                    {st.isCompleted ? (
+                                      <CheckCircleIconSolid className="h-3 w-3" />
+                                    ) : (
+                                      <div className="h-2.5 w-2.5 rounded-sm border border-gray-300" />
+                                    )}
+                                  </button>
+                                  <span
+                                    className={`text-[11px] leading-tight flex-1 ${
+                                      st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
+                                    }`}>
+                                    {st.title}
+                                  </span>
+                                </div>
+                              ))}
+                              <button
+                                onClick={() => handleToggleMinimize(todo)}
+                                className="text-[10px] text-gray-400 hover:text-gray-600 font-medium pt-1">
+                                Collapse checklist
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         <span className={`text-[11px] flex items-center gap-1 ${dateInfo.className}`}>
                           <CalendarDaysIcon className="h-3 w-3" />

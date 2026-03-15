@@ -36,6 +36,11 @@ export interface TaskFormData {
     storageType: 'blob';
     size: number;
   }[];
+  subtasks?: {
+    _id?: string;
+    title: string;
+    isCompleted: boolean;
+  }[];
 }
 
 interface TaskFormModalProps {
@@ -101,6 +106,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
     const [attachments, setAttachments] = useState<
       {name: string; type: string; fileId?: string; size: number; file?: File}[]
     >([]);
+    const [subtasks, setSubtasks] = useState<{_id?: string; title: string; isCompleted: boolean}[]>([]);
+    const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [dragActive, setDragActive] = useState(false);
 
     // Storage State
@@ -118,29 +125,11 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
         setDueDate(initDate);
         const initCategory = CATEGORIES.find(c => c.value === initialData?.category) || null;
         setSelectedCategory(initCategory);
-        setNotes(initialData?.notes || '');
-        if (initialData?.attachments) {
-          const loadedAttachments = initialData.attachments.map(att => ({
-            ...att,
-            fileId: att.fileId,
-            size: att.size || 0,
-          }));
-          setAttachments(loadedAttachments);
-        } else {
-          setAttachments([]);
-        }
-        if (initialData?.attachments) {
-          const loadedAttachments = initialData.attachments.map(att => ({
-            ...att,
-            fileId: att.fileId,
-            size: att.size || 0,
-          }));
-          setAttachments(loadedAttachments);
-        } else {
-          setAttachments([]);
-        }
+        setAttachments(initialData?.attachments || []);
+        setSubtasks(initialData?.subtasks || []);
         setStorageType('local');
         setIsUploading(false);
+        setNewSubtaskTitle('');
       }
     }, [isOpen, initialData]);
 
@@ -269,6 +258,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           dueDate: new Date(dueDate),
           category: selectedCategory ? selectedCategory.value : '',
           notes,
+          subtasks,
           attachments: attachments.filter(a => !a.file),
           newFiles: finalNewFiles,
           driveAttachments: finalDriveAttachments,
@@ -500,6 +490,82 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                         value={notes}
                         placeholder="Add details..."
                       />
+                    </div>
+
+                    {/* Subtasks / Checklist */}
+                    <div className="space-y-3">
+                      <label className={labelStyle}>Todo Checklist</label>
+                      <div className="space-y-2">
+                        {subtasks.map((st, idx) => (
+                          <div key={idx} className="flex items-center gap-2 group">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSt = [...subtasks];
+                                newSt[idx].isCompleted = !newSt[idx].isCompleted;
+                                setSubtasks(newSt);
+                              }}
+                              className={`flex-shrink-0 transition-colors ${
+                                st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
+                              }`}>
+                              {st.isCompleted ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                  className="w-5 h-5">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4.13-5.683z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              ) : (
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-200" />
+                              )}
+                            </button>
+                            <input
+                              type="text"
+                              value={st.title}
+                              onChange={e => {
+                                const newSt = [...subtasks];
+                                newSt[idx].title = e.target.value;
+                                setSubtasks(newSt);
+                              }}
+                              placeholder="Subtask title..."
+                              className={`flex-1 bg-transparent text-sm border-none focus:ring-0 p-0 ${
+                                st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-700'
+                              }`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setSubtasks(subtasks.filter((_, i) => i !== idx))}
+                              className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all">
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <div className="w-5 flex-shrink-0 flex justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-200" />
+                        </div>
+                        <input
+                          type="text"
+                          value={newSubtaskTitle}
+                          onChange={e => setNewSubtaskTitle(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && newSubtaskTitle.trim()) {
+                              e.preventDefault();
+                              setSubtasks([...subtasks, {title: newSubtaskTitle.trim(), isCompleted: false}]);
+                              setNewSubtaskTitle('');
+                            }
+                          }}
+                          placeholder="Add new subtask..."
+                          className="flex-1 bg-transparent text-sm border-none focus:ring-0 p-0 text-gray-600 placeholder:text-gray-300"
+                        />
+                      </div>
                     </div>
 
                     {/* Attachments */}
