@@ -16,7 +16,7 @@ let cached = (global as any).mongoose;
 
 if (!cached) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = {conn: null, promise: null};
 }
 
 async function dbConnect() {
@@ -28,9 +28,14 @@ async function dbConnect() {
     const opts = {
       bufferCommands: false,
       dbName: 'qt_portfolio',
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      // FORCE parameters required for Oracle Cloud
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      authMechanism: 'PLAIN' as any,
+      authSource: '$external',
+      tls: true,
+      tlsAllowInvalidCertificates: true,
+      maxPoolSize: 1, // Restrict to 1 connection per lambda to avoid Oracle limits
+      maxIdleTimeMS: 5000, // Close idle connections quickly
     };
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then(mongoose => {
