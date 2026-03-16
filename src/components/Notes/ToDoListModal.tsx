@@ -15,6 +15,8 @@ import {
   TrashIcon,
   XMarkIcon,
   SparklesIcon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
 } from '@heroicons/react/24/outline';
 import {CheckCircleIcon as CheckCircleIconSolid} from '@heroicons/react/24/solid';
 import {INotePage} from '@/models/NotePage';
@@ -371,6 +373,31 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       }
     };
 
+    const handleToggleAllMinimize = async (minimize: boolean) => {
+      try {
+        const toUpdate = todos.filter(t => (t.isMinimized ?? true) !== minimize);
+        if (toUpdate.length === 0) return;
+
+        setTodos(prev => prev.map(t => {
+          const isTarget = toUpdate.some(u => u._id === t._id);
+          return isTarget ? ({...t, isMinimized: minimize} as any) : t;
+        }));
+
+        await Promise.all(
+          toUpdate.map(t => 
+            fetch(`/api/todos/${t._id}`, {
+              method: 'PUT',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({isMinimized: minimize}),
+            })
+          )
+        );
+      } catch (error) {
+        console.error('Error toggling bulk minimize:', error);
+        fetchTodos();
+      }
+    };
+
     const handleAddDays = async (id: string, days: number) => {
       const todo = todos.find(t => t._id === id);
       if (!todo) return;
@@ -554,7 +581,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     }, [filteredTodos, sortField, sortDirection]);
 
     // Stats
-    const overdueTasks = todos.filter(t => !t.isCompleted && new Date(t.dueDate) < new Date()).length;
     const unprioritizedCount = todos.filter(t => !t.isCompleted && (!t.priority || t.priority === 'None')).length;
 
     const getCategoryStyle = (categoryName: string | undefined) => {
@@ -606,11 +632,24 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               isStandalone ? 'flex-col sm:flex-row items-start sm:items-center gap-4' : 'items-center justify-between'
             } mb-3`}>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div>
+              <div className="flex items-center gap-2">
                 <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
-                {overdueTasks > 0 && (
-                  <p className="text-[10px] text-red-400 font-medium mt-0.5">{overdueTasks} overdue</p>
-                )}
+                <div className="flex items-center ml-2 space-x-1">
+                  <button
+                    onClick={() => handleToggleAllMinimize(true)}
+                    className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                    title="Collapse all cards"
+                  >
+                    <ArrowsPointingInIcon className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleToggleAllMinimize(false)}
+                    className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                    title="Expand all cards"
+                  >
+                    <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
               {/* Active / Done toggle */}
               <div className="flex bg-white/10 rounded-lg p-0.5 ml-auto sm:ml-0">

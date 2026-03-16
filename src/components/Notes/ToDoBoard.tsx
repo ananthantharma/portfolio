@@ -30,6 +30,8 @@ import {
   PauseCircleIcon,
   PlusIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import {INotePage} from '@/models/NotePage';
 import {CheckCircleIcon as CheckCircleSolid} from '@heroicons/react/24/solid';
@@ -215,6 +217,31 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
     });
   }, []);
 
+  const [colWidths, setColWidths] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    try {
+      const savedWidths = localStorage.getItem('todo_col_widths');
+      if (savedWidths) {
+        setColWidths(JSON.parse(savedWidths));
+      }
+    } catch (e) {
+      console.error('Error loading col widths', e);
+    }
+  }, []);
+
+  const handleWidthChange = useCallback((colId: string, w: number) => {
+    setColWidths(prev => {
+      const next = {...prev, [colId]: Math.max(240, Math.min(800, w))};
+      try {
+        localStorage.setItem('todo_col_widths', JSON.stringify(next));
+      } catch (e) {
+        console.error('Error saving col widths', e);
+      }
+      return next;
+    });
+  }, []);
+
   // PointerSensor requires 8px movement before activating → separates click from drag
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -336,6 +363,8 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               activeId={activeId}
               isColumnMinimized={minimizedCols[col.id] || false}
               onToggleColumnMinimize={() => toggleColumnMinimize(col.id)}
+              colWidth={colWidths[col.id]}
+              onWidthChange={w => handleWidthChange(col.id, w)}
             />
           ))}
         </div>
@@ -366,6 +395,8 @@ const Column = ({
   activeId,
   isColumnMinimized,
   onToggleColumnMinimize,
+  colWidth,
+  onWidthChange,
 }: {
   col: (typeof COLUMNS)[0];
   todos: IToDo[];
@@ -381,6 +412,8 @@ const Column = ({
   activeId: string | null;
   isColumnMinimized: boolean;
   onToggleColumnMinimize: () => void;
+  colWidth?: number;
+  onWidthChange: (w: number) => void;
 }) => {
   const {setNodeRef, isOver} = useDroppable({id: col.id});
   const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
@@ -388,10 +421,39 @@ const Column = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col rounded-2xl border transition-all duration-300 ${
-        isColumnMinimized ? 'min-w-[60px] max-w-[60px]' : 'flex-1 min-w-[240px] max-w-[320px]'
-      } ${isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `${col.borderColor} bg-white/40`}`}>
+      className={`flex flex-col relative rounded-2xl border transition-all duration-300 ${
+        isColumnMinimized ? 'min-w-[60px] max-w-[60px]' : colWidth ? '' : 'flex-1 min-w-[240px] max-w-[320px]'
+      } ${isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `${col.borderColor} bg-white/40`}`}
+      style={{
+        width: !isColumnMinimized && colWidth ? `${colWidth}px` : undefined,
+        flex: !isColumnMinimized && colWidth ? 'none' : undefined,
+        minWidth: !isColumnMinimized && colWidth ? '240px' : undefined,
+      }}>
       
+      {!isColumnMinimized && (
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-indigo-500/50 z-10 transition-colors rounded-r-2xl"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const startWidth = colWidth || e.currentTarget.parentElement?.offsetWidth || 320;
+            
+            const onMove = (moveEvent: PointerEvent) => {
+               const newWidth = Math.max(240, startWidth + (moveEvent.clientX - startX));
+               onWidthChange(newWidth);
+            };
+            
+            const onUp = () => {
+               document.removeEventListener('pointermove', onMove);
+               document.removeEventListener('pointerup', onUp);
+            };
+            
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+          }}
+        />
+      )}
+
       {/* Header */}
       <div
         className={`px-3 py-2.5 rounded-t-2xl flex ${isColumnMinimized ? 'flex-col gap-2' : 'justify-between'} items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
@@ -574,6 +636,24 @@ const ChecklistSection = ({
     onSubtasksChange(subtasks.filter((_, i) => i !== idx));
   };
 
+  const handleMoveUp = (idx: number) => {
+    if (!onSubtasksChange || idx === 0) return;
+    const updated = [...subtasks];
+    const temp = updated[idx - 1];
+    updated[idx - 1] = updated[idx];
+    updated[idx] = temp;
+    onSubtasksChange(updated);
+  };
+
+  const handleMoveDown = (idx: number) => {
+    if (!onSubtasksChange || idx === subtasks.length - 1) return;
+    const updated = [...subtasks];
+    const temp = updated[idx + 1];
+    updated[idx + 1] = updated[idx];
+    updated[idx] = temp;
+    onSubtasksChange(updated);
+  };
+
   return (
     <div className="mt-3 space-y-2" onPointerDown={e => e.stopPropagation()}>
       <div className="flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
@@ -617,12 +697,34 @@ const ChecklistSection = ({
               }`}>
               {st.title}
             </span>
+            <div className="opacity-0 group-hover/st:opacity-100 flex flex-col -m-1">
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleMoveUp(idx);
+                }}
+                disabled={idx === 0}
+                className={`p-0.5 transition-all ${idx === 0 ? 'text-gray-100 cursor-not-allowed' : 'text-gray-300 hover:text-indigo-400'}`}
+                title="Move Up">
+                <ChevronUpIcon className="h-2.5 w-2.5" />
+              </button>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleMoveDown(idx);
+                }}
+                disabled={idx === subtasks.length - 1}
+                className={`p-0.5 transition-all ${idx === subtasks.length - 1 ? 'text-gray-100 cursor-not-allowed' : 'text-gray-300 hover:text-indigo-400'}`}
+                title="Move Down">
+                <ChevronDownIcon className="h-2.5 w-2.5" />
+              </button>
+            </div>
             <button
               onClick={e => {
                 e.stopPropagation();
                 handleDelete(idx);
               }}
-              className="opacity-0 group-hover/st:opacity-100 p-0.5 text-gray-300 hover:text-red-400 transition-all"
+              className="opacity-0 group-hover/st:opacity-100 p-0.5 text-gray-300 hover:text-red-400 transition-all ml-0.5"
               title="Remove">
               <TrashIcon className="h-3 w-3" />
             </button>
