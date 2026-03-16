@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, simple-import-sort/imports */
-import React, {useMemo, useState, useCallback} from 'react';
+import React, {useMemo, useState, useCallback, useEffect} from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -29,6 +29,7 @@ import {
   ArrowTopRightOnSquareIcon,
   PauseCircleIcon,
   PlusIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import {INotePage} from '@/models/NotePage';
 import {CheckCircleIcon as CheckCircleSolid} from '@heroicons/react/24/solid';
@@ -40,7 +41,7 @@ interface ToDoBoardProps {
   onDelete: (id: string) => void;
   onToggleComplete: (todo: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onSubtasksChange?: (id: string, subtasks: any[]) => void;
+  onSubtasksChange?: (id: string, subtasks: NonNullable<IToDo['subtasks']>) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
@@ -188,6 +189,31 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [minimizedCols, setMinimizedCols] = useState<Record<string, boolean>>({});
+
+  // Load minimized columns state from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('todo_minimized_cols');
+      if (saved) {
+        setMinimizedCols(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error('Error loading minimized columns', e);
+    }
+  }, []);
+
+  const toggleColumnMinimize = useCallback((colId: string) => {
+    setMinimizedCols(prev => {
+      const next = { ...prev, [colId]: !prev[colId] };
+      try {
+        localStorage.setItem('todo_minimized_cols', JSON.stringify(next));
+      } catch (e) {
+        console.error('Error saving minimized columns', e);
+      }
+      return next;
+    });
+  }, []);
 
   // PointerSensor requires 8px movement before activating → separates click from drag
   const sensors = useSensors(
@@ -305,9 +331,11 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onSubtasksChange={onSubtasksChange}
               onNavigate={onNavigate}
               onCycleNeonColor={onCycleNeonColor}
-              onToggleMinimize={onToggleMinimize}
+              onToggleMinimize={onToggleMinimize} // this is for task minimize
               onClose={onClose}
               activeId={activeId}
+              isColumnMinimized={minimizedCols[col.id] || false}
+              onToggleColumnMinimize={() => toggleColumnMinimize(col.id)}
             />
           ))}
         </div>
@@ -336,6 +364,8 @@ const Column = ({
   onToggleMinimize,
   onClose,
   activeId,
+  isColumnMinimized,
+  onToggleColumnMinimize,
 }: {
   col: (typeof COLUMNS)[0];
   todos: IToDo[];
@@ -343,12 +373,14 @@ const Column = ({
   onDelete: (id: string) => void;
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onSubtasksChange?: (id: string, subtasks: any[]) => void;
+  onSubtasksChange?: (id: string, subtasks: NonNullable<IToDo['subtasks']>) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
   onClose: () => void;
   activeId: string | null;
+  isColumnMinimized: boolean;
+  onToggleColumnMinimize: () => void;
 }) => {
   const {setNodeRef, isOver} = useDroppable({id: col.id});
   const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
@@ -356,59 +388,87 @@ const Column = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 min-w-[240px] max-w-[320px] flex flex-col rounded-2xl border transition-all duration-200 ${
-        isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `${col.borderColor} bg-white/40`
-      }`}>
+      className={`flex flex-col rounded-2xl border transition-all duration-300 ${
+        isColumnMinimized ? 'min-w-[60px] max-w-[60px]' : 'flex-1 min-w-[240px] max-w-[320px]'
+      } ${isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `${col.borderColor} bg-white/40`}`}>
+      
       {/* Header */}
       <div
-        className={`px-3.5 py-2.5 rounded-t-2xl flex justify-between items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
-        <div className="flex items-center gap-2">
-          {col.icon}
-          <h3 className={`font-semibold text-[11px] uppercase tracking-widest ${col.headerText}`}>{col.title}</h3>
+        className={`px-3 py-2.5 rounded-t-2xl flex ${isColumnMinimized ? 'flex-col gap-2' : 'justify-between'} items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
+        
+        <div className={`flex items-center gap-2 ${isColumnMinimized ? 'flex-col' : ''}`}>
+          <div className="flex items-center gap-1.5 flex-col">
+            {col.icon}
+            {isColumnMinimized && (
+               <span
+               className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1 rounded-md ${
+                 isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
+               }`}>
+               {todos.length}
+             </span>
+            )}
+          </div>
+          {!isColumnMinimized && (
+            <h3 className={`font-semibold text-[11px] uppercase tracking-widest ${col.headerText}`}>{col.title}</h3>
+          )}
         </div>
-        <div className="flex items-center gap-1.5">
-          {isOverWipLimit && (
+
+        <div className={`flex items-center gap-1.5 ${isColumnMinimized ? 'flex-col mt-2' : ''}`}>
+          {!isColumnMinimized && isOverWipLimit && (
             <ExclamationTriangleIcon
               className="h-3.5 w-3.5 text-amber-500"
               title={`WIP: ${todos.length}/${WIP_LIMIT}`}
             />
           )}
-          <span
-            className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1.5 rounded-md ${
-              isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
-            }`}>
-            {todos.length}
-          </span>
+
+          {!isColumnMinimized && (
+             <span
+             className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1.5 rounded-md ${
+               isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
+             }`}>
+             {todos.length}
+           </span>
+          )}
+
+          <button
+            onClick={onToggleColumnMinimize}
+            className={`p-1 rounded-md hover:bg-white/50 text-gray-400 transition-colors ${isColumnMinimized ? 'rotate-180' : ''}`}
+            title={isColumnMinimized ? "Expand column" : "Minimize column"}
+          >
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
       {/* Cards container */}
-      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
-        {todos.length === 0 && (
+      <div className={`flex-1 p-2 space-y-2 overflow-y-auto overflow-x-hidden ${isColumnMinimized ? 'opacity-0 invisible hidden' : 'opacity-100 visible'}`}>
+        {!isColumnMinimized && todos.length === 0 && (
           <div
             className={`flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed ${col.borderColor} gap-1.5`}>
             {col.emptyIcon}
             <span className="text-[11px] text-gray-300">{col.emptyText}</span>
           </div>
         )}
-        <SortableContext items={todos.map(t => t._id)} strategy={verticalListSortingStrategy}>
-          {todos.map(todo => (
-            <DraggableTask
-              key={todo._id}
-              todo={todo}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onToggleComplete={onToggleComplete}
-              onAddDays={onAddDays}
-              onSubtasksChange={onSubtasksChange}
-              onNavigate={onNavigate}
-              onCycleNeonColor={onCycleNeonColor}
-              onToggleMinimize={onToggleMinimize}
-              onClose={onClose}
-              isBeingDragged={activeId === todo._id}
-            />
-          ))}
-        </SortableContext>
+        {!isColumnMinimized && (
+          <SortableContext items={todos.map(t => t._id)} strategy={verticalListSortingStrategy}>
+            {todos.map(todo => (
+              <DraggableTask
+                key={todo._id}
+                todo={todo}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onToggleComplete={onToggleComplete}
+                onAddDays={onAddDays}
+                onSubtasksChange={onSubtasksChange}
+                onNavigate={onNavigate}
+                onCycleNeonColor={onCycleNeonColor}
+                onToggleMinimize={onToggleMinimize}
+                onClose={onClose}
+                isBeingDragged={activeId === todo._id}
+              />
+            ))}
+          </SortableContext>
+        )}
       </div>
     </div>
   );
@@ -436,7 +496,7 @@ const DraggableTask = ({
   onDelete: (id: string) => void;
   onToggleComplete: (t: IToDo) => void;
   onAddDays: (id: string, days: number) => void;
-  onSubtasksChange?: (id: string, subtasks: any[]) => void;
+  onSubtasksChange?: (id: string, subtasks: NonNullable<IToDo['subtasks']>) => void;
   onNavigate: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: (todo: IToDo) => void;
   onToggleMinimize?: (todo: IToDo) => void;
@@ -488,7 +548,7 @@ const ChecklistSection = ({
   onSubtasksChange,
 }: {
   todo: IToDo;
-  onSubtasksChange?: (subtasks: any[]) => void;
+  onSubtasksChange?: (subtasks: NonNullable<IToDo['subtasks']>) => void;
 }) => {
   const [newItemText, setNewItemText] = useState('');
   const subtasks = todo.subtasks || [];
@@ -623,7 +683,7 @@ const TaskCard = ({
   onDelete?: () => void;
   onToggleComplete?: () => void;
   onAddDays?: (days: number) => void;
-  onSubtasksChange?: (subtasks: any[]) => void;
+  onSubtasksChange?: (subtasks: NonNullable<IToDo['subtasks']>) => void;
   onNavigate?: (page: INotePage, tabId?: string) => void;
   onCycleNeonColor?: () => void;
   onToggleMinimize?: () => void;
