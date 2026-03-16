@@ -123,6 +123,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           ? new Date(initialData.dueDate).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0];
         setDueDate(initDate);
+        setNotes(initialData?.notes || '');
         const initCategory = CATEGORIES.find(c => c.value === initialData?.category) || null;
         setSelectedCategory(initCategory);
         setAttachments(initialData?.attachments || []);

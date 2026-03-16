@@ -28,6 +28,7 @@ import {
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
   PauseCircleIcon,
+  PlusIcon,
 } from '@heroicons/react/24/outline';
 import {INotePage} from '@/models/NotePage';
 import {CheckCircleIcon as CheckCircleSolid} from '@heroicons/react/24/solid';
@@ -479,6 +480,127 @@ const DraggableTask = ({
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
+/*  CHECKLIST SECTION (inline on card)                                         */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+const ChecklistSection = ({
+  todo,
+  onSubtasksChange,
+}: {
+  todo: IToDo;
+  onSubtasksChange?: (subtasks: any[]) => void;
+}) => {
+  const [newItemText, setNewItemText] = useState('');
+  const subtasks = todo.subtasks || [];
+  const doneCount = subtasks.filter(s => s.isCompleted).length;
+  const pct = subtasks.length > 0 ? Math.round((doneCount / subtasks.length) * 100) : 0;
+
+  const handleAdd = () => {
+    const text = newItemText.trim();
+    if (!text || !onSubtasksChange) return;
+    onSubtasksChange([...subtasks, {title: text, isCompleted: false}]);
+    setNewItemText('');
+  };
+
+  const handleToggle = (idx: number) => {
+    if (!onSubtasksChange) return;
+    const updated = [...subtasks];
+    updated[idx] = {...updated[idx], isCompleted: !updated[idx].isCompleted};
+    onSubtasksChange(updated);
+  };
+
+  const handleDelete = (idx: number) => {
+    if (!onSubtasksChange) return;
+    onSubtasksChange(subtasks.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="mt-3 space-y-2" onPointerDown={e => e.stopPropagation()}>
+      <div className="flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+        <span>Checklist</span>
+        {subtasks.length > 0 && (
+          <span className={pct === 100 ? 'text-emerald-500' : ''}>{doneCount}/{subtasks.length}</span>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      {subtasks.length > 0 && (
+        <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${pct === 100 ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+            style={{width: `${pct}%`}}
+          />
+        </div>
+      )}
+
+      {/* Items */}
+      <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar">
+        {subtasks.map((st, idx) => (
+          <div key={st._id || idx} className="flex items-start gap-2 group/st">
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                handleToggle(idx);
+              }}
+              className={`flex-shrink-0 mt-0.5 transition-colors ${
+                st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
+              }`}>
+              {st.isCompleted ? (
+                <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />
+              ) : (
+                <div className="h-3 w-3 rounded-sm border border-gray-300" />
+              )}
+            </button>
+            <span
+              className={`text-[11px] leading-tight flex-1 ${
+                st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
+              }`}>
+              {st.title}
+            </span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                handleDelete(idx);
+              }}
+              className="opacity-0 group-hover/st:opacity-100 p-0.5 text-gray-300 hover:text-red-400 transition-all"
+              title="Remove">
+              <TrashIcon className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Add new item */}
+      {onSubtasksChange && (
+        <div className="flex items-center gap-1.5">
+          <PlusIcon className="h-3 w-3 text-gray-300 flex-shrink-0" />
+          <input
+            type="text"
+            value={newItemText}
+            onChange={e => setNewItemText(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
+            placeholder="Add item..."
+            className="flex-1 text-[11px] bg-transparent border-none outline-none text-gray-600 placeholder:text-gray-300 py-0.5"
+          />
+          {newItemText.trim() && (
+            <button
+              onClick={handleAdd}
+              className="text-[10px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors">
+              Add
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
 /*  TASK CARD                                                                  */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -669,59 +791,8 @@ const TaskCard = ({
               )}
             </div>
 
-            {/* Checklist Section */}
-            <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                <span>Checklist</span>
-                {subtaskCount > 0 && <span>{subtaskPct}%</span>}
-              </div>
-
-              <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
-                {todo.subtasks && todo.subtasks.length > 0 ? (
-                  todo.subtasks.map((st, idx) => (
-                    <div
-                      key={st._id || idx}
-                      onPointerDown={e => e.stopPropagation()}
-                      className="flex items-start gap-2 group/st">
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          if (onSubtasksChange) {
-                            const newSt = [...(todo.subtasks || [])];
-                            newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
-                            onSubtasksChange(newSt);
-                          }
-                        }}
-                        className={`flex-shrink-0 mt-0.5 transition-colors ${
-                          st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
-                        }`}>
-                        {st.isCompleted ? (
-                          <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />
-                        ) : (
-                          <div className="h-3 w-3 rounded-sm border border-gray-300" />
-                        )}
-                      </button>
-                      <span
-                        className={`text-[11px] leading-tight flex-1 ${
-                          st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
-                        }`}>
-                        {st.title}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-[11px] text-gray-400 italic">No checklist items</p>
-                )}
-              </div>
-            </div>
-
-            {/* Notes Section (Secondary) */}
-            {todo.notes && (
-              <div className="mt-3 pt-3 border-t border-gray-50">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Notes</p>
-                <p className="text-[11px] leading-relaxed text-gray-500 line-clamp-2">{todo.notes}</p>
-              </div>
-            )}
+            {/* Checklist Section – Inline Editable */}
+            <ChecklistSection todo={todo} onSubtasksChange={onSubtasksChange} />
 
             <div className="mt-2.5 flex items-center justify-between text-[11px] text-gray-400">
               <div className="flex items-center gap-3">
