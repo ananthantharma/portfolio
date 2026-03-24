@@ -28,6 +28,7 @@ const ananthanItems = [
   {label: 'Notes', href: '/notes', emoji: '📝', desc: 'Workspace'},
   {label: 'Gantt', href: '/gantt', emoji: '📊', desc: 'Projects'},
   {label: 'Tasks', href: '/tasks', emoji: '✅', desc: 'To-do list'},
+  {label: 'Supplier Risk', href: '/supplier-risk', emoji: '🛡️', desc: 'Risk intelligence'},
 ];
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
