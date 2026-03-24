@@ -73,7 +73,14 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
 
   useEffect(() => {
     if (isOpen) {
-      setForm(initial ? {...DEFAULT_FORM, ...initial, tags: (initial as {tags?: string | string[]}).tags ? Array.isArray((initial as {tags?: string[]}).tags) ? ((initial as {tags: string[]}).tags).join(', ') : (initial as {tags: string}).tags : ''} : DEFAULT_FORM);
+      if (initial) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawTags = (initial as any).tags;
+        const tagsStr = Array.isArray(rawTags) ? rawTags.join(', ') : (rawTags ?? '');
+        setForm({...DEFAULT_FORM, ...(initial as Partial<SupplierFormData>), tags: tagsStr});
+      } else {
+        setForm(DEFAULT_FORM);
+      }
     }
   }, [isOpen, initial]);
 

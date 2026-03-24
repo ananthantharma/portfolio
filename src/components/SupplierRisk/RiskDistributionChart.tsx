@@ -30,7 +30,7 @@ export const RiskDistributionChart: React.FC<Props> = ({data}) => {
           outerRadius={85}
           paddingAngle={3}
           dataKey="value"
-          label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+          label={({name, percent}) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
           labelLine={false}>
           {chartData.map(entry => (
             <Cell key={entry.name} fill={COLORS[entry.name as keyof typeof COLORS]} />

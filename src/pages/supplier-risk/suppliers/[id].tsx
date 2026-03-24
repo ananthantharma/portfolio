@@ -24,7 +24,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const SupplierDetailPage = () => {
-  const {data: session, status} = useSession();
+  const {status} = useSession();
   const router = useRouter();
   const {id} = router.query;
   const [supplier, setSupplier] = useState<SupplierDoc | null>(null);
