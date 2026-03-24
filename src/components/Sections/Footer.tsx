@@ -5,7 +5,11 @@ import {FC, memo} from 'react';
 import {SectionId} from '../../data/data';
 import Socials from '../Socials';
 
-const Footer: FC = memo(() => (
+interface FooterProps {
+  socialLinks?: {label: string; iconKey: string; href: string}[];
+}
+
+const Footer: FC<FooterProps> = memo(({socialLinks}) => (
   <div className="relative bg-neutral-900 px-4 pb-6 pt-12 sm:px-8 sm:pb-8 sm:pt-14">
     <div className="absolute inset-x-0 -top-4 flex justify-center sm:-top-6">
       <a
@@ -16,7 +20,7 @@ const Footer: FC = memo(() => (
     </div>
     <div className="flex flex-col items-center gap-y-6">
       <div className="flex gap-x-4 text-neutral-500">
-        <Socials />
+        <Socials links={socialLinks} />
       </div>
       <a className="-m-2 flex items-center gap-x-1 rounded-md p-2 ring-yellow focus:outline-none focus:ring-2">
         <BoltIcon className="h-5 w-5 text-yellow" />

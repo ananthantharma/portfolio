@@ -10,8 +10,15 @@ import CircuitBoardLoader from '../CircuitBoardLoader';
 import StarField from './StarField';
 import {heroData, SectionId} from '../../data/data';
 import Section from '../Layout/Section';
+import {PortfolioTimelineItem, PortfolioSocialLink} from '../../pages/index';
 
-const Hero: FC = memo(() => {
+interface HeroProps {
+  heroTimeline?: PortfolioTimelineItem[];
+  education?: PortfolioTimelineItem[];
+  socialLinks?: PortfolioSocialLink[];
+}
+
+const Hero: FC<HeroProps> = memo(({heroTimeline = [], education = [], socialLinks = []}) => {
   const {imageSrc, name, actions} = heroData;
 
   return (
@@ -36,7 +43,11 @@ const Hero: FC = memo(() => {
               {/* Circuit Board Loader replacing the name */}
               <div className="flex w-full items-center justify-center">
                 <div className="flex w-full items-center justify-center">
-                  <CircuitBoardLoader />
+                  <CircuitBoardLoader
+                    heroTimeline={heroTimeline}
+                    education={education}
+                    socialLinks={socialLinks}
+                  />
                 </div>
               </div>
 

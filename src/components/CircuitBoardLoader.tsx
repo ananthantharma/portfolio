@@ -1,7 +1,27 @@
 import React, {memo, useEffect, useRef, useState} from 'react';
 
-import {heroEducation, heroTimeline, socialLinks} from '../data/data';
-import {TimelineItem} from '../data/dataDef';
+import {heroEducation, heroTimeline, socialLinks as defaultSocialLinks} from '../data/data';
+import {PortfolioSocialLink, PortfolioTimelineItem} from '../pages/index';
+import GithubIcon from './Icon/GithubIcon';
+import InstagramIcon from './Icon/InstagramIcon';
+import LinkedInIcon from './Icon/LinkedInIcon';
+import TwitterIcon from './Icon/TwitterIcon';
+
+// Maps iconKey strings (from DB) to icon components
+const ICON_MAP: Record<string, React.FC<{className?: string}>> = {
+  Github: GithubIcon,
+  LinkedIn: LinkedInIcon,
+  Instagram: InstagramIcon,
+  Twitter: TwitterIcon,
+};
+
+// Adapter: convert PortfolioTimelineItem → shape expected by SvgCard
+interface CardItem {
+  date: string;
+  location: string;
+  title: string;
+  image?: string;
+}
 
 /* eslint-disable react/jsx-sort-props */
 /* --- 2. HELPERS --- */
@@ -42,12 +62,15 @@ ScrambledText.displayName = 'ScrambledText';
 
 // The Card rendered inside SVG
 const SvgCard = memo(
-  ({align = 'left', item, x, y}: {align?: 'left' | 'right'; item: TimelineItem; x: number; y: number}) => {
+  ({align = 'left', item, x, y}: {align?: 'left' | 'right'; item: CardItem; x: number; y: number}) => {
     const isLeft = align === 'left';
 
     // Handle StaticImageData or string path for image
-    const imageSrc =
-      item.image && typeof item.image === 'object' && 'src' in item.image ? item.image.src : (item.image as string);
+    const imageSrc = item.image
+      ? typeof item.image === 'object' && 'src' in (item.image as object)
+        ? (item.image as any).src
+        : (item.image as string)
+      : undefined;
 
     return (
       // Reduced height to 80px for tighter packing
@@ -94,8 +117,15 @@ const SvgCard = memo(
 );
 SvgCard.displayName = 'SvgCard';
 
+interface CircuitBoardLoaderProps {
+  heroTimeline?: PortfolioTimelineItem[];
+  education?: PortfolioTimelineItem[];
+  socialLinks?: PortfolioSocialLink[];
+}
+
 /* --- 3. MAIN COMPONENT --- */
-const UnifiedCircuitSection = memo(() => {
+const UnifiedCircuitSection = memo(
+  ({heroTimeline: propHeroTimeline, education: propEducation, socialLinks: propSocialLinks}: CircuitBoardLoaderProps) => {
   // State for interactive "High Bandwidth" connection
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -103,9 +133,28 @@ const UnifiedCircuitSection = memo(() => {
   const ITEM_HEIGHT = 110; // Tighter vertical spacing
   const TOP_OFFSET = 60;
 
-  // Map data to local variables for clarity
-  const workItems = heroTimeline;
-  const eduItems = heroEducation;
+  // Use props if provided (from DB), otherwise fall back to hardcoded data
+  const workItems: CardItem[] = (propHeroTimeline && propHeroTimeline.length > 0
+    ? propHeroTimeline
+    : heroTimeline
+  ).map(item => ({
+    date: item.date,
+    location: typeof item.location === 'string' ? item.location : String(item.location),
+    title: item.title,
+    image: (item as any).imageSrc ?? (item as any).image,
+  }));
+
+  const eduItems: CardItem[] = (propEducation && propEducation.length > 0
+    ? propEducation
+    : heroEducation
+  ).map(item => ({
+    date: item.date,
+    location: typeof item.location === 'string' ? item.location : String(item.location),
+    title: item.title,
+    image: (item as any).imageSrc ?? (item as any).image,
+  }));
+
+  const resolvedSocialLinks = propSocialLinks && propSocialLinks.length > 0 ? propSocialLinks : defaultSocialLinks.map(s => ({label: s.label, iconKey: s.label, href: s.href}));
 
   // Determine height based on the longest list
   const maxItems = Math.max(workItems.length, eduItems.length);
@@ -279,17 +328,21 @@ const UnifiedCircuitSection = memo(() => {
 
                 {/* Social Icons within Card */}
                 <div className="flex gap-x-4 mt-4 z-10">
-                  {socialLinks.map(({label, Icon, href}) => (
-                    <a
-                      aria-label={label}
-                      className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110"
-                      href={href}
-                      key={label}
-                      rel="noopener noreferrer"
-                      target="_blank">
-                      <Icon className="h-5 w-5" />
-                    </a>
-                  ))}
+                  {resolvedSocialLinks.map(({label, iconKey, href}) => {
+                    const Icon = ICON_MAP[iconKey];
+                    if (!Icon) return null;
+                    return (
+                      <a
+                        aria-label={label}
+                        className="text-gray-400 transition-all duration-300 hover:text-white hover:scale-110"
+                        href={href}
+                        key={label}
+                        rel="noopener noreferrer"
+                        target="_blank">
+                        <Icon className="h-5 w-5" />
+                      </a>
+                    );
+                  })}
                 </div>
 
                 <div className="line topl"></div>
