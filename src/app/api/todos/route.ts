@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /* eslint-disable simple-import-sort/imports */
 import '@/models/NotePage'; // Ensure NotePage is registered for population
 import '@/models/NoteSection'; // Ensure NoteSection is registered for population

@@ -7,6 +7,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {AlertItem} from '../../../components/SupplierRisk/AlertItem';
 import {RiskBadge, ScoreBar} from '../../../components/SupplierRisk/RiskBadge';
 import {RiskRadarChart} from '../../../components/SupplierRisk/RiskRadarChart';
+import {SupplierIntelligence} from '../../../components/SupplierRisk/SupplierIntelligence';
 import {SupplierModal} from '../../../components/SupplierRisk/SupplierModal';
 import {SupplierRiskLayout} from '../../../components/SupplierRisk/SupplierRiskLayout';
 
@@ -31,7 +32,7 @@ const SupplierDetailPage = () => {
   const [alerts, setAlerts] = useState<AlertDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'alerts' | 'mitigation'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'alerts' | 'mitigation' | 'intelligence'>('overview');
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -171,7 +172,7 @@ const SupplierDetailPage = () => {
 
           {/* Tabs */}
           <div className="flex gap-1 border-b border-gray-200">
-            {(['overview', 'alerts', 'mitigation'] as const).map(tab => (
+            {(['overview', 'alerts', 'mitigation', 'intelligence'] as const).map(tab => (
               <button
                 key={tab}
                 className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
@@ -180,7 +181,7 @@ const SupplierDetailPage = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
                 onClick={() => setActiveTab(tab)}>
-                {tab}
+                {tab === 'intelligence' ? '🔍 Intelligence' : tab}
                 {tab === 'alerts' && unresolved.length > 0 && (
                   <span className="ml-1 rounded-full bg-red-100 px-1.5 text-xs font-bold text-red-700">
                     {unresolved.length}
@@ -262,6 +263,16 @@ const SupplierDetailPage = () => {
                 ))
               )}
             </div>
+          )}
+
+          {activeTab === 'intelligence' && (
+            <SupplierIntelligence
+              supplierId={String(id)}
+              supplierName={supplier.name}
+              supplierCountry={supplier.country}
+              supplierCategory={supplier.category}
+              onAlertsCreated={fetchData}
+            />
           )}
 
           {activeTab === 'mitigation' && (
