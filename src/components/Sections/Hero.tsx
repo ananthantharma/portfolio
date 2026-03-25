@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-sort-props */
 'use client';
-import {Award, Compass, Mail, Network, Shield, Sparkles, Target} from 'lucide-react';
+import {Award, Compass, Mail, Network, Shield, Target} from 'lucide-react';
 import {FC, memo, useEffect, useRef, useState} from 'react';
 
 import {heroData, SectionId, socialLinks} from '../../data/data';
@@ -210,22 +210,8 @@ const Hero: FC = memo(() => {
           className="relative z-30 mx-auto flex min-h-screen w-full max-w-[100rem] flex-col justify-between px-6 sm:px-12 lg:px-24"
           style={{perspective: '2000px'}}>
 
-          {/* Header */}
-          <header
-            className={`flex items-center justify-between py-12 transition-all duration-[1500ms] ease-out ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'}`}>
-            <div className="flex items-center gap-3">
-              <Sparkles className="animate-pulse text-purple-400" size={16} />
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-400">
-                Portfolio // 2026
-              </span>
-            </div>
-            <nav className="hidden gap-10 md:flex">
-              <a className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 transition-all duration-300 hover:text-white" href={`/#${SectionId.Contact}`}>Contact</a>
-              {socialLinks.map(({label, href}) => (
-                <a className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 transition-all duration-300 hover:text-white" href={href} key={label} rel="noreferrer" target="_blank">{label}</a>
-              ))}
-            </nav>
-          </header>
+          {/* Spacer to push content down from top */}
+          <div className="py-12" />
 
           {/* Main — 3D tilt */}
           <main
