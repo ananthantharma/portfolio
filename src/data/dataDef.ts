@@ -124,13 +124,41 @@ export interface Social {
 }
 
 /**
- * Password Manager
+ * Vault / Secure Store
  */
-export interface PasswordEntry {
+export type VaultItemType = 'password' | 'card' | 'note' | 'identity' | 'apikey';
+
+export interface VaultEntry {
   _id: string;
+  itemType: VaultItemType;
   title: string;
+  favorite?: boolean;
+  createdAt?: string;
+  // Password
   site?: string;
   username?: string;
   password?: string;
+  // Card
+  cardNumber?: string;
+  cardHolder?: string;
+  expiry?: string;
+  cvv?: string;
+  // Identity
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  idNumber?: string;
+  // API Key
+  service?: string;
+  apiKey?: string;
+  apiSecret?: string;
+  // Note
+  content?: string;
+  // Shared
   notes?: string;
 }
+
+/** @deprecated use VaultEntry */
+export type PasswordEntry = VaultEntry;
