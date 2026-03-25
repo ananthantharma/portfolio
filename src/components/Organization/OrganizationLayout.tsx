@@ -12,7 +12,6 @@ import {
   CheckSquare,
   Bot,
   Sparkles,
-  X,
 } from 'lucide-react';
 
 import OrgDashboard from './OrgDashboard';
