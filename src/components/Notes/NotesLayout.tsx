@@ -22,7 +22,9 @@ import {
   PlusCircleIcon,
   BookmarkIcon,
   BriefcaseIcon,
+  BuildingOffice2Icon,
 } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
@@ -842,6 +844,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   <BookmarkIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
                   <span className="hidden xl:inline">Bookmarks</span>
                 </button>
+                <Link
+                  href="/organization"
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-violet-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
+                  title="Organization">
+                  <BuildingOffice2Icon className="h-3.5 w-3.5 group-hover:text-violet-500 transition-colors duration-200" />
+                  <span className="hidden xl:inline">Organize</span>
+                </Link>
               </div>
 
               {/* Focus Mode */}
