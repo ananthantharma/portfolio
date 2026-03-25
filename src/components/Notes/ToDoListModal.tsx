@@ -33,6 +33,7 @@ interface ToDoListModalProps {
   isDirectCreateOpen?: boolean;
   onCloseDirectCreate?: () => void;
   isStandalone?: boolean;
+  initialView?: 'list' | 'board';
 }
 
 type SortField = 'priority' | 'dueDate' | 'title' | 'category';
@@ -169,7 +170,7 @@ const SortDropdown = React.memo(
 SortDropdown.displayName = 'SortDropdown';
 
 const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
-  ({isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate, isStandalone}) => {
+  ({isOpen, onClose, onNavigate, isDirectCreateOpen, onCloseDirectCreate, isStandalone, initialView}) => {
     const [todos, setTodos] = useState<IToDo[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -186,7 +187,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const [editingTask, setEditingTask] = useState<IToDo | null>(null);
 
     // New Features State
-    const [viewMode, setViewMode] = useState<'list' | 'board'>(isStandalone ? 'list' : 'board');
+    const [viewMode, setViewMode] = useState<'list' | 'board'>(initialView ?? (isStandalone ? 'list' : 'board'));
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [prefilledData, setPrefilledData] = useState<Partial<TaskFormData> | undefined>(undefined);
 
@@ -695,7 +696,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               </div>
 
               {/* AI Priority */}
-              {unprioritizedCount > 0 && !isStandalone && (
+              {unprioritizedCount > 0 && (!isStandalone || initialView === 'board') && (
                 <button
                   onClick={handleAIPrioritySuggest}
                   disabled={isAIPrioritizing}
@@ -737,14 +738,14 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
           </div>
 
           {/* Row 2: smart input */}
-          {!isStandalone && (
+          {(!isStandalone || initialView === 'board') && (
             <div className="mb-3">
               <SmartInput onAdd={handleSmartAdd} />
             </div>
           )}
 
           {/* Row 3: filter & sort dropdowns */}
-          {!showCompleted && !isStandalone && (
+          {!showCompleted && (!isStandalone || initialView === 'board') && (
             <div className="flex items-center gap-2 flex-wrap">
               <FilterDropdown
                 label="Priority"
