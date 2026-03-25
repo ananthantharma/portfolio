@@ -1,278 +1,365 @@
 /* eslint-disable react/jsx-sort-props */
-import {ChevronDownIcon} from '@heroicons/react/24/outline';
-import classNames from 'classnames';
+'use client';
+import {Award, Compass, Mail, Network, Shield, Sparkles, Target} from 'lucide-react';
 import {FC, memo, useEffect, useRef, useState} from 'react';
 
 import {heroData, SectionId, socialLinks} from '../../data/data';
 import Section from '../Layout/Section';
 
-/* ─── Scramble Text ─────────────────────────────────────────────────── */
-const ScrambledText = memo(({delay = 0, text, className = ''}: {delay?: number; text: string; className?: string}) => {
-  const [displayText, setDisplayText] = useState('');
-  const chars = '#.^{-!$_№:0+.@}-??4@%=.,^!?2%\\;1]?%:%|{f[4{4%0%1_0<{0%]>42';
-  const requestRef = useRef<number>();
-  const startTimeRef = useRef<number | null>(null);
-  const iterationRef = useRef(0);
+/* ─── Credential badges ───────────────────────────────────────────────── */
+const BADGES = [
+  {Icon: Shield,  text: 'P.ENG'},
+  {Icon: Target,  text: 'PMP'},
+  {Icon: Network, text: 'CSCP'},
+  {Icon: Award,   text: 'MBA'},
+] as const;
 
-  useEffect(() => {
-    iterationRef.current = 0;
-    startTimeRef.current = null;
-
-    const animate = (time: number) => {
-      if (!startTimeRef.current) startTimeRef.current = time;
-      const progress = time - startTimeRef.current;
-      if (progress > 45) {
-        setDisplayText(
-          text
-            .split('')
-            .map((l, i) =>
-              i < iterationRef.current
-                ? l
-                : l === ' '
-                  ? ' '
-                  : chars[Math.floor(Math.random() * chars.length)],
-            )
-            .join(''),
-        );
-        iterationRef.current += 0.35;
-        startTimeRef.current = time;
-      }
-      if (iterationRef.current < text.length) requestRef.current = requestAnimationFrame(animate);
-    };
-
-    const id = setTimeout(() => (requestRef.current = requestAnimationFrame(animate)), delay);
-    return () => {
-      clearTimeout(id);
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, [text, delay, chars]);
-
-  return <span className={className}>{displayText}</span>;
-});
-ScrambledText.displayName = 'ScrambledText';
-
-/* ─── Cycling word animation ─────────────────────────────────────────── */
-const words = ['Build.', 'Design.', 'Deliver.', 'Iterate.', 'Ship.'];
-
-const CyclingWord: FC = memo(() => {
-  const [index, setIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIndex(i => (i + 1) % words.length);
-        setVisible(true);
-      }, 300);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <span
-      className="inline-block bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent transition-all duration-300"
-      style={{opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(8px)'}}>
-      {words[index]}
-    </span>
-  );
-});
-CyclingWord.displayName = 'CyclingWord';
-
-/* ─── Aurora background blobs ────────────────────────────────────────── */
-const AuroraBackground: FC = memo(() => (
-  <div className="pointer-events-none absolute inset-0 overflow-hidden">
-    {/* Blob 1 – cyan top-right */}
-    <div
-      className="absolute rounded-full opacity-20 blur-[120px]"
-      style={{
-        width: '55vw',
-        height: '55vw',
-        top: '-15vw',
-        right: '-10vw',
-        background: 'radial-gradient(circle, #00C9FF 0%, transparent 70%)',
-        animation: 'blobDrift1 18s ease-in-out infinite',
-      }}
-    />
-    {/* Blob 2 – violet bottom-left */}
-    <div
-      className="absolute rounded-full opacity-20 blur-[140px]"
-      style={{
-        width: '60vw',
-        height: '60vw',
-        bottom: '-20vw',
-        left: '-15vw',
-        background: 'radial-gradient(circle, #7928CA 0%, transparent 70%)',
-        animation: 'blobDrift2 22s ease-in-out infinite',
-      }}
-    />
-    {/* Blob 3 – indigo center-left accent */}
-    <div
-      className="absolute rounded-full opacity-10 blur-[100px]"
-      style={{
-        width: '40vw',
-        height: '40vw',
-        top: '30%',
-        left: '10%',
-        background: 'radial-gradient(circle, #4F46E5 0%, transparent 70%)',
-        animation: 'blobDrift3 26s ease-in-out infinite',
-      }}
-    />
-  </div>
-));
-AuroraBackground.displayName = 'AuroraBackground';
-
-/* ─── Dot grid ───────────────────────────────────────────────────────── */
-const DotGrid: FC = memo(() => (
-  <div
-    className="pointer-events-none absolute inset-0 opacity-[0.07]"
-    style={{
-      backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-      backgroundSize: '32px 32px',
-    }}
-  />
-));
-DotGrid.displayName = 'DotGrid';
-
-/* ─── Main Hero ──────────────────────────────────────────────────────── */
+/* ─── Hero ───────────────────────────────────────────────────────────── */
 const Hero: FC = memo(() => {
   const {actions} = heroData;
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Use a ref so the canvas loop reads fresh values without recreating
+  const mousePosRef = useRef({x: 0, y: 0});
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+
+  /* mouse tracking */
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mousePosRef.current = {
+        x: (e.clientX / window.innerWidth)  * 2 - 1,
+        y: -(e.clientY / window.innerHeight) * 2 + 1,
+      };
+    };
+    window.addEventListener('mousemove', onMove);
+    const t = setTimeout(() => setIsLoaded(true), 200);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      clearTimeout(t);
+    };
+  }, []);
+
+  /* 3D tilt values — we derive inline from a state that only updates on raf */
+  const [tilt, setTilt] = useState({x: 0, y: 0});
+  useEffect(() => {
+    let rafId: number;
+    const loop = () => {
+      setTilt(prev => {
+        const tx = mousePosRef.current.y * 5;
+        const ty = mousePosRef.current.x * 5;
+        // Lerp for smoothness
+        return {
+          x: prev.x + (tx - prev.x) * 0.05,
+          y: prev.y + (ty - prev.y) * 0.05,
+        };
+      });
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  /* galaxy canvas — runs once, reads mousePosRef each frame */
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let rafId: number;
+    let globalRotation = 0;
+    const maxDepth = 2500;
+    const numStars  = 1200;
+
+    type Star  = {x: number; y: number; z: number; color: string; baseSize: number};
+    type Comet = {x: number; y: number; length: number; speed: number; angle: number; opacity: number};
+
+    const stars: Star[]  = [];
+    const comets: Comet[] = [];
+
+    for (let i = 0; i < numStars; i++) {
+      const t = Math.random();
+      const color = t > 0.85 ? '192,132,252' : t > 0.7 ? '147,197,253' : '255,255,255';
+      stars.push({
+        x: (Math.random() - 0.5) * 4000,
+        y: (Math.random() - 0.5) * 4000,
+        z: Math.random() * maxDepth,
+        color,
+        baseSize: Math.random() * 2 + 0.5,
+      });
+    }
+
+    const render = () => {
+      const {x: mx, y: my} = mousePosRef.current;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+
+      if (canvas.width !== W || canvas.height !== H) {
+        canvas.width  = W;
+        canvas.height = H;
+      }
+
+      ctx.clearRect(0, 0, W, H);
+      const cx = W / 2;
+      const cy = H / 2;
+
+      globalRotation += 0.0003;
+
+      const driftX = mx * 10;
+      const driftY = -my * 10;
+      const cosR   = Math.cos(globalRotation);
+      const sinR   = Math.sin(globalRotation);
+      const fov    = 600;
+      const now    = Date.now();
+
+      for (const star of stars) {
+        star.z -= 0.5;
+        if (star.z < 1) {
+          star.z = maxDepth;
+          star.x = (Math.random() - 0.5) * 4000;
+          star.y = (Math.random() - 0.5) * 4000;
+        }
+
+        const rx = star.x * cosR - star.y * sinR;
+        const ry = star.y * cosR + star.x * sinR;
+        const sc = fov / star.z;
+
+        const x2d = cx + (rx + driftX * star.z * 0.05) * sc;
+        const y2d = cy + (ry + driftY * star.z * 0.05) * sc;
+
+        const distAlpha = Math.min(1, (maxDepth - star.z) / 1000);
+        const twinkle   = 0.5 + Math.sin(now * 0.002 + star.x) * 0.5;
+        const alpha     = distAlpha * (0.4 + twinkle * 0.6);
+        const r         = Math.max(0.1, star.baseSize * sc);
+
+        ctx.beginPath();
+        ctx.arc(x2d, y2d, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${star.color},${alpha})`;
+        ctx.fill();
+
+        if (star.baseSize > 2 && alpha > 0.5) {
+          ctx.shadowBlur  = 15;
+          ctx.shadowColor = `rgba(${star.color},${alpha})`;
+          ctx.fill();
+          ctx.shadowBlur  = 0;
+        }
+      }
+
+      /* comets */
+      if (Math.random() < 0.005) {
+        comets.push({
+          x:       (Math.random() - 0.5) * W * 2,
+          y:       (Math.random() - 0.5) * H * 2,
+          length:  Math.random() * 150 + 50,
+          speed:   Math.random() * 5 + 5,
+          angle:   Math.PI / 4 + (Math.random() * 0.2 - 0.1),
+          opacity: 1,
+        });
+      }
+
+      for (let i = comets.length - 1; i >= 0; i--) {
+        const c = comets[i];
+        c.x       += Math.cos(c.angle) * c.speed;
+        c.y       += Math.sin(c.angle) * c.speed;
+        c.opacity -= 0.005;
+
+        if (c.opacity <= 0) { comets.splice(i, 1); continue; }
+
+        const grad = ctx.createLinearGradient(
+          c.x, c.y,
+          c.x - Math.cos(c.angle) * c.length,
+          c.y - Math.sin(c.angle) * c.length,
+        );
+        grad.addColorStop(0, `rgba(255,255,255,${c.opacity})`);
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+
+        ctx.beginPath();
+        ctx.moveTo(c.x, c.y);
+        ctx.lineTo(c.x - Math.cos(c.angle) * c.length, c.y - Math.sin(c.angle) * c.length);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth   = 1.5;
+        ctx.stroke();
+      }
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(rafId);
+  }, []); // runs once — reads mouse via ref
+
+  const linkedIn = socialLinks.find(s => s.label === 'LinkedIn')?.href ?? '#';
+
   return (
     <Section noPadding sectionId={SectionId.Hero}>
-      {/* ── Canvas ── */}
-      <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#05050a]">
-        <AuroraBackground />
-        <DotGrid />
+      <div className="relative min-h-screen overflow-hidden bg-[#020106] font-sans text-white selection:bg-purple-500/30 selection:text-white">
 
-        {/* subtle top vignette */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/70" />
+        {/* Galaxy canvas */}
+        <canvas
+          ref={canvasRef}
+          className={`absolute inset-0 z-0 transition-opacity duration-[3000ms] ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        />
 
-        {/* ── Content ── */}
-        <div className="relative z-10 flex flex-col items-center gap-y-10 px-6 text-center">
+        {/* Nebula blobs */}
+        <div className="pointer-events-none absolute -left-[10%] -top-[10%] z-0 h-[60vw] w-[60vw] rounded-full bg-indigo-900/15 blur-[150px] mix-blend-screen animate-nebula-breathe" />
+        <div className="pointer-events-none absolute -bottom-[10%] -right-[10%] z-0 h-[60vw] w-[60vw] rounded-full bg-purple-900/15 blur-[150px] mix-blend-screen animate-nebula-breathe-delayed" />
 
-          {/* eyebrow label */}
-          <p
-            className="animate-fade-in-down rounded-full border border-white/10 bg-white/5 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-cyan-400 backdrop-blur-sm"
-            style={{animationDelay: '0ms'}}>
-            Portfolio
-          </p>
+        {/* 3-D container */}
+        <div
+          className="relative z-30 mx-auto flex min-h-screen w-full max-w-[100rem] flex-col justify-between px-6 sm:px-12 lg:px-24"
+          style={{perspective: '2000px'}}>
 
-          {/* Name */}
-          <div
-            className="animate-fade-in-down flex flex-col items-center gap-y-1"
-            style={{animationDelay: '100ms'}}>
-            <h1 className="font-sans text-[clamp(2.8rem,9vw,8rem)] font-black leading-[0.9] tracking-tighter text-white">
-              <ScrambledText text="ANANTHAN" delay={200} />
-            </h1>
-            <h1
-              className="font-sans text-[clamp(1.1rem,3.5vw,3.2rem)] font-black leading-[1] tracking-tight"
-              style={{
-                background: 'linear-gradient(90deg,#00C9FF 0%,#92FE9D 50%,#a78bfa 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>
-              <ScrambledText text="THARMAVELAUTHAM" delay={600} />
-            </h1>
-          </div>
+          {/* Header */}
+          <header
+            className={`flex items-center justify-between py-12 transition-all duration-[1500ms] ease-out ${isLoaded ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'}`}>
+            <div className="flex items-center gap-3">
+              <Sparkles className="animate-pulse text-purple-400" size={16} />
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-400">
+                Portfolio // 2026
+              </span>
+            </div>
+            <nav className="hidden gap-10 md:flex">
+              <a className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 transition-all duration-300 hover:text-white" href={`/#${SectionId.Contact}`}>Contact</a>
+              {socialLinks.map(({label, href}) => (
+                <a className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 transition-all duration-300 hover:text-white" href={href} key={label} rel="noreferrer" target="_blank">{label}</a>
+              ))}
+            </nav>
+          </header>
 
-          {/* Divider */}
-          <div
-            className="animate-fade-in-up h-px w-24 rounded-full"
+          {/* Main — 3D tilt */}
+          <main
+            className="flex flex-grow flex-col items-start justify-center w-full max-w-5xl transition-transform duration-1000 ease-out"
             style={{
-              animationDelay: '400ms',
-              background: 'linear-gradient(90deg,transparent,#00C9FF,transparent)',
-            }}
-          />
+              transformStyle: 'preserve-3d',
+              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            }}>
 
-          {/* Tagline */}
-          <p
-            className="animate-fade-in-up font-mono text-lg font-light tracking-widest text-white/60"
-            style={{animationDelay: '500ms'}}>
-            Think. <CyclingWord />
-          </p>
+            {/* Glass monolith */}
+            <div
+              className="group relative w-full overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md transition-all duration-1000 sm:p-12 md:p-16"
+              style={{transformStyle: 'preserve-3d', transform: 'translateZ(30px)'}}>
 
-          {/* Social icons */}
-          <div
-            className="animate-fade-in-up flex items-center gap-x-5"
-            style={{animationDelay: '600ms'}}>
-            {socialLinks.map(({label, Icon, href}) => (
-              <a
-                aria-label={label}
-                className="group flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/50 hover:bg-white/10 hover:text-cyan-400 hover:shadow-[0_0_20px_rgba(0,201,255,0.25)]"
-                href={href}
-                key={label}
-                rel="noopener noreferrer"
-                target="_blank">
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
-          </div>
+              {/* Glare on hover */}
+              <div
+                className="pointer-events-none absolute inset-0 z-0 opacity-0 mix-blend-screen transition-opacity duration-700 group-hover:opacity-100"
+                style={{
+                  background: `radial-gradient(circle at ${50 + mousePosRef.current.x * 50}% ${50 - mousePosRef.current.y * 50}%, rgba(255,255,255,0.06), transparent 50%)`,
+                }}
+              />
+              <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl bg-gradient-to-br from-white/[0.05] to-transparent" />
 
-          {/* CTA buttons */}
-          <div
-            className="animate-fade-in-up flex flex-wrap items-center justify-center gap-4"
-            style={{animationDelay: '700ms'}}>
-            {actions.map(({href, text, primary, Icon, onClick}) => (
-              <a
-                className={classNames(
-                  'group relative flex items-center gap-x-2 overflow-hidden rounded-full px-8 py-3 text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-105 focus:outline-none',
-                  primary
-                    ? 'bg-gradient-to-r from-cyan-400 to-cyan-300 text-black shadow-[0_0_30px_rgba(0,201,255,0.35)] hover:shadow-[0_0_50px_rgba(0,201,255,0.6)]'
-                    : 'border border-white/15 bg-white/5 text-white backdrop-blur-sm hover:border-white/30 hover:bg-white/10',
+              {/* Name */}
+              <div
+                className={`relative z-10 transition-all duration-[1500ms] delay-300 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                style={{transform: 'translateZ(60px)'}}>
+                <h1 className="mb-2 text-[10vw] font-bold leading-[0.85] tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] sm:text-[8vw] md:text-7xl lg:text-8xl">
+                  ANANTHAN
+                </h1>
+                <h1 className="bg-gradient-to-r from-neutral-100 via-neutral-300 to-neutral-600 bg-clip-text text-[8vw] font-light leading-[0.85] tracking-tight text-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] sm:text-[6vw] md:text-6xl lg:text-7xl">
+                  THARMAVELAUTHAM.
+                </h1>
+              </div>
+
+              {/* Credential badges */}
+              <div
+                className={`relative z-10 mt-12 flex flex-wrap gap-4 transition-all duration-[1500ms] delay-500 ease-out ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                style={{transform: 'translateZ(45px)'}}>
+                {BADGES.map(({Icon, text}) => (
+                  <div
+                    className="group/badge relative flex cursor-default items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-6 py-2.5 shadow-lg transition-all duration-500 hover:-translate-y-1 hover:border-purple-400/60 hover:bg-white/[0.1] hover:shadow-[0_0_20px_rgba(192,132,252,0.2)]"
+                    key={text}>
+                    <Icon className="text-neutral-500 transition-colors duration-500 group-hover/badge:text-purple-300" size={14} />
+                    <span className="text-[10px] font-bold tracking-[0.2em] text-neutral-300 transition-colors duration-500 group-hover/badge:text-white">
+                      {text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA buttons */}
+              <div
+                className={`relative z-10 mt-16 flex flex-col gap-6 sm:flex-row transition-all duration-[1500ms] delay-700 ease-out ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                style={{transform: 'translateZ(55px)'}}>
+
+                {/* Primary — wire to first action if exists, else contact anchor */}
+                {actions.length > 0 ? (
+                  actions.map(({href, text, primary, onClick}, i) =>
+                    primary ? (
+                      <a
+                        className="group flex w-max items-center justify-between gap-6 rounded-full bg-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-500 hover:scale-105 hover:bg-neutral-100 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]"
+                        href={href}
+                        key={i}
+                        onClick={onClick}>
+                        <span>{text}</span>
+                        <Compass className="transition-transform duration-500 group-hover:rotate-45" size={16} />
+                      </a>
+                    ) : (
+                      <a
+                        className="group flex w-max items-center justify-between gap-6 rounded-full border border-white/20 bg-transparent px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 transition-all duration-500 hover:border-white/40 hover:bg-white/5 hover:text-white"
+                        href={href}
+                        key={i}
+                        onClick={onClick}>
+                        <span>{text}</span>
+                        <Mail className="text-neutral-500 transition-colors duration-500 group-hover:text-white" size={16} />
+                      </a>
+                    ),
+                  )
+                ) : (
+                  <>
+                    <a
+                      className="group flex w-max items-center justify-between gap-6 rounded-full bg-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-500 hover:scale-105 hover:bg-neutral-100 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]"
+                      href={`/#${SectionId.Contact}`}>
+                      <span>Get in Touch</span>
+                      <Mail className="transition-transform duration-500 group-hover:translate-x-0.5" size={16} />
+                    </a>
+                    <a
+                      className="group flex w-max items-center justify-between gap-6 rounded-full border border-white/20 bg-transparent px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 transition-all duration-500 hover:border-white/40 hover:bg-white/5 hover:text-white"
+                      href={linkedIn}
+                      rel="noreferrer"
+                      target="_blank">
+                      <span>LinkedIn Profile</span>
+                      <Compass className="text-neutral-500 transition-transform duration-500 group-hover:rotate-45 group-hover:text-white" size={16} />
+                    </a>
+                  </>
                 )}
-                href={href}
-                key={text}
-                onClick={onClick}>
-                <span>{text}</span>
-                {Icon && <Icon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />}
-              </a>
-            ))}
-          </div>
-        </div>
+              </div>
+            </div>
+          </main>
 
-        {/* ── Scroll indicator ── */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <a
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/40 backdrop-blur-sm transition-all hover:border-white/20 hover:text-white/70 focus:outline-none"
-            href={`/#${SectionId.Contact}`}>
-            <ChevronDownIcon className="h-5 w-5" />
-          </a>
+          {/* Footer */}
+          <footer
+            className={`flex flex-col items-center justify-between border-t border-white/5 py-8 sm:flex-row transition-all duration-[1500ms] delay-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
+              © {new Date().getFullYear()} Ananthan Tharmavelautham
+            </p>
+            <div className="mt-4 flex gap-8 sm:mt-0">
+              {socialLinks.map(({label, href}) => (
+                <a
+                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 transition-all duration-300 hover:text-purple-400"
+                  href={href}
+                  key={label}
+                  rel="noreferrer"
+                  target="_blank">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </footer>
         </div>
       </div>
 
       <style jsx global>{`
-        @keyframes fadeInDown {
-          from { opacity: 0; transform: translateY(-24px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @keyframes breathe {
+          0%, 100% { transform: scale(1);   opacity: 0.5; }
+          50%       { transform: scale(1.1); opacity: 0.8; }
         }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
+        .animate-nebula-breathe {
+          animation: breathe 15s ease-in-out infinite;
         }
-        .animate-fade-in-down {
-          opacity: 0;
-          animation: fadeInDown 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
-        }
-        .animate-fade-in-up {
-          opacity: 0;
-          animation: fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
-        }
-
-        @keyframes blobDrift1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33%       { transform: translate(-5vw, 8vw) scale(1.1); }
-          66%       { transform: translate(6vw, -4vw) scale(0.95); }
-        }
-        @keyframes blobDrift2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33%       { transform: translate(7vw, -6vw) scale(1.08); }
-          66%       { transform: translate(-4vw, 5vw) scale(0.92); }
-        }
-        @keyframes blobDrift3 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50%       { transform: translate(5vw, 8vw) scale(1.15); }
+        .animate-nebula-breathe-delayed {
+          animation: breathe 18s ease-in-out infinite;
+          animation-delay: 5s;
         }
       `}</style>
     </Section>
