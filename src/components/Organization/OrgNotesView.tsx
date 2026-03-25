@@ -17,6 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Category, Section, Page, PageTab } from './OrganizationLayout';
+import RichTextEditor from '../Notes/RichTextEditor';
 
 interface OrgNotesViewProps {
   categories: Category[];
@@ -69,7 +70,13 @@ export default function OrgNotesView({
   const [aiAction, setAiAction] = useState<string>('');
   const [showAiDropdown, setShowAiDropdown] = useState(false);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Resizable panels
+  const [leftWidth, setLeftWidth] = useState(200);
+  const [middleWidth, setMiddleWidth] = useState(260);
+  const resizing = useRef<'left' | 'middle' | null>(null);
+  const resizeStartX = useRef(0);
+  const resizeStartWidth = useRef(0);
 
   // Load sections when category changes
   useEffect(() => {
@@ -102,13 +109,29 @@ export default function OrgNotesView({
     }
   }, [selectedPageId, pages]);
 
-  // Auto-grow textarea
+  // Resizable panels mouse handling
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-  }, [editingContent]);
+    const onMouseMove = (e: MouseEvent) => {
+      if (!resizing.current) return;
+      const delta = e.clientX - resizeStartX.current;
+      if (resizing.current === 'left') {
+        setLeftWidth(Math.max(150, Math.min(400, resizeStartWidth.current + delta)));
+      } else {
+        setMiddleWidth(Math.max(160, Math.min(500, resizeStartWidth.current + delta)));
+      }
+    };
+    const onMouseUp = () => {
+      if (!resizing.current) return;
+      resizing.current = null;
+      document.body.style.cursor = 'default';
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
   const handleContentChange = (val: string) => {
     setEditingContent(val);
@@ -276,7 +299,7 @@ export default function OrgNotesView({
   return (
     <div className="flex h-full">
       {/* Left panel: categories + sections */}
-      <div className="w-[200px] shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-y-auto">
+      <div className="shrink-0 bg-white flex flex-col overflow-y-auto" style={{ width: leftWidth }}>
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Notebooks</span>
           <button
@@ -375,8 +398,20 @@ export default function OrgNotesView({
         </div>
       </div>
 
+      {/* Resize handle: left | middle */}
+      <div
+        className="w-1 shrink-0 cursor-col-resize hover:bg-indigo-400 bg-slate-200 transition-colors"
+        onMouseDown={e => {
+          resizing.current = 'left';
+          resizeStartX.current = e.clientX;
+          resizeStartWidth.current = leftWidth;
+          document.body.style.cursor = 'col-resize';
+          e.preventDefault();
+        }}
+      />
+
       {/* Middle panel: pages list */}
-      <div className="w-[260px] shrink-0 bg-slate-50 border-r border-slate-200 flex flex-col">
+      <div className="shrink-0 bg-slate-50 flex flex-col" style={{ width: middleWidth }}>
         <div className="p-2.5 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-1.5 mb-2">
             <input
@@ -491,6 +526,18 @@ export default function OrgNotesView({
         </div>
       </div>
 
+      {/* Resize handle: middle | right */}
+      <div
+        className="w-1 shrink-0 cursor-col-resize hover:bg-indigo-400 bg-slate-200 transition-colors"
+        onMouseDown={e => {
+          resizing.current = 'middle';
+          resizeStartX.current = e.clientX;
+          resizeStartWidth.current = middleWidth;
+          document.body.style.cursor = 'col-resize';
+          e.preventDefault();
+        }}
+      />
+
       {/* Right panel: editor */}
       <div className="flex-1 flex flex-col bg-white min-w-0 overflow-hidden">
         {!selectedPage ? (
@@ -576,15 +623,13 @@ export default function OrgNotesView({
               </div>
             )}
 
-            {/* Textarea */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <textarea
-                ref={textareaRef}
+            {/* Rich Editor */}
+            <div className="flex-1 overflow-hidden">
+              <RichTextEditor
+                key={`${selectedPage._id}-${activeTabId}`}
                 value={editingContent}
-                onChange={e => handleContentChange(e.target.value)}
-                placeholder="Start writing..."
-                className="w-full font-mono text-sm text-slate-800 bg-transparent resize-none focus:outline-none placeholder-slate-300 leading-relaxed min-h-[300px]"
-                style={{ minHeight: '300px' }}
+                onChange={(html: string) => handleContentChange(html)}
+                placeholder="Start writing... (supports bold, tables, images, and more)"
               />
             </div>
 
