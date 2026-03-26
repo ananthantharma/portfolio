@@ -471,13 +471,13 @@ export default function BoardView() {
 
   const handleToggleComplete = useCallback((task: IOrgTask) => {
     const updated = !task.isCompleted;
-    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isCompleted: updated } : t));
+    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isCompleted: updated } as IOrgTask : t));
     persistTask(task._id, { isCompleted: updated });
   }, [persistTask]);
 
   const handleToggleMinimize = useCallback((task: IOrgTask) => {
     const updated = !task.isMinimized;
-    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isMinimized: updated } : t));
+    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isMinimized: updated } as IOrgTask : t));
     persistTask(task._id, { isMinimized: updated });
   }, [persistTask]);
 
@@ -487,12 +487,12 @@ export default function BoardView() {
       const d = new Date(t.dueDate);
       d.setDate(d.getDate() + days);
       persistTask(id, { dueDate: d });
-      return { ...t, dueDate: d };
+      return { ...t, dueDate: d } as IOrgTask;
     }));
   }, [persistTask]);
 
   const handleSubtasksChange = useCallback((id: string, subtasks: NonNullable<IOrgTask['subtasks']>) => {
-    setTasks(prev => prev.map(t => t._id === id ? { ...t, subtasks } : t));
+    setTasks(prev => prev.map(t => t._id === id ? { ...t, subtasks } as IOrgTask : t));
     persistTask(id, { subtasks });
   }, [persistTask]);
 
@@ -500,7 +500,7 @@ export default function BoardView() {
     const cycle: (IOrgTask['neonColor'])[] = ['red', 'blue', 'green', null];
     const currentIdx = cycle.indexOf(task.neonColor || null);
     const next = cycle[(currentIdx + 1) % cycle.length];
-    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, neonColor: next } : t));
+    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, neonColor: next } as IOrgTask : t));
     persistTask(task._id, { neonColor: next });
   }, [persistTask]);
 
@@ -522,7 +522,7 @@ export default function BoardView() {
     const overColumn = COLUMNS.find(c => c.id === overId);
     if (overColumn) {
       if (activeTask.status !== overColumn.id) {
-        setTasks(prev => prev.map(t => t._id === active.id ? { ...t, status: overColumn.id } : t));
+        setTasks(prev => prev.map(t => t._id === active.id ? { ...t, status: overColumn.id } as IOrgTask : t));
         await persistTask(active.id as string, { status: overColumn.id });
       }
       return;
@@ -534,7 +534,7 @@ export default function BoardView() {
 
     if (activeTask.status !== overTask.status) {
       // Cross-column move
-      const updatedTasks = tasks.map(t => t._id === active.id ? { ...t, status: overTask.status } : t);
+      const updatedTasks = tasks.map(t => t._id === active.id ? { ...t, status: overTask.status } as IOrgTask : t);
       setTasks(updatedTasks);
       await persistTask(active.id as string, { status: overTask.status });
     } else {
@@ -549,7 +549,7 @@ export default function BoardView() {
 
       setTasks(prev => {
         const otherTasks = prev.filter(t => t.status !== activeTask.status);
-        const merged = [...otherTasks, ...reordered.map((t, i) => ({ ...t, order: i }))];
+        const merged = [...otherTasks, ...reordered.map((t, i) => ({ ...t, order: i } as IOrgTask))];
         return merged;
       });
 
