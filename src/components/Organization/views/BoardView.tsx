@@ -10,7 +10,6 @@ import {
   useSensors,
   DragStartEvent,
   DragEndEvent,
-  DragOverEvent,
   useDroppable,
   MeasuringStrategy,
 } from '@dnd-kit/core';
@@ -31,9 +30,7 @@ import {
   MagnifyingGlassIcon,
   MinusIcon,
   CalendarIcon,
-  FlagIcon,
 } from '@heroicons/react/24/outline';
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { IOrgTask } from '@/models/OrgTask';
 import OrgTaskFormModal from '../modals/OrgTaskFormModal';
 
