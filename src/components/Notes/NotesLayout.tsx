@@ -24,6 +24,7 @@ import {
   BriefcaseIcon,
   BuildingOffice2Icon,
   MicrophoneIcon,
+  CloudIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -891,6 +892,13 @@ const NotesLayout: React.FC = React.memo(() => {
                     <span className="hidden lg:inline">Listen</span>
                   </button>
                   <button
+                    className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm transition-all duration-300"
+                    onClick={() => setIsDriveOpen(true)}
+                    title="Google Drive">
+                    <CloudIcon className="h-3.5 w-3.5 group-hover:text-emerald-500 transition-colors" />
+                    <span className="hidden lg:inline">Drive</span>
+                  </button>
+                  <button
                     className="group rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-emerald-600 transition-all"
                     onClick={handleQuickNote}
                     title="Quick Note">
@@ -978,19 +986,6 @@ const NotesLayout: React.FC = React.memo(() => {
                             <BuildingOffice2Icon className="h-4 w-4 opacity-70" />
                             Organization
                           </Link>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            onClick={() => setIsDriveOpen(true)}
-                            className={`${
-                              active ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'
-                            } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
-                          >
-                            <BriefcaseIcon className="h-4 w-4 opacity-70" />
-                            Cloud Drive
-                          </button>
                         )}
                       </Menu.Item>
                     </Menu.Items>
