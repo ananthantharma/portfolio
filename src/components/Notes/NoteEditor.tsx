@@ -218,10 +218,11 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
         let targetTabId = sortedTabs[0]._id || sortedTabs[0].title;
 
-        // Smart Restoration Logic: Try to maintain current active tab
-        // If we just saved, the page prop updated. We want to find the tab we were just on.
-        // It might have a new ID (if we just created it), so we fallback to Title match.
-        if (activeTabId) {
+        // Try to load from localStorage first
+        const savedTabId = localStorage.getItem(`last_tab_${page._id}`);
+        if (savedTabId && sortedTabs.some(t => t._id === savedTabId || t.title === savedTabId)) {
+          targetTabId = savedTabId;
+        } else if (activeTabId) {
           // 1. Try exact ID match (e.g. editing existing tab)
           const idMatch = sortedTabs.find(t => t._id === activeTabId || t.title === activeTabId);
           if (idMatch) {
@@ -238,7 +239,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           }
         }
 
-        // Override if initialTabId is provided (e.g. deep linking)
+        // Override if initialTabId is provided (e.g. from handleJumpToTask)
         if (initialTabId) {
           const found = sortedTabs.find(t => t._id === initialTabId || t.title === initialTabId);
           if (found) {
@@ -250,7 +251,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         const activeTab = sortedTabs.find(t => (t._id || t.title) === targetTabId);
         setEditorContent(activeTab?.content || '');
       } else {
-        // LEGACY MIGRATION: No tabs, but has content
+        // ... (legacy migration)
         const initialContent = page.content || '';
         const defaultTab = {
           _id: 'default-tab', // Temporary ID for UI
@@ -273,14 +274,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, initialTabId]);
 
-  // Sync Editor Content when Active Tab Changes
+  // Sync Editor Content when Active Tab Changes & Persist Active Tab
   useEffect(() => {
+    if (activeTabId && page?._id) {
+      localStorage.setItem(`last_tab_${page._id}`, activeTabId);
+    }
     if (activeTabId && tabs.length > 0) {
-      const activeTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId); // Match ID or Title
+      const activeTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId);
       if (activeTab) {
         setEditorContent(activeTab.content);
-        // Note: Removed 'tabs' from dependency to avoid resetting editor content on every keystroke
-        // (since typing updates 'tabs' state).
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

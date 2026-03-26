@@ -15,7 +15,6 @@ import {
   UsersIcon,
   Cog6ToothIcon,
   SparklesIcon,
-  TableCellsIcon,
   ArrowsPointingOutIcon, // For Focus Mode
   ArrowsPointingInIcon, // For Focus Mode Exit
   DocumentPlusIcon,
@@ -53,9 +52,6 @@ import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 
-import SourcingEventModal from './SourcingEventModal';
-import SourcingListModal from './SourcingListModal';
-import { TableAppModal } from './HighPerformanceTable/TableAppModal';
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 
 const NotesLayout: React.FC = React.memo(() => {
@@ -81,11 +77,6 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
   const [isImportantOpen, setIsImportantOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isSourcingModalOpen, setIsSourcingModalOpen] = useState(false);
-  const [isSourcingListOpen, setIsSourcingListOpen] = useState(false);
-
-  const [sourcingEventCount, setSourcingEventCount] = useState(0);
-  const [isTableAppOpen, setIsTableAppOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
 
@@ -100,6 +91,87 @@ const NotesLayout: React.FC = React.memo(() => {
   const [sectionWidth, setSectionWidth] = useState(200);
   const [pageWidth, setPageWidth] = useState(200);
   const [resizingCol, setResizingCol] = useState<'category' | 'section' | 'page' | null>(null);
+
+  // Persistence: Load from localStorage on mount
+  useEffect(() => {
+    const savedCategory = localStorage.getItem('NOTES_SELECTED_CATEGORY');
+    if (savedCategory) setSelectedCategoryId(savedCategory);
+
+    const savedSection = localStorage.getItem('NOTES_SELECTED_SECTION');
+    if (savedSection) setSelectedSectionId(savedSection);
+
+    const savedPage = localStorage.getItem('NOTES_SELECTED_PAGE');
+    if (savedPage) setSelectedPageId(savedPage);
+
+    const savedCategoryWidth = localStorage.getItem('NOTES_CATEGORY_WIDTH');
+    if (savedCategoryWidth) setCategoryWidth(parseInt(savedCategoryWidth));
+
+    const savedSectionWidth = localStorage.getItem('NOTES_SECTION_WIDTH');
+    if (savedSectionWidth) setSectionWidth(parseInt(savedSectionWidth));
+
+    const savedPageWidth = localStorage.getItem('NOTES_PAGE_WIDTH');
+    if (savedPageWidth) setPageWidth(parseInt(savedPageWidth));
+
+    const savedCategoryCollapsed = localStorage.getItem('NOTES_CATEGORY_COLLAPSED');
+    if (savedCategoryCollapsed !== null) setIsCategoryCollapsed(savedCategoryCollapsed === 'true');
+
+    const savedSectionCollapsed = localStorage.getItem('NOTES_SECTION_COLLAPSED');
+    if (savedSectionCollapsed !== null) setIsSectionCollapsed(savedSectionCollapsed === 'true');
+
+    const savedPageCollapsed = localStorage.getItem('NOTES_PAGE_COLLAPSED');
+    if (savedPageCollapsed !== null) setIsPageCollapsed(savedPageCollapsed === 'true');
+
+    const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
+    if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
+  }, []);
+
+  // Persistence: Save to localStorage when state changes
+  useEffect(() => {
+    if (selectedCategoryId) localStorage.setItem('NOTES_SELECTED_CATEGORY', selectedCategoryId);
+    else localStorage.removeItem('NOTES_SELECTED_CATEGORY');
+  }, [selectedCategoryId]);
+
+  useEffect(() => {
+    if (selectedSectionId) localStorage.setItem('NOTES_SELECTED_SECTION', selectedSectionId);
+    else localStorage.removeItem('NOTES_SELECTED_SECTION');
+  }, [selectedSectionId]);
+
+  useEffect(() => {
+    if (selectedPageId) localStorage.setItem('NOTES_SELECTED_PAGE', selectedPageId);
+    else localStorage.removeItem('NOTES_SELECTED_PAGE');
+  }, [selectedPageId]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_CATEGORY_COLLAPSED', isCategoryCollapsed.toString());
+  }, [isCategoryCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_SECTION_COLLAPSED', isSectionCollapsed.toString());
+  }, [isSectionCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_PAGE_COLLAPSED', isPageCollapsed.toString());
+  }, [isPageCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
+  }, [isFocusMode]);
+
+  // Selection Wrappers to clear sub-selection only when manually changing
+  const handleSelectCategory = useCallback((id: string | null) => {
+    setSelectedCategoryId(id);
+    if (id !== localStorage.getItem('NOTES_SELECTED_CATEGORY')) {
+      setSelectedSectionId(null);
+      setSelectedPageId(null);
+    }
+  }, []);
+
+  const handleSelectSection = useCallback((id: string | null) => {
+    setSelectedSectionId(id);
+    if (id !== localStorage.getItem('NOTES_SELECTED_SECTION')) {
+      setSelectedPageId(null);
+    }
+  }, []);
 
   const startResizing = useCallback((e: React.MouseEvent, col: 'category' | 'section' | 'page') => {
     setResizingCol(col);
@@ -126,6 +198,10 @@ const NotesLayout: React.FC = React.memo(() => {
     const handleMouseUp = () => {
       setResizingCol(null);
       document.body.style.cursor = 'default';
+      // Save widths to localStorage when resizing stops
+      localStorage.setItem('NOTES_CATEGORY_WIDTH', categoryWidth.toString());
+      localStorage.setItem('NOTES_SECTION_WIDTH', sectionWidth.toString());
+      localStorage.setItem('NOTES_PAGE_WIDTH', pageWidth.toString());
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -148,13 +224,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Fetch sections when category changes
   useEffect(() => {
-    setSections([]);
-    setPages([]);
-    setSelectedSectionId(null);
-    setSelectedPageId(null);
-
     if (selectedCategoryId) {
       fetchSections(selectedCategoryId);
+    } else {
+      setSections([]);
     }
   }, [selectedCategoryId]);
 
@@ -175,38 +248,21 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
-  const fetchSourcingCount = useCallback(async () => {
-    try {
-      // Optimized: Use ?count=true to get lightweight count
-      const response = await axios.get('/api/sourcing/events?count=true');
-      if (response.data && typeof response.data.count === 'number') {
-        setSourcingEventCount(response.data.count);
-      } else if (Array.isArray(response.data)) {
-        setSourcingEventCount(response.data.length); // Fallback
-      }
-    } catch (error) {
-      console.error('Error fetching sourcing count:', error);
-    }
-  }, []);
-
   useEffect(() => {
     fetchActiveTaskCount();
-    fetchSourcingCount();
     // Optional: Poll every minute or so
     const interval = setInterval(() => {
       fetchActiveTaskCount();
-      fetchSourcingCount();
     }, 60000);
     return () => clearInterval(interval);
-  }, [fetchActiveTaskCount, fetchSourcingCount]);
+  }, [fetchActiveTaskCount]);
 
   // Fetch pages when section changes
   useEffect(() => {
-    setPages([]);
-    setSelectedPageId(null);
-
     if (selectedSectionId) {
       fetchPages(selectedSectionId);
+    } else {
+      setPages([]);
     }
   }, [selectedSectionId]);
 
@@ -915,54 +971,6 @@ const NotesLayout: React.FC = React.memo(() => {
                     </button>
                   </div>
 
-                  {/* ── Sourcing & Apps ── */}
-                  <div className="flex items-center gap-1 rounded-xl bg-blue-50/40 p-1 shadow-sm ring-1 ring-blue-200/50 backdrop-blur-md">
-                    <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-blue-200 transition-all duration-300 ease-out relative"
-                      onClick={() => setIsSourcingListOpen(true)}
-                      title="View All Sourcing Events">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-3.5 h-3.5 group-hover:text-blue-500 transition-colors duration-200">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3"
-                        />
-                      </svg>
-                      <span className="hidden lg:inline">Sourcing</span>
-                      {sourcingEventCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white ring-2 ring-white">
-                          {sourcingEventCount}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      className="group rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm ring-1 ring-transparent hover:ring-emerald-200 transition-all duration-300 ease-out"
-                      onClick={() => setIsSourcingModalOpen(true)}
-                      title="Create Sourcing Event">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-3.5 h-3.5 group-hover:text-emerald-500 transition-colors duration-200">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    </button>
-                    <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-indigo-200 transition-all duration-300 ease-out"
-                      onClick={() => setIsTableAppOpen(true)}
-                      title="Table App">
-                      <TableCellsIcon className="w-3.5 h-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
-                      <span className="hidden 2xl:inline">Tables</span>
-                    </button>
-                  </div>
 
                   {/* Chat — Premium Accent Button */}
                   <button
@@ -1041,7 +1049,7 @@ const NotesLayout: React.FC = React.memo(() => {
               onDeleteCategory={handleDeleteCategory}
               onRenameCategory={handleRenameCategory}
               onReorderCategories={handleReorderCategories}
-              onSelectCategory={setSelectedCategoryId}
+              onSelectCategory={handleSelectCategory}
               onToggleCollapse={handleToggleCategoryCollapse}
               selectedCategoryId={selectedCategoryId}
               badgeCounts={badgeCounts.categories}
@@ -1062,7 +1070,7 @@ const NotesLayout: React.FC = React.memo(() => {
             <SectionList
               sections={sections}
               selectedSectionId={selectedSectionId}
-              onSelectSection={setSelectedSectionId}
+              onSelectSection={handleSelectSection}
               onAddSection={handleAddSection}
               onRenameSection={handleRenameSection}
               onDeleteSection={handleDeleteSection}
@@ -1191,16 +1199,7 @@ const NotesLayout: React.FC = React.memo(() => {
           isOpen={isExecutiveModalOpen}
           onClose={() => setIsExecutiveModalOpen(false)}
         />
-        <SourcingEventModal
-          isOpen={isSourcingModalOpen}
-          onClose={() => setIsSourcingModalOpen(false)}
-          sourcePageId={selectedPageId || undefined}
-          defaultEventName={selectedPage?.title || ''}
-          defaultDescription=""
-        />
-        <SourcingListModal isOpen={isSourcingListOpen} onClose={() => setIsSourcingListOpen(false)} />
-
-        <TableAppModal isOpen={isTableAppOpen} onClose={() => setIsTableAppOpen(false)} />
+        <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
         {selectedPageToMove && (
           <MovePageModal
