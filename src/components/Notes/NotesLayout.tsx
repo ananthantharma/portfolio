@@ -12,6 +12,7 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   PhotoIcon,
+  CalendarDaysIcon,
   UsersIcon,
   Cog6ToothIcon,
   SparklesIcon,
@@ -47,6 +48,7 @@ import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
+import GoogleCalendarModal from './GoogleCalendarModal';
 import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
@@ -79,6 +81,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -849,6 +852,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   <span className="hidden lg:inline">Executive</span>
                 </button>
                 <button
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
+                  onClick={() => setIsCalendarOpen(true)}
+                  title="Google Calendar">
+                  <CalendarDaysIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
+                  <span className="hidden lg:inline">Calendar</span>
+                </button>
+                <button
                   className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
                   onClick={handleQuickNote}
                   title="Quick Note">
@@ -1199,6 +1209,7 @@ const NotesLayout: React.FC = React.memo(() => {
           isOpen={isExecutiveModalOpen}
           onClose={() => setIsExecutiveModalOpen(false)}
         />
+        <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
         {selectedPageToMove && (
