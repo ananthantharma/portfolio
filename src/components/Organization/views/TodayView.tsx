@@ -133,7 +133,7 @@ export default function TodayView({ onNewTask }: Props) {
 
   const handleCompleteTask = async (task: IOrgTask) => {
     const updated = !task.isCompleted;
-    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isCompleted: updated } : t));
+    setTasks(prev => prev.map(t => t._id === task._id ? { ...t, isCompleted: updated } as IOrgTask : t));
     try {
       await fetch(`/api/org/tasks/${task._id}`, {
         method: 'PUT',
