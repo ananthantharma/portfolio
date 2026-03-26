@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CalendarDays, ExternalLink, LogOut } from 'lucide-react';
+import { X, CalendarDays, LogOut } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import OrgCalendarView from '../Organization/OrgCalendarView';
 
