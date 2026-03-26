@@ -55,6 +55,7 @@ import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 import AudioCaptureModal from './AudioCaptureModal';
+import GoogleDriveModal from './GoogleDriveModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import { Menu, Transition } from '@headlessui/react';
@@ -86,6 +87,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isDriveOpen, setIsDriveOpen] = useState(false);
   const [isAudioCaptureOpen, setIsAudioCaptureOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
@@ -978,6 +980,19 @@ const NotesLayout: React.FC = React.memo(() => {
                           </Link>
                         )}
                       </Menu.Item>
+                      <Menu.Item>
+                        {({active}) => (
+                          <button
+                            onClick={() => setIsDriveOpen(true)}
+                            className={`${
+                              active ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'
+                            } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                          >
+                            <BriefcaseIcon className="h-4 w-4 opacity-70" />
+                            Cloud Drive
+                          </button>
+                        )}
+                      </Menu.Item>
                     </Menu.Items>
                   </Transition>
                 </Menu>
@@ -1302,6 +1317,7 @@ const NotesLayout: React.FC = React.memo(() => {
           onClose={() => setIsExecutiveModalOpen(false)}
         />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
+        <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
         <AudioCaptureModal 
           isOpen={isAudioCaptureOpen} 
           onClose={() => setIsAudioCaptureOpen(false)} 
