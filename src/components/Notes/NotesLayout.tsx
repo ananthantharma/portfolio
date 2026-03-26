@@ -55,6 +55,8 @@ import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
+import { Menu, Transition } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -842,177 +844,241 @@ const NotesLayout: React.FC = React.memo(() => {
                 </span>
               )}
 
-              {/* ── Core Tools ── */}
-              <div className="flex items-center gap-1 rounded-xl bg-white/50 p-1 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md">
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-fuchsia-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={() => setIsExecutiveModalOpen(true)}
-                  title="Executive Assistant">
-                  <BriefcaseIcon className="h-3.5 w-3.5 group-hover:text-fuchsia-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">Executive</span>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={() => setIsCalendarOpen(true)}
-                  title="Google Calendar">
-                  <CalendarDaysIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">Calendar</span>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-emerald-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={handleQuickNote}
-                  title="Quick Note">
-                  <DocumentPlusIcon className="h-3.5 w-3.5 group-hover:text-emerald-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">Quick</span>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-sky-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={handleOpenSearch}
-                  title="Command Palette (Ctrl+K)">
-                  <MagnifyingGlassIcon className="h-3.5 w-3.5 group-hover:text-sky-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">Search</span>
-                  <kbd className="hidden lg:inline ml-0.5 text-[9px] text-slate-400 font-mono bg-slate-100/80 px-1 py-0.5 rounded group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                    ⌘K
-                  </kbd>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out relative"
-                  onClick={handleOpenToDoList}>
-                  <ClipboardDocumentListIcon className="h-3.5 w-3.5 group-hover:text-teal-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">Tasks</span>
-                  {activeTaskCount > 0 && (
-                    <>
-                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 animate-ping rounded-full bg-rose-400 opacity-60"></span>
-                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
-                        {activeTaskCount}
-                      </span>
-                    </>
-                  )}
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-rose-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={() => setIsDirectTaskCreateOpen(true)}
-                  title="New Task">
-                  <PlusCircleIcon className="h-3.5 w-3.5 group-hover:text-rose-500 transition-colors duration-200" />
-                  <span className="hidden lg:inline">New Task</span>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={handleOpenContactList}
-                  title="Contacts">
-                  <UsersIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
-                  <span className="hidden xl:inline">Contacts</span>
-                </button>
-                <button
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  onClick={() => setIsBookmarksOpen(true)}
-                  title="Bookmarks">
-                  <BookmarkIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors duration-200" />
-                  <span className="hidden xl:inline">Bookmarks</span>
-                </button>
-                <Link
-                  href="/organization"
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-violet-600 hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 transition-all duration-300 ease-out"
-                  title="Organization">
-                  <BuildingOffice2Icon className="h-3.5 w-3.5 group-hover:text-violet-500 transition-colors duration-200" />
-                  <span className="hidden xl:inline">Organize</span>
-                </Link>
-              </div>
+              {/* ── All Tools Group ── */}
+              <div className="flex items-center gap-1.5 rounded-2xl bg-white/50 p-1.5 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md">
+                {/* 1. Core Tools */}
+                <div className="flex items-center gap-0.5 pr-1.5 border-r border-slate-200">
+                  <button
+                    className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-fuchsia-600 hover:shadow-sm transition-all duration-300"
+                    onClick={() => setIsExecutiveModalOpen(true)}
+                    title="Executive Assistant">
+                    <BriefcaseIcon className="h-3.5 w-3.5 group-hover:text-fuchsia-500 transition-colors" />
+                    <span className="hidden lg:inline">Assistant</span>
+                  </button>
+                  <button
+                    className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-blue-600 hover:shadow-sm transition-all duration-300"
+                    onClick={() => setIsCalendarOpen(true)}
+                    title="Google Calendar">
+                    <CalendarDaysIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors" />
+                    <span className="hidden lg:inline">Calendar</span>
+                  </button>
+                  <button
+                    className="group rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-emerald-600 transition-all"
+                    onClick={handleQuickNote}
+                    title="Quick Note">
+                    <DocumentPlusIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
 
-              {/* Focus Mode */}
-              <button
-                className="group rounded-xl p-1.5 text-slate-400 bg-white/50 hover:bg-white hover:text-amber-500 shadow-sm ring-1 ring-slate-200/50 hover:ring-amber-200 transition-all duration-300 ease-out"
-                onClick={toggleFocusMode}
-                title="Focus Mode (Cmd+\)">
-                <ArrowsPointingOutIcon className="h-4 w-4 transition-colors duration-200" />
-              </button>
-
-              {/* ── AI & Tools (Restricted) ── */}
-              {session?.user?.email === 'lankanprinze@gmail.com' && (
-                <>
-                  <div className="flex items-center gap-1 rounded-xl bg-violet-50/40 p-1 shadow-sm ring-1 ring-violet-200/50 backdrop-blur-md">
-                    {/* Rewrite Tools As Buttons */}
+                {/* 2. Tasks & Search */}
+                <div className="flex items-center gap-0.5 px-1 pr-1.5 border-r border-slate-200">
+                  <button
+                    className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium bg-white shadow-sm ring-1 ring-slate-200/60 hover:ring-sky-300 transition-all"
+                    onClick={handleOpenSearch}
+                    title="Command Palette (Ctrl+K)">
+                    <MagnifyingGlassIcon className="h-3.5 w-3.5 text-sky-500" />
+                    <span className="hidden xl:inline text-slate-400">Search</span>
+                    <kbd className="hidden xl:inline ml-0.5 text-[9px] text-slate-300 font-mono">⌘K</kbd>
+                  </button>
+                  <div className="flex items-center">
                     <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm ring-1 ring-transparent hover:ring-indigo-200 transition-all duration-300 ease-out"
-                      title="Advanced Rewrite"
-                      onClick={handleOpenRewrite}>
-                      <PencilSquareIcon className="h-3.5 w-3.5 group-hover:text-indigo-500 transition-colors duration-200" />
-                      <span className="hidden xl:inline">Advanced</span>
+                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-rose-600 transition-all relative"
+                      onClick={handleOpenToDoList}
+                      title="View Tasks">
+                      <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                      <span className="hidden lg:inline">Tasks</span>
+                      {activeTaskCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
+                          {activeTaskCount}
+                        </span>
+                      )}
                     </button>
                     <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-purple-600 hover:shadow-sm ring-1 ring-transparent hover:ring-purple-200 transition-all duration-300 ease-out"
-                      title="Simple Rewrite"
-                      onClick={handleOpenSimpleRewrite}>
-                      <PencilSquareIcon className="h-3.5 w-3.5 group-hover:text-purple-500 transition-colors duration-200" />
-                      <span className="hidden xl:inline">Simple</span>
-                    </button>
-                    <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-teal-600 hover:shadow-sm ring-1 ring-transparent hover:ring-teal-200 transition-all duration-300 ease-out"
-                      title="GPT Rewrite"
-                      onClick={handleOpenSimpleRewriteOpenAI}>
-                      <SparklesIcon className="h-3.5 w-3.5 group-hover:text-teal-500 transition-colors duration-200" />
-                      <span className="hidden xl:inline">GPT</span>
-                    </button>
-                    <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-orange-600 hover:shadow-sm ring-1 ring-transparent hover:ring-orange-200 transition-all duration-300 ease-out"
-                      onClick={handleOpenImageExtract}
-                      title="Extract from Image">
-                      <PhotoIcon className="h-3.5 w-3.5 group-hover:text-orange-500 transition-colors duration-200" />
-                      <span className="hidden 2xl:inline">Image</span>
-                    </button>
-                    <button
-                      className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-cyan-600 hover:shadow-sm ring-1 ring-transparent hover:ring-cyan-200 transition-all duration-300 ease-out"
-                      onClick={handleOpenAssessment}
-                      title="Document Assessment">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="h-3.5 w-3.5 group-hover:text-cyan-500 transition-colors duration-200">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                        />
-                      </svg>
-                      <span className="hidden 2xl:inline">Assess</span>
+                      className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+                      onClick={() => setIsDirectTaskCreateOpen(true)}
+                      title="New Task">
+                      <PlusCircleIcon className="h-3.5 w-3.5" />
                     </button>
                   </div>
+                </div>
 
+                {/* 3. Resources Dropdown */}
+                <Menu as="div" className="relative inline-block text-left">
+                  <Menu.Button className="group flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-indigo-600 transition-all">
+                    <span>Resources</span>
+                    <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-500" />
+                  </Menu.Button>
+                  <Transition
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95">
+                    <Menu.Items className="absolute left-0 mt-2 w-48 origin-top-left rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-black/5 focus:outline-none z-50">
+                      <Menu.Item>
+                        {({active}) => (
+                          <button
+                            className={`${
+                              active ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600'
+                            } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                            onClick={handleOpenContactList}>
+                            <UsersIcon className="h-4 w-4 opacity-70" />
+                            Contacts
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({active}) => (
+                          <button
+                            className={`${
+                              active ? 'bg-blue-50 text-blue-600' : 'text-slate-600'
+                            } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                            onClick={() => setIsBookmarksOpen(true)}>
+                            <BookmarkIcon className="h-4 w-4 opacity-70" />
+                            Bookmarks
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({active}) => (
+                          <Link
+                            href="/organization"
+                            className={`${
+                              active ? 'bg-violet-50 text-violet-600' : 'text-slate-600'
+                            } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}>
+                            <BuildingOffice2Icon className="h-4 w-4 opacity-70" />
+                            Organization
+                          </Link>
+                        )}
+                      </Menu.Item>
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
 
-                  {/* Chat — Premium Accent Button */}
-                  <button
-                    className="group flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-[12px] font-medium text-white shadow-md shadow-slate-900/10 hover:bg-slate-800 hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-0.5 ml-1"
-                    onClick={handleOpenAIChat}
-                    title="Chat Assistant">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-violet-300" />
-                    <span className="hidden lg:inline">Chat</span>
-                  </button>
-                </>
-              )}
+                {/* 4. AI & Tools Dropdown */}
+                {session?.user?.email === 'lankanprinze@gmail.com' && (
+                  <Menu as="div" className="relative inline-block text-left ml-0.5">
+                    <Menu.Button className="group flex items-center gap-1.5 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-[12px] font-bold text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-100/50">
+                      <SparklesIcon className="h-3.5 w-3.5" />
+                      <span>AI Tools</span>
+                      <ChevronDownIcon className="h-3.5 w-3.5 text-indigo-400" />
+                    </Menu.Button>
+                    <Transition
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95">
+                      <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50">
+                        <div className="px-2 pb-1.5 mb-1.5 border-b border-slate-100">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rewriting</p>
+                        </div>
+                        <Menu.Item>
+                          {({active}) => (
+                            <button
+                              className={`${
+                                active ? 'bg-slate-50 text-indigo-600' : 'text-slate-600'
+                              } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                              onClick={handleOpenRewrite}>
+                              <PencilSquareIcon className="h-4 w-4 text-indigo-500" />
+                              Advanced Rewrite
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({active}) => (
+                            <button
+                              className={`${
+                                active ? 'bg-slate-50 text-purple-600' : 'text-slate-600'
+                              } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                              onClick={handleOpenSimpleRewrite}>
+                              <PencilSquareIcon className="h-4 w-4 text-purple-500" />
+                              Simple Rewrite
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({active}) => (
+                            <button
+                              className={`${
+                                active ? 'bg-slate-50 text-teal-600' : 'text-slate-600'
+                              } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                              onClick={handleOpenSimpleRewriteOpenAI}>
+                              <SparklesIcon className="h-4 w-4 text-teal-500" />
+                              GPT Rewrite
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <div className="px-2 py-1.5 my-1 border-y border-slate-100 bg-slate-50/30">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Analysis</p>
+                        </div>
+                        <Menu.Item>
+                          {({active}) => (
+                            <button
+                              className={`${
+                                active ? 'bg-slate-50 text-orange-600' : 'text-slate-600'
+                              } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                              onClick={handleOpenImageExtract}>
+                              <PhotoIcon className="h-4 w-4 text-orange-500" />
+                              Extract from Image
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({active}) => (
+                            <button
+                              className={`${
+                                active ? 'bg-slate-50 text-cyan-600' : 'text-slate-600'
+                              } flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
+                              onClick={handleOpenAssessment}>
+                              <DocumentPlusIcon className="h-4 w-4 text-cyan-500" />
+                              Document Assessment
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
+                )}
 
-              {/* ── Flags & Settings ── */}
-              <div className="flex items-center gap-1 rounded-xl bg-white/50 p-1 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md ml-auto md:ml-2">
+                {/* 5. Main Action: Chat */}
                 <button
-                  className="group rounded-lg p-1.5 text-slate-500 hover:bg-white hover:text-amber-500 hover:shadow-sm transition-all duration-300 ease-out relative ring-1 ring-transparent hover:ring-amber-200"
+                  className="group flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-1.5 text-[12px] font-bold text-white shadow-lg shadow-slate-900/10 hover:bg-black transition-all hover:-translate-y-0.5"
+                  onClick={handleOpenAIChat}>
+                  <ChatBubbleLeftRightIcon className="w-3.5 h-3.5 text-violet-300" />
+                  <span className="hidden lg:inline">AI Chat</span>
+                </button>
+              </div>
+
+              {/* Focus Mode & More */}
+              <div className="flex items-center gap-1 rounded-2xl bg-white/50 p-1 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md ml-auto md:ml-0">
+                <button
+                  className="group rounded-lg p-2 text-slate-400 hover:bg-white hover:text-amber-500 transition-all"
+                  onClick={toggleFocusMode}
+                  title="Focus Mode (Cmd+\)">
+                  <ArrowsPointingOutIcon className="h-4 w-4" />
+                </button>
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
+                <button
+                  className="group rounded-lg p-2 text-slate-400 hover:bg-white hover:text-amber-500 transition-all relative"
                   onClick={handleOpenImportant}
-                  title="Important">
+                  title="Important Highlights">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {totalImportant > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
+                    <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white ring-2 ring-white">
                       {totalImportant}
                     </span>
                   )}
                 </button>
                 <button
-                  className="group rounded-lg p-1.5 text-slate-500 hover:bg-white hover:text-rose-500 hover:shadow-sm transition-all duration-300 ease-out relative ring-1 ring-transparent hover:ring-rose-200"
+                  className="group rounded-lg p-2 text-slate-400 hover:bg-white hover:text-rose-500 transition-all relative"
                   onClick={handleOpenKeyTasks}
-                  title="Key Tasks">
+                  title="Key Flags">
                   <FlagIcon className="h-4 w-4" />
                   {totalFlagged > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
+                    <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
                       {totalFlagged}
                     </span>
                   )}
@@ -1020,9 +1086,9 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className="w-px h-4 bg-slate-200 mx-0.5" />
                 <button
                   onClick={handleOpenSettings}
-                  className="group rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-sm transition-all duration-300 ease-out ring-1 ring-transparent hover:ring-slate-200"
+                  className="group rounded-lg p-2 text-slate-400 hover:bg-white hover:text-slate-700"
                   title="Settings">
-                  <Cog6ToothIcon className="h-4 w-4 group-hover:rotate-45 transition-transform duration-300" />
+                  <Cog6ToothIcon className="h-4 w-4 group-hover:rotate-45 transition-transform" />
                 </button>
               </div>
 
