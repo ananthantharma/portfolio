@@ -2,7 +2,7 @@ import React from 'react';
 import {getServerSession} from 'next-auth';
 import {authOptions} from '@/lib/auth';
 import AccessDenied from '@/components/AccessDenied';
-import NotesLayout from '@/components/Notes/NotesLayout';
+import OrganizationLayout from '@/components/Organization/OrganizationLayout';
 
 export default async function OrganizationPage() {
   const session = await getServerSession(authOptions);
@@ -13,5 +13,5 @@ export default async function OrganizationPage() {
     );
   }
 
-  return <NotesLayout />;
+  return <OrganizationLayout />;
 }
