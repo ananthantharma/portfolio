@@ -10,6 +10,8 @@ interface AudioCaptureModalProps {
 type ModelType = 'openai' | 'vosk';
 
 const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, onTranscriptReady }) => {
+  if (!isOpen) return null;
+  
   const [modelType, setModelType] = useState<ModelType>('openai');
   const [isCapturing, setIsCapturing] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
