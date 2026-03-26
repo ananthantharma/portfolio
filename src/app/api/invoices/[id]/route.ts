@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /* eslint-disable simple-import-sort/imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {getServerSession} from 'next-auth';

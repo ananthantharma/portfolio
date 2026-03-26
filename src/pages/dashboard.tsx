@@ -6,16 +6,16 @@ import React, {useCallback, useEffect, useState} from 'react';
 import Header from '../components/Sections/Header';
 import PasswordModal from '../components/Vault/PasswordModal';
 import {VaultDashboard} from '../components/Vault/VaultDashboard';
-import {PasswordEntry} from '../data/dataDef';
+import {VaultEntry} from '../data/dataDef';
 import AccessDenied from '../components/AccessDenied';
 
 const Dashboard = React.memo(() => {
   const {data: session, status} = useSession();
   const router = useRouter();
-  const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
+  const [passwords, setPasswords] = useState<VaultEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<PasswordEntry | null>(null);
+  const [editingItem, setEditingItem] = useState<VaultEntry | null>(null);
 
   const fetchPasswords = useCallback(async () => {
     try {
@@ -40,7 +40,7 @@ const Dashboard = React.memo(() => {
   }, [status, router, fetchPasswords]);
 
   const handleSave = useCallback(
-    async (data: Omit<PasswordEntry, '_id'>) => {
+    async (data: Omit<VaultEntry, '_id'>) => {
       try {
         let res;
         if (editingItem) {

@@ -12,7 +12,7 @@ export interface IToDo extends Document {
   category?: string;
   notes?: string;
   isCompleted: boolean;
-  status?: 'todo' | 'in-progress' | 'action-with-others' | 'escalation-required' | 'parked' | 'done';
+  status?: string;
   subtasks?: {
     _id?: string;
     title: string;
@@ -62,7 +62,6 @@ const ToDoSchema = new Schema<IToDo>(
     isCompleted: {type: Boolean, default: false},
     status: {
       type: String,
-      enum: ['todo', 'in-progress', 'action-with-others', 'escalation-required', 'parked', 'done'],
       default: 'todo',
     },
     hasNeonBorder: {type: Boolean, default: false},
