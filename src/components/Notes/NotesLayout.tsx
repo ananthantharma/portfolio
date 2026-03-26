@@ -806,7 +806,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {/* Top Navigation / Breadcrumbs Bar */}
 
         {!isFocusMode && (
-          <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-3 md:mx-5 my-3 rounded-2xl border border-white/60 bg-white/60 backdrop-blur-2xl px-3 py-2 shadow-[0_8px_30px_rgb(0,0,0,0.06)] z-40 transition-all duration-300 gap-3 md:gap-0 ring-1 ring-slate-900/5">
+          <div className="flex flex-col md:flex-row flex-shrink-0 items-start md:items-center justify-between mx-3 md:mx-5 my-3 rounded-2xl border border-white/60 bg-white/60 backdrop-blur-2xl px-3 py-2 shadow-[0_8px_30px_rgb(0,0,0,0.06)] z-40 transition-all duration-300 gap-3 md:gap-0 ring-1 ring-slate-900/5 !overflow-visible">
             <div className="flex items-center gap-1.5 text-[13px] text-gray-400 overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto pb-1 md:pb-0">
               <button
                 onClick={() => {
