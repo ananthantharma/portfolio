@@ -23,6 +23,7 @@ import {
   BookmarkIcon,
   BriefcaseIcon,
   BuildingOffice2Icon,
+  MicrophoneIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -53,6 +54,7 @@ import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
+import AudioCaptureModal from './AudioCaptureModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import { Menu, Transition } from '@headlessui/react';
@@ -84,6 +86,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isAudioCaptureOpen, setIsAudioCaptureOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -146,6 +149,7 @@ const NotesLayout: React.FC = React.memo(() => {
     else localStorage.removeItem('NOTES_SELECTED_PAGE');
   }, [selectedPageId]);
 
+  // Page Content handlers
   useEffect(() => {
     localStorage.setItem('NOTES_CATEGORY_COLLAPSED', isCategoryCollapsed.toString());
   }, [isCategoryCollapsed]);
@@ -642,6 +646,21 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
+  const handleTranscriptReady = useCallback(async (transcript: string) => {
+    const selectedPage = pages.find(p => p._id === selectedPageId);
+    if (!selectedPage || !selectedPageId) return;
+    
+    const currentTabs = selectedPage.tabs || [{ id: 'main', label: 'Note', content: '' }];
+    const firstTab = currentTabs[0];
+    const updatedContent = (firstTab.content || '') + (firstTab.content ? '\n\n' : '') + transcript;
+    
+    const updatedTabs = currentTabs.map((t, i) => 
+      i === 0 ? { ...t, content: updatedContent } : t
+    );
+
+    await handleSavePageContent(selectedPageId, updatedTabs);
+  }, [selectedPageId, pages, handleSavePageContent]);
+
   const handleReorderPages = useCallback(
     async (newOrder: INotePage[]) => {
       setPages(newOrder);
@@ -861,6 +880,13 @@ const NotesLayout: React.FC = React.memo(() => {
                     title="Google Calendar">
                     <CalendarDaysIcon className="h-3.5 w-3.5 group-hover:text-blue-500 transition-colors" />
                     <span className="hidden lg:inline">Calendar</span>
+                  </button>
+                  <button
+                    className="group flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-600 hover:bg-white hover:text-red-600 hover:shadow-sm transition-all duration-300"
+                    onClick={() => setIsAudioCaptureOpen(true)}
+                    title="System Audio Transcriber">
+                    <MicrophoneIcon className="h-3.5 w-3.5 group-hover:text-red-500 transition-colors" />
+                    <span className="hidden lg:inline">Listen</span>
                   </button>
                   <button
                     className="group rounded-lg p-1.5 text-slate-600 hover:bg-white hover:text-emerald-600 transition-all"
@@ -1276,6 +1302,11 @@ const NotesLayout: React.FC = React.memo(() => {
           onClose={() => setIsExecutiveModalOpen(false)}
         />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
+        <AudioCaptureModal 
+          isOpen={isAudioCaptureOpen} 
+          onClose={() => setIsAudioCaptureOpen(false)} 
+          onTranscriptReady={handleTranscriptReady}
+        />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
         {selectedPageToMove && (
