@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, Mic, StopCircle, Radio, Loader2, Copy, Plus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Mic, StopCircle, Radio, Loader2, Copy, Plus, Cpu, Cloud, Settings2 } from 'lucide-react';
 
 interface AudioCaptureModalProps {
   isOpen: boolean;
@@ -7,26 +7,63 @@ interface AudioCaptureModalProps {
   onTranscriptReady?: (text: string) => void;
 }
 
+type ModelType = 'openai' | 'vosk';
+
 const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, onTranscriptReady }) => {
+  const [modelType, setModelType] = useState<ModelType>('openai');
   const [isCapturing, setIsCapturing] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  
+  // Vosk State
+  const [voskReady, setVoskReady] = useState(false);
+  const [loadingModel, setLoadingModel] = useState(false);
+  const recognizerRef = useRef<any>(null);
+  const modelRef = useRef<any>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) {
+      stopCapture();
+    }
+  }, [isOpen]);
+
+  async function initVosk() {
+    if (voskReady) return true;
+    setLoadingModel(true);
+    try {
+      const { createModel } = await import('vosk-browser');
+      // Using a small, fast-loading English model
+      const model = await createModel('https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.tar.gz');
+      modelRef.current = model;
+      setVoskReady(true);
+      return true;
+    } catch (err: any) {
+      setError("Failed to load Vosk model: " + err.message);
+      return false;
+    } finally {
+      setLoadingModel(false);
+    }
+  }
 
   async function startCapture() {
     try {
       setError(null);
-      // 1. Request the screen share with audio enabled
+      
+      if (modelType === 'vosk' && !voskReady) {
+        const ok = await initVosk();
+        if (!ok) return;
+      }
+
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true, // Required to trigger the system audio checkbox in most browsers
-        audio: true  // This is what we actually want
+        video: true,
+        audio: true
       });
 
-      // 2. Isolate the audio track
       const audioTrack = screenStream.getAudioTracks()[0];
       if (!audioTrack) {
         screenStream.getTracks().forEach(t => t.stop());
@@ -34,45 +71,77 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
         return;
       }
 
-      // 3. Stop the video track immediately (we don't need it)
       screenStream.getVideoTracks().forEach(track => track.stop());
-
-      // 4. Create a new stream with ONLY the audio
       const onlyAudioStream = new MediaStream([audioTrack]);
-      
-      const mediaRecorder = new MediaRecorder(onlyAudioStream, { mimeType: 'audio/webm' });
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      streamRef.current = onlyAudioStream;
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+      if (modelType === 'openai') {
+        const mediaRecorder = new MediaRecorder(onlyAudioStream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await transcribeAudio(audioBlob);
-      };
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) audioChunksRef.current.push(event.data);
+        };
 
-      mediaRecorder.start();
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          await transcribeWithOpenAI(audioBlob);
+        };
+
+        mediaRecorder.start();
+      } else if (modelType === 'vosk') {
+        const AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(onlyAudioStream);
+        
+        const recognizer = new modelRef.current.KaldiRecognizer(audioContext.sampleRate);
+        recognizerRef.current = recognizer;
+        
+        recognizer.on("result", (message: any) => {
+          if (message.result?.text) {
+            setTranscript(prev => prev + (prev ? ' ' : '') + message.result.text);
+          }
+        });
+        
+        recognizer.on("partialresult", (message: any) => {
+          // Log or handle partials if needed
+        });
+
+        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+        processor.onaudioprocess = (e) => {
+          if (isCapturing && recognizerRef.current) {
+            recognizerRef.current.acceptWaveform(e.inputBuffer.getChannelData(0));
+          }
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+      }
+
       setIsCapturing(true);
 
     } catch (err: any) {
-      console.error("Capture Error:", err);
-      setError(err.message || "Failed to start capture. You may have cancelled the request.");
+      setError(err.message || "Capture failed");
     }
   }
 
   function stopCapture() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    if (recognizerRef.current) {
+      recognizerRef.current.remove();
+      recognizerRef.current = null;
     }
     setIsCapturing(false);
   }
 
-  async function transcribeAudio(blob: Blob) {
+  async function transcribeWithOpenAI(blob: Blob) {
     setIsTranscribing(true);
     try {
       const formData = new FormData();
@@ -83,11 +152,7 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
         body: formData,
       });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Transcription failed');
-      }
-
+      if (!res.ok) throw new Error('Transcription failed');
       const data = await res.json();
       setTranscript(prev => prev + (prev ? '\n\n' : '') + data.text);
     } catch (err: any) {
@@ -103,24 +168,46 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300 ${isCapturing ? 'bg-red-50 text-red-500 animate-pulse' : 'bg-indigo-50 text-indigo-500'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isCapturing ? 'bg-red-50 text-red-500 animate-pulse ring-2 ring-red-100' : 'bg-slate-50 text-slate-500'}`}>
               {isCapturing ? <Radio className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900 leading-tight">System Audio Transcriber</h2>
-              <p className="text-xs text-gray-500 font-medium">Capture system audio for AI transcription</p>
+              <h2 className="text-lg font-bold text-gray-900 leading-tight">Audio Transcriber</h2>
+              <p className="text-xs text-gray-500 font-medium">Select a model to begin capturing</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+          
+          <div className="flex items-center gap-4">
+            {/* Model Selector */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl ring-1 ring-slate-200">
+              <button
+                disabled={isCapturing}
+                onClick={() => setModelType('openai')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${modelType === 'openai' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                <Cloud className="w-3.5 h-3.5" />
+                Whisper
+              </button>
+              <button
+                disabled={isCapturing}
+                onClick={() => setModelType('vosk')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${modelType === 'vosk' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                Vosk
+              </button>
+            </div>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 p-6 space-y-6 min-h-[400px] flex flex-col">
           {error && (
             <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm flex items-center gap-3">
-              <span className="font-bold">Error:</span> {error}
+              <span className="font-bold whitespace-nowrap">Error:</span> {error}
             </div>
           )}
 
@@ -128,16 +215,25 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
             {transcript ? (
               <p className="text-gray-800 leading-relaxed font-medium whitespace-pre-wrap">{transcript}</p>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
-                <Mic className="w-12 h-12 opacity-20" />
-                <p className="text-sm font-medium">Your transcript will appear here...</p>
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100">
+                  <Mic className="w-8 h-8 opacity-20" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-slate-500">Ready to Capture</p>
+                  <p className="text-[11px] text-slate-400 max-w-[200px] mt-1">
+                    {modelType === 'vosk' ? 'Vosk provides private, local transcription directly in your browser.' : 'Whisper uses OpenAI for high-accuracy cloud transcription.'}
+                  </p>
+                </div>
               </div>
             )}
-            {isTranscribing && (
+            {(isTranscribing || loadingModel) && (
               <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center rounded-2xl">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-lg border border-slate-100">
-                  <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
-                  <span className="text-xs font-bold text-slate-600">Transcribing with AI...</span>
+                <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-xl border border-slate-100">
+                  <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+                  <span className="text-[13px] font-bold text-slate-700 whitespace-nowrap">
+                    {loadingModel ? 'Loading Local AI Model (70MB)...' : 'AI Transcribing...'}
+                  </span>
                 </div>
               </div>
             )}
@@ -148,18 +244,19 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
                {isCapturing ? (
                  <button
                    onClick={stopCapture}
-                   className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-lg shadow-red-200 active:scale-95"
+                   className="flex items-center gap-3 bg-rose-500 hover:bg-rose-600 text-white font-bold px-7 py-3.5 rounded-2xl transition-all shadow-lg shadow-rose-200 active:scale-95"
                  >
                    <StopCircle className="w-5 h-5" />
-                   Stop Recording
+                   End Session
                  </button>
                ) : (
                  <button
                    onClick={startCapture}
-                   className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-200 active:scale-95"
+                   disabled={loadingModel}
+                   className={`flex items-center gap-3 font-bold px-7 py-3.5 rounded-2xl transition-all shadow-lg active:scale-95 ${loadingModel ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
                  >
                    <Mic className="w-5 h-5" />
-                   Start Audio Capture
+                   {loadingModel ? 'Preparing...' : 'Start Capture'}
                  </button>
                )}
              </div>
@@ -170,10 +267,9 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
                   <button 
                     onClick={() => {
                       navigator.clipboard.writeText(transcript);
-                      // Simple feedback
                     }}
-                    className="p-3 bg-white hover:bg-slate-100 text-slate-500 rounded-xl transition-all border border-slate-200 shadow-sm"
-                    title="Copy to Clipboard"
+                    className="p-3.5 bg-white hover:bg-slate-50 text-slate-500 rounded-2xl transition-all border border-slate-200 shadow-sm"
+                    title="Copy Text"
                   >
                     <Copy className="w-5 h-5" />
                   </button>
@@ -184,18 +280,22 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
                             onClose();
                         }
                     }}
-                    className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-200"
+                    className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-7 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-200"
                   >
                     <Plus className="w-5 h-5" />
-                    Insert to Note
+                    Insert as Note
                   </button>
                  </>
                )}
              </div>
           </div>
           
-          <div className="p-4 bg-indigo-50/50 rounded-xl text-[11px] text-indigo-700 font-medium">
-            <span className="font-bold">Pro Tip:</span> To capture other apps (Spotify, Teams, etc.), select <span className="font-bold">"Entire Screen"</span> or <span className="font-bold">"Window"</span> and ensure you check the <span className="font-bold">"Share system audio"</span> toggle before clicking Share.
+          <div className="p-4 bg-slate-50 rounded-2xl text-[11px] text-slate-500 font-medium leading-relaxed border border-slate-100">
+            <div className="flex items-center gap-2 text-slate-900 font-bold mb-1">
+              <Settings2 className="w-3.5 h-3.5 text-indigo-500" />
+              Recording Instructions
+            </div>
+            To capture system sound (Spotify, Teams, etc.), select <span className="text-indigo-600 font-bold">"Entire Screen"</span> or <span className="text-indigo-600 font-bold">"Window"</span> and ensure you check <span className="text-indigo-600 font-bold">"Share system audio"</span> in the browser prompt.
           </div>
         </div>
       </div>
