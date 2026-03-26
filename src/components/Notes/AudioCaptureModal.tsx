@@ -104,12 +104,12 @@ const AudioCaptureModal: React.FC<AudioCaptureModalProps> = ({ isOpen, onClose, 
           }
         });
         
-        recognizer.on("partialresult", (message: any) => {
+        recognizer.on("partialresult", () => {
           // Log or handle partials if needed
         });
 
         const processor = audioContext.createScriptProcessor(4096, 1, 1);
-        processor.onaudioprocess = (e) => {
+        processor.onaudioprocess = (e: any) => {
           if (isCapturing && recognizerRef.current) {
             recognizerRef.current.acceptWaveform(e.inputBuffer.getChannelData(0));
           }
