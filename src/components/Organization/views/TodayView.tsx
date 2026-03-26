@@ -7,7 +7,6 @@ import {
   CheckIcon,
   CalendarDaysIcon,
   ExclamationTriangleIcon,
-  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import OrgTaskFormModal from '../modals/OrgTaskFormModal';
@@ -180,7 +179,6 @@ export default function TodayView({ onNewTask }: Props) {
     h.completions?.some(c => c.date === todayStr && c.completed)
   ).length;
 
-  const activeGoals = 0; // fetching goals separately would be ideal, keep 0 for now
   const activeTasks = tasks.filter(t => !t.isCompleted).length;
 
   const today = new Date();
