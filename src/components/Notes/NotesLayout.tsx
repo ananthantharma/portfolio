@@ -856,7 +856,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
             <div
               className="flex items-center gap-2 w-full md:w-auto pb-1 md:pb-0 scrollbar-hide"
-              style={{ overflowX: 'auto', overflowY: 'visible' }}>
+              style={{ overflow: 'visible' }}>
               {dbSize && (
                 <span className="text-[10px] text-slate-400 font-mono tracking-tight mr-1 bg-white/50 px-1.5 py-0.5 rounded-md ring-1 ring-slate-200/50">
                   {dbSize}
@@ -864,7 +864,7 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
 
               {/* ── All Tools Group ── */}
-              <div className="flex items-center gap-1.5 rounded-2xl bg-white/50 p-1.5 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md">
+              <div className="flex items-center gap-1.5 rounded-2xl bg-white/50 p-1.5 shadow-sm ring-1 ring-slate-200/50 backdrop-blur-md relative z-[100]">
                 {/* 1. Core Tools */}
                 <div className="flex items-center gap-0.5 pr-1.5 border-r border-slate-200">
                   <button
@@ -941,7 +941,7 @@ const NotesLayout: React.FC = React.memo(() => {
                     leave="transition ease-in duration-75"
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95">
-                    <Menu.Items className="absolute left-0 mt-2 w-48 origin-top-left rounded-xl bg-white p-1.5 shadow-xl ring-1 ring-black/5 focus:outline-none z-50">
+                    <Menu.Items className="absolute left-0 top-full mt-2 w-48 origin-top-left rounded-xl bg-white p-1.5 shadow-2xl ring-1 ring-black/5 focus:outline-none z-[110]">
                       <Menu.Item>
                         {({active}) => (
                           <button
@@ -997,7 +997,7 @@ const NotesLayout: React.FC = React.memo(() => {
                       leave="transition ease-in duration-75"
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95">
-                      <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50">
+                      <Menu.Items className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-xl bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none z-[110]">
                         <div className="px-2 pb-1.5 mb-1.5 border-b border-slate-100">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rewriting</p>
                         </div>
