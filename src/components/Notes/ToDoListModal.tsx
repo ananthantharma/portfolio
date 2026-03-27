@@ -1,5 +1,5 @@
 /* eslint-disable simple-import-sort/imports, react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
-import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
+import React, {Fragment, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Dialog, Transition} from '@headlessui/react';
 import {
   ArrowTopRightOnSquareIcon,
@@ -12,13 +12,14 @@ import {
   PencilIcon,
   PlusIcon,
   Squares2X2Icon,
+  StarIcon,
   TrashIcon,
   XMarkIcon,
   SparklesIcon,
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
 } from '@heroicons/react/24/outline';
-import {CheckCircleIcon as CheckCircleIconSolid} from '@heroicons/react/24/solid';
+import {CheckCircleIcon as CheckCircleIconSolid, StarIcon as StarIconSolid} from '@heroicons/react/24/solid';
 import {INotePage} from '@/models/NotePage';
 import {IToDo} from '@/models/ToDo';
 import TaskFormModal, {TaskFormData} from './TaskFormModal';
@@ -47,13 +48,11 @@ const FilterDropdown = React.memo(
     value,
     options,
     onChange,
-    accentColor,
   }: {
     label: string;
     value: string;
     options: {label: string; value: string}[];
     onChange: (v: string) => void;
-    accentColor?: string;
   }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -75,8 +74,8 @@ const FilterDropdown = React.memo(
           onClick={() => setOpen(v => !v)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
             isActive
-              ? `${accentColor || 'bg-white/20 border-white/30'} text-white`
-              : 'bg-white/10 border-white/15 text-white/70 hover:bg-white/15 hover:text-white'
+              ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
           }`}>
           <span>
             {label}: <span className="font-semibold">{current?.label ?? value}</span>
@@ -93,7 +92,7 @@ const FilterDropdown = React.memo(
                   setOpen(false);
                 }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  value === opt.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                  value === opt.value ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-50'
                 }`}>
                 {opt.label}
               </button>
@@ -140,8 +139,8 @@ const SortDropdown = React.memo(
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen(v => !v)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 border border-white/15 text-white/70 hover:bg-white/15 hover:text-white transition-all">
-          Sort: <span className="text-white font-semibold">{current?.label}</span>
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all">
+          Sort: <span className="text-gray-800 font-semibold">{current?.label}</span>
           <span className="ml-0.5 text-[10px]">{sortDirection === 'asc' ? '↑' : '↓'}</span>
           <ChevronDownIcon className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
@@ -155,7 +154,7 @@ const SortDropdown = React.memo(
                   setOpen(false);
                 }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  sortField === f.value ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'
+                  sortField === f.value ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-50'
                 }`}>
                 {f.label} {sortField === f.value && (sortDirection === 'asc' ? '↑' : '↓')}
               </button>
@@ -192,6 +191,23 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
     // AI Priority State
     const [isAIPrioritizing, setIsAIPrioritizing] = useState(false);
+
+    // Star feature — persisted via localStorage
+    const [starredIds, setStarredIds] = useState<Set<string>>(() => {
+      try {
+        const saved = localStorage.getItem('todo_starred_ids');
+        return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+      } catch { return new Set<string>(); }
+    });
+
+    const toggleStar = useCallback((id: string) => {
+      setStarredIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        try { localStorage.setItem('todo_starred_ids', JSON.stringify([...next])); } catch {}
+        return next;
+      });
+    }, []);
 
     useEffect(() => {
       if (isOpen || isDirectCreateOpen) {
@@ -622,10 +638,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         className={`w-full ${
           isStandalone
             ? 'h-screen flex flex-col'
-            : 'max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/5 h-[94vh] flex flex-col'
-        } bg-[#0f1117] text-left transition-all`}>
-        {/* ── Dark header ── */}
-        <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-[#0f1117] border-b border-white/8">
+            : 'max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl shadow-2xl ring-1 ring-gray-200/60 h-[94vh] flex flex-col'
+        } bg-white text-left transition-all`}>
+        {/* ── Light header ── */}
+        <div className="flex-shrink-0 px-5 pt-4 pb-3 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200/70">
           {/* Row 1: title + actions */}
           <div
             className={`flex ${
@@ -633,18 +649,18 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
             } mb-3`}>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-white tracking-tight">Tasks</h3>
+                <h3 className="text-base font-semibold text-gray-900 tracking-tight">Tasks</h3>
                 <div className="flex items-center ml-2 space-x-1">
                   <button
                     onClick={() => handleToggleAllMinimize(true)}
-                    className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                    className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                     title="Collapse all cards"
                   >
                     <ArrowsPointingInIcon className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleToggleAllMinimize(false)}
-                    className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                    className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                     title="Expand all cards"
                   >
                     <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
@@ -652,17 +668,17 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 </div>
               </div>
               {/* Active / Done toggle */}
-              <div className="flex bg-white/10 rounded-lg p-0.5 ml-auto sm:ml-0">
+              <div className="flex bg-gray-100 rounded-lg p-0.5 ml-auto sm:ml-0">
                 <button
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                    !showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'
+                    !showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setShowCompleted(false)}>
                   Active
                 </button>
                 <button
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                    showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-white/50 hover:text-white/70'
+                    showCompleted ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setShowCompleted(true)}>
                   Done
@@ -675,10 +691,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 isStandalone ? 'w-full overflow-x-auto pb-1 no-scrollbar justify-start' : ''
               }`}>
               {/* View toggle */}
-              <div className="flex bg-white/10 rounded-lg p-0.5">
+              <div className="flex bg-gray-100 rounded-lg p-0.5">
                 <button
                   className={`p-1.5 rounded-md transition-all ${
-                    viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'
+                    viewMode === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setViewMode('list')}
                   title="List View">
@@ -686,7 +702,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 </button>
                 <button
                   className={`p-1.5 rounded-md transition-all ${
-                    viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-white/50 hover:text-white/70'
+                    viewMode === 'board' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   onClick={() => setViewMode('board')}
                   title="Kanban">
@@ -699,7 +715,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 <button
                   onClick={handleAIPrioritySuggest}
                   disabled={isAIPrioritizing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-300 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-400/20 rounded-lg transition-all disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-lg transition-all disabled:opacity-50"
                   title={`Auto-prioritize ${unprioritizedCount} tasks`}>
                   <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
                   {isAIPrioritizing ? 'Analyzing…' : `AI Prioritize`}
@@ -709,7 +725,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
               {/* Email */}
               <button
                 onClick={() => setIsEmailModalOpen(true)}
-                className="p-2 text-white/40 hover:text-white/70 rounded-lg hover:bg-white/10 transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 title="Create from Email">
                 <EnvelopeIcon className="h-4 w-4" />
               </button>
@@ -724,10 +740,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
               {!isStandalone && (
                 <>
-                  <div className="w-px h-5 flex-shrink-0 bg-white/10" />
+                  <div className="w-px h-5 flex-shrink-0 bg-gray-200" />
 
                   <button
-                    className="p-2 flex-shrink-0 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                    className="p-2 flex-shrink-0 text-gray-400 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
                     onClick={onClose}>
                     <XMarkIcon className="h-4 w-4" />
                   </button>
@@ -756,7 +772,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   {label: '🟢 Low', value: 'Low'},
                 ]}
                 onChange={setFilterPriority}
-                accentColor="bg-indigo-500/30 border-indigo-400/30"
               />
               <FilterDropdown
                 label="Category"
@@ -766,7 +781,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   ...CATEGORIES.map(c => ({label: c.replace('!', ''), value: c})),
                 ]}
                 onChange={setFilterCategory}
-                accentColor="bg-indigo-500/30 border-indigo-400/30"
               />
               <SortDropdown sortField={sortField} sortDirection={sortDirection} onSort={handleSort} />
               {/* Active filter count badge */}
@@ -852,6 +866,25 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           : 'bg-white border-gray-100/80 hover:border-indigo-100 hover:shadow-md'
                       }`}
                       key={todo._id}>
+                      {/* ★ Star button — top right corner */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                        className="absolute top-3 right-3 z-10 p-1 rounded-full transition-all duration-200"
+                        title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
+                        {starredIds.has(todo._id) ? (
+                          <StarIconSolid
+                            className="h-5 w-5 transition-all duration-300"
+                            style={{
+                              color: '#ff1744',
+                              filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                            }}
+                          />
+                        ) : (
+                          <StarIcon
+                            className="h-5 w-5 text-gray-300/50 hover:text-gray-400 transition-colors duration-200"
+                          />
+                        )}
+                      </button>
                       {/* Priority left bar for mobile */}
                       <div
                         className={`absolute left-0 inset-y-4 w-1 rounded-r-full ${
@@ -1026,6 +1059,25 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                         : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
                     }`}
                     key={todo._id}>
+                    {/* ★ Star button — top right corner */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                      className="absolute top-2 right-2 z-10 p-0.5 rounded-full transition-all duration-200"
+                      title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
+                      {starredIds.has(todo._id) ? (
+                        <StarIconSolid
+                          className="h-4 w-4 transition-all duration-300"
+                          style={{
+                            color: '#ff1744',
+                            filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                          }}
+                        />
+                      ) : (
+                        <StarIcon
+                          className="h-4 w-4 text-gray-300/40 hover:text-gray-400 transition-colors duration-200"
+                        />
+                      )}
+                    </button>
                     {/* Priority bar */}
                     <div
                       className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${

@@ -32,9 +32,10 @@ import {
   ChevronRightIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import {INotePage} from '@/models/NotePage';
-import {CheckCircleIcon as CheckCircleSolid} from '@heroicons/react/24/solid';
+import {CheckCircleIcon as CheckCircleSolid, StarIcon as StarIconSolid} from '@heroicons/react/24/solid';
 
 interface ToDoBoardProps {
   todos: IToDo[];
@@ -192,6 +193,23 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [minimizedCols, setMinimizedCols] = useState<Record<string, boolean>>({});
+
+  // Star feature — persisted via localStorage (same key as list view)
+  const [starredIds, setStarredIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('todo_starred_ids');
+      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
+
+  const toggleStar = useCallback((id: string) => {
+    setStarredIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      try { localStorage.setItem('todo_starred_ids', JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }, []);
 
   // Load minimized columns state from localStorage on mount
   useEffect(() => {
@@ -365,12 +383,14 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onToggleColumnMinimize={() => toggleColumnMinimize(col.id)}
               colWidth={colWidths[col.id]}
               onWidthChange={w => handleWidthChange(col.id, w)}
+              starredIds={starredIds}
+              onToggleStar={toggleStar}
             />
           ))}
         </div>
 
         {/* Drag Overlay — this is the ONLY visible dragged element */}
-        <DragOverlay dropAnimation={null}>{activeTodo ? <TaskCard todo={activeTodo} isOverlay /> : null}</DragOverlay>
+        <DragOverlay dropAnimation={null}>{activeTodo ? <TaskCard todo={activeTodo} isOverlay isStarred={starredIds.has(activeTodo._id)} /> : null}</DragOverlay>
       </DndContext>
     </div>
   );
@@ -397,6 +417,8 @@ const Column = ({
   onToggleColumnMinimize,
   colWidth,
   onWidthChange,
+  starredIds,
+  onToggleStar,
 }: {
   col: (typeof COLUMNS)[0];
   todos: IToDo[];
@@ -414,6 +436,8 @@ const Column = ({
   onToggleColumnMinimize: () => void;
   colWidth?: number;
   onWidthChange: (w: number) => void;
+  starredIds: Set<string>;
+  onToggleStar: (id: string) => void;
 }) => {
   const {setNodeRef, isOver} = useDroppable({id: col.id});
   const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
@@ -527,6 +551,8 @@ const Column = ({
                 onToggleMinimize={onToggleMinimize}
                 onClose={onClose}
                 isBeingDragged={activeId === todo._id}
+                isStarred={starredIds.has(todo._id)}
+                onToggleStar={() => onToggleStar(todo._id)}
               />
             ))}
           </SortableContext>
@@ -552,6 +578,8 @@ const DraggableTask = ({
   onToggleMinimize,
   onClose,
   isBeingDragged,
+  isStarred,
+  onToggleStar,
 }: {
   todo: IToDo;
   onEdit: (t: IToDo) => void;
@@ -564,6 +592,8 @@ const DraggableTask = ({
   onToggleMinimize?: (todo: IToDo) => void;
   onClose: () => void;
   isBeingDragged: boolean;
+  isStarred: boolean;
+  onToggleStar: () => void;
 }) => {
   const {attributes, listeners, setNodeRef, transform, transition} = useSortable({
     id: todo._id,
@@ -578,7 +608,7 @@ const DraggableTask = ({
   if (isBeingDragged) {
     return (
       <div ref={setNodeRef} style={style} className="opacity-20 pointer-events-none">
-        <TaskCard todo={todo} />
+        <TaskCard todo={todo} isStarred={isStarred} />
       </div>
     );
   }
@@ -596,6 +626,8 @@ const DraggableTask = ({
         onCycleNeonColor={() => onCycleNeonColor?.(todo)}
         onToggleMinimize={() => onToggleMinimize?.(todo)}
         onClose={onClose}
+        isStarred={isStarred}
+        onToggleStar={onToggleStar}
       />
     </div>
   );
@@ -778,6 +810,8 @@ const TaskCard = ({
   onCycleNeonColor,
   onToggleMinimize,
   onClose,
+  isStarred,
+  onToggleStar,
 }: {
   todo: IToDo;
   isOverlay?: boolean;
@@ -790,6 +824,8 @@ const TaskCard = ({
   onCycleNeonColor?: () => void;
   onToggleMinimize?: () => void;
   onClose?: () => void;
+  isStarred?: boolean;
+  onToggleStar?: () => void;
 }) => {
   const isDone = todo.status === 'done' || todo.isCompleted;
   const isMinimized = todo.isMinimized ?? true;
@@ -829,6 +865,29 @@ const TaskCard = ({
       } ${!isOverlay ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       {/* Priority top accent line */}
       <div className={`h-[3px] w-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
+
+      {/* ★ Star button — top right corner */}
+      {onToggleStar && !isOverlay && (
+        <button
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute top-4 right-2 z-10 p-0.5 rounded-full transition-all duration-200"
+          title={isStarred ? 'Unstar' : 'Star this task'}>
+          {isStarred ? (
+            <StarIconSolid
+              className="h-4 w-4 transition-all duration-300"
+              style={{
+                color: '#ff1744',
+                filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+              }}
+            />
+          ) : (
+            <StarIcon
+              className="h-4 w-4 text-gray-300/40 hover:text-gray-400 transition-colors duration-200"
+            />
+          )}
+        </button>
+      )}
 
       <div className="px-3 py-2.5">
         {/* Title row with actions */}
