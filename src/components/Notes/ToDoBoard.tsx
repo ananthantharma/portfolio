@@ -50,7 +50,19 @@ interface ToDoBoardProps {
   onToggleMinimize?: (todo: IToDo) => void;
   onReorder?: (activeId: string, overId: string) => void;
   onClose: () => void;
+  onCategoryChange?: (id: string, category: string) => void;
 }
+
+const TASK_CATEGORIES = [
+  {value: '', label: 'None', color: 'bg-gray-50 text-gray-500'},
+  {value: 'Urgent!', label: 'Urgent', color: 'bg-red-50 text-red-700'},
+  {value: 'Sourcing!', label: 'Sourcing', color: 'bg-amber-50 text-amber-700'},
+  {value: 'Boss!', label: 'Boss', color: 'bg-violet-50 text-violet-700'},
+  {value: 'Staff! (Team)', label: 'Staff (Team)', color: 'bg-blue-50 text-blue-700'},
+  {value: 'Projects!', label: 'Projects', color: 'bg-emerald-50 text-emerald-700'},
+  {value: 'Admin!', label: 'Admin', color: 'bg-gray-100 text-gray-700'},
+  {value: 'Personal!', label: 'Personal', color: 'bg-teal-50 text-teal-700'},
+];
 
 const COLUMNS: {
   id: string;
@@ -189,6 +201,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onToggleMinimize,
   onReorder,
   onClose,
+  onCategoryChange,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -385,6 +398,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               onWidthChange={w => handleWidthChange(col.id, w)}
               starredIds={starredIds}
               onToggleStar={toggleStar}
+              onCategoryChange={onCategoryChange}
             />
           ))}
         </div>
@@ -419,6 +433,7 @@ const Column = ({
   onWidthChange,
   starredIds,
   onToggleStar,
+  onCategoryChange,
 }: {
   col: (typeof COLUMNS)[0];
   todos: IToDo[];
@@ -438,6 +453,7 @@ const Column = ({
   onWidthChange: (w: number) => void;
   starredIds: Set<string>;
   onToggleStar: (id: string) => void;
+  onCategoryChange?: (id: string, category: string) => void;
 }) => {
   const {setNodeRef, isOver} = useDroppable({id: col.id});
   const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
@@ -553,6 +569,7 @@ const Column = ({
                 isBeingDragged={activeId === todo._id}
                 isStarred={starredIds.has(todo._id)}
                 onToggleStar={() => onToggleStar(todo._id)}
+                onCategoryChange={onCategoryChange ? (cat: string) => onCategoryChange(todo._id, cat) : undefined}
               />
             ))}
           </SortableContext>
@@ -580,6 +597,7 @@ const DraggableTask = ({
   isBeingDragged,
   isStarred,
   onToggleStar,
+  onCategoryChange,
 }: {
   todo: IToDo;
   onEdit: (t: IToDo) => void;
@@ -594,6 +612,7 @@ const DraggableTask = ({
   isBeingDragged: boolean;
   isStarred: boolean;
   onToggleStar: () => void;
+  onCategoryChange?: (category: string) => void;
 }) => {
   const {attributes, listeners, setNodeRef, transform, transition} = useSortable({
     id: todo._id,
@@ -628,6 +647,7 @@ const DraggableTask = ({
         onClose={onClose}
         isStarred={isStarred}
         onToggleStar={onToggleStar}
+        onCategoryChange={onCategoryChange}
       />
     </div>
   );
@@ -812,6 +832,7 @@ const TaskCard = ({
   onClose,
   isStarred,
   onToggleStar,
+  onCategoryChange,
 }: {
   todo: IToDo;
   isOverlay?: boolean;
@@ -826,6 +847,7 @@ const TaskCard = ({
   onClose?: () => void;
   isStarred?: boolean;
   onToggleStar?: () => void;
+  onCategoryChange?: (category: string) => void;
 }) => {
   const isDone = todo.status === 'done' || todo.isCompleted;
   const isMinimized = todo.isMinimized ?? true;
@@ -834,6 +856,18 @@ const TaskCard = ({
   const subtaskDone = todo.subtasks?.filter(s => s.isCompleted).length || 0;
   const subtaskPct = subtaskCount > 0 ? Math.round((subtaskDone / subtaskCount) * 100) : 0;
   const prio = priorityLabel[todo.priority] || priorityLabel.None;
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    if (!catDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) setCatDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [catDropdownOpen]);
 
 
   const neonColors = {
@@ -865,29 +899,6 @@ const TaskCard = ({
       } ${!isOverlay ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       {/* Priority top accent line */}
       <div className={`h-[3px] w-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
-
-      {/* ★ Star button — top right corner */}
-      {onToggleStar && !isOverlay && (
-        <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="absolute top-4 right-2 z-10 p-0.5 rounded-full transition-all duration-200"
-          title={isStarred ? 'Unstar' : 'Star this task'}>
-          {isStarred ? (
-            <StarIconSolid
-              className="h-4 w-4 transition-all duration-300"
-              style={{
-                color: '#ff1744',
-                filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
-              }}
-            />
-          ) : (
-            <StarIcon
-              className="h-4 w-4 text-gray-300/40 hover:text-gray-400 transition-colors duration-200"
-            />
-          )}
-        </button>
-      )}
 
       <div className="px-3 py-2.5">
         {/* Title row with actions */}
@@ -934,6 +945,26 @@ const TaskCard = ({
           {/* Hover actions */}
           {!isOverlay && (
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+              {/* ★ Star */}
+              {onToggleStar && (
+                <button
+                  onClick={e => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
+                  onPointerDown={e => e.stopPropagation()}
+                  className="p-1 rounded-md transition-all duration-200"
+                  title={isStarred ? 'Unstar' : 'Star this task'}>
+                  {isStarred ? (
+                    <StarIconSolid
+                      className="h-3.5 w-3.5 transition-all duration-300"
+                      style={{
+                        color: '#ff1744',
+                        filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                      }}
+                    />
+                  ) : (
+                    <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
+                  )}
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={e => {
@@ -1001,11 +1032,45 @@ const TaskCard = ({
                   {todo.priority}
                 </span>
               )}
-              {/* Category badge */}
-              {todo.category && (
-                <span className="inline-block px-1.5 py-0.5 text-[10px] rounded-md bg-gray-100 text-gray-500 font-medium">
-                  {todo.category.replace('!', '')}
-                </span>
+              {/* Category badge — clickable to change */}
+              {onCategoryChange ? (
+                <div className="relative" ref={catRef} onPointerDown={e => e.stopPropagation()}>
+                  <button
+                    onClick={e => { e.stopPropagation(); e.preventDefault(); setCatDropdownOpen(v => !v); }}
+                    className={`inline-block px-1.5 py-0.5 text-[10px] rounded-md font-medium cursor-pointer hover:ring-1 hover:ring-gray-300 transition-all ${
+                      todo.category ? 'bg-gray-100 text-gray-500' : 'bg-gray-50 text-gray-300 border border-dashed border-gray-200'
+                    }`}
+                    title="Change category">
+                    {todo.category ? todo.category.replace('!', '') : '+ Category'}
+                  </button>
+                  {catDropdownOpen && (
+                    <div className="absolute top-full mt-1 left-0 z-50 min-w-[140px] bg-white rounded-xl shadow-xl border border-gray-100 py-1 overflow-hidden">
+                      {TASK_CATEGORIES.map(cat => (
+                        <button
+                          key={cat.value}
+                          onClick={e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            onCategoryChange(cat.value);
+                            setCatDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                            todo.category === cat.value
+                              ? 'bg-indigo-600 text-white'
+                              : `text-gray-700 hover:${cat.color}`
+                          }`}>
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                todo.category && (
+                  <span className="inline-block px-1.5 py-0.5 text-[10px] rounded-md bg-gray-100 text-gray-500 font-medium">
+                    {todo.category.replace('!', '')}
+                  </span>
+                )
               )}
               {todo.aiGenerated && (
                 <span className="text-[9px] text-violet-500 font-bold px-1 rounded bg-violet-50">AI</span>

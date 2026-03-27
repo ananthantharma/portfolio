@@ -516,6 +516,20 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       }
     };
 
+    const handleCategoryChange = async (id: string, category: string) => {
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, category} as any) : t)));
+      try {
+        await fetch(`/api/todos/${id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({category}),
+        });
+      } catch (error) {
+        console.error('Failed to update category', error);
+        fetchTodos();
+      }
+    };
+
     // AI Priority Suggest
     const handleAIPrioritySuggest = async () => {
       const unprioritized = todos.filter(t => !t.isCompleted && (!t.priority || t.priority === 'None'));
@@ -842,6 +856,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 onToggleMinimize={handleToggleMinimize}
                 onReorder={handleReorder}
                 onClose={onClose}
+                onCategoryChange={handleCategoryChange}
               />
             </div>
           ) : (
@@ -866,25 +881,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                           : 'bg-white border-gray-100/80 hover:border-indigo-100 hover:shadow-md'
                       }`}
                       key={todo._id}>
-                      {/* ★ Star button — top right corner */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
-                        className="absolute top-3 right-3 z-10 p-1 rounded-full transition-all duration-200"
-                        title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
-                        {starredIds.has(todo._id) ? (
-                          <StarIconSolid
-                            className="h-5 w-5 transition-all duration-300"
-                            style={{
-                              color: '#ff1744',
-                              filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
-                            }}
-                          />
-                        ) : (
-                          <StarIcon
-                            className="h-5 w-5 text-gray-300/50 hover:text-gray-400 transition-colors duration-200"
-                          />
-                        )}
-                      </button>
                       {/* Priority left bar for mobile */}
                       <div
                         className={`absolute left-0 inset-y-4 w-1 rounded-r-full ${
@@ -984,6 +980,23 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                                 )}
                               </div>
                             <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                              {/* ★ Star */}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                                className="p-2 rounded-xl transition-all duration-200"
+                                title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
+                                {starredIds.has(todo._id) ? (
+                                  <StarIconSolid
+                                    className="h-3.5 w-3.5 transition-all duration-300"
+                                    style={{
+                                      color: '#ff1744',
+                                      filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                                    }}
+                                  />
+                                ) : (
+                                  <StarIcon className="h-3.5 w-3.5 text-gray-300/50 hover:text-gray-400 transition-colors duration-200" />
+                                )}
+                              </button>
                               <button
                                 onClick={() => handleEdit(todo)}
                                 className="p-2 bg-gray-50 text-gray-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors">
@@ -1059,25 +1072,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                         : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
                     }`}
                     key={todo._id}>
-                    {/* ★ Star button — top right corner */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
-                      className="absolute top-2 right-2 z-10 p-0.5 rounded-full transition-all duration-200"
-                      title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
-                      {starredIds.has(todo._id) ? (
-                        <StarIconSolid
-                          className="h-4 w-4 transition-all duration-300"
-                          style={{
-                            color: '#ff1744',
-                            filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
-                          }}
-                        />
-                      ) : (
-                        <StarIcon
-                          className="h-4 w-4 text-gray-300/40 hover:text-gray-400 transition-colors duration-200"
-                        />
-                      )}
-                    </button>
                     {/* Priority bar */}
                     <div
                       className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${
@@ -1236,6 +1230,23 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
 
                     {/* Hover actions */}
                     <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* ★ Star */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                        className="p-1.5 rounded-lg transition-all duration-200"
+                        title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
+                        {starredIds.has(todo._id) ? (
+                          <StarIconSolid
+                            className="h-3.5 w-3.5 transition-all duration-300"
+                            style={{
+                              color: '#ff1744',
+                              filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                            }}
+                          />
+                        ) : (
+                          <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
+                        )}
+                      </button>
                       <button
                         className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                         onClick={() => handleEdit(todo)}
