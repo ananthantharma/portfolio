@@ -945,26 +945,6 @@ const TaskCard = ({
           {/* Hover actions */}
           {!isOverlay && (
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              {/* ★ Star */}
-              {onToggleStar && (
-                <button
-                  onClick={e => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
-                  onPointerDown={e => e.stopPropagation()}
-                  className="p-1 rounded-md transition-all duration-200"
-                  title={isStarred ? 'Unstar' : 'Star this task'}>
-                  {isStarred ? (
-                    <StarIconSolid
-                      className="h-3.5 w-3.5 transition-all duration-300"
-                      style={{
-                        color: '#ff1744',
-                        filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
-                      }}
-                    />
-                  ) : (
-                    <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
-                  )}
-                </button>
-              )}
               {onEdit && (
                 <button
                   onClick={e => {
@@ -992,6 +972,29 @@ const TaskCard = ({
                 </button>
               )}
             </div>
+          )}
+
+          {/* ★ Star — always visible when starred, hover-only when unstarred */}
+          {onToggleStar && !isOverlay && (
+            <button
+              onClick={e => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
+              onPointerDown={e => e.stopPropagation()}
+              className={`p-1 rounded-md transition-all duration-200 flex-shrink-0 ${
+                isStarred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+              title={isStarred ? 'Unstar' : 'Star this task'}>
+              {isStarred ? (
+                <StarIconSolid
+                  className="h-3.5 w-3.5 transition-all duration-300"
+                  style={{
+                    color: '#ff1744',
+                    filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                  }}
+                />
+              ) : (
+                <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
+              )}
+            </button>
           )}
 
           {/* Minimize toggle */}
