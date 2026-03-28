@@ -38,7 +38,7 @@ export async function POST() {
         email TEXT NOT NULL,
         role TEXT DEFAULT 'SIGNER',
         status TEXT DEFAULT 'NOT_SENT',
-        token TEXT UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+        token TEXT UNIQUE,
         signed_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )

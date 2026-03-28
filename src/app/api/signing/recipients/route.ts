@@ -26,9 +26,12 @@ export async function POST(req: Request) {
       return NextResponse.json({error: 'Document not found'}, {status: 404});
     }
 
+    // Generate unique signing token in application code
+    const token = crypto.randomUUID() + crypto.randomUUID();
+
     const result = await sql`
-      INSERT INTO recipients (document_id, name, email, role)
-      VALUES (${document_id}, ${name}, ${email}, ${role})
+      INSERT INTO recipients (document_id, name, email, role, token)
+      VALUES (${document_id}, ${name}, ${email}, ${role}, ${token})
       RETURNING *
     `;
 
