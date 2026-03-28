@@ -5,7 +5,8 @@ import {getDb} from '@/lib/neon';
 // GET document info by signing token (public - no auth required)
 export async function GET(req: Request) {
   const {searchParams} = new URL(req.url);
-  const token = searchParams.get('token');
+  const rawToken = searchParams.get('token');
+  const token = rawToken?.trim();
 
   if (!token) {
     return NextResponse.json({error: 'Token required'}, {status: 400});
@@ -23,7 +24,8 @@ export async function GET(req: Request) {
     `;
 
     if (!recipients.length) {
-      return NextResponse.json({error: 'Invalid or expired signing link'}, {status: 404});
+      console.log('Invalid token attempt:', token);
+      return NextResponse.json({error: `Invalid or expired signing link (Token: ${token.substring(0, 10)}...)`}, {status: 404});
     }
 
     const recipient = recipients[0];
@@ -69,7 +71,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const sql = getDb();
   const body = await req.json();
-  const {token, signatures} = body;
+  const {token: rawToken, signatures} = body;
+  const token = rawToken?.trim();
   // signatures: [{field_id, value}]
 
   if (!token || !signatures || !signatures.length) {
