@@ -65,7 +65,7 @@ export async function POST(req: Request) {
               'Authorization': `Bearer ${resendKey}`,
             },
             body: JSON.stringify({
-              from: 'SignDocs <onboarding@resend.dev>',
+              from: 'SignDocs <noreply@ananthan.org>',
               to: [recipient.email],
               subject: `Please sign: ${doc.title}`,
               html: `
