@@ -6,9 +6,11 @@ import {
   CheckIcon,
   ChevronUpDownIcon,
   CloudArrowUpIcon,
+  EnvelopeIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   MinusCircleIcon,
+  PaperClipIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import React, {Fragment, useEffect, useState} from 'react';
@@ -95,6 +97,8 @@ const CATEGORIES = [
   {name: 'Admin!', value: 'Admin!', color: 'bg-gray-100 text-gray-700 border-gray-200'},
   {name: 'Personal!', value: 'Personal!', color: 'bg-teal-50 text-teal-700 border-teal-200'},
 ];
+
+const isEmailFile = (name: string) => /\.(msg|eml)$/i.test(name);
 
 const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
   ({isOpen, onClose, onSave, initialData, title: modalTitle}) => {
@@ -300,7 +304,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
           );
           return;
         }
-        setAttachments(prev => [...prev, {name: file.name, type: file.type, size: file.size, file}]);
+        // Outlook .msg drag may have empty mime type — fix it
+        const type = file.type || (isEmailFile(file.name) ? 'application/vnd.ms-outlook' : 'application/octet-stream');
+        setAttachments(prev => [...prev, {name: file.name, type, size: file.size, file}]);
       });
     };
 
@@ -615,7 +621,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                           </p>
                           <p className="text-[10px] text-gray-300 mt-0.5">
                             {storageType === 'local'
-                              ? 'Max 4MB per file'
+                              ? 'Files, emails (.msg/.eml) • Max 4MB'
                               : 'Uploads to ' + (storageType === 'drive' ? 'Google Drive' : 'Vercel Blob')}
                           </p>
                         </div>
@@ -623,19 +629,55 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
                       {attachments.length > 0 && (
                         <ul className="mt-2 text-xs text-gray-600 space-y-1">
-                          {attachments.map((file, idx) => (
-                            <li
-                              key={idx}
-                              className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
-                              <span className="truncate max-w-[85%] text-gray-600">{file.name}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeAttachment(idx)}
-                                className="text-gray-400 hover:text-red-500 transition-colors">
-                                <XMarkIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </li>
-                          ))}
+                          {attachments.map((file, idx) => {
+                            const email = isEmailFile(file.name);
+                            // For saved attachments (no .file prop), provide download link
+                            const isSaved = !('file' in file && (file as any).file);
+                            return (
+                              <li
+                                key={idx}
+                                className="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <div className="flex items-center gap-2 truncate max-w-[85%]">
+                                  {email ? (
+                                    <EnvelopeIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                                  ) : (
+                                    <PaperClipIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                  )}
+                                  {isSaved && (initialData as any)?._id ? (
+                                    <a
+                                      href={
+                                        (file as any).webViewLink
+                                          ? (file as any).webViewLink
+                                          : `/api/todos/attachment?todoId=${(initialData as any)._id}&index=${idx}`
+                                      }
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`truncate hover:underline ${
+                                        email ? 'text-blue-600 font-medium' : 'text-gray-600'
+                                      }`}
+                                      title="Click to open / download">
+                                      {file.name}
+                                    </a>
+                                  ) : (
+                                    <span className={`truncate ${email ? 'text-blue-600 font-medium' : 'text-gray-600'}`}>
+                                      {file.name}
+                                    </span>
+                                  )}
+                                  {email && (
+                                    <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold flex-shrink-0">
+                                      EMAIL
+                                    </span>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeAttachment(idx)}
+                                  className="text-gray-400 hover:text-red-500 transition-colors">
+                                  <XMarkIcon className="h-3.5 w-3.5" />
+                                </button>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
                     </div>

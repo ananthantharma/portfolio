@@ -23,6 +23,7 @@ import {
   CheckIcon,
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
+  EnvelopeIcon,
   UserGroupIcon,
   ClockIcon,
   ArrowPathIcon,
@@ -1078,6 +1079,31 @@ const TaskCard = ({
               {todo.aiGenerated && (
                 <span className="text-[9px] text-violet-500 font-bold px-1 rounded bg-violet-50">AI</span>
               )}
+              {/* Attachment indicators */}
+              {todo.attachments && todo.attachments.length > 0 && (() => {
+                const emailCount = todo.attachments.filter(a => /\.(msg|eml)$/i.test(a.name)).length;
+                const otherCount = todo.attachments.length - emailCount;
+                return (
+                  <>
+                    {emailCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-blue-50 text-blue-600 font-medium cursor-pointer hover:bg-blue-100 transition-colors"
+                        onClick={e => { e.stopPropagation(); e.preventDefault(); if (onEdit) onEdit(); }}
+                        onPointerDown={e => e.stopPropagation()}
+                        title="Open to view email attachments">
+                        <EnvelopeIcon className="h-3 w-3" />
+                        {emailCount}
+                      </span>
+                    )}
+                    {otherCount > 0 && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-gray-100 text-gray-500 font-medium">
+                        <PaperClipIcon className="h-3 w-3" />
+                        {otherCount}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Checklist Section – Inline Editable */}
