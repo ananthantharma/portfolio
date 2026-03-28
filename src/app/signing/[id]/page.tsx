@@ -4,6 +4,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useParams, useRouter} from 'next/navigation';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface Recipient {
   id: string;
@@ -33,6 +38,7 @@ interface DocData {
   title: string;
   status: string;
   pdf_url: string;
+  signed_pdf_url: string | null;
   message: string;
   recipients: Recipient[];
   fields: Field[];
@@ -512,18 +518,23 @@ export default function DocumentEditor() {
           <div className="flex-1 overflow-auto p-8 flex justify-center" ref={pdfContainerRef}>
             <div className="relative bg-white shadow-xl rounded-lg" style={{width: 816, minHeight: 1056}} ref={pdfPageRef}>
               {/* PDF rendered as iframe for simplicity (react-pdf can be swapped in) */}
-              <iframe
-                src={`${doc.pdf_url}#page=${currentPage}`}
-                className="w-full h-full absolute inset-0 rounded-lg"
-                style={{minHeight: 1056}}
-                onLoad={() => {
-                  // Try to detect page count (limited in iframe mode)
-                  setTotalPages(Math.max(totalPages, currentPage));
-                }}
-              />
+              <Document
+                file={doc.signed_pdf_url || doc.pdf_url}
+                onLoadSuccess={({ numPages }) => setTotalPages(numPages)}
+                loading={<div className="flex items-center justify-center w-full h-full text-indigo-400"><div className="animate-spin w-8 h-8 border-2 border-current border-t-transparent rounded-full"/></div>}
+                className="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex justify-center bg-white"
+              >
+                <Page
+                  pageNumber={currentPage}
+                  width={816}
+                  renderAnnotationLayer={false}
+                  renderTextLayer={false}
+                  className="rounded-lg shadow-sm"
+                />
+              </Document>
 
               {/* Overlay fields on top of PDF */}
-              {pageFields.map(field => {
+              {!doc.signed_pdf_url && pageFields.map(field => {
                 const colors = getRecipientColor(field.recipient_id, doc.recipients);
                 const recipient = doc.recipients.find(r => r.id === field.recipient_id);
 

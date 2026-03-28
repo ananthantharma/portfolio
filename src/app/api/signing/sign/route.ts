@@ -112,8 +112,67 @@ export async function POST(req: Request) {
     `;
 
     if (parseInt(pending[0].count) === 0) {
-      // All signed — mark document as completed
-      await sql`UPDATE documents SET status = 'COMPLETED', completed_at = NOW(), updated_at = NOW() WHERE id = ${recipient.doc_id}`;
+      // All signed — mark document as completed and generated signed PDF
+      const docDetails = await sql`SELECT pdf_url FROM documents WHERE id = ${recipient.doc_id}`;
+      const allFields = await sql`SELECT * FROM fields WHERE document_id = ${recipient.doc_id}`;
+
+      try {
+        const { PDFDocument, rgb } = await import('pdf-lib');
+        const { put } = await import('@vercel/blob');
+
+        // Fetch original PDF
+        const resPdf = await fetch(docDetails[0].pdf_url);
+        const pdfBytes = await resPdf.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const pages = pdfDoc.getPages();
+
+        for (const field of allFields) {
+          if (!field.value) continue;
+
+          const pageIndex = field.page - 1;
+          if (pageIndex < 0 || pageIndex >= pages.length) continue;
+          const page = pages[pageIndex];
+
+          const { width, height } = page.getSize();
+          
+          // CSS wrapper bounds: 816x1056
+          const scaleX = width / 816;
+          const scaleY = height / 1056;
+
+          const fWidth = field.width * scaleX;
+          const fHeight = field.height * scaleY;
+          const fX = field.pos_x * scaleX;
+          const fY = height - (field.pos_y * scaleY) - fHeight;
+
+          if (field.value.startsWith('data:image/png')) {
+            const base64Data = field.value.split(',')[1];
+            // Convert to a plain Uint8Array that pdf-lib expects
+            const imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+            const imgDoc = await pdfDoc.embedPng(imgBytes);
+            page.drawImage(imgDoc, { x: fX, y: fY, width: fWidth, height: fHeight });
+          } else {
+            // Text or Date
+            page.drawText(field.value, {
+              x: fX + (10 * scaleX),
+              y: fY + (fHeight / 2) - 5,
+              size: 14 * scaleY,
+              color: rgb(0.1, 0.1, 0.18),
+            });
+          }
+        }
+
+        const signedBytes = await pdfDoc.save();
+        const blob = await put(`signed-${recipient.doc_id}.pdf`, Buffer.from(signedBytes), {
+          access: 'public',
+          contentType: 'application/pdf',
+        });
+
+        await sql`UPDATE documents SET status = 'COMPLETED', completed_at = NOW(), updated_at = NOW(), signed_pdf_url = ${blob.url} WHERE id = ${recipient.doc_id}`;
+      } catch (genError) {
+        console.error('Error generating final PDF:', genError);
+        // Fallback: still mark as completed even if PDF generation fails temporarily
+        await sql`UPDATE documents SET status = 'COMPLETED', completed_at = NOW(), updated_at = NOW() WHERE id = ${recipient.doc_id}`;
+      }
     }
 
     return NextResponse.json({success: true, message: 'Document signed successfully'});

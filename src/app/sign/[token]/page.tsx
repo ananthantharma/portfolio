@@ -4,6 +4,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useParams} from 'next/navigation';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface SigningField {
   id: string;
@@ -41,7 +46,8 @@ export default function PublicSigningPage() {
   const [data, setData] = useState<SigningData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currentPage, _setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [signatureModal, setSignatureModal] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -295,14 +301,52 @@ export default function PublicSigningPage() {
         </div>
       )}
 
+      {/* Header and Pagination */}
+      <div className="max-w-5xl mx-auto px-6 mt-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">{data.document.title}</h2>
+          <p className="text-sm text-gray-500">Requested by {data.document.owner_email}</p>
+        </div>
+        <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-gray-700 w-16 text-center">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
       {/* PDF + Fields */}
       <div className="max-w-5xl mx-auto px-6 py-8 flex justify-center">
         <div className="relative bg-white shadow-xl rounded-lg" style={{width: 816, minHeight: 1056}}>
-          <iframe
-            src={`${data.document.pdf_url}#page=${currentPage}`}
-            className="w-full h-full absolute inset-0 rounded-lg"
-            style={{minHeight: 1056}}
-          />
+          <Document
+            file={data.document.pdf_url}
+            onLoadSuccess={({ numPages }) => setTotalPages(numPages)}
+            loading={<div className="flex items-center justify-center w-full h-full text-indigo-400"><div className="animate-spin w-8 h-8 border-2 border-current border-t-transparent rounded-full"/></div>}
+            className="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex justify-center bg-white"
+          >
+            <Page
+              pageNumber={currentPage}
+              width={816}
+              renderAnnotationLayer={false}
+              renderTextLayer={false}
+              className="rounded-lg shadow-sm"
+            />
+          </Document>
 
           {/* Clickable fields */}
           {pageFields.map(field => {
