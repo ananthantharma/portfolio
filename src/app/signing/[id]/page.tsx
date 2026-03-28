@@ -76,6 +76,7 @@ export default function DocumentEditor() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({x: 0, y: 0});
   const pdfContainerRef = useRef<HTMLDivElement>(null);
+  const pdfPageRef = useRef<HTMLDivElement>(null);
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -178,10 +179,10 @@ export default function DocumentEditor() {
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragging || !pdfContainerRef.current) return;
-    const containerRect = pdfContainerRef.current.getBoundingClientRect();
-    const newX = e.clientX - containerRect.left - dragOffset.x;
-    const newY = e.clientY - containerRect.top - dragOffset.y + pdfContainerRef.current.scrollTop;
+    if (!dragging || !pdfPageRef.current) return;
+    const pageRect = pdfPageRef.current.getBoundingClientRect();
+    const newX = e.clientX - pageRect.left - dragOffset.x;
+    const newY = e.clientY - pageRect.top - dragOffset.y;
 
     // Update field position locally for smooth dragging
     setDoc(prev => {
@@ -509,7 +510,7 @@ export default function DocumentEditor() {
 
           {/* PDF Display */}
           <div className="flex-1 overflow-auto p-8 flex justify-center" ref={pdfContainerRef}>
-            <div className="relative bg-white shadow-xl rounded-lg" style={{width: 816, minHeight: 1056}}>
+            <div className="relative bg-white shadow-xl rounded-lg" style={{width: 816, minHeight: 1056}} ref={pdfPageRef}>
               {/* PDF rendered as iframe for simplicity (react-pdf can be swapped in) */}
               <iframe
                 src={`${doc.pdf_url}#page=${currentPage}`}
