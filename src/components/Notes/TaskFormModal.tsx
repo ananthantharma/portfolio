@@ -314,8 +314,29 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
       e.preventDefault();
       e.stopPropagation();
       setDragActive(false);
+
+      // Try dataTransfer.files first (works for file-system drags)
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         processFiles(e.dataTransfer.files);
+        return;
+      }
+
+      // Fallback: try dataTransfer.items (some apps provide files this way)
+      if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+        const files: File[] = [];
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+          const item = e.dataTransfer.items[i];
+          if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file) files.push(file);
+          }
+        }
+        if (files.length > 0) {
+          const dt = new DataTransfer();
+          files.forEach(f => dt.items.add(f));
+          processFiles(dt.files);
+          return;
+        }
       }
     };
 
@@ -598,32 +619,45 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
 
                       <div
                         className={`relative flex flex-col items-center justify-center w-full h-24 rounded-lg border-2 border-dashed transition-colors ${
-                          dragActive ? 'border-gray-400 bg-gray-50' : 'border-gray-200 hover:bg-gray-50/50'
+                          dragActive ? 'border-blue-400 bg-blue-50/30' : 'border-gray-200 hover:bg-gray-50/50'
                         }`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
                         onDragOver={handleDrag}
                         onDrop={handleDrop}>
+                        {/* File input — hidden during drag so it doesn't intercept drop events */}
                         <input
                           type="file"
                           multiple
+                          accept=".msg,.eml,*/*"
                           onChange={handleChangeFile}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          className={`absolute inset-0 w-full h-full opacity-0 cursor-pointer ${
+                            dragActive ? 'pointer-events-none' : ''
+                          }`}
                         />
-                        <div className="flex flex-col items-center justify-center">
-                          {storageType === 'drive' ? (
-                            <CloudArrowUpIcon className="h-6 w-6 text-gray-300 mb-1" />
-                          ) : storageType === 'blob' ? (
-                            <CloudArrowUpIcon className="h-6 w-6 text-indigo-300 mb-1" />
-                          ) : null}
-                          <p className="text-xs text-gray-400">
-                            <span className="font-medium text-gray-500">Click to upload</span> or drag and drop
-                          </p>
-                          <p className="text-[10px] text-gray-300 mt-0.5">
-                            {storageType === 'local'
-                              ? 'Files, emails (.msg/.eml) • Max 4MB'
-                              : 'Uploads to ' + (storageType === 'drive' ? 'Google Drive' : 'Vercel Blob')}
-                          </p>
+                        <div className="flex flex-col items-center justify-center pointer-events-none">
+                          {dragActive ? (
+                            <>
+                              <EnvelopeIcon className="h-6 w-6 text-blue-400 mb-1 animate-bounce" />
+                              <p className="text-xs text-blue-500 font-medium">Drop files here</p>
+                            </>
+                          ) : (
+                            <>
+                              {storageType === 'drive' ? (
+                                <CloudArrowUpIcon className="h-6 w-6 text-gray-300 mb-1" />
+                              ) : storageType === 'blob' ? (
+                                <CloudArrowUpIcon className="h-6 w-6 text-indigo-300 mb-1" />
+                              ) : null}
+                              <p className="text-xs text-gray-400">
+                                <span className="font-medium text-gray-500">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-[10px] text-gray-300 mt-0.5">
+                                {storageType === 'local'
+                                  ? 'Save Outlook emails as .msg, then drag here • Max 4MB'
+                                  : 'Uploads to ' + (storageType === 'drive' ? 'Google Drive' : 'Vercel Blob')}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
 
