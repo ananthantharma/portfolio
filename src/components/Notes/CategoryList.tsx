@@ -82,7 +82,7 @@ const CategoryItem = React.memo<{
     return (
       <button
         className={`relative p-2 rounded-lg transition-all ${
-          isSelected ? 'bg-white shadow-sm ring-1 ring-black/[0.06]' : 'hover:bg-white/60'
+          isSelected ? 'bg-violet-500/20 ring-1 ring-violet-500/30' : 'hover:bg-white/[0.06]'
         }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
@@ -98,7 +98,7 @@ const CategoryItem = React.memo<{
           />
         ) : null}
         <CategoryIcon
-          className={`h-5 w-5 ${category.image ? 'hidden' : ''} ${isSelected ? 'text-gray-800' : 'text-gray-500'}`}
+          className={`h-5 w-5 ${category.image ? 'hidden' : ''} ${isSelected ? 'text-white' : 'text-slate-600'}`}
           style={collapsedStyle}
         />
         {renderBadges()}
@@ -111,13 +111,13 @@ const CategoryItem = React.memo<{
       <div
         className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
           isSelected
-            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/[0.06] font-medium'
-            : 'text-gray-600 hover:bg-white/60 hover:text-gray-900'
+            ? 'bg-violet-500/15 text-white ring-1 ring-violet-500/20 font-medium'
+            : 'text-slate-500 hover:bg-white/[0.05] hover:text-slate-200'
         }`}
         onClick={() => onSelect(category._id as string)}>
         {/* Accent Bar */}
         {isSelected && (
-          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-indigo-500" />
+          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-violet-500" />
         )}
 
         <div className="flex items-center gap-3 overflow-hidden">
@@ -134,7 +134,7 @@ const CategoryItem = React.memo<{
           ) : null}
           <CategoryIcon
             className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${
-              isSelected ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-500'
+              isSelected ? 'text-violet-400' : 'text-slate-600 group-hover:text-slate-400'
             }`}
             style={style}
           />
@@ -145,7 +145,7 @@ const CategoryItem = React.memo<{
           {renderBadges()}
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
-              className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+              className="rounded p-1 text-slate-600 hover:bg-white/10 hover:text-slate-300"
               onClick={e => {
                 e.stopPropagation();
                 onEdit(category);
@@ -153,7 +153,7 @@ const CategoryItem = React.memo<{
               <PencilIcon className="h-3.5 w-3.5" />
             </button>
             <button
-              className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+              className="rounded p-1 text-slate-600 hover:bg-red-500/10 hover:text-red-400"
               onClick={e => {
                 e.stopPropagation();
                 if (confirm('Are you sure you want to delete this notebook?')) {
@@ -278,8 +278,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     if (loading) {
       return (
-        <div className="flex h-full items-center justify-center text-gray-500">
-          {isCollapsed ? <div className="h-4 w-4 animate-pulse rounded bg-gray-200" /> : 'Loading...'}
+        <div className="flex h-full items-center justify-center text-slate-600">
+          {isCollapsed ? <div className="h-4 w-4 animate-pulse rounded bg-slate-700" /> : 'Loading...'}
         </div>
       );
     }
@@ -287,17 +287,17 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     return (
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-black/[0.04] px-3 py-2.5">
-          {!isCollapsed && <h2 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Notebooks</h2>}
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2.5">
+          {!isCollapsed && <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Notebooks</h2>}
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             <button
-              className="rounded-md p-1 text-gray-400 hover:bg-white/80 hover:text-gray-600 transition-all"
+              className="rounded-md p-1 text-slate-600 hover:bg-white/[0.07] hover:text-slate-300 transition-all"
               onClick={onToggleCollapse}
               title={isCollapsed ? 'Expand Notebooks' : 'Collapse Notebooks'}>
               {isCollapsed ? <ChevronRightIcon className="h-3.5 w-3.5" /> : <ChevronLeftIcon className="h-3.5 w-3.5" />}
             </button>
             <button
-              className="rounded-md p-1 text-gray-400 hover:bg-white/80 hover:text-gray-600 transition-all"
+              className="rounded-md p-1 text-slate-600 hover:bg-white/[0.07] hover:text-slate-300 transition-all"
               onClick={() => {
                 if (isCollapsed) onToggleCollapse();
                 setIsAdding(true);
