@@ -18,6 +18,8 @@ import {
   FaceSmileIcon,
   DocumentTextIcon,
   LightBulbIcon,
+  InformationCircleIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import {
   ExclamationTriangleIcon as ExclamationTriangleIconSolid,
@@ -98,6 +100,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     }
   });
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   useDetectOutsideClick(emojiPickerRef, () => setIsEmojiPickerOpen(false));
 
   // Badge/ToDo State
@@ -1783,18 +1786,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
   return (
     <div className="flex h-full flex-col bg-white text-gray-900">
-      {/* Tab Bar */}
-      <div className="flex items-center gap-2 border-b border-black/[0.04] px-5 py-2 bg-[#FAFAF8]">
-        {/* Sliding Tab Bar */}
-        <div className="relative inline-flex items-center bg-black/[0.03] rounded-lg p-0.5 gap-8">
-          {/* Sliding Indicator */}
+      {/* Tab Bar — Segmented Control Style */}
+      <div className="flex items-center gap-3 border-b border-black/[0.03] px-6 py-2.5 bg-[#FAF9F6]/50 backdrop-blur-sm">
+        <div className="relative inline-flex items-center bg-slate-200/40 rounded-xl p-1 gap-1">
           <div
-            className="absolute top-0.5 bottom-0.5 rounded-md shadow-sm ring-1 ring-black/[0.04] transition-all duration-250 ease-out z-0"
+            className="absolute top-1 bottom-1 rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.02] transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] z-0"
             style={{
               left: indicatorStyle.left,
               width: indicatorStyle.width,
               opacity: indicatorStyle.width > 0 ? 1 : 0,
-              backgroundColor: tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.color || '#ffffff',
+              backgroundColor: '#fff',
             }}
           />
 
@@ -2172,37 +2173,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
             To Do
           </button>
 
-          {(() => {
-            const activeTab = tabs.find(t => t._id === activeTabId || t.title === activeTabId);
-            return (
-              <>
-                <button
-                  className={`rounded-full p-1.5 transition-colors ${
-                    activeTab?.isImportant
-                      ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
-                      : 'text-gray-300 hover:bg-gray-50 hover:text-amber-400'
-                  }`}
-                  onClick={handleToggleImportant}
-                  title={activeTab?.isImportant ? 'Mark as not important' : 'Mark as important'}>
-                  {activeTab?.isImportant ? (
-                    <ExclamationTriangleIconSolid className="h-4 w-4" />
-                  ) : (
-                    <ExclamationTriangleIcon className="h-4 w-4" />
-                  )}
-                </button>
-                <button
-                  className={`rounded-full p-1.5 transition-colors ${
-                    activeTab?.isFlagged
-                      ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                      : 'text-gray-300 hover:bg-gray-50 hover:text-red-400'
-                  }`}
-                  onClick={handleToggleFlagged}
-                  title={activeTab?.isFlagged ? 'Unflag task' : 'Flag as key task'}>
-                  {activeTab?.isFlagged ? <FlagIconSolid className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
-                </button>
-              </>
-            );
-          })()}
+          {/* Details & Info Drawer Button */}
+          <button
+            className={`flex items-center gap-1.5 rounded-lg border border-black/[0.04] bg-white px-2.5 py-1.5 text-[11px] font-medium transition-all duration-200 ${
+              isDetailsOpen ? 'bg-slate-50 text-indigo-600 ring-2 ring-indigo-50/50 border-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+            }`}
+            onClick={() => setIsDetailsOpen(true)}
+            title="Page & Tab Details">
+            <InformationCircleIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Details</span>
+          </button>
+
           <button
             className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
               isDirty
@@ -2227,7 +2208,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden px-5 py-3">
+
+      <div className="flex-1 overflow-hidden px-5 py-3 relative">
         <RichTextEditor
           onChange={handleContentChange}
           placeholder="Start typing your notes here..."
@@ -2235,6 +2217,135 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           value={editorContent}
         />
       </div>
+
+      {/* Details Side Drawer */}
+      <Transition appear={true} show={isDetailsOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-[150]" onClose={() => setIsDetailsOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-in-out duration-500"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in-out duration-500"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0">
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                <Transition.Child
+                  as={Fragment}
+                  enter="transform transition ease-in-out duration-500 sm:duration-700"
+                  enterFrom="translate-x-full"
+                  enterTo="translate-x-0"
+                  leave="transform transition ease-in-out duration-500 sm:duration-700"
+                  leaveFrom="translate-x-0"
+                  leaveTo="translate-x-full">
+                  <Dialog.Panel className="pointer-events-auto w-screen max-w-sm">
+                    <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-2xl">
+                      <div className="px-6 py-8 sm:px-8">
+                        <div className="flex items-start justify-between">
+                          <Dialog.Title className="text-xl font-bold tracking-tight text-slate-900">
+                            Page Details
+                          </Dialog.Title>
+                          <div className="ml-3 flex h-7 items-center">
+                            <button
+                              type="button"
+                              className="relative rounded-lg p-1.5 text-slate-400 hover:text-slate-500 hover:bg-slate-100 transition-all"
+                              onClick={() => setIsDetailsOpen(false)}>
+                              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="relative flex-1 px-6 sm:px-8 space-y-8">
+                        {/* Status Toggles */}
+                        <div className="space-y-4">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Status</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              onClick={handleToggleImportant}
+                              className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all ${
+                                tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.isImportant
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700 ring-4 ring-amber-50'
+                                  : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-200'
+                              }`}>
+                              {tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.isImportant ? (
+                                <ExclamationTriangleIconSolid className="h-6 w-6 mb-2" />
+                              ) : (
+                                <ExclamationTriangleIcon className="h-6 w-6 mb-2" />
+                              )}
+                              <span className="text-[11px] font-semibold">Important</span>
+                            </button>
+
+                            <button
+                              onClick={handleToggleFlagged}
+                              className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all ${
+                                tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.isFlagged
+                                  ? 'bg-rose-50 border-rose-200 text-rose-700 ring-4 ring-rose-50'
+                                  : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-200'
+                              }`}>
+                              {tabs.find(t => t._id === activeTabId || t.title === activeTabId)?.isFlagged ? (
+                                <FlagIconSolid className="h-6 w-6 mb-2" />
+                              ) : (
+                                <FlagIcon className="h-6 w-6 mb-2" />
+                              )}
+                              <span className="text-[11px] font-semibold">Flagged</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Page Info */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Analytics</h4>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                              <span className="text-xs text-slate-500">Character count</span>
+                              <span className="text-xs font-mono font-bold text-slate-700">
+                                {editorContent.replace(/<[^>]*>/g, '').length}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                              <span className="text-xs text-slate-500">Read time</span>
+                              <span className="text-xs font-mono font-bold text-slate-700">
+                                {Math.max(1, Math.ceil(editorContent.replace(/<[^>]*>/g, '').split(/\s+/).length / 200))} min
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Share / Export (Mocks for UI) */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Collaboration</h4>
+                          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all font-semibold text-xs">
+                            <ShareIcon className="h-4 w-4" />
+                            Share with Team
+                          </button>
+                          <p className="text-[10px] text-slate-400 px-1 italic">
+                            Tip: You can use "Executive Rewrite" from AI Actions to refine shared notes.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-6 sm:p-8 border-t border-slate-100 mt-auto bg-slate-50/50">
+                        <button
+                          type="button"
+                          className="w-full rounded-xl bg-white border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+                          onClick={() => setIsDetailsOpen(false)}>
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
 
       {/* Gemini Result Modal */}
       <Transition appear={true} as={Fragment} show={isModalOpen}>

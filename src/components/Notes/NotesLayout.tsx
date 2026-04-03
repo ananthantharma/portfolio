@@ -33,8 +33,6 @@ import { INotePage } from '@/models/NotePage';
 import { INoteSection } from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
-import SimpleRewriteModal from './SimpleRewriteModal';
-import SimpleRewriteOpenAIModal from './SimpleRewriteOpenAIModal';
 import CategoryList from './CategoryList';
 import ContactListModal from './ContactListModal';
 import FlaggedItemsModal from './FlaggedItemsModal';
@@ -57,8 +55,6 @@ import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
-import { Menu, Transition } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -766,15 +762,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
 
-  // Simple Rewrite Modal
-  const [isSimpleRewriteOpen, setIsSimpleRewriteOpen] = useState(false);
-  const handleOpenSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(true), []);
-  const handleCloseSimpleRewrite = useCallback(() => setIsSimpleRewriteOpen(false), []);
 
-  // Simple Rewrite (OpenAI) Modal
-  const [isSimpleRewriteOpenAIOpen, setIsSimpleRewriteOpenAIOpen] = useState(false);
-  const handleOpenSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(true), []);
-  const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
 
   const { data: session } = useSession();
 
@@ -859,20 +847,19 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="relative flex h-screen w-full overflow-hidden bg-[#F8F9FB] text-slate-900 font-['Inter',system-ui,sans-serif]">
+      <div className="relative flex h-screen w-full overflow-hidden bg-[#F7F7F8] text-slate-900" style={{fontFamily:'"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'}}>
 
-        {/* Background Mesh Gradient */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-          <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-violet-200/50 blur-[100px]" />
-          <div className="absolute top-[20%] -right-[5%] h-[35%] w-[35%] rounded-full bg-blue-100/50 blur-[80px]" />
-          <div className="absolute -bottom-[5%] left-[20%] h-[30%] w-[30%] rounded-full bg-indigo-100/50 blur-[90px]" />
+        {/* Background — subtle radial wash */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-[15%] -left-[10%] h-[50%] w-[50%] rounded-full bg-violet-100/30 blur-[120px]" />
+          <div className="absolute top-[30%] -right-[8%] h-[40%] w-[40%] rounded-full bg-blue-50/40 blur-[100px]" />
         </div>
 
-        <div className="relative flex h-full w-full flex-col overflow-hidden p-3 gap-3">
+        <div className="relative flex h-full w-full flex-col overflow-hidden p-2.5 gap-2">
 
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
-            <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.03)] px-4 py-2.5 z-40 gap-2 md:gap-0 !overflow-visible">
+            <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl bg-white/80 backdrop-blur-xl px-4 py-2 z-40 gap-2 md:gap-0 !overflow-visible">
 
               {/* Left: Brand + Breadcrumbs */}
               <div className="flex items-center gap-2 text-[12.5px] overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto">
@@ -909,149 +896,51 @@ const NotesLayout: React.FC = React.memo(() => {
                 )}
               </div>
 
-              {/* Right: Tools */}
-              <div className="flex items-center gap-1.5 w-full md:w-auto scrollbar-hide overflow-x-auto md:overflow-visible ml-auto" style={{ overflow: 'visible' }}>
+              {/* Right: Essentials only — tools live in the side rail */}
+              <div className="flex items-center gap-1 w-full md:w-auto ml-auto">
                 {dbSize && (
-                  <span className="hidden xl:block text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded-md flex-shrink-0">
+                  <span className="hidden xl:block text-[10px] text-slate-400 font-mono tracking-tight bg-[#F0F0F2] px-1.5 py-0.5 rounded-md flex-shrink-0">
                     {dbSize}
                   </span>
                 )}
 
-                {/* Core Tools */}
-                <div className="flex items-center gap-0.5 rounded-xl bg-slate-50/80 border border-slate-200/60 p-1 flex-shrink-0">
-                  <button
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-fuchsia-600 transition-all duration-200"
-                    onClick={() => setIsExecutiveModalOpen(true)}
-                    title="Executive Assistant">
-                    <BriefcaseIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Assistant</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-blue-600 transition-all duration-200"
-                    onClick={() => setIsCalendarOpen(true)}
-                    title="Google Calendar">
-                    <CalendarDaysIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Calendar</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-rose-600 transition-all duration-200"
-                    onClick={() => setIsAudioRecorderOpen(true)}
-                    title="Audio Recorder">
-                    <MicrophoneIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Record</span>
-                  </button>
-                  <button
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-emerald-600 transition-all duration-200"
-                    onClick={() => setIsDriveOpen(true)}
-                    title="Google Drive">
-                    <CloudIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Drive</span>
-                  </button>
-                  <div className="w-px h-4 bg-slate-200 mx-0.5" />
-                  <button
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-emerald-600 transition-all"
-                    onClick={handleQuickNote}
-                    title="Quick Note">
-                    <DocumentPlusIcon className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                {/* Search */}
+                <button
+                  className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
+                  onClick={handleOpenSearch}
+                  title="Command Palette (Ctrl+K)">
+                  <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+                  <span className="hidden xl:inline">Search</span>
+                  <kbd className="hidden xl:inline ml-0.5 text-[9px] text-slate-300 font-mono">⌘K</kbd>
+                </button>
 
-                {/* Search & Tasks */}
-                <div className="flex items-center gap-0.5 rounded-xl bg-slate-50/80 border border-slate-200/60 p-1 flex-shrink-0">
-                  <button
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium bg-white border border-slate-200 hover:border-violet-400 text-slate-500 hover:text-violet-600 transition-all shadow-sm"
-                    onClick={handleOpenSearch}
-                    title="Command Palette (Ctrl+K)">
-                    <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-                    <span className="hidden xl:inline">Search</span>
-                    <kbd className="hidden xl:inline ml-0.5 text-[9px] text-slate-300 font-mono">⌘K</kbd>
-                  </button>
-                  <div className="flex items-center">
-                    <button
-                      className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-rose-600 transition-all"
-                      onClick={handleOpenToDoList}
-                      title="View Tasks">
-                      <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-                      <span className="hidden lg:inline">Tasks</span>
-                      {activeTaskCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
-                          {activeTaskCount}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all"
-                      onClick={() => setIsDirectTaskCreateOpen(true)}
-                      title="New Task">
-                      <PlusCircleIcon className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
+                {/* Tasks */}
+                <button
+                  className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
+                  onClick={handleOpenToDoList}
+                  title="View Tasks">
+                  <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline">Tasks</span>
+                  {activeTaskCount > 0 && (
+                    <span className="absolute -top-1 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
+                      {activeTaskCount}
+                    </span>
+                  )}
+                </button>
 
-                {/* Resources Dropdown */}
-                <Menu as="div" className="relative inline-block text-left flex-shrink-0">
-                  <Menu.Button className="flex items-center gap-1.5 rounded-xl bg-slate-50/80 border border-slate-200/60 px-2.5 py-[7px] text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-slate-700 transition-all">
-                    <span>Resources</span>
-                    <ChevronDownIcon className="h-3 w-3 opacity-60" />
-                  </Menu.Button>
-                  <Transition
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95">
-                    <Menu.Items className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none z-[110] border border-slate-100">
-                      <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
-                        AI Tools
-                      </div>
-                      {[
-                        { label: 'Advanced Rewrite', icon: PencilSquareIcon, action: handleOpenRewrite, color: 'hover:bg-violet-50 hover:text-violet-700' },
-                        { label: 'Simple Rewrite', icon: SparklesIcon, action: handleOpenSimpleRewrite, color: 'hover:bg-indigo-50 hover:text-indigo-700' },
-                        { label: 'OpenAI Rewrite', icon: ChatBubbleLeftRightIcon, action: handleOpenSimpleRewriteOpenAI, color: 'hover:bg-blue-50 hover:text-blue-700' },
-                        { label: 'AI Chat', icon: ChatBubbleLeftRightIcon, action: handleOpenAIChat, color: 'hover:bg-fuchsia-50 hover:text-fuchsia-700' },
-                      ].map(({ label, icon: Icon, action, color }) => (
-                        <Menu.Item key={label}>
-                          {({ active }) => (
-                            <button
-                              className={`${active ? color : 'text-slate-600'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors`}
-                              onClick={action}>
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </button>
-                          )}
-                        </Menu.Item>
-                      ))}
-                      <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-t border-slate-50 my-1">
-                        Utilities
-                      </div>
-                      {[
-                        { label: 'Image Extract', icon: PhotoIcon, action: handleOpenImageExtract, color: 'hover:bg-emerald-50 hover:text-emerald-700' },
-                        { label: 'Assessment', icon: ClipboardDocumentListIcon, action: handleOpenAssessment, color: 'hover:bg-amber-50 hover:text-amber-700' },
-                        { label: 'Contacts', icon: UsersIcon, action: handleOpenContactList, color: 'hover:bg-sky-50 hover:text-sky-700' },
-                        { label: 'Bookmarks', icon: BookmarkIcon, action: () => setIsBookmarksOpen(true), color: 'hover:bg-rose-50 hover:text-rose-700' },
-                        { label: 'Badge Settings', icon: Cog6ToothIcon, action: handleOpenSettings, color: 'hover:bg-slate-50 hover:text-slate-700' },
-                      ].map(({ label, icon: Icon, action, color }) => (
-                        <Menu.Item key={label}>
-                          {({ active }) => (
-                            <button
-                              className={`${active ? color : 'text-slate-600'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors`}
-                              onClick={action}>
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </button>
-                          )}
-                        </Menu.Item>
-                      ))}
-                    </Menu.Items>
-                  </Transition>
-                </Menu>
+                {/* Quick Note */}
+                <button
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
+                  onClick={handleQuickNote}
+                  title="Quick Note">
+                  <DocumentPlusIcon className="h-3.5 w-3.5" />
+                </button>
 
                 {/* Focus Mode */}
                 <button
                   onClick={toggleFocusMode}
-                  className="rounded-xl bg-slate-50/80 border border-slate-200/60 p-2 text-slate-400 hover:bg-white hover:text-violet-600 transition-all"
-                  title="Focus Mode">
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
+                  title="Focus Mode (Ctrl+\\)">
                   {isFocusMode ? <ArrowsPointingInIcon className="h-4 w-4" /> : <ArrowsPointingOutIcon className="h-4 w-4" />}
                 </button>
 
@@ -1061,11 +950,11 @@ const NotesLayout: React.FC = React.memo(() => {
           )}
 
           {/* ── Main Panel ── */}
-          <div className="flex flex-1 overflow-hidden gap-3 min-h-0">
+          <div className="flex flex-1 overflow-hidden gap-1.5 min-h-0">
 
             {/* ── Resource Rail: Mini Side Bar ── */}
             {!isFocusMode && (
-              <div className="flex flex-col items-center py-4 px-2.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.03)] gap-4 select-none z-[45] w-[52px] h-fit sticky top-0 md:relative">
+              <div className="flex flex-col items-center py-3 px-2 rounded-2xl bg-white/60 backdrop-blur-xl gap-3 select-none z-[45] w-[48px] h-fit sticky top-0 md:relative">
                 
                 {/* AI Tools Section */}
                 <div className="flex flex-col gap-2">
@@ -1144,8 +1033,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
             {/* Sidebar 1: Categories */}
             <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
-              style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
+              style={{ width: isCategoryCollapsed ? 52 : categoryWidth }}>
               <CategoryList
                 categories={categories}
                 isCollapsed={isCategoryCollapsed}
@@ -1169,8 +1058,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
             {/* Sidebar 2: Sections */}
             <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
-              style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
+              style={{ width: isSectionCollapsed ? 52 : sectionWidth }}>
               <SectionList
                 sections={sections}
                 selectedSectionId={selectedSectionId}
@@ -1194,8 +1083,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
             {/* Sidebar 3: Pages */}
             <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
-              style={{ width: isPageCollapsed ? 56 : pageWidth }}>
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
+              style={{ width: isPageCollapsed ? 52 : pageWidth }}>
               <PageList
                 pages={pages}
                 selectedPageId={selectedPageId}
@@ -1219,7 +1108,7 @@ const NotesLayout: React.FC = React.memo(() => {
             </aside>
 
             {/* Content Area */}
-            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/40">
+            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white transition-all duration-200">
 
               {/* Page open: Editor */}
               {selectedPageId ? (
@@ -1353,80 +1242,86 @@ const NotesLayout: React.FC = React.memo(() => {
 
               /* Nothing selected: Workspace dashboard */
               ) : (
-                <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
-                  <div className="max-w-4xl mx-auto">
+                <div className="h-full overflow-y-auto custom-scrollbar px-6 md:px-10 py-8 md:py-12">
+                  <div className="max-w-5xl mx-auto">
 
-                    {/* Greeting */}
-                    <div className="mb-10">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{dateStr}</p>
-                      <h1 className="text-3xl font-bold text-slate-900">{greeting}{userName ? `, ${userName}` : ''}</h1>
-                      <p className="text-sm text-slate-500 mt-1">Here&apos;s your workspace overview.</p>
+                    {/* Greeting — fluid typography */}
+                    <div className="flex flex-col gap-1 mb-10 pt-4 px-2">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500/80 mb-1">{dateStr}</p>
+                      <h1 className="font-bold text-slate-900 tracking-tight leading-none" style={{fontSize:'clamp(2rem, 4vw, 3rem)'}}>
+                        {greeting}<span className="text-slate-300">.</span>
+                        {userName && <span className="block text-slate-400 mt-1 font-medium text-[clamp(1rem, 2vw, 1.5rem)] tracking-normal italic">Good to see you, {userName}</span>}
+                      </h1>
                     </div>
-
-                    {/* Stats row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">Notebooks</p>
-                        <p className="text-3xl font-bold text-slate-800">{categories.length}</p>
+ 
+                    {/* Bento Grid — Stats + Recent */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                      <div className="group p-6 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Notebooks</p>
+                        <div className="flex items-baseline gap-2">
+                          <p className="font-bold text-slate-900 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{categories.length}</p>
+                          <span className="text-xs font-medium text-slate-300 uppercase tracking-tighter">total</span>
+                        </div>
                       </div>
-                      <button onClick={handleOpenToDoList} className="group text-left p-5 rounded-2xl bg-rose-50 border border-rose-100 hover:border-rose-300 transition-all">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-rose-400 mb-2">Active Tasks</p>
-                        <p className="text-3xl font-bold text-rose-500">{activeTaskCount}</p>
+
+                      <button onClick={handleOpenToDoList} className="group text-left p-6 rounded-[2.5rem] bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
+                        {activeTaskCount > 0 && <span className="absolute top-4 right-6 h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />}
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/60 mb-3">Active Tasks</p>
+                        <p className="font-bold text-rose-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{activeTaskCount}</p>
                       </button>
-                      <button onClick={handleOpenKeyTasks} className="group text-left p-5 rounded-2xl bg-amber-50 border border-amber-100 hover:border-amber-300 transition-all">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400 mb-2">Flagged</p>
-                        <p className="text-3xl font-bold text-amber-500">{totalFlagged}</p>
+
+                      <button onClick={handleOpenKeyTasks} className="group text-left p-6 rounded-[2.5rem] bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/60 mb-3">Flagged</p>
+                        <p className="font-bold text-amber-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{totalFlagged}</p>
                       </button>
-                      <button onClick={handleOpenImportant} className="group text-left p-5 rounded-2xl bg-violet-50 border border-violet-100 hover:border-violet-300 transition-all">
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-violet-400 mb-2">Important</p>
-                        <p className="text-3xl font-bold text-violet-500">{totalImportant}</p>
+
+                      <button onClick={handleOpenImportant} className="group text-left p-6 rounded-[2.5rem] bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/60 mb-3">Important</p>
+                        <p className="font-bold text-indigo-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{totalImportant}</p>
                       </button>
                     </div>
 
                     {/* Recent pages */}
                     {recentPages.length > 0 && (
-                      <div className="mb-10">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Recent</p>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      <div className="mb-12">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-5 px-1">Recent</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                           {recentPages.map(rp => (
                             <button
                               key={rp.id}
                               onClick={() => handleJumpToRecentPage(rp)}
-                              className="group text-left p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all duration-200">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="w-5 h-5 rounded-md bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors">
-                                  <PencilSquareIcon className="h-3 w-3 text-slate-400 group-hover:text-white" />
-                                </div>
-                                <span className="text-[10px] text-slate-400 truncate">{rp.categoryName}</span>
-                              </div>
-                              <p className="text-[12px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate leading-snug mb-1">
+                              className="group text-left p-3.5 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]">
+                              <p className="text-[12px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate leading-snug mb-1">
                                 {rp.title}
                               </p>
-                              <p className="text-[10px] text-slate-400">{formatTimeAgo(rp.timestamp)}</p>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-slate-400 truncate">{rp.categoryName}</span>
+                                <span className="text-[10px] text-slate-300">&middot;</span>
+                                <span className="text-[10px] text-slate-400">{formatTimeAgo(rp.timestamp)}</span>
+                              </div>
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Quick actions */}
-                    <div className="mb-10">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Quick Actions</p>
-                      <div className="flex flex-wrap gap-2">
+                    {/* Quick actions — pill buttons */}
+                    <div className="mb-8">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">Quick Actions</p>
+                      <div className="flex flex-wrap gap-1.5">
                         {[
-                          { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote, color: 'hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50' },
-                          { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch, color: 'hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50' },
-                          { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50' },
-                          { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true), color: 'hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50' },
-                          { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50' },
-                          { icon: MicrophoneIcon, label: 'Record', action: () => setIsAudioRecorderOpen(true), color: 'hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50' },
-                          { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks, color: 'hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50' },
-                          { icon: SparklesIcon, label: 'AI Tools', action: handleOpenAIChat, color: 'hover:text-fuchsia-600 hover:border-fuchsia-300 hover:bg-fuchsia-50' },
-                        ].map(({ icon: Icon, label, action, color }) => (
+                          { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote },
+                          { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch },
+                          { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat },
+                          { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true) },
+                          { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true) },
+                          { icon: MicrophoneIcon, label: 'Record', action: () => setIsAudioRecorderOpen(true) },
+                          { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks },
+                        ].map(({ icon: Icon, label, action }) => (
                           <button
                             key={label}
                             onClick={action}
-                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-100 text-slate-500 text-[12px] font-medium shadow-sm transition-all ${color}`}>
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F0F2] text-slate-500 text-[11.5px] font-medium hover:bg-slate-200/80 hover:text-slate-700 transition-all duration-150 active:scale-[0.97]">
                             <Icon className="h-3.5 w-3.5" />
                             {label}
                           </button>
@@ -1437,7 +1332,7 @@ const NotesLayout: React.FC = React.memo(() => {
                     {/* Notebooks list */}
                     {categories.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Notebooks</p>
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">Notebooks</p>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                           {categories.map(cat => {
                             const catBadge = badgeCounts.categories[cat._id as string];
@@ -1445,11 +1340,11 @@ const NotesLayout: React.FC = React.memo(() => {
                               <button
                                 key={cat._id as string}
                                 onClick={() => handleSelectCategory(cat._id as string)}
-                                className="group text-left p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all">
+                                className="group text-left p-4 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]">
                                 <div className="flex items-center justify-between">
-                                  <p className="text-[12.5px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate">{cat.name}</p>
+                                  <p className="text-[13px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">{cat.name}</p>
                                   {catBadge?.todo?.count > 0 && (
-                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">{catBadge.todo.count}</span>
+                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-100/80 text-rose-500 px-1.5 py-0.5 rounded-full font-semibold">{catBadge.todo.count}</span>
                                   )}
                                 </div>
                               </button>
@@ -1475,8 +1370,6 @@ const NotesLayout: React.FC = React.memo(() => {
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
-        <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
-        <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />

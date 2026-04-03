@@ -198,7 +198,7 @@ function ToolbarPlugin() {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-white">
+    <div className="flex flex-wrap items-center gap-0.5">
       {/* Undo/Redo */}
       <button
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
@@ -449,8 +449,8 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
 
 function CustomPlaceholder({placeholder}: {placeholder?: string}) {
   return (
-    <div className="absolute top-[24px] left-[32px] text-gray-400 pointer-events-none" style={{fontSize: '15px'}}>
-      {placeholder || 'Start typing...'}
+    <div className="absolute top-[42px] left-[32px] md:left-[48px] text-slate-300 pointer-events-none select-none" style={{fontSize: '16px'}}>
+      {placeholder || 'Start typing something beautiful...'}
     </div>
   );
 }
@@ -496,11 +496,11 @@ const RichTextEditor = React.memo(
           listitem: 'mb-1',
         },
         text: {
-          bold: 'font-bold',
+          bold: 'font-bold text-slate-900',
           italic: 'italic',
-          underline: 'underline',
-          strikethrough: 'line-through',
-          underlineStrikethrough: 'underline line-through',
+          underline: 'underline underline-offset-4 decoration-indigo-200/50',
+          strikethrough: 'line-through text-slate-400',
+          underlineStrikethrough: 'underline line-through underline-offset-4 decoration-indigo-200/50',
         },
         // Table: give all cells a 1px border so Excel tables look right
         table: 'lexical-table',
@@ -570,38 +570,43 @@ const RichTextEditor = React.memo(
     );
 
     return (
-      <div className="h-full flex flex-col relative bg-white border-transparent">
-        <LexicalComposer initialConfig={editorConfig}>
-          <div className="flex flex-col h-full">
-            <ToolbarPlugin />
+    <div className="h-full flex flex-col relative bg-white selection:bg-indigo-100/50">
+      <LexicalComposer initialConfig={editorConfig}>
+        <div className="flex flex-col h-full relative">
+          <div className="relative flex-1 overflow-hidden">
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable
+                  onBlur={onBlur}
+                  className="h-full overflow-y-auto w-full outline-none px-8 md:px-12 py-10 md:py-16 text-[16px] leading-relaxed text-slate-700/90 font-sans"
+                />
+              }
+              placeholder={<CustomPlaceholder placeholder={placeholder} />}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <HistoryPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
+            <TablePlugin />
+            <LinkPlugin />
+            <AutoLinkPlugin matchers={MATCHERS} />
+            <TabIndentationPlugin />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
+            <ValueSyncPlugin value={value} onChange={onChange} />
+            <ImagePastePlugin />
+            <EditorRefPlugin editorRef={lexicalEditorRef} />
+          </div>
 
-            <div className="relative flex-1 overflow-hidden">
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    onBlur={onBlur}
-                    className="h-full overflow-y-auto w-full outline-none px-8 py-6 text-[15px] leading-relaxed text-gray-700"
-                  />
-                }
-                placeholder={<CustomPlaceholder placeholder={placeholder} />}
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <HistoryPlugin />
-              <ListPlugin />
-              <CheckListPlugin />
-              <TablePlugin />
-              <LinkPlugin />
-              <AutoLinkPlugin matchers={MATCHERS} />
-              <TabIndentationPlugin />
-              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
-              <ValueSyncPlugin value={value} onChange={onChange} />
-              <ImagePastePlugin />
-              <EditorRefPlugin editorRef={lexicalEditorRef} />
+          {/* Premium Floating Toolbar — Bottom Centered */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-0.5 p-1.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-black/5">
+              <ToolbarPlugin />
             </div>
           </div>
-        </LexicalComposer>
-      </div>
+        </div>
+      </LexicalComposer>
+    </div>
     );
   }),
 );

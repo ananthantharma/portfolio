@@ -278,8 +278,10 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     if (loading) {
       return (
-        <div className="flex h-full items-center justify-center text-slate-600">
-          {isCollapsed ? <div className="h-4 w-4 animate-pulse rounded bg-slate-700" /> : 'Loading...'}
+        <div className="flex h-full flex-col gap-2 p-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-8 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay:`${i*100}ms`}} />
+          ))}
         </div>
       );
     }
@@ -287,17 +289,17 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     return (
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2.5">
-          {!isCollapsed && <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Notebooks</h2>}
+        <div className="flex items-center justify-between px-3 py-2.5">
+          {!isCollapsed && <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Notebooks</h2>}
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             <button
-              className="rounded-md p-1 text-slate-600 hover:bg-white/[0.07] hover:text-slate-300 transition-all"
+              className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
               onClick={onToggleCollapse}
               title={isCollapsed ? 'Expand Notebooks' : 'Collapse Notebooks'}>
               {isCollapsed ? <ChevronRightIcon className="h-3.5 w-3.5" /> : <ChevronLeftIcon className="h-3.5 w-3.5" />}
             </button>
             <button
-              className="rounded-md p-1 text-slate-600 hover:bg-white/[0.07] hover:text-slate-300 transition-all"
+              className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
               onClick={() => {
                 if (isCollapsed) onToggleCollapse();
                 setIsAdding(true);
