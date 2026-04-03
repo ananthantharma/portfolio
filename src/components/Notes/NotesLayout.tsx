@@ -734,11 +734,6 @@ const NotesLayout: React.FC = React.memo(() => {
     weekday: 'long', month: 'long', day: 'numeric',
   }), []);
 
-  const userName = useMemo(() => {
-    const n = (session?.user as any)?.name || session?.user?.email || '';
-    return n.split(' ')[0].split('@')[0];
-  }, [session]);
-
   const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
   const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
   const handleOpenSearch = useCallback(() => setIsSearchOpen(true), []);
@@ -784,6 +779,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleCloseSimpleRewriteOpenAI = useCallback(() => setIsSimpleRewriteOpenAIOpen(false), []);
 
   const { data: session } = useSession();
+
+  const userName = useMemo(() => {
+    const n = (session?.user as any)?.name || session?.user?.email || '';
+    return n.split(' ')[0].split('@')[0];
+  }, [session]);
 
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
