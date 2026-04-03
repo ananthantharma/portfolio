@@ -23,6 +23,7 @@ import {
   BriefcaseIcon,
   MicrophoneIcon,
   CloudIcon,
+  ClipboardIcon,
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
@@ -1061,6 +1062,85 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ── Main Panel ── */}
           <div className="flex flex-1 overflow-hidden gap-3 min-h-0">
+
+            {/* ── Resource Rail: Mini Side Bar ── */}
+            {!isFocusMode && (
+              <div className="flex flex-col items-center py-4 px-2.5 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.03)] gap-4 select-none z-[45] w-[52px] h-fit sticky top-0 md:relative">
+                
+                {/* AI Tools Section */}
+                <div className="flex flex-col gap-2">
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">AI</div>
+                  {[
+                    { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'text-indigo-500 hover:bg-indigo-50' },
+                    { icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite, color: 'text-fuchsia-500 hover:bg-fuchsia-50' },
+                    { icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true), color: 'text-violet-600 hover:bg-violet-50' },
+                  ].map(({ icon: Icon, label, action, color }) => (
+                    <button
+                      key={label}
+                      onClick={action}
+                      title={label}
+                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
+                      <Icon className="h-5 w-5" />
+                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
+                        {label}
+                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="w-6 h-px bg-slate-100/80 mx-auto" />
+
+                {/* Productivity Section */}
+                <div className="flex flex-col gap-2">
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">PROD</div>
+                  {[
+                    { icon: ClipboardDocumentListIcon, label: 'Tasks', action: handleOpenToDoList, color: 'text-rose-500 hover:bg-rose-50' },
+                    { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'text-blue-500 hover:bg-blue-50' },
+                    { icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true), color: 'text-orange-500 hover:bg-orange-50' },
+                    { icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true), color: 'text-emerald-500 hover:bg-emerald-50' },
+                  ].map(({ icon: Icon, label, action, color }) => (
+                    <button
+                      key={label}
+                      onClick={action}
+                      title={label}
+                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
+                      <Icon className="h-5 w-5" />
+                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
+                        {label}
+                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="w-6 h-px bg-slate-100/80 mx-auto" />
+
+                {/* Utilities Section */}
+                <div className="flex flex-col gap-2">
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">UTIL</div>
+                  {[
+                    { icon: PhotoIcon, label: 'OCR', action: handleOpenImageExtract, color: 'text-sky-500 hover:bg-sky-50' },
+                    { icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment, color: 'text-orange-600 hover:bg-orange-50' },
+                    { icon: UsersIcon, label: 'Contacts', action: handleOpenContactList, color: 'text-slate-500 hover:bg-slate-50' },
+                    { icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true), color: 'text-amber-500 hover:bg-amber-50' },
+                    { icon: Cog6ToothIcon, label: 'Settings', action: handleOpenSettings, color: 'text-slate-400 hover:bg-slate-50 hover:text-slate-600' },
+                  ].map(({ icon: Icon, label, action, color }) => (
+                    <button
+                      key={label}
+                      onClick={action}
+                      title={label}
+                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
+                      <Icon className="h-5 w-5" />
+                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
+                        {label}
+                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Sidebar 1: Categories */}
             <aside
