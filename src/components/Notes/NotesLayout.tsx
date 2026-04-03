@@ -861,181 +861,140 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="flex h-screen w-full flex-col overflow-hidden bg-[#0d0f17] text-white font-['Inter',system-ui,sans-serif]">
+      <div className="relative flex h-screen w-full overflow-hidden bg-[#F8F9FB] text-slate-900 font-['Inter',system-ui,sans-serif]">
 
-        {/* ── Top Navigation Bar ── */}
-        {!isFocusMode && (
-          <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-white/[0.06] bg-[#13151f] px-4 py-2.5 z-40 gap-2 md:gap-0 !overflow-visible">
+        {/* Background Mesh Gradient */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
+          <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-violet-200/50 blur-[100px]" />
+          <div className="absolute top-[20%] -right-[5%] h-[35%] w-[35%] rounded-full bg-blue-100/50 blur-[80px]" />
+          <div className="absolute -bottom-[5%] left-[20%] h-[30%] w-[30%] rounded-full bg-indigo-100/50 blur-[90px]" />
+        </div>
 
-            {/* Left: Brand + Breadcrumbs */}
-            <div className="flex items-center gap-2 text-[12.5px] overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto">
-              <button
-                onClick={() => { setSelectedCategoryId(null); setSelectedSectionId(null); setSelectedPageId(null); }}
-                className="flex items-center gap-2.5 group"
-                title="Go to Workspace">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/30 flex-shrink-0">
-                  <HomeIcon className="h-3.5 w-3.5 text-white" />
-                </div>
-                <span className="font-semibold text-white/90 group-hover:text-violet-400 transition-colors tracking-tight">Notes</span>
-              </button>
-              {currentCategory && (
-                <>
-                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-white/20" />
-                  <button onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }} className="font-medium text-white/40 hover:text-violet-400 transition-colors">
-                    {currentCategory.name}
-                  </button>
-                </>
-              )}
-              {currentSection && (
-                <>
-                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-white/20" />
-                  <button onClick={() => setSelectedPageId(null)} className="font-medium text-white/40 hover:text-violet-400 transition-colors">
-                    {currentSection.name}
-                  </button>
-                </>
-              )}
-              {selectedPage && (
-                <>
-                  <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-white/20" />
-                  <span className="font-semibold text-white/80">{selectedPage.title || 'Untitled'}</span>
-                </>
-              )}
-            </div>
+        <div className="relative flex h-full w-full flex-col overflow-hidden p-3 gap-3">
 
-            {/* Right: Tools */}
-            <div className="flex items-center gap-1.5 w-full md:w-auto scrollbar-hide overflow-x-auto md:overflow-visible ml-auto" style={{ overflow: 'visible' }}>
-              {dbSize && (
-                <span className="hidden xl:block text-[10px] text-white/20 font-mono tracking-tight bg-white/[0.04] border border-white/[0.06] px-1.5 py-0.5 rounded-md flex-shrink-0">
-                  {dbSize}
-                </span>
-              )}
+          {/* ── Top Navigation Bar ── */}
+          {!isFocusMode && (
+            <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_4px_20px_rgb(0,0,0,0.03)] px-4 py-2.5 z-40 gap-2 md:gap-0 !overflow-visible">
 
-              {/* Core Tools */}
-              <div className="flex items-center gap-0.5 rounded-xl bg-white/[0.05] border border-white/[0.07] p-1 flex-shrink-0">
+              {/* Left: Brand + Breadcrumbs */}
+              <div className="flex items-center gap-2 text-[12.5px] overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto">
                 <button
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-fuchsia-400 transition-all duration-200"
-                  onClick={() => setIsExecutiveModalOpen(true)}
-                  title="Executive Assistant">
-                  <BriefcaseIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Assistant</span>
+                  onClick={() => { setSelectedCategoryId(null); setSelectedSectionId(null); setSelectedPageId(null); }}
+                  className="flex items-center gap-2.5 group"
+                  title="Go to Workspace">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 flex-shrink-0">
+                    <HomeIcon className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="font-semibold text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">Notes</span>
                 </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-blue-400 transition-all duration-200"
-                  onClick={() => setIsCalendarOpen(true)}
-                  title="Google Calendar">
-                  <CalendarDaysIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Calendar</span>
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-rose-400 transition-all duration-200"
-                  onClick={() => setIsAudioRecorderOpen(true)}
-                  title="Audio Recorder">
-                  <MicrophoneIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Record</span>
-                </button>
-                <button
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-emerald-400 transition-all duration-200"
-                  onClick={() => setIsDriveOpen(true)}
-                  title="Google Drive">
-                  <CloudIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Drive</span>
-                </button>
-                <div className="w-px h-4 bg-white/[0.08] mx-0.5" />
-                <button
-                  className="rounded-lg p-1.5 text-white/30 hover:bg-white/[0.08] hover:text-emerald-400 transition-all"
-                  onClick={handleQuickNote}
-                  title="Quick Note">
-                  <DocumentPlusIcon className="h-3.5 w-3.5" />
-                </button>
+                {currentCategory && (
+                  <>
+                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                    <button onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }} className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                      {currentCategory.name}
+                    </button>
+                  </>
+                )}
+                {currentSection && (
+                  <>
+                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                    <button onClick={() => setSelectedPageId(null)} className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                      {currentSection.name}
+                    </button>
+                  </>
+                )}
+                {selectedPage && (
+                  <>
+                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                    <span className="font-semibold text-slate-700">{selectedPage.title || 'Untitled'}</span>
+                  </>
+                )}
               </div>
 
-              {/* Search & Tasks */}
-              <div className="flex items-center gap-0.5 rounded-xl bg-white/[0.05] border border-white/[0.07] p-1 flex-shrink-0">
-                <button
-                  className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium bg-white/[0.07] border border-white/[0.1] hover:border-violet-500/40 text-white/40 hover:text-violet-400 transition-all"
-                  onClick={handleOpenSearch}
-                  title="Command Palette (Ctrl+K)">
-                  <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-                  <span className="hidden xl:inline">Search</span>
-                  <kbd className="hidden xl:inline ml-0.5 text-[9px] text-white/20 font-mono">⌘K</kbd>
-                </button>
-                <div className="flex items-center">
+              {/* Right: Tools */}
+              <div className="flex items-center gap-1.5 w-full md:w-auto scrollbar-hide overflow-x-auto md:overflow-visible ml-auto" style={{ overflow: 'visible' }}>
+                {dbSize && (
+                  <span className="hidden xl:block text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded-md flex-shrink-0">
+                    {dbSize}
+                  </span>
+                )}
+
+                {/* Core Tools */}
+                <div className="flex items-center gap-0.5 rounded-xl bg-slate-50/80 border border-slate-200/60 p-1 flex-shrink-0">
                   <button
-                    className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-rose-400 transition-all"
-                    onClick={handleOpenToDoList}
-                    title="View Tasks">
-                    <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Tasks</span>
-                    {activeTaskCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-[#13151f]">
-                        {activeTaskCount}
-                      </span>
-                    )}
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-fuchsia-600 transition-all duration-200"
+                    onClick={() => setIsExecutiveModalOpen(true)}
+                    title="Executive Assistant">
+                    <BriefcaseIcon className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Assistant</span>
                   </button>
                   <button
-                    className="p-1.5 text-white/25 hover:text-rose-400 hover:bg-white/[0.08] rounded-lg transition-all"
-                    onClick={() => setIsDirectTaskCreateOpen(true)}
-                    title="New Task">
-                    <PlusCircleIcon className="h-3.5 w-3.5" />
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-blue-600 transition-all duration-200"
+                    onClick={() => setIsCalendarOpen(true)}
+                    title="Google Calendar">
+                    <CalendarDaysIcon className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Calendar</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-rose-600 transition-all duration-200"
+                    onClick={() => setIsAudioRecorderOpen(true)}
+                    title="Audio Recorder">
+                    <MicrophoneIcon className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Record</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-emerald-600 transition-all duration-200"
+                    onClick={() => setIsDriveOpen(true)}
+                    title="Google Drive">
+                    <CloudIcon className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Drive</span>
+                  </button>
+                  <div className="w-px h-4 bg-slate-200 mx-0.5" />
+                  <button
+                    className="rounded-lg p-1.5 text-slate-400 hover:bg-white hover:text-emerald-600 transition-all"
+                    onClick={handleQuickNote}
+                    title="Quick Note">
+                    <DocumentPlusIcon className="h-3.5 w-3.5" />
                   </button>
                 </div>
-              </div>
 
-              {/* Resources Dropdown */}
-              <Menu as="div" className="relative inline-block text-left flex-shrink-0">
-                <Menu.Button className="flex items-center gap-1.5 rounded-xl bg-white/[0.05] border border-white/[0.07] px-2.5 py-[7px] text-[11.5px] font-medium text-white/40 hover:bg-white/[0.1] hover:text-white/70 transition-all">
-                  <span>Resources</span>
-                  <ChevronDownIcon className="h-3 w-3 opacity-60" />
-                </Menu.Button>
-                <Transition
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95">
-                  <Menu.Items className="absolute left-0 top-full mt-2 w-48 origin-top-left rounded-2xl bg-[#1e2130] p-1.5 shadow-2xl ring-1 ring-white/10 border border-white/[0.08] focus:outline-none z-[110]">
-                    <Menu.Item>
-                      {({active}) => (
-                        <button
-                          className={`${active ? 'bg-violet-500/20 text-violet-300' : 'text-slate-400'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
-                          onClick={handleOpenContactList}>
-                          <UsersIcon className="h-4 w-4 opacity-70" />
-                          Contacts
-                        </button>
+                {/* Search & Tasks */}
+                <div className="flex items-center gap-0.5 rounded-xl bg-slate-50/80 border border-slate-200/60 p-1 flex-shrink-0">
+                  <button
+                    className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium bg-white border border-slate-200 hover:border-violet-400 text-slate-500 hover:text-violet-600 transition-all shadow-sm"
+                    onClick={handleOpenSearch}
+                    title="Command Palette (Ctrl+K)">
+                    <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+                    <span className="hidden xl:inline">Search</span>
+                    <kbd className="hidden xl:inline ml-0.5 text-[9px] text-slate-300 font-mono">⌘K</kbd>
+                  </button>
+                  <div className="flex items-center">
+                    <button
+                      className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-rose-600 transition-all"
+                      onClick={handleOpenToDoList}
+                      title="View Tasks">
+                      <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
+                      <span className="hidden lg:inline">Tasks</span>
+                      {activeTaskCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white shadow-sm">
+                          {activeTaskCount}
+                        </span>
                       )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({active}) => (
-                        <button
-                          className={`${active ? 'bg-blue-500/20 text-blue-300' : 'text-slate-400'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}
-                          onClick={() => setIsBookmarksOpen(true)}>
-                          <BookmarkIcon className="h-4 w-4 opacity-70" />
-                          Bookmarks
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({active}) => (
-                        <Link
-                          href="/organization"
-                          className={`${active ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium transition-colors`}>
-                          <BuildingOffice2Icon className="h-4 w-4 opacity-70" />
-                          Organization
-                        </Link>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
+                    </button>
+                    <button
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all"
+                      onClick={() => setIsDirectTaskCreateOpen(true)}
+                      title="New Task">
+                      <PlusCircleIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-              {/* AI Tools Dropdown */}
-              {session?.user?.email === 'lankanprinze@gmail.com' && (
+                {/* Resources Dropdown */}
                 <Menu as="div" className="relative inline-block text-left flex-shrink-0">
-                  <Menu.Button className="flex items-center gap-1.5 rounded-xl bg-violet-500/20 border border-violet-500/30 px-3 py-[7px] text-[11.5px] font-semibold text-violet-300 hover:bg-violet-500/30 transition-all">
-                    <SparklesIcon className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">AI</span>
-                    <ChevronDownIcon className="h-3 w-3 opacity-70" />
+                  <Menu.Button className="flex items-center gap-1.5 rounded-xl bg-slate-50/80 border border-slate-200/60 px-2.5 py-[7px] text-[11.5px] font-medium text-slate-500 hover:bg-white hover:text-slate-700 transition-all">
+                    <span>Resources</span>
+                    <ChevronDownIcon className="h-3 w-3 opacity-60" />
                   </Menu.Button>
                   <Transition
                     enter="transition ease-out duration-100"
@@ -1044,458 +1003,388 @@ const NotesLayout: React.FC = React.memo(() => {
                     leave="transition ease-in duration-75"
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95">
-                    <Menu.Items className="absolute right-0 top-full mt-2 w-56 origin-top-right rounded-2xl bg-[#1e2130] p-2 shadow-2xl ring-1 ring-white/10 border border-white/[0.08] focus:outline-none z-[110]">
-                      <div className="px-2 pb-1.5 mb-1.5 border-b border-white/[0.06]">
-                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rewriting</p>
+                    <Menu.Items className="absolute right-0 mt-2 w-64 origin-top-right rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none z-[110] border border-slate-100">
+                      <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1">
+                        AI Tools
                       </div>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            className={`${active ? 'bg-white/[0.06]' : ''} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium text-slate-400 transition-colors`}
-                            onClick={handleOpenRewrite}>
-                            <PencilSquareIcon className="h-4 w-4 text-violet-400" />
-                            Advanced Rewrite
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            className={`${active ? 'bg-white/[0.06]' : ''} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium text-slate-400 transition-colors`}
-                            onClick={handleOpenSimpleRewrite}>
-                            <PencilSquareIcon className="h-4 w-4 text-purple-400" />
-                            Simple Rewrite
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            className={`${active ? 'bg-white/[0.06]' : ''} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium text-slate-400 transition-colors`}
-                            onClick={handleOpenSimpleRewriteOpenAI}>
-                            <SparklesIcon className="h-4 w-4 text-teal-400" />
-                            GPT Rewrite
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <div className="px-2 py-1.5 my-1 border-y border-white/[0.06]">
-                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Analysis</p>
+                      {[
+                        { label: 'Advanced Rewrite', icon: PencilSquareIcon, action: handleOpenRewrite, color: 'hover:bg-violet-50 hover:text-violet-700' },
+                        { label: 'Simple Rewrite', icon: SparklesIcon, action: handleOpenSimpleRewrite, color: 'hover:bg-indigo-50 hover:text-indigo-700' },
+                        { label: 'OpenAI Rewrite', icon: ChatBubbleLeftRightIcon, action: handleOpenSimpleRewriteOpenAI, color: 'hover:bg-blue-50 hover:text-blue-700' },
+                        { label: 'AI Chat', icon: ChatBubbleLeftRightIcon, action: handleOpenAIChat, color: 'hover:bg-fuchsia-50 hover:text-fuchsia-700' },
+                      ].map(({ label, icon: Icon, action, color }) => (
+                        <Menu.Item key={label}>
+                          {({ active }) => (
+                            <button
+                              className={`${active ? color : 'text-slate-600'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors`}
+                              onClick={action}>
+                              <Icon className="h-4 w-4" />
+                              {label}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
+                      <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-t border-slate-50 my-1">
+                        Utilities
                       </div>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            className={`${active ? 'bg-white/[0.06]' : ''} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium text-slate-400 transition-colors`}
-                            onClick={handleOpenImageExtract}>
-                            <PhotoIcon className="h-4 w-4 text-orange-400" />
-                            Extract from Image
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({active}) => (
-                          <button
-                            className={`${active ? 'bg-white/[0.06]' : ''} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[12px] font-medium text-slate-400 transition-colors`}
-                            onClick={handleOpenAssessment}>
-                            <DocumentPlusIcon className="h-4 w-4 text-cyan-400" />
-                            Document Assessment
-                          </button>
-                        )}
-                      </Menu.Item>
+                      {[
+                        { label: 'Image Extract', icon: PhotoIcon, action: handleOpenImageExtract, color: 'hover:bg-emerald-50 hover:text-emerald-700' },
+                        { label: 'Assessment', icon: ClipboardDocumentListIcon, action: handleOpenAssessment, color: 'hover:bg-amber-50 hover:text-amber-700' },
+                        { label: 'Contacts', icon: UsersIcon, action: handleOpenContactList, color: 'hover:bg-sky-50 hover:text-sky-700' },
+                        { label: 'Bookmarks', icon: BookmarkIcon, action: () => setIsBookmarksOpen(true), color: 'hover:bg-rose-50 hover:text-rose-700' },
+                        { label: 'Badge Settings', icon: Cog6ToothIcon, action: handleOpenSettings, color: 'hover:bg-slate-50 hover:text-slate-700' },
+                      ].map(({ label, icon: Icon, action, color }) => (
+                        <Menu.Item key={label}>
+                          {({ active }) => (
+                            <button
+                              className={`${active ? color : 'text-slate-600'} flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors`}
+                              onClick={action}>
+                              <Icon className="h-4 w-4" />
+                              {label}
+                            </button>
+                          )}
+                        </Menu.Item>
+                      ))}
                     </Menu.Items>
                   </Transition>
                 </Menu>
-              )}
 
-              {/* AI Chat CTA */}
-              <button
-                className="flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-[7px] text-[12px] font-semibold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 hover:-translate-y-px active:translate-y-0 transition-all flex-shrink-0"
-                onClick={handleOpenAIChat}>
-                <ChatBubbleLeftRightIcon className="h-3.5 w-3.5 text-violet-200" />
-                <span className="hidden lg:inline">AI Chat</span>
-              </button>
-
-              {/* Utility cluster */}
-              <div className="flex items-center gap-0.5 rounded-xl bg-white/[0.05] border border-white/[0.07] p-1 flex-shrink-0">
+                {/* Focus Mode */}
                 <button
-                  className="rounded-lg p-2 text-white/25 hover:bg-white/[0.08] hover:text-amber-400 transition-all"
                   onClick={toggleFocusMode}
-                  title="Focus Mode (Cmd+\)">
-                  <ArrowsPointingOutIcon className="h-4 w-4" />
+                  className="rounded-xl bg-slate-50/80 border border-slate-200/60 p-2 text-slate-400 hover:bg-white hover:text-violet-600 transition-all"
+                  title="Focus Mode">
+                  {isFocusMode ? <ArrowsPointingInIcon className="h-4 w-4" /> : <ArrowsPointingOutIcon className="h-4 w-4" />}
                 </button>
-                <div className="w-px h-4 bg-white/[0.08] mx-0.5" />
-                <button
-                  className="relative rounded-lg p-2 text-white/25 hover:bg-white/[0.08] hover:text-amber-400 transition-all"
-                  onClick={handleOpenImportant}
-                  title="Important Highlights">
-                  <ExclamationTriangleIcon className="h-4 w-4" />
-                  {totalImportant > 0 && (
-                    <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white ring-2 ring-[#13151f]">
-                      {totalImportant}
-                    </span>
-                  )}
-                </button>
-                <button
-                  className="relative rounded-lg p-2 text-white/25 hover:bg-white/[0.08] hover:text-rose-400 transition-all"
-                  onClick={handleOpenKeyTasks}
-                  title="Key Flags">
-                  <FlagIcon className="h-4 w-4" />
-                  {totalFlagged > 0 && (
-                    <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-[#13151f]">
-                      {totalFlagged}
-                    </span>
-                  )}
-                </button>
-                <div className="w-px h-4 bg-white/[0.08] mx-0.5" />
-                <button
-                  onClick={handleOpenSettings}
-                  className="rounded-lg p-2 text-white/25 hover:bg-white/[0.08] hover:text-white/60 group transition-all"
-                  title="Settings">
-                  <Cog6ToothIcon className="h-4 w-4 group-hover:rotate-45 transition-transform duration-300" />
-                </button>
-              </div>
 
-              {/* User Profile */}
-              <div className="flex items-center ml-1 flex-shrink-0">
                 <UserProfileMenu />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ── Main Panel ── */}
-        <div className="flex flex-1 overflow-hidden relative">
-          {/* Focus Mode Exit */}
-          {isFocusMode && (
-            <button
-              onClick={toggleFocusMode}
-              className="absolute top-4 right-4 z-50 p-2 bg-white/[0.08] backdrop-blur-sm rounded-full shadow-lg border border-white/20 text-white/40 hover:text-violet-400 transition-all opacity-60 hover:opacity-100"
-              title="Exit Focus Mode">
-              <ArrowsPointingInIcon className="h-5 w-5" />
-            </button>
           )}
 
-          {/* ─── 1. Categories Column ─── */}
-          <div
-            className={`flex flex-col bg-[#13151f] border-r border-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] max-md:!w-full relative ${isCategoryCollapsed ? 'w-14 items-center' : ''} ${isFocusMode || selectedCategoryId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isCategoryCollapsed || isFocusMode ? undefined : categoryWidth }}>
-            <CategoryList
-              categories={categories}
-              isCollapsed={isCategoryCollapsed}
-              loading={false}
-              onAddCategory={handleAddCategory}
-              onDeleteCategory={handleDeleteCategory}
-              onRenameCategory={handleRenameCategory}
-              onReorderCategories={handleReorderCategories}
-              onSelectCategory={handleSelectCategory}
-              onToggleCollapse={handleToggleCategoryCollapse}
-              selectedCategoryId={selectedCategoryId}
-              badgeCounts={badgeCounts.categories}
-            />
-            {!isCategoryCollapsed && !isFocusMode && (
-              <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-violet-500/40 transition-colors z-10"
-                onMouseDown={e => startResizing(e, 'category')}
+          {/* ── Main Panel ── */}
+          <div className="flex flex-1 overflow-hidden gap-3 min-h-0">
+
+            {/* Sidebar 1: Categories */}
+            <aside
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
+              style={{ width: isCategoryCollapsed ? 56 : categoryWidth }}>
+              <CategoryList
+                categories={categories}
+                isCollapsed={isCategoryCollapsed}
+                loading={false}
+                onAddCategory={handleAddCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onRenameCategory={handleRenameCategory}
+                onReorderCategories={handleReorderCategories}
+                onSelectCategory={handleSelectCategory}
+                onToggleCollapse={handleToggleCategoryCollapse}
+                selectedCategoryId={selectedCategoryId}
+                badgeCounts={badgeCounts.categories}
               />
-            )}
-          </div>
-
-          {/* ─── 2. Sections Column ─── */}
-          <div
-            className={`flex flex-col bg-[#13151f] border-r border-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isSectionCollapsed ? 'w-14 items-center' : ''} ${!selectedCategoryId || selectedSectionId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isSectionCollapsed || isFocusMode ? undefined : sectionWidth }}>
-            <SectionList
-              sections={sections}
-              selectedSectionId={selectedSectionId}
-              onSelectSection={handleSelectSection}
-              onAddSection={handleAddSection}
-              onRenameSection={handleRenameSection}
-              onDeleteSection={handleDeleteSection}
-              onReorderSections={handleReorderSections}
-              isCollapsed={isSectionCollapsed}
-              onToggleCollapse={handleToggleSectionCollapse}
-              badgeCounts={badgeCounts.sections}
-              loading={loadingSections}
-            />
-            {!isSectionCollapsed && !isFocusMode && (
-              <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-violet-500/40 transition-colors z-10"
-                onMouseDown={e => startResizing(e, 'section')}
-              />
-            )}
-          </div>
-
-          {/* ─── 3. Pages Column ─── */}
-          <div
-            className={`flex flex-col bg-[#17192a] border-r border-white/[0.06] transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] relative max-md:!w-full ${isPageCollapsed ? 'w-14 items-center' : ''} ${!selectedSectionId || selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'hidden' : 'flex'}`}
-            style={{ width: isPageCollapsed || isFocusMode ? undefined : pageWidth }}>
-            <PageList
-              pages={pages}
-              selectedPageId={selectedPageId}
-              onSelectPage={setSelectedPageId}
-              onAddPage={handleAddPage}
-              onRenamePage={handleRenamePage}
-              onDeletePage={handleDeletePage}
-              onMovePage={setSelectedPageToMove}
-              onReorderPages={handleReorderPages}
-              isCollapsed={isPageCollapsed}
-              onToggleCollapse={handleTogglePageCollapse}
-              badgeCounts={badgeCounts.pages}
-              loading={loadingPages}
-            />
-            {!isPageCollapsed && !isFocusMode && (
-              <div
-                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-violet-500/40 transition-colors z-10"
-                onMouseDown={e => startResizing(e, 'page')}
-              />
-            )}
-          </div>
-
-          {/* ─── 4. Editor / Dashboard Area ─── */}
-          <div
-            className={`flex-1 min-w-0 bg-[#0d0f17] flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'bg-white' : selectedPageId ? 'p-3' : ''}`}>
-
-            {/* ── Page open: Editor ── */}
-            {selectedPageId ? (
-              <div className={`h-full bg-white overflow-hidden ${isFocusMode ? '' : 'rounded-2xl shadow-2xl shadow-black/40'}`}>
-                <NoteEditor
-                  key={selectedPageId}
-                  page={selectedPage || null}
-                  initialTabId={targetTabId}
-                  onSave={handleSavePageContent}
+              {!isCategoryCollapsed && (
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
+                  onMouseDown={e => startResizing(e, 'category')}
                 />
-              </div>
+              )}
+            </aside>
 
-            /* ── Section selected, no page: Pages overview grid ── */
-            ) : selectedSectionId ? (
-              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-1">
-                        {currentCategory?.name}
-                      </p>
-                      <h1 className="text-xl font-bold text-white/80">{currentSection?.name}</h1>
-                      <p className="text-sm text-white/25 mt-0.5">{pages.length} page{pages.length !== 1 ? 's' : ''}</p>
-                    </div>
-                    <button
-                      onClick={() => handleAddPage('New Page')}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600/80 hover:bg-violet-600 text-white text-[12px] font-semibold transition-all shadow-lg shadow-violet-600/20">
-                      <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
-                    </button>
-                  </div>
+            {/* Sidebar 2: Sections */}
+            <aside
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
+              style={{ width: isSectionCollapsed ? 56 : sectionWidth }}>
+              <SectionList
+                sections={sections}
+                selectedSectionId={selectedSectionId}
+                onSelectSection={handleSelectSection}
+                onAddSection={handleAddSection}
+                onRenameSection={handleRenameSection}
+                onDeleteSection={handleDeleteSection}
+                onReorderSections={handleReorderSections}
+                isCollapsed={isSectionCollapsed}
+                onToggleCollapse={handleToggleSectionCollapse}
+                badgeCounts={badgeCounts.sections}
+                loading={loadingSections}
+              />
+              {!isSectionCollapsed && (
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
+                  onMouseDown={e => startResizing(e, 'section')}
+                />
+              )}
+            </aside>
 
-                  {pages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 gap-4">
-                      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
-                        <PencilSquareIcon className="h-8 w-8 text-white/[0.1]" />
+            {/* Sidebar 3: Pages */}
+            <aside
+              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.03)] backdrop-blur-xl border border-white/40"
+              style={{ width: isPageCollapsed ? 56 : pageWidth }}>
+              <PageList
+                pages={pages}
+                selectedPageId={selectedPageId}
+                onSelectPage={setSelectedPageId}
+                onAddPage={handleAddPage}
+                onRenamePage={handleRenamePage}
+                onDeletePage={handleDeletePage}
+                onMovePage={setSelectedPageToMove}
+                onReorderPages={handleReorderPages}
+                isCollapsed={isPageCollapsed}
+                onToggleCollapse={handleTogglePageCollapse}
+                badgeCounts={badgeCounts.pages}
+                loading={loadingPages}
+              />
+              {!isPageCollapsed && (
+                <div
+                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
+                  onMouseDown={e => startResizing(e, 'page')}
+                />
+              )}
+            </aside>
+
+            {/* Content Area */}
+            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/40">
+
+              {/* Page open: Editor */}
+              {selectedPageId ? (
+                <div className="h-full overflow-hidden">
+                  <NoteEditor
+                    key={selectedPageId}
+                    page={selectedPage || null}
+                    initialTabId={targetTabId}
+                    onSave={handleSavePageContent}
+                  />
+                </div>
+
+              /* Section selected, no page: Pages overview */
+              ) : selectedSectionId ? (
+                <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
+                  <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">{currentCategory?.name}</p>
+                        <h1 className="text-2xl font-bold text-slate-900">{currentSection?.name}</h1>
+                        <p className="text-sm text-slate-400 mt-0.5">{pages.length} page{pages.length !== 1 ? 's' : ''}</p>
                       </div>
-                      <p className="text-[13px] text-white/25">No pages yet. Create your first one.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {pages.map(page => {
-                        const badge = badgeCounts.pages[page._id as string];
-                        return (
-                          <button
-                            key={page._id as string}
-                            onClick={() => setSelectedPageId(page._id as string)}
-                            className="group text-left p-4 rounded-2xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] hover:border-violet-500/30 transition-all duration-200">
-                            <div className="w-8 h-8 rounded-xl bg-white/[0.06] flex items-center justify-center mb-3 group-hover:bg-violet-500/20 transition-colors">
-                              <PencilSquareIcon className="h-4 w-4 text-white/25 group-hover:text-violet-400 transition-colors" />
-                            </div>
-                            <p className="text-[12.5px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate leading-tight mb-2">
-                              {page.title || 'Untitled'}
-                            </p>
-                            {badge?.todo?.count > 0 && (
-                              <span className="inline-flex items-center gap-1 text-[10px] text-rose-400/70 bg-rose-500/10 border border-rose-500/15 px-1.5 py-0.5 rounded-full">
-                                <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
-                                {badge.todo.count}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
                       <button
                         onClick={() => handleAddPage('New Page')}
-                        className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.07] hover:border-violet-500/40 hover:bg-white/[0.04] transition-all min-h-[110px]">
-                        <PlusCircleIcon className="h-6 w-6 text-white/20 group-hover:text-violet-400 transition-colors" />
-                        <span className="text-[11px] text-white/25 group-hover:text-violet-400 transition-colors font-medium">New Page</span>
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
+                        <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
                       </button>
                     </div>
-                  )}
-                </div>
-              </div>
 
-            /* ── Category selected, no section: Sections overview grid ── */
-            ) : selectedCategoryId ? (
-              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-1">Notebook</p>
-                      <h1 className="text-xl font-bold text-white/80">{currentCategory?.name}</h1>
-                      <p className="text-sm text-white/25 mt-0.5">{sections.length} section{sections.length !== 1 ? 's' : ''}</p>
-                    </div>
-                    <button
-                      onClick={() => handleAddSection('New Section')}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600/80 hover:bg-violet-600 text-white text-[12px] font-semibold transition-all shadow-lg shadow-violet-600/20">
-                      <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
-                    </button>
-                  </div>
-
-                  {sections.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 gap-4">
-                      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
-                        <BookmarkIcon className="h-8 w-8 text-white/[0.1]" />
+                    {pages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
+                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                          <PencilSquareIcon className="h-7 w-7 text-slate-300" />
+                        </div>
+                        <p className="text-[13px] text-slate-400 font-medium">No pages yet. Create your first one.</p>
                       </div>
-                      <p className="text-[13px] text-white/25">No sections yet. Create your first one.</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                      {sections.map(section => {
-                        const badge = badgeCounts.sections[section._id as string];
-                        return (
-                          <button
-                            key={section._id as string}
-                            onClick={() => handleSelectSection(section._id as string)}
-                            className="group text-left p-5 rounded-2xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] hover:border-violet-500/30 transition-all duration-200">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
-                                <BookmarkIcon className="h-4.5 w-4.5 text-white/25 group-hover:text-violet-400 transition-colors" />
+                    ) : (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                        {pages.map(page => {
+                          const badge = badgeCounts.pages[page._id as string];
+                          return (
+                            <button
+                              key={page._id as string}
+                              onClick={() => setSelectedPageId(page._id as string)}
+                              className="group text-left p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-200">
+                              <div className="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center mb-3 group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors shadow-sm">
+                                <PencilSquareIcon className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
                               </div>
+                              <p className="text-[12.5px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate leading-tight mb-2">
+                                {page.title || 'Untitled'}
+                              </p>
                               {badge?.todo?.count > 0 && (
-                                <span className="text-[10px] bg-rose-500/15 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full">
+                                <span className="inline-flex items-center gap-1 text-[10px] text-rose-500 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
+                                  <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
                                   {badge.todo.count}
                                 </span>
                               )}
-                            </div>
-                            <p className="text-[13px] font-semibold text-white/65 group-hover:text-white/90 transition-colors">
-                              {section.name}
-                            </p>
-                          </button>
-                        );
-                      })}
+                            </button>
+                          );
+                        })}
+                        <button
+                          onClick={() => handleAddPage('New Page')}
+                          className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[110px]">
+                          <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
+                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">New Page</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              /* Category selected, no section: Sections overview */
+              ) : selectedCategoryId ? (
+                <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
+                  <div className="max-w-3xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Notebook</p>
+                        <h1 className="text-2xl font-bold text-slate-900">{currentCategory?.name}</h1>
+                        <p className="text-sm text-slate-400 mt-0.5">{sections.length} section{sections.length !== 1 ? 's' : ''}</p>
+                      </div>
                       <button
                         onClick={() => handleAddSection('New Section')}
-                        className="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.07] hover:border-violet-500/40 hover:bg-white/[0.04] transition-all min-h-[120px]">
-                        <PlusCircleIcon className="h-6 w-6 text-white/20 group-hover:text-violet-400 transition-colors" />
-                        <span className="text-[11px] text-white/25 group-hover:text-violet-400 transition-colors font-medium">New Section</span>
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
+                        <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
                       </button>
                     </div>
-                  )}
-                </div>
-              </div>
 
-            /* ── Nothing selected: Workspace dashboard ── */
-            ) : (
-              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
-                <div className="max-w-3xl mx-auto">
-
-                  {/* Greeting */}
-                  <div className="mb-8">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-1">{dateStr}</p>
-                    <h1 className="text-2xl font-bold text-white/75">{greeting}{userName ? `, ${userName}` : ''}</h1>
-                    <p className="text-[13px] text-white/25 mt-1">Here's your workspace overview.</p>
-                  </div>
-
-                  {/* Stats row */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-                    <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.07]">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 mb-2">Notebooks</p>
-                      <p className="text-3xl font-bold text-white/60">{categories.length}</p>
-                    </div>
-                    <button onClick={handleOpenToDoList} className="group text-left p-4 rounded-2xl bg-rose-500/[0.06] border border-rose-500/15 hover:border-rose-500/35 transition-all">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-rose-400/50 mb-2">Active Tasks</p>
-                      <p className="text-3xl font-bold text-rose-400">{activeTaskCount}</p>
-                    </button>
-                    <button onClick={handleOpenKeyTasks} className="group text-left p-4 rounded-2xl bg-amber-500/[0.06] border border-amber-500/15 hover:border-amber-500/35 transition-all">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/50 mb-2">Flagged</p>
-                      <p className="text-3xl font-bold text-amber-400">{totalFlagged}</p>
-                    </button>
-                    <button onClick={handleOpenImportant} className="group text-left p-4 rounded-2xl bg-violet-500/[0.06] border border-violet-500/15 hover:border-violet-500/35 transition-all">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-violet-400/50 mb-2">Important</p>
-                      <p className="text-3xl font-bold text-violet-400">{totalImportant}</p>
-                    </button>
-                  </div>
-
-                  {/* Recent pages */}
-                  {recentPages.length > 0 && (
-                    <div className="mb-8">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Recent</p>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                        {recentPages.map(rp => (
-                          <button
-                            key={rp.id}
-                            onClick={() => handleJumpToRecentPage(rp)}
-                            className="group text-left p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-violet-500/25 transition-all duration-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-5 h-5 rounded-md bg-white/[0.07] flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500/20 transition-colors">
-                                <PencilSquareIcon className="h-3 w-3 text-white/25 group-hover:text-violet-400" />
+                    {sections.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
+                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                          <BookmarkIcon className="h-7 w-7 text-slate-300" />
+                        </div>
+                        <p className="text-[13px] text-slate-400 font-medium">No sections yet. Create your first one.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        {sections.map(section => {
+                          const badge = badgeCounts.sections[section._id as string];
+                          return (
+                            <button
+                              key={section._id as string}
+                              onClick={() => handleSelectSection(section._id as string)}
+                              className="group text-left p-5 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-200">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors shadow-sm">
+                                  <BookmarkIcon className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
+                                </div>
+                                {badge?.todo?.count > 0 && (
+                                  <span className="text-[10px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
+                                    {badge.todo.count}
+                                  </span>
+                                )}
                               </div>
-                              <span className="text-[10px] text-white/25 truncate">{rp.categoryName}</span>
-                            </div>
-                            <p className="text-[12px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate leading-snug mb-1">
-                              {rp.title}
-                            </p>
-                            <p className="text-[10px] text-white/20">{formatTimeAgo(rp.timestamp)}</p>
+                              <p className="text-[13px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors">
+                                {section.name}
+                              </p>
+                            </button>
+                          );
+                        })}
+                        <button
+                          onClick={() => handleAddSection('New Section')}
+                          className="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[120px]">
+                          <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
+                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">New Section</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              /* Nothing selected: Workspace dashboard */
+              ) : (
+                <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
+                  <div className="max-w-4xl mx-auto">
+
+                    {/* Greeting */}
+                    <div className="mb-10">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{dateStr}</p>
+                      <h1 className="text-3xl font-bold text-slate-900">{greeting}{userName ? `, ${userName}` : ''}</h1>
+                      <p className="text-sm text-slate-500 mt-1">Here&apos;s your workspace overview.</p>
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">Notebooks</p>
+                        <p className="text-3xl font-bold text-slate-800">{categories.length}</p>
+                      </div>
+                      <button onClick={handleOpenToDoList} className="group text-left p-5 rounded-2xl bg-rose-50 border border-rose-100 hover:border-rose-300 transition-all">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-rose-400 mb-2">Active Tasks</p>
+                        <p className="text-3xl font-bold text-rose-500">{activeTaskCount}</p>
+                      </button>
+                      <button onClick={handleOpenKeyTasks} className="group text-left p-5 rounded-2xl bg-amber-50 border border-amber-100 hover:border-amber-300 transition-all">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400 mb-2">Flagged</p>
+                        <p className="text-3xl font-bold text-amber-500">{totalFlagged}</p>
+                      </button>
+                      <button onClick={handleOpenImportant} className="group text-left p-5 rounded-2xl bg-violet-50 border border-violet-100 hover:border-violet-300 transition-all">
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-violet-400 mb-2">Important</p>
+                        <p className="text-3xl font-bold text-violet-500">{totalImportant}</p>
+                      </button>
+                    </div>
+
+                    {/* Recent pages */}
+                    {recentPages.length > 0 && (
+                      <div className="mb-10">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Recent</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                          {recentPages.map(rp => (
+                            <button
+                              key={rp.id}
+                              onClick={() => handleJumpToRecentPage(rp)}
+                              className="group text-left p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all duration-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="w-5 h-5 rounded-md bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors">
+                                  <PencilSquareIcon className="h-3 w-3 text-slate-400 group-hover:text-white" />
+                                </div>
+                                <span className="text-[10px] text-slate-400 truncate">{rp.categoryName}</span>
+                              </div>
+                              <p className="text-[12px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate leading-snug mb-1">
+                                {rp.title}
+                              </p>
+                              <p className="text-[10px] text-slate-400">{formatTimeAgo(rp.timestamp)}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Quick actions */}
+                    <div className="mb-10">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Quick Actions</p>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote, color: 'hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50' },
+                          { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch, color: 'hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50' },
+                          { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50' },
+                          { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true), color: 'hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50' },
+                          { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50' },
+                          { icon: MicrophoneIcon, label: 'Record', action: () => setIsAudioRecorderOpen(true), color: 'hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50' },
+                          { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks, color: 'hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50' },
+                          { icon: SparklesIcon, label: 'AI Tools', action: handleOpenAIChat, color: 'hover:text-fuchsia-600 hover:border-fuchsia-300 hover:bg-fuchsia-50' },
+                        ].map(({ icon: Icon, label, action, color }) => (
+                          <button
+                            key={label}
+                            onClick={action}
+                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-100 text-slate-500 text-[12px] font-medium shadow-sm transition-all ${color}`}>
+                            <Icon className="h-3.5 w-3.5" />
+                            {label}
                           </button>
                         ))}
                       </div>
                     </div>
-                  )}
 
-                  {/* Quick actions */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Quick Actions</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote, color: 'hover:text-emerald-400 hover:border-emerald-500/30' },
-                        { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch, color: 'hover:text-violet-400 hover:border-violet-500/30' },
-                        { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'hover:text-indigo-400 hover:border-indigo-500/30' },
-                        { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true), color: 'hover:text-rose-400 hover:border-rose-500/30' },
-                        { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'hover:text-blue-400 hover:border-blue-500/30' },
-                        { icon: MicrophoneIcon, label: 'Listen', action: () => setIsAudioRecorderOpen(true), color: 'hover:text-orange-400 hover:border-orange-500/30' },
-                        { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks, color: 'hover:text-amber-400 hover:border-amber-500/30' },
-                        { icon: SparklesIcon, label: 'AI Tools', action: handleOpenAIChat, color: 'hover:text-fuchsia-400 hover:border-fuchsia-500/30' },
-                      ].map(({ icon: Icon, label, action, color }) => (
-                        <button
-                          key={label}
-                          onClick={action}
-                          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.07] text-white/40 text-[12px] font-medium transition-all ${color}`}>
-                          <Icon className="h-3.5 w-3.5" />
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Notebooks list if any */}
-                  {categories.length > 0 && (
-                    <div className="mt-8">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Notebooks</p>
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                        {categories.map(cat => {
-                          const catBadge = badgeCounts.categories[cat._id as string];
-                          return (
-                            <button
-                              key={cat._id as string}
-                              onClick={() => handleSelectCategory(cat._id as string)}
-                              className="group text-left p-3.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-violet-500/25 transition-all">
-                              <div className="flex items-center justify-between">
-                                <p className="text-[12.5px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate">{cat.name}</p>
-                                {catBadge?.todo?.count > 0 && (
-                                  <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-500/15 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full">{catBadge.todo.count}</span>
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
+                    {/* Notebooks list */}
+                    {categories.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Notebooks</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                          {categories.map(cat => {
+                            const catBadge = badgeCounts.categories[cat._id as string];
+                            return (
+                              <button
+                                key={cat._id as string}
+                                onClick={() => handleSelectCategory(cat._id as string)}
+                                className="group text-left p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-violet-200 hover:shadow-md transition-all">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-[12.5px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate">{cat.name}</p>
+                                  {catBadge?.todo?.count > 0 && (
+                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">{catBadge.todo.count}</span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </main>
           </div>
         </div>
 
@@ -1509,20 +1398,17 @@ const NotesLayout: React.FC = React.memo(() => {
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
-
         <SimpleRewriteModal isOpen={isSimpleRewriteOpen} onClose={handleCloseSimpleRewrite} />
         <SimpleRewriteOpenAIModal isOpen={isSimpleRewriteOpenAIOpen} onClose={handleCloseSimpleRewriteOpenAI} />
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
-
         <UnifiedAIChatModal
           isOpen={isAIChatOpen}
           onClose={handleCloseAIChat}
           geminiApiKey={geminiApiKey}
           openaiApiKey={openaiApiKey}
         />
-
         <FlaggedItemsModal
           isOpen={isKeyTasksOpen}
           onClose={handleCloseKeyTasks}
@@ -1539,7 +1425,6 @@ const NotesLayout: React.FC = React.memo(() => {
           onSelectTask={handleJumpToTask}
           icon="important"
         />
-
         <CommandPalette
           isOpen={isSearchOpen}
           onClose={handleCloseSearch}
@@ -1549,7 +1434,6 @@ const NotesLayout: React.FC = React.memo(() => {
           currentPageContent={selectedPage?.tabs?.[0]?.content || ''}
           currentPageTitle={selectedPage?.title || ''}
         />
-
         <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
         <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
@@ -1572,11 +1456,10 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* ── Floating Action Buttons ── */}
         <div className="fixed bottom-6 right-6 z-[9998] flex flex-col items-center gap-3">
-          {/* Quick Note */}
           <div className="group relative flex items-center justify-center">
-            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-[#1e2130] border border-white/10 backdrop-blur-sm text-white/70 text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-x-1 group-hover:translate-x-0">
+            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
               Quick Note
-              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-[#1e2130]" />
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
             </div>
             <button
               onClick={handleQuickNote}
@@ -1586,11 +1469,10 @@ const NotesLayout: React.FC = React.memo(() => {
             </button>
           </div>
 
-          {/* New Task */}
           <div className="group relative flex items-center justify-center">
-            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-[#1e2130] border border-white/10 backdrop-blur-sm text-white/70 text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap translate-x-1 group-hover:translate-x-0">
+            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
               New Task
-              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-[#1e2130]" />
+              <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
             </div>
             {activeTaskCount === 0 && (
               <span className="absolute inset-0 rounded-2xl bg-rose-400 opacity-25 animate-ping" />

@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Mic, StopCircle, Radio, Save, Trash2, Settings2 } from 'lucide-react';
+import { X, Mic, StopCircle, Radio, Save, Trash2, Settings2, Loader2 } from 'lucide-react';
+// @ts-ignore
+import { Mp3Encoder } from 'lamejs';
 
 interface AudioRecorderModalProps {
   isOpen: boolean;
@@ -13,6 +15,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -49,15 +52,18 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
       setError(null);
       setRecordedBlob(null);
       setRecordingTime(0);
+      setIsConverting(false);
       audioChunksRef.current = [];
 
-      // Request screen stream to capture system audio if needed, 
-      // or just microphone. User previously had getDisplayMedia logic.
-      // I'll stick to getDisplayMedia as it captures system audio which seemed preferred.
+      // Request screen stream to capture system audio if needed
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: true
-      });
+        audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+        }
+      } as any);
 
       const audioTrack = screenStream.getAudioTracks()[0];
       if (!audioTrack) {
@@ -71,16 +77,29 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
       const onlyAudioStream = new MediaStream([audioTrack]);
       streamRef.current = onlyAudioStream;
 
-      const mediaRecorder = new MediaRecorder(onlyAudioStream, { mimeType: 'audio/webm' });
+      // We still record as webm/opus initially as it's the most reliable browser format
+      const mediaRecorder = new MediaRecorder(onlyAudioStream);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setRecordedBlob(audioBlob);
+      mediaRecorder.onstop = async () => {
+        const webmBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Convert to MP3
+        setIsConverting(true);
+        try {
+            const mp3Blob = await convertToMp3(webmBlob);
+            setRecordedBlob(mp3Blob);
+        } catch (err: any) {
+            console.error("MP3 Conversion failed", err);
+            setError("MP3 conversion failed. Saving as fallback WebM.");
+            setRecordedBlob(webmBlob);
+        } finally {
+            setIsConverting(false);
+        }
       };
 
       mediaRecorder.start();
@@ -89,6 +108,52 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
     } catch (err: any) {
       setError(err.message || "Capture failed");
     }
+  }
+
+  // Pure JS MP3 Encoding logic
+  async function convertToMp3(webmBlob: Blob): Promise<Blob> {
+    const arrayBuffer = await webmBlob.arrayBuffer();
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    const channels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const kbps = 128;
+    const mp3encoder = new Mp3Encoder(channels, sampleRate, kbps);
+    const mp3Data: any[] = [];
+    
+    const sampleBlockSize = 1152;
+    const leftChannel = audioBuffer.getChannelData(0);
+    const rightChannel = channels > 1 ? audioBuffer.getChannelData(1) : leftChannel;
+    
+    // Helper to convert float32 to int16
+    const floatTo16BitPCM = (input: Float32Array) => {
+        const output = new Int16Array(input.length);
+        for (let i = 0; i < input.length; i++) {
+            const s = Math.max(-1, Math.min(1, input[i]));
+            output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+        return output;
+    };
+    
+    const leftInt16 = floatTo16BitPCM(leftChannel);
+    const rightInt16 = channels > 1 ? floatTo16BitPCM(rightChannel) : leftInt16;
+    
+    for (let i = 0; i < leftInt16.length; i += sampleBlockSize) {
+        const leftChunk = leftInt16.subarray(i, i + sampleBlockSize);
+        const rightChunk = rightInt16.subarray(i, i + sampleBlockSize);
+        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (mp3buf.length > 0) {
+            mp3Data.push(mp3buf);
+        }
+    }
+    
+    const endPart = mp3encoder.flush();
+    if (endPart.length > 0) {
+        mp3Data.push(endPart);
+    }
+    
+    return new Blob(mp3Data, { type: 'audio/mp3' });
   }
 
   function stopCapture() {
@@ -106,14 +171,18 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
     if (!recordedBlob) return;
 
     try {
-      // Use File System Access API if available for "Save As" experience
+      const isMp3 = recordedBlob.type === 'audio/mp3';
+      const extension = isMp3 ? 'mp3' : 'webm';
+      const mimeType = isMp3 ? 'audio/mp3' : 'audio/webm';
+
+      // Use File System Access API if available
       if ('showSaveFilePicker' in window) {
         try {
           const handle = await (window as any).showSaveFilePicker({
-            suggestedName: `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`,
+            suggestedName: `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.${extension}`,
             types: [{
               description: 'Audio File',
-              accept: { 'audio/webm': ['.webm'] },
+              accept: { [mimeType]: [`.${extension}`] },
             }],
           });
           const writable = await handle.createWritable();
@@ -130,7 +199,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
       const url = URL.createObjectURL(recordedBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.webm`;
+      a.download = `recording-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.${extension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -151,7 +220,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900 leading-tight">Audio Recorder</h2>
-              <p className="text-xs text-gray-500 font-medium">Record and save audio locally</p>
+              <p className="text-xs text-gray-500 font-medium">Capture system audio as MP3</p>
             </div>
           </div>
           
@@ -169,14 +238,22 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
           )}
 
           <div className="relative flex flex-col items-center justify-center space-y-6">
-            {/* Visualizer Placeholder / Timer */}
-            <div className={`w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-500 ${isCapturing ? 'bg-red-50 scale-110 shadow-inner' : 'bg-slate-50'}`}>
-              <div className={`text-3xl font-mono font-bold tracking-tighter ${isCapturing ? 'text-red-600' : 'text-slate-400'}`}>
-                {formatTime(recordingTime)}
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">
-                {isCapturing ? 'Recording' : 'Standby'}
-              </p>
+            <div className={`w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-500 ${isCapturing ? 'bg-red-50 scale-110 shadow-inner' : isConverting ? 'bg-indigo-50 border-4 border-indigo-100 border-t-indigo-500 animate-spin-slow' : 'bg-slate-50'}`}>
+              {!isConverting ? (
+                <>
+                  <div className={`text-3xl font-mono font-bold tracking-tighter ${isCapturing ? 'text-red-600' : 'text-slate-400'}`}>
+                    {formatTime(recordingTime)}
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">
+                    {isCapturing ? 'Recording' : 'Standby'}
+                  </p>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-2 animate-none">
+                   <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Encoding MP3</p>
+                </div>
+              )}
             </div>
 
             {isCapturing && (
@@ -209,7 +286,8 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
               ) : (
                 <button
                   onClick={startCapture}
-                  className="group flex items-center gap-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-10 py-5 rounded-2xl transition-all shadow-xl shadow-indigo-200 active:scale-95"
+                  disabled={isConverting}
+                  className="group flex items-center gap-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-10 py-5 rounded-2xl transition-all shadow-xl shadow-indigo-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Mic className="w-6 h-6 group-hover:scale-110 transition-transform" />
                   <span className="text-lg">Start Recording</span>
@@ -219,16 +297,18 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
               <div className="w-full flex flex-col gap-3">
                 <button
                   onClick={saveAudioLocally}
-                  className="w-full flex items-center justify-center gap-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                  disabled={isConverting}
+                  className="w-full flex items-center justify-center gap-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-lg shadow-emerald-200 active:scale-95 disabled:opacity-50"
                 >
-                  <Save className="w-5 h-5" />
-                  Save Recording Locally...
+                  {isConverting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                  {isConverting ? 'Encoding to MP3...' : 'Download MP3 Recording'}
                 </button>
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
                         setRecordedBlob(null);
                         setRecordingTime(0);
+                        setIsConverting(false);
                     }}
                     className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 py-4 rounded-2xl transition-all active:scale-95"
                   >
@@ -252,7 +332,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
               <Settings2 className="w-3.5 h-3.5 text-indigo-500" />
               Recording Instructions
             </div>
-            To capture system sound (Spotify, YouTube, Teams, etc.), select <span className="text-indigo-600 font-bold">"Entire Screen"</span> and ensure you check <span className="text-indigo-600 font-bold">"Share system audio"</span> in the browser prompt.
+            To capture system sound (Spotify, YouTube, Teams, etc.), select <span className="text-indigo-600 font-bold">"Entire Screen"</span> and ensure you check <span className="text-indigo-600 font-bold">"Share system audio"</span> in the browser prompt. The recording will be automatically converted to <span className="text-indigo-600 font-bold">MP3 format</span> after you stop.
           </div>
         </div>
       </div>
@@ -261,4 +341,5 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
 };
 
 export default AudioRecorderModal;
+
 
