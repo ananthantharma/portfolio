@@ -570,15 +570,22 @@ const RichTextEditor = React.memo(
     );
 
     return (
-    <div className="h-full flex flex-col relative bg-white selection:bg-indigo-100/50">
+    <div className="h-full flex flex-col relative bg-white selection:bg-indigo-50/70">
       <LexicalComposer initialConfig={editorConfig}>
         <div className="flex flex-col h-full relative">
+          {/* High-Fidelity Sticky Top Toolbar */}
+          <div className="sticky top-0 z-[100] w-full bg-white/80 backdrop-blur-md border-b border-black/[0.03] px-6 py-2 transition-all duration-300">
+            <div className="max-w-4xl mx-auto flex items-center justify-between">
+              <ToolbarPlugin />
+            </div>
+          </div>
+
           <div className="relative flex-1 overflow-hidden">
             <RichTextPlugin
               contentEditable={
                 <ContentEditable
                   onBlur={onBlur}
-                  className="h-full overflow-y-auto w-full outline-none px-8 md:px-12 py-10 md:py-16 text-[16px] leading-relaxed text-slate-700/90 font-sans"
+                  className="h-full overflow-y-auto w-full outline-none px-8 md:px-16 pt-12 pb-32 text-[17px] leading-[1.8] text-slate-800 font-sans"
                 />
               }
               placeholder={<CustomPlaceholder placeholder={placeholder} />}
@@ -598,10 +605,16 @@ const RichTextEditor = React.memo(
             <EditorRefPlugin editorRef={lexicalEditorRef} />
           </div>
 
-          {/* Premium Floating Toolbar — Bottom Centered */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-0.5 p-1.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-black/5">
-              <ToolbarPlugin />
+          {/* Quick Info Bar at the Bottom */}
+          <div className="absolute bottom-4 right-8 z-[50] flex items-center gap-4 px-4 py-1.5 rounded-full bg-slate-50/50 backdrop-blur-sm border border-black/[0.03] text-[10px] font-medium text-slate-400 select-none">
+            <div className="flex items-center gap-1">
+              <span className="font-bold text-slate-600">{(value || '').replace(/<[^>]*>/g, '').length}</span>
+              <span>CHARS</span>
+            </div>
+            <div className="w-[1px] h-3 bg-slate-200" />
+            <div className="flex items-center gap-1">
+              <span className="font-bold text-slate-600">{Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').split(/\s+/).length / 200))}</span>
+              <span>MIN READ</span>
             </div>
           </div>
         </div>
