@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Mic, StopCircle, Radio, Save, Trash2, Settings2, Loader2 } from 'lucide-react';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const lamejs = require('lamejs');
+import { Mp3Encoder } from '@breezystack/lamejs';
 
 interface AudioRecorderModalProps {
   isOpen: boolean;
@@ -134,7 +133,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
   }, []);
 
   function encodePcmToMp3(buffers: Float32Array[]): Blob {
-    const encoder = new lamejs.Mp3Encoder(NUM_CHANNELS, SAMPLE_RATE, KBPS);
+    const encoder = new Mp3Encoder(NUM_CHANNELS, SAMPLE_RATE, KBPS);
     const mp3Parts: Uint8Array[] = [];
     const blockSize = 1152; // lamejs requires multiples of 1152
 
