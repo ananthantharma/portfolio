@@ -1454,7 +1454,7 @@ const NotesLayout: React.FC = React.memo(() => {
                         { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'hover:text-indigo-400 hover:border-indigo-500/30' },
                         { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true), color: 'hover:text-rose-400 hover:border-rose-500/30' },
                         { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'hover:text-blue-400 hover:border-blue-500/30' },
-                        { icon: MicrophoneIcon, label: 'Listen', action: () => setIsAudioCaptureOpen(true), color: 'hover:text-orange-400 hover:border-orange-500/30' },
+                        { icon: MicrophoneIcon, label: 'Listen', action: () => setIsAudioRecorderOpen(true), color: 'hover:text-orange-400 hover:border-orange-500/30' },
                         { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks, color: 'hover:text-amber-400 hover:border-amber-500/30' },
                         { icon: SparklesIcon, label: 'AI Tools', action: handleOpenAIChat, color: 'hover:text-fuchsia-400 hover:border-fuchsia-500/30' },
                       ].map(({ icon: Icon, label, action, color }) => (
