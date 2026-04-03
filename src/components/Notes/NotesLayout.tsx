@@ -55,7 +55,7 @@ import { BadgeSettingsProvider } from './BadgeSettingsContext';
 import { BadgeSettingsModal } from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
-import AudioCaptureModal from './AudioCaptureModal';
+import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
@@ -89,7 +89,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isExecutiveModalOpen, setIsExecutiveModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDriveOpen, setIsDriveOpen] = useState(false);
-  const [isAudioCaptureOpen, setIsAudioCaptureOpen] = useState(false);
+  const [isAudioRecorderOpen, setIsAudioRecorderOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
@@ -649,21 +649,6 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
-  const handleTranscriptReady = useCallback(async (transcript: string) => {
-    const selectedPage = pages.find(p => p._id === selectedPageId);
-    if (!selectedPage || !selectedPageId) return;
-    
-    const currentTabs = selectedPage.tabs || [{ id: 'main', label: 'Note', content: '' }];
-    const firstTab = currentTabs[0];
-    const updatedContent = (firstTab.content || '') + (firstTab.content ? '\n\n' : '') + transcript;
-    
-    const updatedTabs = currentTabs.map((t, i) => 
-      i === 0 ? { ...t, content: updatedContent } : t
-    );
-
-    await handleSavePageContent(selectedPageId, updatedTabs);
-  }, [selectedPageId, pages, handleSavePageContent]);
-
   const handleReorderPages = useCallback(
     async (newOrder: INotePage[]) => {
       setPages(newOrder);
@@ -872,10 +857,10 @@ const NotesLayout: React.FC = React.memo(() => {
                 </button>
                 <button
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-rose-400 transition-all duration-200"
-                  onClick={() => setIsAudioCaptureOpen(true)}
-                  title="Audio Transcriber">
+                  onClick={() => setIsAudioRecorderOpen(true)}
+                  title="Audio Recorder">
                   <MicrophoneIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Listen</span>
+                  <span className="hidden lg:inline">Record</span>
                 </button>
                 <button
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-white/40 hover:bg-white/[0.08] hover:text-emerald-400 transition-all duration-200"
@@ -1274,10 +1259,9 @@ const NotesLayout: React.FC = React.memo(() => {
         <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
         <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
-        <AudioCaptureModal
-          isOpen={isAudioCaptureOpen}
-          onClose={() => setIsAudioCaptureOpen(false)}
-          onTranscriptReady={handleTranscriptReady}
+        <AudioRecorderModal
+          isOpen={isAudioRecorderOpen}
+          onClose={() => setIsAudioRecorderOpen(false)}
         />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
