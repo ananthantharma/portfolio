@@ -622,6 +622,12 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const [selectedPageToMove, setSelectedPageToMove] = useState<INotePage | null>(null);
 
+  // Recent pages tracking (persisted in localStorage)
+  const [recentPages, setRecentPages] = useState<Array<{
+    id: string; title: string; categoryId: string; categoryName: string;
+    sectionId: string; sectionName: string; timestamp: number;
+  }>>([]);
+
   const handleMovePage = useCallback(
     async (pageId: string, destSectionId: string) => {
       try {
@@ -667,6 +673,71 @@ const NotesLayout: React.FC = React.memo(() => {
   const selectedPage = pages.find(p => p._id === selectedPageId) || null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
+
+  // Load recent pages from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('NOTES_RECENT_PAGES');
+    if (saved) {
+      try { setRecentPages(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  // Track page visits for the dashboard
+  useEffect(() => {
+    if (!selectedPageId || !selectedCategoryId || !selectedSectionId) return;
+    const page = pages.find(p => p._id === selectedPageId);
+    const cat = categories.find(c => c._id === selectedCategoryId);
+    const sec = sections.find(s => s._id === selectedSectionId);
+    if (!page || !cat || !sec) return;
+    setRecentPages(prev => {
+      const filtered = prev.filter(p => p.id !== selectedPageId);
+      const updated = [{
+        id: selectedPageId,
+        title: page.title || 'Untitled',
+        categoryId: selectedCategoryId,
+        categoryName: cat.name,
+        sectionId: selectedSectionId,
+        sectionName: sec.name,
+        timestamp: Date.now(),
+      }, ...filtered].slice(0, 8);
+      localStorage.setItem('NOTES_RECENT_PAGES', JSON.stringify(updated));
+      return updated;
+    });
+  }, [selectedPageId]);
+
+  const handleJumpToRecentPage = useCallback((rp: { id: string; categoryId: string; sectionId: string }) => {
+    setSelectedCategoryId(rp.categoryId);
+    setTimeout(() => {
+      setSelectedSectionId(rp.sectionId);
+      setTimeout(() => setSelectedPageId(rp.id), 150);
+    }, 150);
+  }, []);
+
+  const formatTimeAgo = useCallback((ts: number) => {
+    const d = Date.now() - ts;
+    const m = Math.floor(d / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const days = Math.floor(h / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }, []);
+
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  }, []);
+
+  const dateStr = useMemo(() => new Date().toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  }), []);
+
+  const userName = useMemo(() => {
+    const n = (session?.user as any)?.name || session?.user?.email || '';
+    return n.split(' ')[0].split('@')[0];
+  }, [session]);
 
   const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
   const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
@@ -1179,9 +1250,11 @@ const NotesLayout: React.FC = React.memo(() => {
             )}
           </div>
 
-          {/* ─── 4. Editor Area ─── */}
+          {/* ─── 4. Editor / Dashboard Area ─── */}
           <div
-            className={`flex-1 min-w-0 bg-[#0d0f17] flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'bg-white' : 'p-3'}`}>
+            className={`flex-1 min-w-0 bg-[#0d0f17] flex flex-col overflow-hidden relative transition-all duration-500 max-md:!w-full max-md:!h-full ${!selectedPageId ? 'max-md:hidden' : ''} ${isFocusMode ? 'bg-white' : selectedPageId ? 'p-3' : ''}`}>
+
+            {/* ── Page open: Editor ── */}
             {selectedPageId ? (
               <div className={`h-full bg-white overflow-hidden ${isFocusMode ? '' : 'rounded-2xl shadow-2xl shadow-black/40'}`}>
                 <NoteEditor
@@ -1191,14 +1264,235 @@ const NotesLayout: React.FC = React.memo(() => {
                   onSave={handleSavePageContent}
                 />
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center gap-5">
-                <div className="w-24 h-24 rounded-3xl bg-white/[0.03] border border-white/[0.07] flex items-center justify-center">
-                  <PencilSquareIcon className="h-12 w-12 text-white/[0.08]" />
+
+            /* ── Section selected, no page: Pages overview grid ── */
+            ) : selectedSectionId ? (
+              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
+                <div className="max-w-3xl mx-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-1">
+                        {currentCategory?.name}
+                      </p>
+                      <h1 className="text-xl font-bold text-white/80">{currentSection?.name}</h1>
+                      <p className="text-sm text-white/25 mt-0.5">{pages.length} page{pages.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <button
+                      onClick={() => handleAddPage('New Page')}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600/80 hover:bg-violet-600 text-white text-[12px] font-semibold transition-all shadow-lg shadow-violet-600/20">
+                      <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
+                    </button>
+                  </div>
+
+                  {pages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
+                        <PencilSquareIcon className="h-8 w-8 text-white/[0.1]" />
+                      </div>
+                      <p className="text-[13px] text-white/25">No pages yet. Create your first one.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {pages.map(page => {
+                        const badge = badgeCounts.pages[page._id as string];
+                        return (
+                          <button
+                            key={page._id as string}
+                            onClick={() => setSelectedPageId(page._id as string)}
+                            className="group text-left p-4 rounded-2xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] hover:border-violet-500/30 transition-all duration-200">
+                            <div className="w-8 h-8 rounded-xl bg-white/[0.06] flex items-center justify-center mb-3 group-hover:bg-violet-500/20 transition-colors">
+                              <PencilSquareIcon className="h-4 w-4 text-white/25 group-hover:text-violet-400 transition-colors" />
+                            </div>
+                            <p className="text-[12.5px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate leading-tight mb-2">
+                              {page.title || 'Untitled'}
+                            </p>
+                            {badge?.todo?.count > 0 && (
+                              <span className="inline-flex items-center gap-1 text-[10px] text-rose-400/70 bg-rose-500/10 border border-rose-500/15 px-1.5 py-0.5 rounded-full">
+                                <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
+                                {badge.todo.count}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => handleAddPage('New Page')}
+                        className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.07] hover:border-violet-500/40 hover:bg-white/[0.04] transition-all min-h-[110px]">
+                        <PlusCircleIcon className="h-6 w-6 text-white/20 group-hover:text-violet-400 transition-colors" />
+                        <span className="text-[11px] text-white/25 group-hover:text-violet-400 transition-colors font-medium">New Page</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="text-center">
-                  <p className="text-[15px] font-semibold text-white/20 mb-2">Nothing open</p>
-                  <p className="text-[12.5px] text-white/[0.12] max-w-[180px] leading-relaxed">Select a page from the sidebar to start writing</p>
+              </div>
+
+            /* ── Category selected, no section: Sections overview grid ── */
+            ) : selectedCategoryId ? (
+              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
+                <div className="max-w-3xl mx-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 mb-1">Notebook</p>
+                      <h1 className="text-xl font-bold text-white/80">{currentCategory?.name}</h1>
+                      <p className="text-sm text-white/25 mt-0.5">{sections.length} section{sections.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <button
+                      onClick={() => handleAddSection('New Section')}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600/80 hover:bg-violet-600 text-white text-[12px] font-semibold transition-all shadow-lg shadow-violet-600/20">
+                      <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
+                    </button>
+                  </div>
+
+                  {sections.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
+                        <BookmarkIcon className="h-8 w-8 text-white/[0.1]" />
+                      </div>
+                      <p className="text-[13px] text-white/25">No sections yet. Create your first one.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                      {sections.map(section => {
+                        const badge = badgeCounts.sections[section._id as string];
+                        return (
+                          <button
+                            key={section._id as string}
+                            onClick={() => handleSelectSection(section._id as string)}
+                            className="group text-left p-5 rounded-2xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] hover:border-violet-500/30 transition-all duration-200">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center group-hover:bg-violet-500/20 transition-colors">
+                                <BookmarkIcon className="h-4.5 w-4.5 text-white/25 group-hover:text-violet-400 transition-colors" />
+                              </div>
+                              {badge?.todo?.count > 0 && (
+                                <span className="text-[10px] bg-rose-500/15 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full">
+                                  {badge.todo.count}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[13px] font-semibold text-white/65 group-hover:text-white/90 transition-colors">
+                              {section.name}
+                            </p>
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => handleAddSection('New Section')}
+                        className="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.07] hover:border-violet-500/40 hover:bg-white/[0.04] transition-all min-h-[120px]">
+                        <PlusCircleIcon className="h-6 w-6 text-white/20 group-hover:text-violet-400 transition-colors" />
+                        <span className="text-[11px] text-white/25 group-hover:text-violet-400 transition-colors font-medium">New Section</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            /* ── Nothing selected: Workspace dashboard ── */
+            ) : (
+              <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
+                <div className="max-w-3xl mx-auto">
+
+                  {/* Greeting */}
+                  <div className="mb-8">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-1">{dateStr}</p>
+                    <h1 className="text-2xl font-bold text-white/75">{greeting}{userName ? `, ${userName}` : ''}</h1>
+                    <p className="text-[13px] text-white/25 mt-1">Here's your workspace overview.</p>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                    <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.07]">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-white/20 mb-2">Notebooks</p>
+                      <p className="text-3xl font-bold text-white/60">{categories.length}</p>
+                    </div>
+                    <button onClick={handleOpenToDoList} className="group text-left p-4 rounded-2xl bg-rose-500/[0.06] border border-rose-500/15 hover:border-rose-500/35 transition-all">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-rose-400/50 mb-2">Active Tasks</p>
+                      <p className="text-3xl font-bold text-rose-400">{activeTaskCount}</p>
+                    </button>
+                    <button onClick={handleOpenKeyTasks} className="group text-left p-4 rounded-2xl bg-amber-500/[0.06] border border-amber-500/15 hover:border-amber-500/35 transition-all">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/50 mb-2">Flagged</p>
+                      <p className="text-3xl font-bold text-amber-400">{totalFlagged}</p>
+                    </button>
+                    <button onClick={handleOpenImportant} className="group text-left p-4 rounded-2xl bg-violet-500/[0.06] border border-violet-500/15 hover:border-violet-500/35 transition-all">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-violet-400/50 mb-2">Important</p>
+                      <p className="text-3xl font-bold text-violet-400">{totalImportant}</p>
+                    </button>
+                  </div>
+
+                  {/* Recent pages */}
+                  {recentPages.length > 0 && (
+                    <div className="mb-8">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Recent</p>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                        {recentPages.map(rp => (
+                          <button
+                            key={rp.id}
+                            onClick={() => handleJumpToRecentPage(rp)}
+                            className="group text-left p-3 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-violet-500/25 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-5 h-5 rounded-md bg-white/[0.07] flex items-center justify-center flex-shrink-0 group-hover:bg-violet-500/20 transition-colors">
+                                <PencilSquareIcon className="h-3 w-3 text-white/25 group-hover:text-violet-400" />
+                              </div>
+                              <span className="text-[10px] text-white/25 truncate">{rp.categoryName}</span>
+                            </div>
+                            <p className="text-[12px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate leading-snug mb-1">
+                              {rp.title}
+                            </p>
+                            <p className="text-[10px] text-white/20">{formatTimeAgo(rp.timestamp)}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick actions */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Quick Actions</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote, color: 'hover:text-emerald-400 hover:border-emerald-500/30' },
+                        { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch, color: 'hover:text-violet-400 hover:border-violet-500/30' },
+                        { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'hover:text-indigo-400 hover:border-indigo-500/30' },
+                        { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true), color: 'hover:text-rose-400 hover:border-rose-500/30' },
+                        { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'hover:text-blue-400 hover:border-blue-500/30' },
+                        { icon: MicrophoneIcon, label: 'Listen', action: () => setIsAudioCaptureOpen(true), color: 'hover:text-orange-400 hover:border-orange-500/30' },
+                        { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks, color: 'hover:text-amber-400 hover:border-amber-500/30' },
+                        { icon: SparklesIcon, label: 'AI Tools', action: handleOpenAIChat, color: 'hover:text-fuchsia-400 hover:border-fuchsia-500/30' },
+                      ].map(({ icon: Icon, label, action, color }) => (
+                        <button
+                          key={label}
+                          onClick={action}
+                          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.07] text-white/40 text-[12px] font-medium transition-all ${color}`}>
+                          <Icon className="h-3.5 w-3.5" />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Notebooks list if any */}
+                  {categories.length > 0 && (
+                    <div className="mt-8">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/20 mb-3">Notebooks</p>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                        {categories.map(cat => {
+                          const catBadge = badgeCounts.categories[cat._id as string];
+                          return (
+                            <button
+                              key={cat._id as string}
+                              onClick={() => handleSelectCategory(cat._id as string)}
+                              className="group text-left p-3.5 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-violet-500/25 transition-all">
+                              <div className="flex items-center justify-between">
+                                <p className="text-[12.5px] font-medium text-white/60 group-hover:text-white/90 transition-colors truncate">{cat.name}</p>
+                                {catBadge?.todo?.count > 0 && (
+                                  <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-500/15 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full">{catBadge.todo.count}</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
