@@ -6,7 +6,6 @@ import {
   ChatBubbleLeftRightIcon,
   ChevronRightIcon,
   ClipboardDocumentListIcon,
-  ExclamationTriangleIcon,
   FlagIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -22,11 +21,9 @@ import {
   PlusCircleIcon,
   BookmarkIcon,
   BriefcaseIcon,
-  BuildingOffice2Icon,
   MicrophoneIcon,
   CloudIcon,
 } from '@heroicons/react/24/outline';
-import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
