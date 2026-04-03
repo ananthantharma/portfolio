@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Mic, StopCircle, Radio, Save, Trash2, Settings2, Loader2 } from 'lucide-react';
-// @ts-ignore
-import { Mp3Encoder } from 'lamejs';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const lamejs = require('lamejs');
 
 interface AudioRecorderModalProps {
   isOpen: boolean;
@@ -134,8 +134,8 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
   }, []);
 
   function encodePcmToMp3(buffers: Float32Array[]): Blob {
-    const encoder = new Mp3Encoder(NUM_CHANNELS, SAMPLE_RATE, KBPS);
-    const mp3Parts: Int8Array[] = [];
+    const encoder = new lamejs.Mp3Encoder(NUM_CHANNELS, SAMPLE_RATE, KBPS);
+    const mp3Parts: Uint8Array[] = [];
     const blockSize = 1152; // lamejs requires multiples of 1152
 
     // Flatten all PCM chunks into one big array
@@ -158,13 +158,13 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
     for (let i = 0; i < pcmInt16.length; i += blockSize) {
       const chunk = pcmInt16.subarray(i, i + blockSize);
       const encoded = encoder.encodeBuffer(chunk);
-      if (encoded.length > 0) mp3Parts.push(encoded);
+      if (encoded.length > 0) mp3Parts.push(new Uint8Array(encoded.buffer as ArrayBuffer));
     }
 
     const flushed = encoder.flush();
-    if (flushed.length > 0) mp3Parts.push(flushed);
+    if (flushed.length > 0) mp3Parts.push(new Uint8Array(flushed.buffer as ArrayBuffer));
 
-    return new Blob(mp3Parts, { type: 'audio/mpeg' });
+    return new Blob(mp3Parts as any[], { type: 'audio/mpeg' });
   }
 
   async function saveAudioLocally() {
