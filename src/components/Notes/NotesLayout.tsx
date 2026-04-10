@@ -25,9 +25,12 @@ import {
   CloudIcon,
   ClipboardIcon,
   DocumentTextIcon,
+  ArrowLeftOnRectangleIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
-import {useSession} from 'next-auth/react';
-import React, {useCallback, useEffect, useState, useMemo} from 'react';
+import Link from 'next/link';
+import {signOut, useSession} from 'next-auth/react';
+import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
 import {INoteCategory} from '@/models/NoteCategory';
 import {INotePage} from '@/models/NotePage';
@@ -45,7 +48,6 @@ import PageList from './PageList';
 import SectionList from './SectionList';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
-import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
 import GoogleCalendarModal from './GoogleCalendarModal';
 import {BadgeSettingsProvider} from './BadgeSettingsContext';
@@ -806,6 +808,27 @@ const NotesLayout: React.FC = React.memo(() => {
     return n.split(' ')[0].split('@')[0];
   }, [session]);
 
+  const userInitial = useMemo(() => {
+    const n = (session?.user as any)?.name || session?.user?.email || 'U';
+    return n.charAt(0).toUpperCase();
+  }, [session]);
+
+  const isAdmin = session?.user?.email === 'lankanprinze@gmail.com';
+
+  // Profile dropdown state (inline, no headlessui needed)
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
   const handleCloseAIChat = useCallback(() => setIsAIChatOpen(false), []);
@@ -894,9 +917,20 @@ const NotesLayout: React.FC = React.memo(() => {
         <div className="relative flex h-full w-full flex-col overflow-hidden p-2.5 gap-2">
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
-            <div className="flex-shrink-0 flex items-center justify-between rounded-2xl bg-white/95 backdrop-blur-sm border border-slate-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)] px-3 h-12 z-30 gap-3">
-              {/* Left: Logo + Breadcrumbs */}
-              <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+            <div className="flex-shrink-0 flex items-center h-11 rounded-2xl bg-white/95 backdrop-blur-sm border border-slate-100/90 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-30 overflow-visible">
+
+              {/* ── Far-left: Portfolio home link ── */}
+              <Link
+                href="/"
+                title="Back to Portfolio"
+                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-l-2xl bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 transition-all duration-150 group">
+                <span className="text-white text-[13px] font-black tracking-tight group-hover:scale-110 transition-transform duration-150">A</span>
+              </Link>
+
+              <div className="w-px h-5 bg-slate-100 mx-0 flex-shrink-0" />
+
+              {/* ── Notes workspace home + breadcrumbs ── */}
+              <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden px-3">
                 <button
                   onClick={() => {
                     setSelectedCategoryId(null);
@@ -904,11 +938,11 @@ const NotesLayout: React.FC = React.memo(() => {
                     setSelectedPageId(null);
                   }}
                   className="flex items-center gap-1.5 flex-shrink-0 group"
-                  title="Go to Workspace">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-violet-500/25">
-                    <HomeIcon className="h-3 w-3 text-white" />
+                  title="Notes Home">
+                  <div className="w-5 h-5 rounded-md bg-violet-100 flex items-center justify-center group-hover:bg-violet-500 transition-colors duration-150">
+                    <HomeIcon className="h-3 w-3 text-violet-500 group-hover:text-white transition-colors duration-150" />
                   </div>
-                  <span className="font-semibold text-[13px] text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">
+                  <span className="font-semibold text-[12.5px] text-slate-700 group-hover:text-violet-600 transition-colors tracking-tight">
                     Notes
                   </span>
                 </button>
@@ -936,22 +970,22 @@ const NotesLayout: React.FC = React.memo(() => {
                 {selectedPage && (
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <span className="text-[12px] font-semibold text-slate-700 truncate max-w-[140px]">
+                    <span className="text-[12px] font-semibold text-slate-600 truncate max-w-[140px]">
                       {selectedPage.title || 'Untitled'}
                     </span>
                   </>
                 )}
               </div>
 
-              {/* Right: Actions */}
-              <div className="flex items-center gap-0.5 flex-shrink-0">
+              {/* ── Right: actions + profile ── */}
+              <div className="flex items-center gap-0.5 px-2 flex-shrink-0">
                 {dbSize && (
-                  <span className="hidden xl:flex text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md mr-1.5">
+                  <span className="hidden xl:flex text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded mr-1">
                     {dbSize}
                   </span>
                 )}
 
-                {/* Search — pill */}
+                {/* Search */}
                 <button
                   onClick={handleOpenSearch}
                   title="Command Palette (Ctrl+K)"
@@ -995,7 +1029,60 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 <div className="w-px h-4 bg-slate-200 mx-1" />
 
-                <UserProfileMenu />
+                {/* ── Inline profile — uses fixed dropdown to escape overflow:hidden ── */}
+                <div ref={profileRef} className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setIsProfileOpen(v => !v)}
+                    className="flex items-center gap-1.5 rounded-xl px-2 py-1 hover:bg-slate-100 transition-all duration-150 group">
+                    {session?.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt="avatar"
+                        className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
+                        <span className="text-white text-[10px] font-bold">{userInitial}</span>
+                      </div>
+                    )}
+                    <span className="hidden md:inline text-[12px] font-medium text-slate-600 group-hover:text-slate-800 transition-colors max-w-[80px] truncate">
+                      {userName}
+                    </span>
+                  </button>
+
+                  {/* Dropdown — position: fixed so it's never clipped by overflow:hidden */}
+                  {isProfileOpen && (
+                    <div className="fixed mt-2 w-52 rounded-xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 z-[200] overflow-hidden"
+                      style={{
+                        top: (profileRef.current?.getBoundingClientRect().bottom ?? 0) + 6,
+                        right: window.innerWidth - (profileRef.current?.getBoundingClientRect().right ?? 0),
+                      }}>
+                      {/* User info header */}
+                      <div className="px-4 py-3 bg-gradient-to-br from-slate-50 to-white border-b border-slate-100">
+                        <p className="text-[13px] font-semibold text-slate-800 truncate">{session?.user?.name || 'User'}</p>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{session?.user?.email}</p>
+                      </div>
+                      {/* Actions */}
+                      <div className="p-1.5 flex flex-col gap-0.5">
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors">
+                            <ShieldCheckIcon className="h-4 w-4 text-violet-500" />
+                            Admin Portal
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => signOut()}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">
+                          <ArrowLeftOnRectangleIcon className="h-4 w-4" />
+                          Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
