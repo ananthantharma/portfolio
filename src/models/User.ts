@@ -10,6 +10,7 @@ export interface IUser extends Document {
   secureLoginEnabled?: boolean;
   financeEnabled?: boolean;
   invoiceEnabled?: boolean;
+  formFillEnabled?: boolean;
   organizePrompt?: string; // Custom prompt for Note Organize feature
   systemInstruction?: string; // Custom prompt for Chat Interface
   badgeSettings?: {
@@ -50,6 +51,7 @@ const UserSchema: Schema = new Schema(
     secureLoginEnabled: {type: Boolean, default: false},
     financeEnabled: {type: Boolean, default: false},
     invoiceEnabled: {type: Boolean, default: false},
+    formFillEnabled: {type: Boolean, default: false},
     organizePrompt: {type: String},
 
     systemInstruction: {type: String},

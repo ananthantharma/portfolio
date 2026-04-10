@@ -157,6 +157,7 @@ export const authOptions: AuthOptions = {
           secureLoginEnabled: isAdmin ? true : dbUser.secureLoginEnabled || false, // Vault
           financeEnabled: isAdmin ? true : dbUser.financeEnabled || false,
           invoiceEnabled: isAdmin ? true : dbUser.invoiceEnabled || false,
+          formFillEnabled: isAdmin ? true : dbUser.formFillEnabled || false,
           id: user.id,
         };
       }

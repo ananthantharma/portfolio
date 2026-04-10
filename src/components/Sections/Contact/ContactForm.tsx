@@ -46,9 +46,7 @@ const ContactForm: FC = memo(() => {
         <div className="text-4xl">✉️</div>
         <p className="text-lg font-semibold text-white">Message sent!</p>
         <p className="text-sm text-neutral-400">Thanks for reaching out. I'll get back to you soon.</p>
-        <button
-          className="mt-2 text-sm text-orange-500 hover:underline"
-          onClick={() => setStatus('idle')}>
+        <button className="mt-2 text-sm text-orange-500 hover:underline" onClick={() => setStatus('idle')}>
           Send another message
         </button>
       </div>
@@ -89,9 +87,7 @@ const ContactForm: FC = memo(() => {
         rows={6}
         value={data.message}
       />
-      {status === 'error' && (
-        <p className="text-sm text-red-400">Something went wrong. Please try again.</p>
-      )}
+      {status === 'error' && <p className="text-sm text-red-400">Something went wrong. Please try again.</p>}
       <button
         aria-label="Submit contact form"
         className="w-max rounded-full border-2 border-orange-600 bg-stone-900 px-4 py-2 text-sm font-medium text-white shadow-md outline-none hover:bg-stone-800 focus:ring-2 focus:ring-orange-600 focus:ring-offset-2 focus:ring-offset-stone-800 disabled:opacity-50"

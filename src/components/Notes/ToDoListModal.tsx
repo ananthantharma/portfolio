@@ -197,14 +197,19 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       try {
         const saved = localStorage.getItem('todo_starred_ids');
         return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-      } catch { return new Set<string>(); }
+      } catch {
+        return new Set<string>();
+      }
     });
 
     const toggleStar = useCallback((id: string) => {
       setStarredIds(prev => {
         const next = new Set(prev);
-        if (next.has(id)) next.delete(id); else next.add(id);
-        try { localStorage.setItem('todo_starred_ids', JSON.stringify([...next])); } catch {}
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        try {
+          localStorage.setItem('todo_starred_ids', JSON.stringify([...next]));
+        } catch {}
         return next;
       });
     }, []);
@@ -394,19 +399,21 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         const toUpdate = todos.filter(t => (t.isMinimized ?? true) !== minimize);
         if (toUpdate.length === 0) return;
 
-        setTodos(prev => prev.map(t => {
-          const isTarget = toUpdate.some(u => u._id === t._id);
-          return isTarget ? ({...t, isMinimized: minimize} as any) : t;
-        }));
+        setTodos(prev =>
+          prev.map(t => {
+            const isTarget = toUpdate.some(u => u._id === t._id);
+            return isTarget ? ({...t, isMinimized: minimize} as any) : t;
+          }),
+        );
 
         await Promise.all(
-          toUpdate.map(t => 
+          toUpdate.map(t =>
             fetch(`/api/todos/${t._id}`, {
               method: 'PUT',
               headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({isMinimized: minimize}),
-            })
-          )
+            }),
+          ),
         );
       } catch (error) {
         console.error('Error toggling bulk minimize:', error);
@@ -668,15 +675,13 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   <button
                     onClick={() => handleToggleAllMinimize(true)}
                     className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                    title="Collapse all cards"
-                  >
+                    title="Collapse all cards">
                     <ArrowsPointingInIcon className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleToggleAllMinimize(false)}
                     className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                    title="Expand all cards"
-                  >
+                    title="Expand all cards">
                     <ArrowsPointingOutIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -908,81 +913,86 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                               className={`text-[15px] sm:text-[16px] font-semibold tracking-tight ${
                                 todo.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
                               }`}>
-                                {todo.title}
-                              </h4>
+                              {todo.title}
+                            </h4>
 
-                              {/* Subtasks Checklist */}
-                              <div className="mt-1 space-y-1">
-                                {todo.subtasks && todo.subtasks.length > 0 && (
-                                  <>
-                                    {/* Next Subtask / Summary View */}
-                                    {(todo.isMinimized ?? true) ? (
-                                      <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50 border border-gray-100/50 max-w-fit">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                                        <span className="text-[11px] text-gray-500 truncate max-w-[200px]">
-                                          {todo.subtasks.find(s => !s.isCompleted)?.title || 'All caught up!'}
+                            {/* Subtasks Checklist */}
+                            <div className="mt-1 space-y-1">
+                              {todo.subtasks && todo.subtasks.length > 0 && (
+                                <>
+                                  {/* Next Subtask / Summary View */}
+                                  {todo.isMinimized ?? true ? (
+                                    <div className="flex items-center gap-2 py-1 px-2 rounded-lg bg-gray-50 border border-gray-100/50 max-w-fit">
+                                      <div className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                                      <span className="text-[11px] text-gray-500 truncate max-w-[200px]">
+                                        {todo.subtasks.find(s => !s.isCompleted)?.title || 'All caught up!'}
+                                      </span>
+                                      <button
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          handleToggleMinimize(todo);
+                                        }}
+                                        className="text-[10px] text-indigo-500 font-semibold hover:underline ml-1">
+                                        Expand
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-1.5 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                          Checklist
                                         </span>
                                         <button
                                           onClick={e => {
                                             e.stopPropagation();
                                             handleToggleMinimize(todo);
                                           }}
-                                          className="text-[10px] text-indigo-500 font-semibold hover:underline ml-1">
-                                          Expand
+                                          className="text-[10px] text-gray-400 hover:text-gray-600 font-medium">
+                                          Collapse
                                         </button>
                                       </div>
-                                    ) : (
-                                      <div className="space-y-1.5 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                            Checklist
-                                          </span>
-                                          <button
-                                            onClick={e => {
-                                              e.stopPropagation();
-                                              handleToggleMinimize(todo);
-                                            }}
-                                            className="text-[10px] text-gray-400 hover:text-gray-600 font-medium">
-                                            Collapse
-                                          </button>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          {todo.subtasks.map((st, idx) => (
-                                            <div key={st._id || idx} className="flex items-start gap-2 group/st">
-                                              <button
-                                                onClick={e => {
-                                                  e.stopPropagation();
-                                                  const newSt = [...(todo.subtasks || [])];
-                                                  newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
-                                                  handleUpdateSubtasks(todo._id, newSt);
-                                                }}
-                                                className={`flex-shrink-0 mt-0.5 transition-colors ${
-                                                  st.isCompleted ? 'text-emerald-500' : 'text-gray-300 hover:text-emerald-400'
-                                                }`}>
-                                                {st.isCompleted ? (
-                                                  <CheckCircleIconSolid className="h-3.5 w-3.5" />
-                                                ) : (
-                                                  <div className="h-3 w-3 rounded-sm border border-gray-300" />
-                                                )}
-                                              </button>
-                                              <span
-                                                className={`text-[12px] leading-tight flex-1 ${
-                                                  st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
-                                                }`}>
-                                                {st.title}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </div>
+                                      <div className="space-y-1.5">
+                                        {todo.subtasks.map((st, idx) => (
+                                          <div key={st._id || idx} className="flex items-start gap-2 group/st">
+                                            <button
+                                              onClick={e => {
+                                                e.stopPropagation();
+                                                const newSt = [...(todo.subtasks || [])];
+                                                newSt[idx] = {...newSt[idx], isCompleted: !newSt[idx].isCompleted};
+                                                handleUpdateSubtasks(todo._id, newSt);
+                                              }}
+                                              className={`flex-shrink-0 mt-0.5 transition-colors ${
+                                                st.isCompleted
+                                                  ? 'text-emerald-500'
+                                                  : 'text-gray-300 hover:text-emerald-400'
+                                              }`}>
+                                              {st.isCompleted ? (
+                                                <CheckCircleIconSolid className="h-3.5 w-3.5" />
+                                              ) : (
+                                                <div className="h-3 w-3 rounded-sm border border-gray-300" />
+                                              )}
+                                            </button>
+                                            <span
+                                              className={`text-[12px] leading-tight flex-1 ${
+                                                st.isCompleted ? 'text-gray-400 line-through' : 'text-gray-600'
+                                              }`}>
+                                              {st.title}
+                                            </span>
+                                          </div>
+                                        ))}
                                       </div>
-                                    )}
-                                  </>
-                                )}
-                              </div>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                               {/* ★ Star */}
                               <button
-                                onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  toggleStar(todo._id);
+                                }}
                                 className="p-2 rounded-xl transition-all duration-200"
                                 title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
                                 {starredIds.has(todo._id) ? (
@@ -1138,7 +1148,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                       {/* Subtasks Checklist */}
                       {todo.subtasks && todo.subtasks.length > 0 && (
                         <div className="mt-1.5 flex flex-col gap-1">
-                          {(todo.isMinimized ?? true) ? (
+                          {todo.isMinimized ?? true ? (
                             <div
                               className="flex items-center gap-2 group/pv cursor-pointer"
                               onClick={() => handleToggleMinimize(todo)}>
@@ -1232,7 +1242,10 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                     <div className="flex-shrink-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       {/* ★ Star */}
                       <button
-                        onClick={(e) => { e.stopPropagation(); toggleStar(todo._id); }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          toggleStar(todo._id);
+                        }}
                         className="p-1.5 rounded-lg transition-all duration-200"
                         title={starredIds.has(todo._id) ? 'Unstar' : 'Star this task'}>
                         {starredIds.has(todo._id) ? (

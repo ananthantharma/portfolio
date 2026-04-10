@@ -83,7 +83,9 @@ export const SupplierRiskLayout: React.FC<Props> = ({children, title, actions, u
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`rounded-lg p-2 text-sm ${router.pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50'}`}
+                    className={`rounded-lg p-2 text-sm ${
+                      router.pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
                     title={item.label}>
                     {item.icon}
                   </Link>

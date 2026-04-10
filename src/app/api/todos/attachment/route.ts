@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import {getServerSession} from 'next-auth';
 import {NextResponse} from 'next/server';
 

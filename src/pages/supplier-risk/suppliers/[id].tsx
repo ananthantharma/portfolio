@@ -115,7 +115,11 @@ const SupplierDetailPage = () => {
                   {supplier.website && (
                     <>
                       {' · '}
-                      <a href={supplier.website} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                      <a
+                        href={supplier.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline">
                         {supplier.website}
                       </a>
                     </>
@@ -176,9 +180,7 @@ const SupplierDetailPage = () => {
               <button
                 key={tab}
                 className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
-                  activeTab === tab
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  activeTab === tab ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700'
                 }`}
                 onClick={() => setActiveTab(tab)}>
                 {tab === 'intelligence' ? '🔍 Intelligence' : tab}
@@ -216,7 +218,9 @@ const SupplierDetailPage = () => {
                   ].map(({key, label, weight}) => (
                     <div key={key}>
                       <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
-                        <span>{label} <span className="text-gray-400">({weight} weight)</span></span>
+                        <span>
+                          {label} <span className="text-gray-400">({weight} weight)</span>
+                        </span>
                         <span className="font-semibold text-gray-700">{supplier[key]?.score ?? 0}/100</span>
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
@@ -233,9 +237,7 @@ const SupplierDetailPage = () => {
                           style={{width: `${supplier[key]?.score ?? 0}%`}}
                         />
                       </div>
-                      {supplier[key]?.notes && (
-                        <p className="mt-0.5 text-xs text-gray-400">{supplier[key].notes}</p>
-                      )}
+                      {supplier[key]?.notes && <p className="mt-0.5 text-xs text-gray-400">{supplier[key].notes}</p>}
                     </div>
                   ))}
                   <div className="border-t border-gray-100 pt-3">
@@ -283,9 +285,7 @@ const SupplierDetailPage = () => {
               ) : (
                 <div className="rounded-lg border border-dashed border-gray-200 p-8 text-center">
                   <p className="text-sm text-gray-400">No mitigation plan defined.</p>
-                  <button
-                    className="mt-2 text-sm text-blue-600 hover:underline"
-                    onClick={() => setIsEditOpen(true)}>
+                  <button className="mt-2 text-sm text-blue-600 hover:underline" onClick={() => setIsEditOpen(true)}>
                     Add mitigation plan →
                   </button>
                 </div>

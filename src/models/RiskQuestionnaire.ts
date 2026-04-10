@@ -53,7 +53,6 @@ const RiskQuestionnaireSchema = new Schema<IRiskQuestionnaire>(
 );
 
 const RiskQuestionnaire: Model<IRiskQuestionnaire> =
-  mongoose.models.RiskQuestionnaire ||
-  mongoose.model<IRiskQuestionnaire>('RiskQuestionnaire', RiskQuestionnaireSchema);
+  mongoose.models.RiskQuestionnaire || mongoose.model<IRiskQuestionnaire>('RiskQuestionnaire', RiskQuestionnaireSchema);
 
 export default RiskQuestionnaire;

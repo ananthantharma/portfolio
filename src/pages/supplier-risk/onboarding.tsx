@@ -132,12 +132,7 @@ const OnboardingPage = () => {
                 </div>
                 <div>
                   <label className="label">Due Date</label>
-                  <input
-                    type="date"
-                    className="input"
-                    value={dueDate}
-                    onChange={e => setDueDate(e.target.value)}
-                  />
+                  <input type="date" className="input" value={dueDate} onChange={e => setDueDate(e.target.value)} />
                 </div>
                 <button type="submit" className="btn-primary w-full" disabled={sending || !selectedSupplier}>
                   {sending ? 'Sending...' : '📧 Send Questionnaire'}
@@ -189,9 +184,7 @@ const OnboardingPage = () => {
                               {cfg.label}
                             </span>
                             {q.status !== 'Completed' && (
-                              <button
-                                className="btn-secondary text-xs"
-                                onClick={() => setActiveQ({...q})}>
+                              <button className="btn-secondary text-xs" onClick={() => setActiveQ({...q})}>
                                 Fill In →
                               </button>
                             )}
@@ -200,7 +193,9 @@ const OnboardingPage = () => {
                         <div className="mt-3">
                           <div className="mb-1 flex justify-between text-xs text-gray-400">
                             <span>Completion</span>
-                            <span>{answered}/{total} answered</span>
+                            <span>
+                              {answered}/{total} answered
+                            </span>
                           </div>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                             <div

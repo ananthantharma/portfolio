@@ -1,17 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
-import {
-  X,
-  Send,
-  Bot,
-  Copy,
-  Trash2,
-  Loader2,
-  Check,
-  ChevronDown,
-} from 'lucide-react';
+import {X, Send, Bot, Copy, Trash2, Loader2, Check, ChevronDown} from 'lucide-react';
 
 interface Message {
   id: string;
@@ -22,11 +13,11 @@ interface Message {
 
 type AIModel = 'gemini-flash' | 'gemini-pro' | 'gpt-4o' | 'gpt-4o-mini';
 
-const MODEL_OPTIONS: { id: AIModel; label: string; provider: 'gemini' | 'openai' }[] = [
-  { id: 'gemini-flash', label: 'Gemini Flash', provider: 'gemini' },
-  { id: 'gemini-pro', label: 'Gemini Pro', provider: 'gemini' },
-  { id: 'gpt-4o', label: 'GPT-4o', provider: 'openai' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o mini', provider: 'openai' },
+const MODEL_OPTIONS: {id: AIModel; label: string; provider: 'gemini' | 'openai'}[] = [
+  {id: 'gemini-flash', label: 'Gemini Flash', provider: 'gemini'},
+  {id: 'gemini-pro', label: 'Gemini Pro', provider: 'gemini'},
+  {id: 'gpt-4o', label: 'GPT-4o', provider: 'openai'},
+  {id: 'gpt-4o-mini', label: 'GPT-4o mini', provider: 'openai'},
 ];
 
 const MODEL_API_MAP: Record<AIModel, string> = {
@@ -54,7 +45,7 @@ function TypingIndicator() {
           <div
             key={i}
             className="w-2 h-2 rounded-full bg-indigo-300 animate-bounce"
-            style={{ animationDelay: `${i * 0.15}s` }}
+            style={{animationDelay: `${i * 0.15}s`}}
           />
         ))}
       </div>
@@ -62,7 +53,7 @@ function TypingIndicator() {
   );
 }
 
-export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: OrgAISidebarProps) {
+export default function OrgAISidebar({isOpen, onClose, selectedPageContent}: OrgAISidebarProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [selectedModel, setSelectedModel] = useState<AIModel>('gemini-flash');
@@ -74,7 +65,7 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   }, [messages, loading]);
 
   useEffect(() => {
@@ -84,7 +75,8 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
   }, [isOpen]);
 
   const getSystemInstruction = (): string => {
-    let instruction = 'You are a helpful AI assistant integrated into an organization/productivity app. Be concise, clear, and practical.';
+    let instruction =
+      'You are a helpful AI assistant integrated into an organization/productivity app. Be concise, clear, and practical.';
     if (usePageContext && selectedPageContent) {
       instruction += `\n\nCurrent note context:\n\`\`\`\n${selectedPageContent.slice(0, 3000)}\n\`\`\``;
     }
@@ -125,9 +117,9 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
         responseText = res.data.text || '';
       } else {
         const openaiMessages = [
-          { role: 'system', content: systemInstruction },
-          ...messages.map(m => ({ role: m.role, content: m.content })),
-          { role: 'user', content: userMsg.content },
+          {role: 'system', content: systemInstruction},
+          ...messages.map(m => ({role: m.role, content: m.content})),
+          {role: 'user', content: userMsg.content},
         ];
         const res = await axios.post('/api/openai/generate', {
           apiKey: 'MANAGED',
@@ -162,7 +154,9 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
       await navigator.clipboard.writeText(msg.content);
       setCopiedId(msg.id);
       setTimeout(() => setCopiedId(null), 2000);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   const clearChat = () => {
@@ -177,8 +171,7 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
       <div
         className={`fixed right-0 top-0 bottom-0 w-[380px] bg-white border-l border-slate-200 shadow-xl z-40 flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
+        }`}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 shrink-0">
           <div className="flex items-center gap-2">
@@ -192,15 +185,13 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
               <button
                 onClick={clearChat}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                title="Clear chat"
-              >
+                title="Clear chat">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            >
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -211,8 +202,7 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
           <div className="relative">
             <button
               onClick={() => setShowModelDropdown(v => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors w-full"
-            >
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors w-full">
               <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
               <span className="flex-1 text-left">{currentModelLabel}</span>
               <ChevronDown className="w-3.5 h-3.5 shrink-0 text-slate-400" />
@@ -222,14 +212,18 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
                 {MODEL_OPTIONS.map(model => (
                   <button
                     key={model.id}
-                    onClick={() => { setSelectedModel(model.id); setShowModelDropdown(false); }}
+                    onClick={() => {
+                      setSelectedModel(model.id);
+                      setShowModelDropdown(false);
+                    }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-slate-50 transition-colors ${
                       selectedModel === model.id ? 'text-indigo-600 font-semibold' : 'text-slate-700'
-                    }`}
-                  >
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${
-                      model.provider === 'gemini' ? 'bg-blue-400' : 'bg-emerald-400'
-                    }`} />
+                    }`}>
+                    <div
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        model.provider === 'gemini' ? 'bg-blue-400' : 'bg-emerald-400'
+                      }`}
+                    />
                     {model.label}
                     {selectedModel === model.id && <Check className="w-3 h-3 ml-auto" />}
                   </button>
@@ -245,11 +239,12 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
                 onClick={() => setUsePageContext(v => !v)}
                 className={`w-8 h-4 rounded-full transition-colors relative cursor-pointer ${
                   usePageContext ? 'bg-indigo-600' : 'bg-slate-200'
-                }`}
-              >
-                <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${
-                  usePageContext ? 'translate-x-4' : 'translate-x-0.5'
-                }`} />
+                }`}>
+                <div
+                  className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${
+                    usePageContext ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
               </div>
               <span className="text-xs text-slate-600">Use current note as context</span>
             </label>
@@ -273,9 +268,11 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
                 ].map(suggestion => (
                   <button
                     key={suggestion}
-                    onClick={() => { setInput(suggestion); inputRef.current?.focus(); }}
-                    className="block w-full text-left px-3 py-2 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
-                  >
+                    onClick={() => {
+                      setInput(suggestion);
+                      inputRef.current?.focus();
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all">
                     {suggestion}
                   </button>
                 ))}
@@ -284,34 +281,30 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
           )}
 
           {messages.map(msg => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
                 className={`relative group max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
                   msg.role === 'user'
                     ? 'bg-indigo-600 text-white rounded-br-sm'
                     : 'bg-slate-100 text-slate-800 rounded-bl-sm'
-                }`}
-              >
+                }`}>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                 <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-indigo-200' : 'text-slate-400'}`}>
-                  {msg.timestamp.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  {msg.timestamp.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})}
                 </p>
 
                 {/* Copy button */}
                 <button
                   onClick={() => copyMessage(msg)}
-                  className={`absolute -top-2 ${msg.role === 'user' ? '-left-7' : '-right-7'} w-6 h-6 flex items-center justify-center rounded-full border shadow-sm opacity-0 group-hover:opacity-100 transition-all ${
-                    msg.role === 'user' ? 'bg-white border-slate-200 text-slate-500' : 'bg-white border-slate-200 text-slate-500'
+                  className={`absolute -top-2 ${
+                    msg.role === 'user' ? '-left-7' : '-right-7'
+                  } w-6 h-6 flex items-center justify-center rounded-full border shadow-sm opacity-0 group-hover:opacity-100 transition-all ${
+                    msg.role === 'user'
+                      ? 'bg-white border-slate-200 text-slate-500'
+                      : 'bg-white border-slate-200 text-slate-500'
                   } hover:text-indigo-600`}
-                  title="Copy"
-                >
-                  {copiedId === msg.id
-                    ? <Check className="w-3 h-3 text-emerald-500" />
-                    : <Copy className="w-3 h-3" />
-                  }
+                  title="Copy">
+                  {copiedId === msg.id ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                 </button>
               </div>
             </div>
@@ -344,7 +337,7 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
               placeholder="Ask anything... (Enter to send)"
               rows={1}
               className="flex-1 bg-transparent resize-none focus:outline-none text-sm text-slate-900 placeholder-slate-400 max-h-32 overflow-y-auto"
-              style={{ lineHeight: '1.5' }}
+              style={{lineHeight: '1.5'}}
               onInput={e => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
@@ -354,24 +347,16 @@ export default function OrgAISidebar({ isOpen, onClose, selectedPageContent }: O
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-            >
+              className="w-8 h-8 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed shrink-0">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-xs text-slate-400 mt-1.5 text-center">
-            Shift+Enter for new line
-          </p>
+          <p className="text-xs text-slate-400 mt-1.5 text-center">Shift+Enter for new line</p>
         </div>
       </div>
 
       {/* Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/10"
-          onClick={onClose}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 z-30 bg-black/10" onClick={onClose} />}
     </>
   );
 }

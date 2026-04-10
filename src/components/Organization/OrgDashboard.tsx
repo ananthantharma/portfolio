@@ -1,19 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import axios from 'axios';
-import {
-  FileText,
-  Users,
-  Flag,
-  Clock,
-  CalendarDays,
-  Plus,
-  ChevronRight,
-  Pin,
-  Sparkles,
-} from 'lucide-react';
-import { Category, Page, ViewType } from './OrganizationLayout';
+import {FileText, Users, Flag, Clock, CalendarDays, Plus, ChevronRight, Pin, Sparkles} from 'lucide-react';
+import {Category, Page, ViewType} from './OrganizationLayout';
 
 interface OrgDashboardProps {
   categories: Category[];
@@ -25,8 +15,8 @@ interface CalendarEvent {
   id: string;
   summary?: string;
   description?: string;
-  start?: { dateTime?: string; date?: string };
-  end?: { dateTime?: string; date?: string };
+  start?: {dateTime?: string; date?: string};
+  end?: {dateTime?: string; date?: string};
   htmlLink?: string;
 }
 
@@ -38,7 +28,7 @@ function getGreeting(): string {
 }
 
 function formatDate(d: Date): string {
-  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'});
 }
 
 function formatEventDate(event: CalendarEvent): string {
@@ -46,13 +36,16 @@ function formatEventDate(event: CalendarEvent): string {
   if (!raw) return '';
   const d = new Date(raw);
   if (event.start?.date && !event.start?.dateTime) {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
   }
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-    ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return (
+    d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) +
+    ' ' +
+    d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'})
+  );
 }
 
-export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashboardProps) {
+export default function OrgDashboard({categories, stats, onNavigate}: OrgDashboardProps) {
   const [recentPages, setRecentPages] = useState<Page[]>([]);
   const [calEvents, setCalEvents] = useState<CalendarEvent[]>([]);
   const [calError, setCalError] = useState(false);
@@ -65,11 +58,11 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
   // Derive stats totals
   const totalPages = stats ? Object.keys(stats.pages || {}).length : 0;
   const totalFlagged = stats
-    ? Object.values(stats.pages as Record<string, any> || {}).filter((p: any) => p.flagged > 0).length
+    ? Object.values((stats.pages as Record<string, any>) || {}).filter((p: any) => p.flagged > 0).length
     : 0;
   const dueSoon = stats
-    ? Object.values(stats.pages as Record<string, any> || {}).filter(
-        (p: any) => p.todo?.minDays !== null && p.todo?.minDays !== undefined && p.todo.minDays <= 3
+    ? Object.values((stats.pages as Record<string, any>) || {}).filter(
+        (p: any) => p.todo?.minDays !== null && p.todo?.minDays !== undefined && p.todo.minDays <= 3,
       ).length
     : 0;
 
@@ -81,8 +74,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
         if (res.data.success) {
           const sorted = [...res.data.data].sort(
             (a: Page, b: Page) =>
-              new Date(b.updatedAt || b.createdAt || 0).getTime() -
-              new Date(a.updatedAt || a.createdAt || 0).getTime()
+              new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime(),
           );
           setRecentPages(sorted.slice(0, 8));
         }
@@ -127,7 +119,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
       await axios.post('/api/notes/pages', {
         title: quickCapture.trim().slice(0, 60),
         sectionId: quickSection._id,
-        tabs: [{ title: 'Main', content: quickCapture.trim(), order: 0 }],
+        tabs: [{title: 'Main', content: quickCapture.trim(), order: 0}],
       });
 
       setQuickCapture('');
@@ -149,10 +141,42 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
   const totalContacts = 0; // contacts fetched separately
 
   const statCards = [
-    { label: 'Total Pages', value: totalPages, icon: FileText, color: 'indigo', bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100' },
-    { label: 'Contacts', value: totalContacts, icon: Users, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100' },
-    { label: 'Flagged Items', value: totalFlagged, icon: Flag, color: 'amber', bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100' },
-    { label: 'Due Soon', value: dueSoon, icon: Clock, color: 'rose', bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100' },
+    {
+      label: 'Total Pages',
+      value: totalPages,
+      icon: FileText,
+      color: 'indigo',
+      bg: 'bg-indigo-50',
+      text: 'text-indigo-600',
+      border: 'border-indigo-100',
+    },
+    {
+      label: 'Contacts',
+      value: totalContacts,
+      icon: Users,
+      color: 'emerald',
+      bg: 'bg-emerald-50',
+      text: 'text-emerald-600',
+      border: 'border-emerald-100',
+    },
+    {
+      label: 'Flagged Items',
+      value: totalFlagged,
+      icon: Flag,
+      color: 'amber',
+      bg: 'bg-amber-50',
+      text: 'text-amber-600',
+      border: 'border-amber-100',
+    },
+    {
+      label: 'Due Soon',
+      value: dueSoon,
+      icon: Clock,
+      color: 'rose',
+      bg: 'bg-rose-50',
+      text: 'text-rose-600',
+      border: 'border-rose-100',
+    },
   ];
 
   return (
@@ -161,17 +185,14 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
       <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {getGreeting()} ✨
-            </h1>
+            <h1 className="text-2xl font-semibold text-slate-900">{getGreeting()} ✨</h1>
             <p className="text-slate-500 mt-1 text-sm">{formatDate(new Date())}</p>
             <p className="text-slate-600 mt-3 text-sm">
-              You have{' '}
-              <span className="font-semibold text-indigo-600">{totalPages} notes</span>
+              You have <span className="font-semibold text-indigo-600">{totalPages} notes</span>
               {dueSoon > 0 && (
                 <>
-                  {' '}and{' '}
-                  <span className="font-semibold text-rose-600">{dueSoon} tasks due soon</span>
+                  {' '}
+                  and <span className="font-semibold text-rose-600">{dueSoon} tasks due soon</span>
                 </>
               )}
               .
@@ -185,11 +206,10 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map(({ label, value, icon: Icon, bg, text, border }) => (
+        {statCards.map(({label, value, icon: Icon, bg, text, border}) => (
           <div
             key={label}
-            className={`bg-white rounded-xl border ${border} p-4 shadow-sm hover:shadow-md transition-shadow`}
-          >
+            className={`bg-white rounded-xl border ${border} p-4 shadow-sm hover:shadow-md transition-shadow`}>
             <div className={`w-8 h-8 ${bg} rounded-lg flex items-center justify-center mb-3`}>
               <Icon className={`w-4 h-4 ${text}`} />
             </div>
@@ -218,14 +238,11 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
           <button
             onClick={handleQuickCapture}
             disabled={capturing || !quickCapture.trim() || categories.length === 0}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
             {capturing ? '...' : 'Save'}
           </button>
         </div>
-        {captureSuccess && (
-          <p className="text-emerald-600 text-xs mt-2">Note saved to Quick Notes!</p>
-        )}
+        {captureSuccess && <p className="text-emerald-600 text-xs mt-2">Note saved to Quick Notes!</p>}
         {categories.length === 0 && (
           <p className="text-slate-400 text-xs mt-2">Create a category in Notes to enable quick capture.</p>
         )}
@@ -238,8 +255,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
             <h2 className="text-sm font-semibold text-slate-700">Recent Notes</h2>
             <button
               onClick={() => onNavigate('notes')}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
-            >
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
               View all <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -254,10 +270,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
               <div className="text-center py-8">
                 <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                 <p className="text-slate-400 text-sm">No notes yet</p>
-                <button
-                  onClick={() => onNavigate('notes')}
-                  className="mt-2 text-indigo-600 text-xs hover:underline"
-                >
+                <button onClick={() => onNavigate('notes')} className="mt-2 text-indigo-600 text-xs hover:underline">
                   Create your first note
                 </button>
               </div>
@@ -267,23 +280,18 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
                   <button
                     key={page._id}
                     onClick={() => onNavigate('notes')}
-                    className="text-left p-3 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-200"
-                  >
+                    className="text-left p-3 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50 transition-all duration-200">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium text-slate-800 truncate leading-snug">{page.title}</p>
                       <div className="flex gap-1 shrink-0">
-                        {page.isFlagged && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5" />
-                        )}
-                        {page.isImportant && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5" />
-                        )}
+                        {page.isFlagged && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5" />}
+                        {page.isImportant && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5" />}
                       </div>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5 truncate">{getSectionName(page)}</p>
                     {page.updatedAt && (
                       <p className="text-xs text-slate-300 mt-1">
-                        {new Date(page.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(page.updatedAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
                       </p>
                     )}
                   </button>
@@ -304,8 +312,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
               </h2>
               <button
                 onClick={() => onNavigate('calendar')}
-                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
-              >
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                 Calendar <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -321,8 +328,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
                   <p className="text-slate-400 text-xs">Calendar not connected.</p>
                   <button
                     onClick={() => onNavigate('calendar')}
-                    className="mt-1 text-indigo-600 text-xs hover:underline"
-                  >
+                    className="mt-1 text-indigo-600 text-xs hover:underline">
                     Connect Google Calendar
                   </button>
                 </div>
@@ -334,9 +340,7 @@ export default function OrgDashboard({ categories, stats, onNavigate }: OrgDashb
                     <div key={event.id} className="flex gap-3 items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm text-slate-800 font-medium truncate">
-                          {event.summary || '(No title)'}
-                        </p>
+                        <p className="text-sm text-slate-800 font-medium truncate">{event.summary || '(No title)'}</p>
                         <p className="text-xs text-slate-400">{formatEventDate(event)}</p>
                       </div>
                     </div>

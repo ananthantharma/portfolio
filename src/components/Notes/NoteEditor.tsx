@@ -2203,9 +2203,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
           <button
             className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
-              isDirty
-                ? 'bg-slate-900 text-white hover:bg-slate-800'
-                : 'bg-emerald-50 text-emerald-600 cursor-default'
+              isDirty ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-emerald-50 text-emerald-600 cursor-default'
             } ${isSaving ? 'opacity-50 cursor-wait' : ''}`}
             disabled={!isDirty || isSaving}
             onClick={handleSave}>
@@ -2334,7 +2332,6 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         onSaveAndRun={handleRunOrganize}
         initialPrompt={organizePrompt}
       />
-
 
       <ExecutiveModal
         isOpen={isExecutiveModalOpen}

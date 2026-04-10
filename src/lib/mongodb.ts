@@ -30,9 +30,7 @@ function buildClientPromise(): Promise<MongoClient> {
     });
     if (changed) connectionUri = urlParams.toString();
   } catch {
-    connectionUri = uri.replace(/[?&][^=&]+=(?:&|$)/g, match =>
-      match.startsWith('&') ? '' : match.charAt(0),
-    );
+    connectionUri = uri.replace(/[?&][^=&]+=(?:&|$)/g, match => (match.startsWith('&') ? '' : match.charAt(0)));
   }
   connectionUri = connectionUri.replace(/[?&]$/, '');
 

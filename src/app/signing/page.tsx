@@ -138,14 +138,22 @@ export default function SigningDashboard() {
             ? 'border-indigo-400 bg-indigo-50/50 scale-[1.01]'
             : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/20'
         }`}
-        onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
-        onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+        onDragEnter={e => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
+        onDragLeave={e => {
+          e.preventDefault();
+          setDragActive(false);
+        }}
         onDragOver={e => e.preventDefault()}
         onDrop={handleDrop}>
         <input
           type="file"
           accept=".pdf"
-          className={`absolute inset-0 w-full h-full opacity-0 cursor-pointer ${dragActive ? 'pointer-events-none' : ''}`}
+          className={`absolute inset-0 w-full h-full opacity-0 cursor-pointer ${
+            dragActive ? 'pointer-events-none' : ''
+          }`}
           onChange={e => {
             const file = e.target.files?.[0];
             if (file) handleUpload(file);
@@ -159,19 +167,27 @@ export default function SigningDashboard() {
             </>
           ) : (
             <>
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all ${
-                dragActive ? 'bg-indigo-500 scale-110' : 'bg-gray-100'
-              }`}>
-                <svg className={`w-7 h-7 ${dragActive ? 'text-white' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all ${
+                  dragActive ? 'bg-indigo-500 scale-110' : 'bg-gray-100'
+                }`}>
+                <svg
+                  className={`w-7 h-7 ${dragActive ? 'text-white' : 'text-gray-400'}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"
+                  />
                 </svg>
               </div>
               <p className="text-sm font-medium text-gray-700 mb-1">
                 {dragActive ? 'Drop your PDF here' : 'Upload a document to get started'}
               </p>
-              <p className="text-xs text-gray-400">
-                Drag and drop a PDF file, or click to browse
-              </p>
+              <p className="text-xs text-gray-400">Drag and drop a PDF file, or click to browse</p>
             </>
           )}
         </div>
@@ -184,9 +200,7 @@ export default function SigningDashboard() {
             key={status}
             onClick={() => setFilterStatus(status)}
             className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              filterStatus === status
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+              filterStatus === status ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}>
             {status === 'ALL' ? 'All' : STATUS_STYLES[status]?.label || status}
             {status === 'ALL' && <span className="ml-1.5 text-gray-400">{docs.length}</span>}
@@ -202,8 +216,17 @@ export default function SigningDashboard() {
       ) : filteredDocs.length === 0 ? (
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            <svg
+              className="w-8 h-8 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
             </svg>
           </div>
           <p className="text-sm text-gray-500 font-medium">No documents yet</p>
@@ -213,8 +236,9 @@ export default function SigningDashboard() {
         <div className="grid gap-3">
           {filteredDocs.map(doc => {
             const status = STATUS_STYLES[doc.status] || STATUS_STYLES.DRAFT;
-            const progress = doc.recipient_count > 0 ? (Number(doc.signed_count) / Number(doc.recipient_count)) * 100 : 0;
-            
+            const progress =
+              doc.recipient_count > 0 ? (Number(doc.signed_count) / Number(doc.recipient_count)) * 100 : 0;
+
             return (
               <div
                 key={doc.id}
@@ -225,8 +249,8 @@ export default function SigningDashboard() {
                     {/* PDF icon */}
                     <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
                       <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
-                        <path d="M8 12h3v1.5H8zm0 3h5v1.5H8zm0 3h4v1.5H8z"/>
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                        <path d="M8 12h3v1.5H8zm0 3h5v1.5H8zm0 3h4v1.5H8z" />
                       </svg>
                     </div>
 
@@ -235,12 +259,17 @@ export default function SigningDashboard() {
                         {doc.title}
                       </h3>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold ${status.bg} ${status.text}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold ${status.bg} ${status.text}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
                           {status.label}
                         </span>
                         <span className="text-[11px] text-gray-400">
-                          {new Date(doc.created_at).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
+                          {new Date(doc.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
                         </span>
                         {doc.recipient_count > 0 && (
                           <span className="text-[11px] text-gray-400">
@@ -257,8 +286,16 @@ export default function SigningDashboard() {
                       <div className="relative w-9 h-9">
                         <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
                           <circle cx="18" cy="18" r="15" fill="none" stroke="#e5e7eb" strokeWidth="3" />
-                          <circle cx="18" cy="18" r="15" fill="none" stroke="#6366f1" strokeWidth="3"
-                            strokeDasharray={`${progress * 0.94} 100`} strokeLinecap="round" />
+                          <circle
+                            cx="18"
+                            cy="18"
+                            r="15"
+                            fill="none"
+                            stroke="#6366f1"
+                            strokeWidth="3"
+                            strokeDasharray={`${progress * 0.94} 100`}
+                            strokeLinecap="round"
+                          />
                         </svg>
                         <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-indigo-600">
                           {Math.round(progress)}%
@@ -268,11 +305,18 @@ export default function SigningDashboard() {
 
                     {/* Delete */}
                     <button
-                      onClick={e => { e.stopPropagation(); handleDelete(doc.id); }}
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(doc.id);
+                      }}
                       className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                       title="Delete">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
                       </svg>
                     </button>
                   </div>

@@ -19,8 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // 2. Handle PUT Request (Update Permissions)
   if (req.method === 'PUT') {
     try {
-      const {googleApiEnabled, openAiApiEnabled, notesEnabled, secureLoginEnabled, financeEnabled, invoiceEnabled} =
-        req.body;
+      const {
+        googleApiEnabled,
+        openAiApiEnabled,
+        notesEnabled,
+        secureLoginEnabled,
+        financeEnabled,
+        invoiceEnabled,
+        formFillEnabled,
+      } = req.body;
 
       const updatedUser = await User.findByIdAndUpdate(
         id,
@@ -32,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             secureLoginEnabled,
             financeEnabled,
             invoiceEnabled,
+            formFillEnabled,
           },
         },
         {new: true}, // Return updated document

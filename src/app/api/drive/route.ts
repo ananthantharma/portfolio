@@ -15,7 +15,7 @@ async function getDriveClient(accessToken: string) {
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions) as any;
+    const session = (await getServerSession(authOptions)) as any;
     if (!session || !session.accessToken) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     const drive = await getDriveClient(session.accessToken);
-    
+
     // Convert Blob to Buffer for upload
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

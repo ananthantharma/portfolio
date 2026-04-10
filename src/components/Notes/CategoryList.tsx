@@ -279,8 +279,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     if (loading) {
       return (
         <div className="flex h-full flex-col gap-2 p-3">
-          {[1,2,3].map(i => (
-            <div key={i} className="h-8 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay:`${i*100}ms`}} />
+          {[1, 2, 3].map(i => (
+            <div
+              key={i}
+              className="h-8 rounded-lg bg-slate-200/60 animate-pulse"
+              style={{animationDelay: `${i * 100}ms`}}
+            />
           ))}
         </div>
       );
@@ -290,7 +294,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5">
-          {!isCollapsed && <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Notebooks</h2>}
+          {!isCollapsed && (
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Notebooks</h2>
+          )}
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"

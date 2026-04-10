@@ -43,9 +43,7 @@ export default function SigningLayout({children}: {children: React.ReactNode}) {
         <span className="text-white text-sm font-black">A</span>
       </Link>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-        {children}
-      </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">{children}</div>
     </>
   );
 }

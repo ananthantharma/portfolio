@@ -449,7 +449,9 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
 
 function CustomPlaceholder({placeholder}: {placeholder?: string}) {
   return (
-    <div className="absolute top-[42px] left-[32px] md:left-[48px] text-slate-300 pointer-events-none select-none" style={{fontSize: '16px'}}>
+    <div
+      className="absolute top-[42px] left-[32px] md:left-[48px] text-slate-300 pointer-events-none select-none"
+      style={{fontSize: '16px'}}>
       {placeholder || 'Start typing something beautiful...'}
     </div>
   );
@@ -570,56 +572,58 @@ const RichTextEditor = React.memo(
     );
 
     return (
-    <div className="h-full flex flex-col relative bg-white selection:bg-indigo-50/70">
-      <LexicalComposer initialConfig={editorConfig}>
-        <div className="flex flex-col h-full relative">
-          {/* High-Fidelity Sticky Top Toolbar */}
-          <div className="sticky top-0 z-[100] w-full bg-white/80 backdrop-blur-md border-b border-black/[0.03] px-6 py-2 transition-all duration-300">
-            <div className="max-w-4xl mx-auto flex items-center justify-between">
-              <ToolbarPlugin />
+      <div className="h-full flex flex-col relative bg-white selection:bg-indigo-50/70">
+        <LexicalComposer initialConfig={editorConfig}>
+          <div className="flex flex-col h-full relative">
+            {/* High-Fidelity Sticky Top Toolbar */}
+            <div className="sticky top-0 z-[100] w-full bg-white/80 backdrop-blur-md border-b border-black/[0.03] px-6 py-2 transition-all duration-300">
+              <div className="max-w-4xl mx-auto flex items-center justify-between">
+                <ToolbarPlugin />
+              </div>
             </div>
-          </div>
 
-          <div className="relative flex-1 overflow-hidden">
-            <RichTextPlugin
-              contentEditable={
-                <ContentEditable
-                  onBlur={onBlur}
-                  className="h-full overflow-y-auto w-full outline-none px-8 md:px-16 pt-12 pb-32 text-[17px] leading-[1.8] text-slate-800 font-sans"
-                />
-              }
-              placeholder={<CustomPlaceholder placeholder={placeholder} />}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <HistoryPlugin />
-            <ListPlugin />
-            <CheckListPlugin />
-            <TablePlugin />
-            <LinkPlugin />
-            <AutoLinkPlugin matchers={MATCHERS} />
-            <TabIndentationPlugin />
-            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-            <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
-            <ValueSyncPlugin value={value} onChange={onChange} />
-            <ImagePastePlugin />
-            <EditorRefPlugin editorRef={lexicalEditorRef} />
-          </div>
+            <div className="relative flex-1 overflow-hidden">
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable
+                    onBlur={onBlur}
+                    className="h-full overflow-y-auto w-full outline-none px-8 md:px-16 pt-12 pb-32 text-[17px] leading-[1.8] text-slate-800 font-sans"
+                  />
+                }
+                placeholder={<CustomPlaceholder placeholder={placeholder} />}
+                ErrorBoundary={LexicalErrorBoundary}
+              />
+              <HistoryPlugin />
+              <ListPlugin />
+              <CheckListPlugin />
+              <TablePlugin />
+              <LinkPlugin />
+              <AutoLinkPlugin matchers={MATCHERS} />
+              <TabIndentationPlugin />
+              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+              <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
+              <ValueSyncPlugin value={value} onChange={onChange} />
+              <ImagePastePlugin />
+              <EditorRefPlugin editorRef={lexicalEditorRef} />
+            </div>
 
-          {/* Quick Info Bar at the Bottom */}
-          <div className="absolute bottom-4 right-8 z-[50] flex items-center gap-4 px-4 py-1.5 rounded-full bg-slate-50/50 backdrop-blur-sm border border-black/[0.03] text-[10px] font-medium text-slate-400 select-none">
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-600">{(value || '').replace(/<[^>]*>/g, '').length}</span>
-              <span>CHARS</span>
-            </div>
-            <div className="w-[1px] h-3 bg-slate-200" />
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-600">{Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').split(/\s+/).length / 200))}</span>
-              <span>MIN READ</span>
+            {/* Quick Info Bar at the Bottom */}
+            <div className="absolute bottom-4 right-8 z-[50] flex items-center gap-4 px-4 py-1.5 rounded-full bg-slate-50/50 backdrop-blur-sm border border-black/[0.03] text-[10px] font-medium text-slate-400 select-none">
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-slate-600">{(value || '').replace(/<[^>]*>/g, '').length}</span>
+                <span>CHARS</span>
+              </div>
+              <div className="w-[1px] h-3 bg-slate-200" />
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-slate-600">
+                  {Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').split(/\s+/).length / 200))}
+                </span>
+                <span>MIN READ</span>
+              </div>
             </div>
           </div>
-        </div>
-      </LexicalComposer>
-    </div>
+        </LexicalComposer>
+      </div>
     );
   }),
 );

@@ -306,8 +306,12 @@ const PageList: React.FC<PageListProps> = React.memo(
     if (loading) {
       return (
         <div className="flex h-full flex-col gap-2 p-3">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="h-8 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay:`${i*100}ms`}} />
+          {[1, 2, 3, 4].map(i => (
+            <div
+              key={i}
+              className="h-8 rounded-lg bg-slate-200/60 animate-pulse"
+              style={{animationDelay: `${i * 100}ms`}}
+            />
           ))}
         </div>
       );

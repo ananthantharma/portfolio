@@ -138,7 +138,7 @@ const DEMO_ALERTS = [
     category: 'Operational' as const,
     title: 'Factory Fire — Production Halt',
     description:
-      'A fire at AlphaChemical Vietnam\'s main facility has destroyed approximately 60% of production capacity. ETA for recovery: unknown.',
+      "A fire at AlphaChemical Vietnam's main facility has destroyed approximately 60% of production capacity. ETA for recovery: unknown.",
     source: 'Internal Report',
   },
   {
@@ -219,7 +219,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   );
 
   // Build name → id map for alerts
-  const nameMap: Record<string, typeof supplierDocs[0]> = {};
+  const nameMap: Record<string, (typeof supplierDocs)[0]> = {};
   for (const s of supplierDocs) nameMap[s.name] = s;
 
   // Assign alerts to correct suppliers

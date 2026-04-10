@@ -1,25 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  CalendarDays,
-  List,
-  X,
-  AlertCircle,
-  Loader2,
-  ExternalLink,
-} from 'lucide-react';
+import {ChevronLeft, ChevronRight, Plus, CalendarDays, List, X, AlertCircle, Loader2, ExternalLink} from 'lucide-react';
 
 interface CalendarEvent {
   id: string;
   summary?: string;
   description?: string;
-  start?: { dateTime?: string; date?: string };
-  end?: { dateTime?: string; date?: string };
+  start?: {dateTime?: string; date?: string};
+  end?: {dateTime?: string; date?: string};
   htmlLink?: string;
 }
 
@@ -28,15 +18,25 @@ interface OrgCalendarViewProps {
 }
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatTime(dt?: string): string {
   if (!dt) return '';
   const d = new Date(dt);
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return d.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
 }
 
 function formatFullDate(dt?: string, date?: string): string {
@@ -44,10 +44,9 @@ function formatFullDate(dt?: string, date?: string): string {
   if (!raw) return '';
   const d = new Date(raw);
   if (date && !dt) {
-    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return d.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'});
   }
-  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
-    ' at ' + formatTime(dt);
+  return d.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'}) + ' at ' + formatTime(dt);
 }
 
 function getEventDateKey(event: CalendarEvent): string {
@@ -67,12 +66,15 @@ interface NewEventForm {
 }
 
 const EMPTY_FORM: NewEventForm = {
-  summary: '', description: '',
-  startDate: '', startTime: '09:00',
-  endDate: '', endTime: '10:00',
+  summary: '',
+  description: '',
+  startDate: '',
+  startTime: '09:00',
+  endDate: '',
+  endTime: '10:00',
 };
 
-export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
+export default function OrgCalendarView({accessToken}: OrgCalendarViewProps) {
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -84,7 +86,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
   const [newForm, setNewForm] = useState<NewEventForm>(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
+  const [popoverPos, setPopoverPos] = useState({x: 0, y: 0});
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -93,7 +95,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
     const lastDay = new Date(viewYear, viewMonth + 1, 0, 23, 59, 59);
     try {
       const res = await axios.get(
-        `/api/calendar?timeMin=${firstDay.toISOString()}&timeMax=${lastDay.toISOString()}&maxResults=100`
+        `/api/calendar?timeMin=${firstDay.toISOString()}&timeMax=${lastDay.toISOString()}&maxResults=100`,
       );
       if (res.data.success) {
         setEvents(res.data.data);
@@ -108,19 +110,28 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
     }
   }, [viewYear, viewMonth]);
 
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
-    else setViewMonth(m => m - 1);
+    if (viewMonth === 0) {
+      setViewYear(y => y - 1);
+      setViewMonth(11);
+    } else setViewMonth(m => m - 1);
   };
 
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
-    else setViewMonth(m => m + 1);
+    if (viewMonth === 11) {
+      setViewYear(y => y + 1);
+      setViewMonth(0);
+    } else setViewMonth(m => m + 1);
   };
 
-  const goToday = () => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); };
+  const goToday = () => {
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+  };
 
   const createEvent = async () => {
     if (!newForm.summary.trim() || !newForm.startDate || !newForm.endDate) return;
@@ -131,8 +142,8 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
       const res = await axios.post('/api/calendar', {
         summary: newForm.summary,
         description: newForm.description,
-        start: { dateTime: new Date(startDT).toISOString() },
-        end: { dateTime: new Date(endDT).toISOString() },
+        start: {dateTime: new Date(startDT).toISOString()},
+        end: {dateTime: new Date(endDT).toISOString()},
       });
       if (res.data.success) {
         setShowNewModal(false);
@@ -152,7 +163,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const cells: (number | null)[] = [
     ...Array(startDayOfWeek).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    ...Array.from({length: daysInMonth}, (_, i) => i + 1),
   ];
   // Pad to complete rows
   while (cells.length % 7 !== 0) cells.push(null);
@@ -169,14 +180,17 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
   // Group events by date for list view
   const groupedEvents = events.reduce<Record<string, CalendarEvent[]>>((acc, ev) => {
     const key = getEventDateKey(ev);
-    if (key) { if (!acc[key]) acc[key] = []; acc[key].push(ev); }
+    if (key) {
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(ev);
+    }
     return acc;
   }, {});
   const sortedDates = Object.keys(groupedEvents).sort();
 
   const handleEventClick = (ev: CalendarEvent, e: React.MouseEvent) => {
     setSelectedEvent(ev);
-    setPopoverPos({ x: e.clientX, y: e.clientY });
+    setPopoverPos({x: e.clientX, y: e.clientY});
   };
 
   if (!accessToken && calError) {
@@ -209,8 +223,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
           </button>
           <button
             onClick={goToday}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
-          >
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors">
             Today
           </button>
         </div>
@@ -231,16 +244,14 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
               onClick={() => setViewMode('month')}
               className={`px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors ${
                 viewMode === 'month' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'
-              }`}
-            >
+              }`}>
               <CalendarDays className="w-3.5 h-3.5" /> Month
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={`px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors ${
                 viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'
-              }`}
-            >
+              }`}>
               <List className="w-3.5 h-3.5" /> List
             </button>
           </div>
@@ -250,11 +261,10 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
               const d = new Date();
               const pad = (n: number) => String(n).padStart(2, '0');
               const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-              setNewForm({ ...EMPTY_FORM, startDate: dateStr, endDate: dateStr });
+              setNewForm({...EMPTY_FORM, startDate: dateStr, endDate: dateStr});
               setShowNewModal(true);
             }}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-          >
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-xs font-medium transition-all">
             <Plus className="w-3.5 h-3.5" />
             New Event
           </button>
@@ -289,28 +299,20 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
             <div className="grid grid-cols-7 border-l border-t border-slate-200">
               {cells.map((day, idx) => {
                 const isToday =
-                  day === today.getDate() &&
-                  viewMonth === today.getMonth() &&
-                  viewYear === today.getFullYear();
+                  day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
                 const key = day
                   ? `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                   : null;
                 const dayEvents = key ? eventsByDay[key] || [] : [];
 
                 return (
-                  <div
-                    key={idx}
-                    className="border-r border-b border-slate-200 min-h-[100px] p-1.5"
-                  >
+                  <div key={idx} className="border-r border-b border-slate-200 min-h-[100px] p-1.5">
                     {day && (
                       <>
                         <div
                           className={`w-7 h-7 flex items-center justify-center text-xs font-medium rounded-full mb-1 ${
-                            isToday
-                              ? 'bg-indigo-600 text-white'
-                              : 'text-slate-700'
-                          }`}
-                        >
+                            isToday ? 'bg-indigo-600 text-white' : 'text-slate-700'
+                          }`}>
                           {day}
                         </div>
                         <div className="space-y-0.5">
@@ -318,8 +320,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                             <button
                               key={ev.id}
                               onClick={e => handleEventClick(ev, e)}
-                              className="w-full text-left text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 truncate hover:bg-indigo-200 transition-colors"
-                            >
+                              className="w-full text-left text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 truncate hover:bg-indigo-200 transition-colors">
                               {ev.summary || '(No title)'}
                             </button>
                           ))}
@@ -358,15 +359,14 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                   <div key={date}>
                     <h3 className={`text-xs font-semibold mb-2 ${isToday ? 'text-indigo-600' : 'text-slate-500'}`}>
                       {isToday ? 'Today — ' : ''}
-                      {d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                      {d.toLocaleDateString('en-US', {weekday: 'long', month: 'long', day: 'numeric'})}
                     </h3>
                     <div className="space-y-2">
                       {groupedEvents[date].map(ev => (
                         <button
                           key={ev.id}
                           onClick={e => handleEventClick(ev, e)}
-                          className="w-full text-left bg-white rounded-xl border border-slate-200 p-3 hover:border-indigo-300 hover:shadow-sm transition-all duration-200"
-                        >
+                          className="w-full text-left bg-white rounded-xl border border-slate-200 p-3 hover:border-indigo-300 hover:shadow-sm transition-all duration-200">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
@@ -383,9 +383,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                                 )}
                               </div>
                             </div>
-                            {ev.htmlLink && (
-                              <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0 mt-0.5" />
-                            )}
+                            {ev.htmlLink && <ExternalLink className="w-3.5 h-3.5 text-slate-300 shrink-0 mt-0.5" />}
                           </div>
                           {ev.description && (
                             <p className="text-xs text-slate-500 mt-1.5 ml-4 line-clamp-2">{ev.description}</p>
@@ -408,8 +406,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
           style={{
             top: Math.min(popoverPos.y + 10, window.innerHeight - 250),
             left: Math.min(popoverPos.x + 10, window.innerWidth - 300),
-          }}
-        >
+          }}>
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3 className="text-sm font-semibold text-slate-900">{selectedEvent.summary || '(No title)'}</h3>
             <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-700 shrink-0">
@@ -430,8 +427,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
               href={selectedEvent.htmlLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
+              className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium">
               <ExternalLink className="w-3.5 h-3.5" />
               Open in Google Calendar
             </a>
@@ -440,9 +436,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
       )}
 
       {/* Backdrop for popover */}
-      {selectedEvent && (
-        <div className="fixed inset-0 z-40" onClick={() => setSelectedEvent(null)} />
-      )}
+      {selectedEvent && <div className="fixed inset-0 z-40" onClick={() => setSelectedEvent(null)} />}
 
       {/* New Event Modal */}
       {showNewModal && (
@@ -459,7 +453,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                 <label className="block text-xs font-medium text-slate-700 mb-1">Title *</label>
                 <input
                   value={newForm.summary}
-                  onChange={e => setNewForm(f => ({ ...f, summary: e.target.value }))}
+                  onChange={e => setNewForm(f => ({...f, summary: e.target.value}))}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Event title"
                 />
@@ -468,7 +462,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                 <label className="block text-xs font-medium text-slate-700 mb-1">Description</label>
                 <textarea
                   value={newForm.description}
-                  onChange={e => setNewForm(f => ({ ...f, description: e.target.value }))}
+                  onChange={e => setNewForm(f => ({...f, description: e.target.value}))}
                   rows={2}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
                   placeholder="Optional description"
@@ -480,7 +474,9 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                   <input
                     type="date"
                     value={newForm.startDate}
-                    onChange={e => setNewForm(f => ({ ...f, startDate: e.target.value, endDate: f.endDate || e.target.value }))}
+                    onChange={e =>
+                      setNewForm(f => ({...f, startDate: e.target.value, endDate: f.endDate || e.target.value}))
+                    }
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -489,7 +485,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                   <input
                     type="time"
                     value={newForm.startTime}
-                    onChange={e => setNewForm(f => ({ ...f, startTime: e.target.value }))}
+                    onChange={e => setNewForm(f => ({...f, startTime: e.target.value}))}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -500,7 +496,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                   <input
                     type="date"
                     value={newForm.endDate}
-                    onChange={e => setNewForm(f => ({ ...f, endDate: e.target.value }))}
+                    onChange={e => setNewForm(f => ({...f, endDate: e.target.value}))}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -509,7 +505,7 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
                   <input
                     type="time"
                     value={newForm.endTime}
-                    onChange={e => setNewForm(f => ({ ...f, endTime: e.target.value }))}
+                    onChange={e => setNewForm(f => ({...f, endTime: e.target.value}))}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -518,15 +514,13 @@ export default function OrgCalendarView({ accessToken }: OrgCalendarViewProps) {
             <div className="px-5 py-4 border-t border-slate-200 flex justify-end gap-2">
               <button
                 onClick={() => setShowNewModal(false)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700"
-              >
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700">
                 Cancel
               </button>
               <button
                 onClick={createEvent}
                 disabled={creating || !newForm.summary.trim() || !newForm.startDate || !newForm.endDate}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 flex items-center gap-2"
-              >
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 flex items-center gap-2">
                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Create Event
               </button>

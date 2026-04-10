@@ -22,10 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (isResolved !== undefined) filter.isResolved = isResolved === 'true';
     if (isRead !== undefined) filter.isRead = isRead === 'true';
 
-    const alerts = await RiskAlert.find(filter)
-      .sort({createdAt: -1})
-      .limit(Number(limit))
-      .lean();
+    const alerts = await RiskAlert.find(filter).sort({createdAt: -1}).limit(Number(limit)).lean();
     return res.status(200).json(alerts);
   }
 
@@ -41,10 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (action === 'markRead') {
       await RiskAlert.updateMany({_id: {$in: ids}, userEmail}, {isRead: true});
     } else if (action === 'resolve') {
-      await RiskAlert.updateMany(
-        {_id: {$in: ids}, userEmail},
-        {isResolved: true, resolvedAt: new Date()},
-      );
+      await RiskAlert.updateMany({_id: {$in: ids}, userEmail}, {isResolved: true, resolvedAt: new Date()});
     }
     return res.status(200).json({success: true});
   }

@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Mic, StopCircle, Radio, Save, Trash2, Settings2, Loader2 } from 'lucide-react';
-import { Mp3Encoder } from '@breezystack/lamejs';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
+import {X, Mic, StopCircle, Radio, Save, Trash2, Settings2, Loader2} from 'lucide-react';
+import {Mp3Encoder} from '@breezystack/lamejs';
 
 interface AudioRecorderModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ const SAMPLE_RATE = 44100;
 const NUM_CHANNELS = 1; // mono is simpler and smaller
 const KBPS = 128;
 
-const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose }) => {
+const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({isOpen, onClose}) => {
   if (!isOpen) return null;
 
   const [isCapturing, setIsCapturing] = useState(false);
@@ -28,7 +28,9 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
 
   useEffect(() => {
     if (!isOpen) stopCapture();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -74,7 +76,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
       streamRef.current = audioStream;
 
       // ------ Capture raw PCM via Web Audio ScriptProcessor ------
-      const audioContext = new AudioContext({ sampleRate: SAMPLE_RATE });
+      const audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
       audioContextRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(audioStream);
@@ -82,7 +84,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
       const processor = audioContext.createScriptProcessor(4096, NUM_CHANNELS, NUM_CHANNELS);
       processorRef.current = processor;
 
-      processor.onaudioprocess = (e) => {
+      processor.onaudioprocess = e => {
         // Copy the channel data — the underlying buffer gets reused
         const channelData = e.inputBuffer.getChannelData(0);
         pcmBuffersRef.current.push(new Float32Array(channelData));
@@ -163,7 +165,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
     const flushed = encoder.flush();
     if (flushed.length > 0) mp3Parts.push(new Uint8Array(flushed.buffer as ArrayBuffer));
 
-    return new Blob(mp3Parts as any[], { type: 'audio/mpeg' });
+    return new Blob(mp3Parts as any[], {type: 'audio/mpeg'});
   }
 
   async function saveAudioLocally() {
@@ -175,7 +177,7 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
         try {
           const handle = await (window as any).showSaveFilePicker({
             suggestedName: filename,
-            types: [{ description: 'MP3 Audio', accept: { 'audio/mpeg': ['.mp3'] } }],
+            types: [{description: 'MP3 Audio', accept: {'audio/mpeg': ['.mp3']}}],
           });
           const writable = await handle.createWritable();
           await writable.write(recordedBlob);
@@ -206,7 +208,10 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isCapturing ? 'bg-red-50 text-red-500 animate-pulse ring-2 ring-red-100' : 'bg-slate-50 text-slate-500'}`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isCapturing ? 'bg-red-50 text-red-500 animate-pulse ring-2 ring-red-100' : 'bg-slate-50 text-slate-500'
+              }`}>
               {isCapturing ? <Radio className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </div>
             <div>
@@ -228,7 +233,10 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
           )}
 
           <div className="relative flex flex-col items-center justify-center space-y-6">
-            <div className={`w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-500 ${isCapturing ? 'bg-red-50 scale-110 shadow-inner' : isConverting ? 'bg-indigo-50' : 'bg-slate-50'}`}>
+            <div
+              className={`w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-500 ${
+                isCapturing ? 'bg-red-50 scale-110 shadow-inner' : isConverting ? 'bg-indigo-50' : 'bg-slate-50'
+              }`}>
               {isConverting ? (
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
@@ -236,7 +244,10 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
                 </div>
               ) : (
                 <>
-                  <div className={`text-3xl font-mono font-bold tracking-tighter ${isCapturing ? 'text-red-600' : 'text-slate-400'}`}>
+                  <div
+                    className={`text-3xl font-mono font-bold tracking-tighter ${
+                      isCapturing ? 'text-red-600' : 'text-slate-400'
+                    }`}>
                     {formatTime(recordingTime)}
                   </div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">
@@ -291,7 +302,11 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
                 </button>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { setRecordedBlob(null); setRecordingTime(0); setError(null); }}
+                    onClick={() => {
+                      setRecordedBlob(null);
+                      setRecordingTime(0);
+                      setError(null);
+                    }}
                     className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 py-4 rounded-2xl transition-all active:scale-95">
                     <Trash2 className="w-4 h-4" />
                     Discard
@@ -314,9 +329,9 @@ const AudioRecorderModal: React.FC<AudioRecorderModalProps> = ({ isOpen, onClose
             </div>
             To capture system sound (Spotify, YouTube, Teams, etc.), select{' '}
             <span className="text-indigo-600 font-bold">&quot;Entire Screen&quot;</span> and ensure you check{' '}
-            <span className="text-indigo-600 font-bold">&quot;Share system audio&quot;</span> in the browser prompt.
-            The recording will be automatically converted to{' '}
-            <span className="text-indigo-600 font-bold">MP3 format</span> after you stop.
+            <span className="text-indigo-600 font-bold">&quot;Share system audio&quot;</span> in the browser prompt. The
+            recording will be automatically converted to <span className="text-indigo-600 font-bold">MP3 format</span>{' '}
+            after you stop.
           </div>
         </div>
       </div>

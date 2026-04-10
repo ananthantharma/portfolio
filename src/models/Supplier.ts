@@ -88,7 +88,6 @@ SupplierSchema.pre('save', function (next) {
   next();
 });
 
-const Supplier: Model<ISupplier> =
-  mongoose.models.Supplier || mongoose.model<ISupplier>('Supplier', SupplierSchema);
+const Supplier: Model<ISupplier> = mongoose.models.Supplier || mongoose.model<ISupplier>('Supplier', SupplierSchema);
 
 export default Supplier;

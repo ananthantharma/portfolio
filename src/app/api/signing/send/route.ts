@@ -62,7 +62,7 @@ export async function POST(req: Request) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${resendKey}`,
+              Authorization: `Bearer ${resendKey}`,
             },
             body: JSON.stringify({
               from: 'SignDocs <noreply@ananthan.org>',
@@ -83,7 +83,11 @@ export async function POST(req: Request) {
                     <strong>${session.user.name || session.user.email}</strong> has sent you 
                     "<strong>${doc.title}</strong>" for your signature.
                   </p>
-                  ${doc.message ? `<p style="color: #666; font-size: 14px; background: #f5f5f5; padding: 16px; border-radius: 8px; border-left: 3px solid #6366f1;">${doc.message}</p>` : ''}
+                  ${
+                    doc.message
+                      ? `<p style="color: #666; font-size: 14px; background: #f5f5f5; padding: 16px; border-radius: 8px; border-left: 3px solid #6366f1;">${doc.message}</p>`
+                      : ''
+                  }
                   <div style="text-align: center; margin: 32px 0;">
                     <a href="${signingUrl}" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 15px; display: inline-block;">
                       Review & Sign Document

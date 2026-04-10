@@ -34,8 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     Inactive: suppliers.filter(s => s.status === 'Inactive').length,
   };
 
-  const avgScore =
-    total > 0 ? Math.round(suppliers.reduce((sum, s) => sum + (s.overallScore || 0), 0) / total) : 0;
+  const avgScore = total > 0 ? Math.round(suppliers.reduce((sum, s) => sum + (s.overallScore || 0), 0) / total) : 0;
 
   // Category breakdown
   const categoryMap: Record<string, {count: number; totalScore: number}> = {};

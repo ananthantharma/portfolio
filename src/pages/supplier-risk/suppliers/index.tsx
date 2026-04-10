@@ -154,7 +154,9 @@ const SuppliersPage = () => {
                     {suppliers.map((s: SupplierDoc) => (
                       <tr key={s._id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
-                          <Link href={`/supplier-risk/suppliers/${s._id}`} className="font-medium text-blue-700 hover:underline">
+                          <Link
+                            href={`/supplier-risk/suppliers/${s._id}`}
+                            className="font-medium text-blue-700 hover:underline">
                             {s.name}
                           </Link>
                           {s.tags?.length > 0 && (
@@ -170,7 +172,10 @@ const SuppliersPage = () => {
                         <td className="px-4 py-3 text-gray-600">{s.category}</td>
                         <td className="px-4 py-3 text-gray-600">{s.country}</td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[s.status] || 'bg-gray-100 text-gray-600'}`}>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                              STATUS_BADGE[s.status] || 'bg-gray-100 text-gray-600'
+                            }`}>
                             {s.status}
                           </span>
                         </td>
@@ -197,9 +202,7 @@ const SuppliersPage = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">
-                          {s.annualSpend
-                            ? `$${(s.annualSpend / 1000000).toFixed(1)}M`
-                            : '—'}
+                          {s.annualSpend ? `$${(s.annualSpend / 1000000).toFixed(1)}M` : '—'}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
@@ -225,7 +228,9 @@ const SuppliersPage = () => {
               </div>
             )}
           </div>
-          <p className="text-xs text-gray-400">{suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-gray-400">
+            {suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''}
+          </p>
         </div>
 
         <SupplierModal

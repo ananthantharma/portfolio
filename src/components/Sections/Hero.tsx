@@ -8,10 +8,10 @@ import Section from '../Layout/Section';
 
 /* ─── Credential badges ───────────────────────────────────────────────── */
 const BADGES = [
-  {Icon: Shield,  text: 'P.ENG'},
-  {Icon: Target,  text: 'PMP'},
+  {Icon: Shield, text: 'P.ENG'},
+  {Icon: Target, text: 'PMP'},
   {Icon: Network, text: 'CSCP'},
-  {Icon: Award,   text: 'MBA'},
+  {Icon: Award, text: 'MBA'},
 ] as const;
 
 /* ─── Hero ───────────────────────────────────────────────────────────── */
@@ -22,13 +22,13 @@ const Hero: FC = memo(() => {
 
   // Use a ref so the canvas loop reads fresh values without recreating
   const mousePosRef = useRef({x: 0, y: 0});
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   /* mouse tracking */
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       mousePosRef.current = {
-        x: (e.clientX / window.innerWidth)  * 2 - 1,
+        x: (e.clientX / window.innerWidth) * 2 - 1,
         y: -(e.clientY / window.innerHeight) * 2 + 1,
       };
     };
@@ -70,12 +70,12 @@ const Hero: FC = memo(() => {
     let rafId: number;
     let globalRotation = 0;
     const maxDepth = 2500;
-    const numStars  = 1200;
+    const numStars = 1200;
 
-    type Star  = {x: number; y: number; z: number; color: string; baseSize: number};
+    type Star = {x: number; y: number; z: number; color: string; baseSize: number};
     type Comet = {x: number; y: number; length: number; speed: number; angle: number; opacity: number};
 
-    const stars: Star[]  = [];
+    const stars: Star[] = [];
     const comets: Comet[] = [];
 
     for (let i = 0; i < numStars; i++) {
@@ -96,7 +96,7 @@ const Hero: FC = memo(() => {
       const H = window.innerHeight;
 
       if (canvas.width !== W || canvas.height !== H) {
-        canvas.width  = W;
+        canvas.width = W;
         canvas.height = H;
       }
 
@@ -108,10 +108,10 @@ const Hero: FC = memo(() => {
 
       const driftX = mx * 10;
       const driftY = -my * 10;
-      const cosR   = Math.cos(globalRotation);
-      const sinR   = Math.sin(globalRotation);
-      const fov    = 600;
-      const now    = Date.now();
+      const cosR = Math.cos(globalRotation);
+      const sinR = Math.sin(globalRotation);
+      const fov = 600;
+      const now = Date.now();
 
       for (const star of stars) {
         star.z -= 0.5;
@@ -129,9 +129,9 @@ const Hero: FC = memo(() => {
         const y2d = cy + (ry + driftY * star.z * 0.05) * sc;
 
         const distAlpha = Math.min(1, (maxDepth - star.z) / 1000);
-        const twinkle   = 0.5 + Math.sin(now * 0.002 + star.x) * 0.5;
-        const alpha     = distAlpha * (0.4 + twinkle * 0.6);
-        const r         = Math.max(0.1, star.baseSize * sc);
+        const twinkle = 0.5 + Math.sin(now * 0.002 + star.x) * 0.5;
+        const alpha = distAlpha * (0.4 + twinkle * 0.6);
+        const r = Math.max(0.1, star.baseSize * sc);
 
         ctx.beginPath();
         ctx.arc(x2d, y2d, r, 0, Math.PI * 2);
@@ -139,35 +139,39 @@ const Hero: FC = memo(() => {
         ctx.fill();
 
         if (star.baseSize > 2 && alpha > 0.5) {
-          ctx.shadowBlur  = 15;
+          ctx.shadowBlur = 15;
           ctx.shadowColor = `rgba(${star.color},${alpha})`;
           ctx.fill();
-          ctx.shadowBlur  = 0;
+          ctx.shadowBlur = 0;
         }
       }
 
       /* comets */
       if (Math.random() < 0.005) {
         comets.push({
-          x:       (Math.random() - 0.5) * W * 2,
-          y:       (Math.random() - 0.5) * H * 2,
-          length:  Math.random() * 150 + 50,
-          speed:   Math.random() * 5 + 5,
-          angle:   Math.PI / 4 + (Math.random() * 0.2 - 0.1),
+          x: (Math.random() - 0.5) * W * 2,
+          y: (Math.random() - 0.5) * H * 2,
+          length: Math.random() * 150 + 50,
+          speed: Math.random() * 5 + 5,
+          angle: Math.PI / 4 + (Math.random() * 0.2 - 0.1),
           opacity: 1,
         });
       }
 
       for (let i = comets.length - 1; i >= 0; i--) {
         const c = comets[i];
-        c.x       += Math.cos(c.angle) * c.speed;
-        c.y       += Math.sin(c.angle) * c.speed;
+        c.x += Math.cos(c.angle) * c.speed;
+        c.y += Math.sin(c.angle) * c.speed;
         c.opacity -= 0.005;
 
-        if (c.opacity <= 0) { comets.splice(i, 1); continue; }
+        if (c.opacity <= 0) {
+          comets.splice(i, 1);
+          continue;
+        }
 
         const grad = ctx.createLinearGradient(
-          c.x, c.y,
+          c.x,
+          c.y,
           c.x - Math.cos(c.angle) * c.length,
           c.y - Math.sin(c.angle) * c.length,
         );
@@ -178,7 +182,7 @@ const Hero: FC = memo(() => {
         ctx.moveTo(c.x, c.y);
         ctx.lineTo(c.x - Math.cos(c.angle) * c.length, c.y - Math.sin(c.angle) * c.length);
         ctx.strokeStyle = grad;
-        ctx.lineWidth   = 1.5;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
@@ -194,11 +198,12 @@ const Hero: FC = memo(() => {
   return (
     <Section noPadding sectionId={SectionId.Hero}>
       <div className="relative min-h-screen overflow-hidden bg-[#020106] font-sans text-white selection:bg-purple-500/30 selection:text-white">
-
         {/* Galaxy canvas */}
         <canvas
           ref={canvasRef}
-          className={`absolute inset-0 z-0 transition-opacity duration-[3000ms] ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 z-0 transition-opacity duration-[3000ms] ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
         />
 
         {/* Nebula blobs */}
@@ -209,7 +214,6 @@ const Hero: FC = memo(() => {
         <div
           className="relative z-30 mx-auto flex min-h-screen w-full max-w-[100rem] flex-col justify-between px-6 sm:px-12 lg:px-24"
           style={{perspective: '2000px'}}>
-
           {/* Spacer to push content down from top */}
           <div className="py-12" />
 
@@ -220,24 +224,26 @@ const Hero: FC = memo(() => {
               transformStyle: 'preserve-3d',
               transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
             }}>
-
             {/* Glass monolith */}
             <div
               className="group relative w-full overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md transition-all duration-1000 sm:p-12 md:p-16"
               style={{transformStyle: 'preserve-3d', transform: 'translateZ(30px)'}}>
-
               {/* Glare on hover */}
               <div
                 className="pointer-events-none absolute inset-0 z-0 opacity-0 mix-blend-screen transition-opacity duration-700 group-hover:opacity-100"
                 style={{
-                  background: `radial-gradient(circle at ${50 + mousePosRef.current.x * 50}% ${50 - mousePosRef.current.y * 50}%, rgba(255,255,255,0.06), transparent 50%)`,
+                  background: `radial-gradient(circle at ${50 + mousePosRef.current.x * 50}% ${
+                    50 - mousePosRef.current.y * 50
+                  }%, rgba(255,255,255,0.06), transparent 50%)`,
                 }}
               />
               <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl bg-gradient-to-br from-white/[0.05] to-transparent" />
 
               {/* Name */}
               <div
-                className={`relative z-10 transition-all duration-[1500ms] delay-300 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`relative z-10 transition-all duration-[1500ms] delay-300 ease-out ${
+                  isLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
                 style={{transform: 'translateZ(60px)'}}>
                 <h1 className="mb-2 text-[10vw] font-bold leading-[0.85] tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] sm:text-[8vw] md:text-7xl lg:text-8xl">
                   ANANTHAN
@@ -249,13 +255,18 @@ const Hero: FC = memo(() => {
 
               {/* Credential badges */}
               <div
-                className={`relative z-10 mt-12 flex flex-wrap gap-4 transition-all duration-[1500ms] delay-500 ease-out ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                className={`relative z-10 mt-12 flex flex-wrap gap-4 transition-all duration-[1500ms] delay-500 ease-out ${
+                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                }`}
                 style={{transform: 'translateZ(45px)'}}>
                 {BADGES.map(({Icon, text}) => (
                   <div
                     className="group/badge relative flex cursor-default items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-6 py-2.5 shadow-lg transition-all duration-500 hover:-translate-y-1 hover:border-purple-400/60 hover:bg-white/[0.1] hover:shadow-[0_0_20px_rgba(192,132,252,0.2)]"
                     key={text}>
-                    <Icon className="text-neutral-500 transition-colors duration-500 group-hover/badge:text-purple-300" size={14} />
+                    <Icon
+                      className="text-neutral-500 transition-colors duration-500 group-hover/badge:text-purple-300"
+                      size={14}
+                    />
                     <span className="text-[10px] font-bold tracking-[0.2em] text-neutral-300 transition-colors duration-500 group-hover/badge:text-white">
                       {text}
                     </span>
@@ -265,9 +276,10 @@ const Hero: FC = memo(() => {
 
               {/* CTA buttons */}
               <div
-                className={`relative z-10 mt-16 flex flex-col gap-6 sm:flex-row transition-all duration-[1500ms] delay-700 ease-out ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                className={`relative z-10 mt-16 flex flex-col gap-6 sm:flex-row transition-all duration-[1500ms] delay-700 ease-out ${
+                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                }`}
                 style={{transform: 'translateZ(55px)'}}>
-
                 {/* Primary — wire to first action if exists, else contact anchor */}
                 {actions.length > 0 ? (
                   actions.map(({href, text, primary, onClick}, i) =>
@@ -287,7 +299,10 @@ const Hero: FC = memo(() => {
                         key={i}
                         onClick={onClick}>
                         <span>{text}</span>
-                        <Mail className="text-neutral-500 transition-colors duration-500 group-hover:text-white" size={16} />
+                        <Mail
+                          className="text-neutral-500 transition-colors duration-500 group-hover:text-white"
+                          size={16}
+                        />
                       </a>
                     ),
                   )
@@ -305,7 +320,10 @@ const Hero: FC = memo(() => {
                       rel="noreferrer"
                       target="_blank">
                       <span>LinkedIn Profile</span>
-                      <Compass className="text-neutral-500 transition-transform duration-500 group-hover:rotate-45 group-hover:text-white" size={16} />
+                      <Compass
+                        className="text-neutral-500 transition-transform duration-500 group-hover:rotate-45 group-hover:text-white"
+                        size={16}
+                      />
                     </a>
                   </>
                 )}
@@ -315,7 +333,9 @@ const Hero: FC = memo(() => {
 
           {/* Footer */}
           <footer
-            className={`flex flex-col items-center justify-between border-t border-white/5 py-8 sm:flex-row transition-all duration-[1500ms] delay-1000 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+            className={`flex flex-col items-center justify-between border-t border-white/5 py-8 sm:flex-row transition-all duration-[1500ms] delay-1000 ease-out ${
+              isLoaded ? 'opacity-100' : 'opacity-0'
+            }`}>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
               © {new Date().getFullYear()} Ananthan Tharmavelautham
             </p>
@@ -337,8 +357,15 @@ const Hero: FC = memo(() => {
 
       <style jsx global>{`
         @keyframes breathe {
-          0%, 100% { transform: scale(1);   opacity: 0.5; }
-          50%       { transform: scale(1.1); opacity: 0.8; }
+          0%,
+          100% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+          }
         }
         .animate-nebula-breathe {
           animation: breathe 15s ease-in-out infinite;

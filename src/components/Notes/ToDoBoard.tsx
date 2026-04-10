@@ -213,14 +213,19 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
     try {
       const saved = localStorage.getItem('todo_starred_ids');
       return saved ? new Set(JSON.parse(saved)) : new Set<string>();
-    } catch { return new Set<string>(); }
+    } catch {
+      return new Set<string>();
+    }
   });
 
   const toggleStar = useCallback((id: string) => {
     setStarredIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem('todo_starred_ids', JSON.stringify([...next])); } catch {}
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      try {
+        localStorage.setItem('todo_starred_ids', JSON.stringify([...next]));
+      } catch {}
       return next;
     });
   }, []);
@@ -239,7 +244,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
 
   const toggleColumnMinimize = useCallback((colId: string) => {
     setMinimizedCols(prev => {
-      const next = { ...prev, [colId]: !prev[colId] };
+      const next = {...prev, [colId]: !prev[colId]};
       try {
         localStorage.setItem('todo_minimized_cols', JSON.stringify(next));
       } catch (e) {
@@ -405,7 +410,9 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
         </div>
 
         {/* Drag Overlay — this is the ONLY visible dragged element */}
-        <DragOverlay dropAnimation={null}>{activeTodo ? <TaskCard todo={activeTodo} isOverlay isStarred={starredIds.has(activeTodo._id)} /> : null}</DragOverlay>
+        <DragOverlay dropAnimation={null}>
+          {activeTodo ? <TaskCard todo={activeTodo} isOverlay isStarred={starredIds.has(activeTodo._id)} /> : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
@@ -470,25 +477,24 @@ const Column = ({
         flex: !isColumnMinimized && colWidth ? 'none' : undefined,
         minWidth: !isColumnMinimized && colWidth ? '240px' : undefined,
       }}>
-      
       {!isColumnMinimized && (
-        <div 
+        <div
           className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-indigo-500/50 z-10 transition-colors rounded-r-2xl"
-          onPointerDown={(e) => {
+          onPointerDown={e => {
             e.preventDefault();
             const startX = e.clientX;
             const startWidth = colWidth || e.currentTarget.parentElement?.offsetWidth || 320;
-            
+
             const onMove = (moveEvent: PointerEvent) => {
-               const newWidth = Math.max(240, startWidth + (moveEvent.clientX - startX));
-               onWidthChange(newWidth);
+              const newWidth = Math.max(240, startWidth + (moveEvent.clientX - startX));
+              onWidthChange(newWidth);
             };
-            
+
             const onUp = () => {
-               document.removeEventListener('pointermove', onMove);
-               document.removeEventListener('pointerup', onUp);
+              document.removeEventListener('pointermove', onMove);
+              document.removeEventListener('pointerup', onUp);
             };
-            
+
             document.addEventListener('pointermove', onMove);
             document.addEventListener('pointerup', onUp);
           }}
@@ -497,18 +503,19 @@ const Column = ({
 
       {/* Header */}
       <div
-        className={`px-3 py-2.5 rounded-t-2xl flex ${isColumnMinimized ? 'flex-col gap-2' : 'justify-between'} items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
-        
+        className={`px-3 py-2.5 rounded-t-2xl flex ${
+          isColumnMinimized ? 'flex-col gap-2' : 'justify-between'
+        } items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
         <div className={`flex items-center gap-2 ${isColumnMinimized ? 'flex-col' : ''}`}>
           <div className="flex items-center gap-1.5 flex-col">
             {col.icon}
             {isColumnMinimized && (
-               <span
-               className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1 rounded-md ${
-                 isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
-               }`}>
-               {todos.length}
-             </span>
+              <span
+                className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1 rounded-md ${
+                  isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
+                }`}>
+                {todos.length}
+              </span>
             )}
           </div>
           {!isColumnMinimized && (
@@ -525,26 +532,30 @@ const Column = ({
           )}
 
           {!isColumnMinimized && (
-             <span
-             className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1.5 rounded-md ${
-               isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
-             }`}>
-             {todos.length}
-           </span>
+            <span
+              className={`text-[10px] font-bold min-w-[20px] text-center py-0.5 px-1.5 rounded-md ${
+                isOverWipLimit ? 'bg-amber-200 text-amber-800' : 'bg-white/70 text-gray-400 border border-gray-100'
+              }`}>
+              {todos.length}
+            </span>
           )}
 
           <button
             onClick={onToggleColumnMinimize}
-            className={`p-1 rounded-md hover:bg-white/50 text-gray-400 transition-colors ${isColumnMinimized ? 'rotate-180' : ''}`}
-            title={isColumnMinimized ? "Expand column" : "Minimize column"}
-          >
+            className={`p-1 rounded-md hover:bg-white/50 text-gray-400 transition-colors ${
+              isColumnMinimized ? 'rotate-180' : ''
+            }`}
+            title={isColumnMinimized ? 'Expand column' : 'Minimize column'}>
             <ChevronRightIcon className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       {/* Cards container */}
-      <div className={`flex-1 p-2 space-y-2 overflow-y-auto overflow-x-hidden ${isColumnMinimized ? 'opacity-0 invisible hidden' : 'opacity-100 visible'}`}>
+      <div
+        className={`flex-1 p-2 space-y-2 overflow-y-auto overflow-x-hidden ${
+          isColumnMinimized ? 'opacity-0 invisible hidden' : 'opacity-100 visible'
+        }`}>
         {!isColumnMinimized && todos.length === 0 && (
           <div
             className={`flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed ${col.borderColor} gap-1.5`}>
@@ -712,7 +723,9 @@ const ChecklistSection = ({
       <div className="flex items-center justify-between text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
         <span>Checklist</span>
         {subtasks.length > 0 && (
-          <span className={pct === 100 ? 'text-emerald-500' : ''}>{doneCount}/{subtasks.length}</span>
+          <span className={pct === 100 ? 'text-emerald-500' : ''}>
+            {doneCount}/{subtasks.length}
+          </span>
         )}
       </div>
 
@@ -720,7 +733,9 @@ const ChecklistSection = ({
       {subtasks.length > 0 && (
         <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${pct === 100 ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+            className={`h-full rounded-full transition-all duration-300 ${
+              pct === 100 ? 'bg-emerald-400' : 'bg-indigo-400'
+            }`}
             style={{width: `${pct}%`}}
           />
         </div>
@@ -757,7 +772,9 @@ const ChecklistSection = ({
                   handleMoveUp(idx);
                 }}
                 disabled={idx === 0}
-                className={`p-0.5 transition-all ${idx === 0 ? 'text-gray-100 cursor-not-allowed' : 'text-gray-300 hover:text-indigo-400'}`}
+                className={`p-0.5 transition-all ${
+                  idx === 0 ? 'text-gray-100 cursor-not-allowed' : 'text-gray-300 hover:text-indigo-400'
+                }`}
                 title="Move Up">
                 <ChevronUpIcon className="h-2.5 w-2.5" />
               </button>
@@ -767,7 +784,11 @@ const ChecklistSection = ({
                   handleMoveDown(idx);
                 }}
                 disabled={idx === subtasks.length - 1}
-                className={`p-0.5 transition-all ${idx === subtasks.length - 1 ? 'text-gray-100 cursor-not-allowed' : 'text-gray-300 hover:text-indigo-400'}`}
+                className={`p-0.5 transition-all ${
+                  idx === subtasks.length - 1
+                    ? 'text-gray-100 cursor-not-allowed'
+                    : 'text-gray-300 hover:text-indigo-400'
+                }`}
                 title="Move Down">
                 <ChevronDownIcon className="h-2.5 w-2.5" />
               </button>
@@ -869,7 +890,6 @@ const TaskCard = ({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [catDropdownOpen]);
-
 
   const neonColors = {
     red: 'before:bg-[conic-gradient(from_0deg,transparent,#ff3333,transparent)]',
@@ -978,7 +998,11 @@ const TaskCard = ({
           {/* ★ Star — always visible when starred, hover-only when unstarred */}
           {onToggleStar && !isOverlay && (
             <button
-              onClick={e => { e.stopPropagation(); e.preventDefault(); onToggleStar(); }}
+              onClick={e => {
+                e.stopPropagation();
+                e.preventDefault();
+                onToggleStar();
+              }}
               onPointerDown={e => e.stopPropagation()}
               className={`p-1 rounded-md transition-all duration-200 flex-shrink-0 ${
                 isStarred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
@@ -1040,9 +1064,15 @@ const TaskCard = ({
               {onCategoryChange ? (
                 <div className="relative" ref={catRef} onPointerDown={e => e.stopPropagation()}>
                   <button
-                    onClick={e => { e.stopPropagation(); e.preventDefault(); setCatDropdownOpen(v => !v); }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setCatDropdownOpen(v => !v);
+                    }}
                     className={`inline-block px-1.5 py-0.5 text-[10px] rounded-md font-medium cursor-pointer hover:ring-1 hover:ring-gray-300 transition-all ${
-                      todo.category ? 'bg-gray-100 text-gray-500' : 'bg-gray-50 text-gray-300 border border-dashed border-gray-200'
+                      todo.category
+                        ? 'bg-gray-100 text-gray-500'
+                        : 'bg-gray-50 text-gray-300 border border-dashed border-gray-200'
                     }`}
                     title="Change category">
                     {todo.category ? todo.category.replace('!', '') : '+ Category'}
@@ -1080,30 +1110,36 @@ const TaskCard = ({
                 <span className="text-[9px] text-violet-500 font-bold px-1 rounded bg-violet-50">AI</span>
               )}
               {/* Attachment indicators */}
-              {todo.attachments && todo.attachments.length > 0 && (() => {
-                const emailCount = todo.attachments.filter(a => /\.(msg|eml)$/i.test(a.name)).length;
-                const otherCount = todo.attachments.length - emailCount;
-                return (
-                  <>
-                    {emailCount > 0 && (
-                      <span
-                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-blue-50 text-blue-600 font-medium cursor-pointer hover:bg-blue-100 transition-colors"
-                        onClick={e => { e.stopPropagation(); e.preventDefault(); if (onEdit) onEdit(); }}
-                        onPointerDown={e => e.stopPropagation()}
-                        title="Open to view email attachments">
-                        <EnvelopeIcon className="h-3 w-3" />
-                        {emailCount}
-                      </span>
-                    )}
-                    {otherCount > 0 && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-gray-100 text-gray-500 font-medium">
-                        <PaperClipIcon className="h-3 w-3" />
-                        {otherCount}
-                      </span>
-                    )}
-                  </>
-                );
-              })()}
+              {todo.attachments &&
+                todo.attachments.length > 0 &&
+                (() => {
+                  const emailCount = todo.attachments.filter(a => /\.(msg|eml)$/i.test(a.name)).length;
+                  const otherCount = todo.attachments.length - emailCount;
+                  return (
+                    <>
+                      {emailCount > 0 && (
+                        <span
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-blue-50 text-blue-600 font-medium cursor-pointer hover:bg-blue-100 transition-colors"
+                          onClick={e => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            if (onEdit) onEdit();
+                          }}
+                          onPointerDown={e => e.stopPropagation()}
+                          title="Open to view email attachments">
+                          <EnvelopeIcon className="h-3 w-3" />
+                          {emailCount}
+                        </span>
+                      )}
+                      {otherCount > 0 && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] rounded-md bg-gray-100 text-gray-500 font-medium">
+                          <PaperClipIcon className="h-3 w-3" />
+                          {otherCount}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
             </div>
 
             {/* Checklist Section – Inline Editable */}

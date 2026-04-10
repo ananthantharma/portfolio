@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useParams} from 'next/navigation';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Document, Page, pdfjs } from 'react-pdf';
+import {Document, Page, pdfjs} from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -224,7 +224,11 @@ export default function PublicSigningPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
           <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+              />
             </svg>
           </div>
           <h2 className="text-lg font-bold text-gray-900 mb-2">Unable to Load</h2>
@@ -239,13 +243,23 @@ export default function PublicSigningPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
           <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-8 h-8 text-emerald-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Document Signed!</h2>
           <p className="text-sm text-gray-500 mb-6">
-            Thank you, {data?.recipient.name}. Your signature has been recorded for &ldquo;{data?.document.title}&rdquo;.
+            Thank you, {data?.recipient.name}. Your signature has been recorded for &ldquo;{data?.document.title}
+            &rdquo;.
           </p>
           <p className="text-xs text-gray-400">You can close this page now.</p>
         </div>
@@ -335,10 +349,13 @@ export default function PublicSigningPage() {
         <div className="relative bg-white shadow-xl rounded-lg" style={{width: 816, minHeight: 1056}}>
           <Document
             file={data.document.pdf_url}
-            onLoadSuccess={({ numPages }) => setTotalPages(numPages)}
-            loading={<div className="flex items-center justify-center w-full h-full text-indigo-400"><div className="animate-spin w-8 h-8 border-2 border-current border-t-transparent rounded-full"/></div>}
-            className="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex justify-center bg-white"
-          >
+            onLoadSuccess={({numPages}) => setTotalPages(numPages)}
+            loading={
+              <div className="flex items-center justify-center w-full h-full text-indigo-400">
+                <div className="animate-spin w-8 h-8 border-2 border-current border-t-transparent rounded-full" />
+              </div>
+            }
+            className="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex justify-center bg-white">
             <Page
               pageNumber={currentPage}
               width={816}
@@ -370,11 +387,13 @@ export default function PublicSigningPage() {
                   <img src={field.value} alt="signed" className="max-w-full max-h-full object-contain p-1" />
                 ) : fieldValues[field.id] ? (
                   typeof fieldValues[field.id] === 'string' && fieldValues[field.id].startsWith('data:') ? (
-                    <img src={fieldValues[field.id]} alt="signature" className="max-w-full max-h-full object-contain p-1" />
+                    <img
+                      src={fieldValues[field.id]}
+                      alt="signature"
+                      className="max-w-full max-h-full object-contain p-1"
+                    />
                   ) : (
-                    <span className="text-xs font-medium text-emerald-700 px-2 truncate">
-                      {fieldValues[field.id]}
-                    </span>
+                    <span className="text-xs font-medium text-emerald-700 px-2 truncate">{fieldValues[field.id]}</span>
                   )
                 ) : (
                   <div className="text-center pointer-events-none select-none">
@@ -396,7 +415,11 @@ export default function PublicSigningPage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-sm font-bold text-gray-900">Add Your Signature</h3>
               <button
-                onClick={() => { setSignatureModal(null); clearCanvas(); setTypedSig(''); }}
+                onClick={() => {
+                  setSignatureModal(null);
+                  clearCanvas();
+                  setTypedSig('');
+                }}
                 className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -411,9 +434,7 @@ export default function PublicSigningPage() {
                   key={mode}
                   onClick={() => setSigMode(mode)}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                    sigMode === mode
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                    sigMode === mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                   {mode === 'draw' ? '✏️ Draw' : '⌨️ Type'}
                 </button>
@@ -448,7 +469,8 @@ export default function PublicSigningPage() {
                     className="w-full px-4 py-4 text-2xl italic font-serif text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50 focus:outline-none focus:border-indigo-300"
                   />
                   <p className="text-center text-[10px] text-gray-400 mt-2">
-                    Preview: <span className="italic text-lg font-serif text-gray-700">{typedSig || data.recipient.name}</span>
+                    Preview:{' '}
+                    <span className="italic text-lg font-serif text-gray-700">{typedSig || data.recipient.name}</span>
                   </p>
                 </div>
               )}
@@ -456,7 +478,11 @@ export default function PublicSigningPage() {
 
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
               <button
-                onClick={() => { setSignatureModal(null); clearCanvas(); setTypedSig(''); }}
+                onClick={() => {
+                  setSignatureModal(null);
+                  clearCanvas();
+                  setTypedSig('');
+                }}
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                 Cancel
               </button>

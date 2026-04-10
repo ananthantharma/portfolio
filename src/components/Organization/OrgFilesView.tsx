@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import axios from 'axios';
 import {
   Upload,
@@ -14,7 +14,7 @@ import {
   Paperclip,
   Loader2,
 } from 'lucide-react';
-import { Category, Section, Page } from './OrganizationLayout';
+import {Category, Section, Page} from './OrganizationLayout';
 
 interface Attachment {
   _id: string;
@@ -40,7 +40,12 @@ function getFileIcon(mimeType?: string) {
   if (!mimeType) return <File className="w-5 h-5 text-slate-400" />;
   if (mimeType.startsWith('image/')) return <ImageIcon className="w-5 h-5 text-indigo-500" />;
   if (mimeType === 'application/pdf') return <FileText className="w-5 h-5 text-red-500" />;
-  if (mimeType.startsWith('text/') || mimeType.includes('javascript') || mimeType.includes('json') || mimeType.includes('xml')) {
+  if (
+    mimeType.startsWith('text/') ||
+    mimeType.includes('javascript') ||
+    mimeType.includes('json') ||
+    mimeType.includes('xml')
+  ) {
     return <Code className="w-5 h-5 text-emerald-500" />;
   }
   return <File className="w-5 h-5 text-slate-400" />;
@@ -58,16 +63,30 @@ function matchesFilter(att: Attachment, filter: FileFilter): boolean {
   if (filter === 'all') return true;
   if (filter === 'images') return mime.startsWith('image/');
   if (filter === 'pdfs') return mime === 'application/pdf';
-  if (filter === 'documents') return (
-    mime.includes('word') || mime.includes('spreadsheet') || mime.includes('presentation') ||
-    mime.includes('text/plain') || mime.includes('opendocument')
-  );
+  if (filter === 'documents')
+    return (
+      mime.includes('word') ||
+      mime.includes('spreadsheet') ||
+      mime.includes('presentation') ||
+      mime.includes('text/plain') ||
+      mime.includes('opendocument')
+    );
   // other
-  return !mime.startsWith('image/') && mime !== 'application/pdf' &&
-    !mime.includes('word') && !mime.includes('spreadsheet') && !mime.includes('presentation');
+  return (
+    !mime.startsWith('image/') &&
+    mime !== 'application/pdf' &&
+    !mime.includes('word') &&
+    !mime.includes('spreadsheet') &&
+    !mime.includes('presentation')
+  );
 }
 
-export default function OrgFilesView({ categories, sections: propSections, pages: propPages, currentPageId }: OrgFilesViewProps) {
+export default function OrgFilesView({
+  categories,
+  sections: propSections,
+  pages: propPages,
+  currentPageId,
+}: OrgFilesViewProps) {
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [localSections, setLocalSections] = useState<Section[]>(propSections);
   const [localPages, setLocalPages] = useState<Page[]>(propPages);
@@ -79,8 +98,12 @@ export default function OrgFilesView({ categories, sections: propSections, pages
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setLocalSections(propSections); }, [propSections]);
-  useEffect(() => { setLocalPages(propPages); }, [propPages]);
+  useEffect(() => {
+    setLocalSections(propSections);
+  }, [propSections]);
+  useEffect(() => {
+    setLocalPages(propPages);
+  }, [propPages]);
 
   // Load sections for a category when expanded
   const loadSections = useCallback(async (categoryId: string) => {
@@ -93,7 +116,9 @@ export default function OrgFilesView({ categories, sections: propSections, pages
           return [...prev, ...newOnes];
         });
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
   // Load pages for a section
@@ -107,13 +132,16 @@ export default function OrgFilesView({ categories, sections: propSections, pages
           return [...prev, ...newOnes];
         });
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
   const toggleCat = async (catId: string) => {
     setExpandedCats(prev => {
       const next = new Set(prev);
-      if (next.has(catId)) next.delete(catId); else next.add(catId);
+      if (next.has(catId)) next.delete(catId);
+      else next.add(catId);
       return next;
     });
     await loadSections(catId);
@@ -124,8 +152,11 @@ export default function OrgFilesView({ categories, sections: propSections, pages
     try {
       const res = await axios.get(`/api/notes/pages/${pageId}/attachments`);
       if (res.data.success) setAttachments(res.data.data);
-    } catch (err) { console.error(err); }
-    finally { setLoadingAtts(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAtts(false);
+    }
   }, []);
 
   const handleSelectPage = async (pageId: string) => {
@@ -136,7 +167,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
         if (!p) return '';
         const sec = p.sectionId;
         return typeof sec === 'string' ? sec : (sec as any)?._id || '';
-      })()
+      })(),
     );
     await loadAttachments(pageId);
   };
@@ -154,7 +185,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
         formData.append('file', file);
         // Upload to blob storage
         const uploadRes = await axios.post('/api/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: {'Content-Type': 'multipart/form-data'},
         });
         const url = uploadRes.data?.url || uploadRes.data?.data?.url;
         if (url) {
@@ -199,12 +230,12 @@ export default function OrgFilesView({ categories, sections: propSections, pages
   const filteredAtts = attachments.filter(a => matchesFilter(a, filter));
   const selectedPageTitle = localPages.find(p => p._id === selectedPageId)?.title || 'No note selected';
 
-  const FILTERS: { id: FileFilter; label: string }[] = [
-    { id: 'all', label: 'All' },
-    { id: 'images', label: 'Images' },
-    { id: 'pdfs', label: 'PDFs' },
-    { id: 'documents', label: 'Documents' },
-    { id: 'other', label: 'Other' },
+  const FILTERS: {id: FileFilter; label: string}[] = [
+    {id: 'all', label: 'All'},
+    {id: 'images', label: 'Images'},
+    {id: 'pdfs', label: 'PDFs'},
+    {id: 'documents', label: 'Documents'},
+    {id: 'other', label: 'Other'},
   ];
 
   return (
@@ -219,11 +250,14 @@ export default function OrgFilesView({ categories, sections: propSections, pages
             <div key={cat._id}>
               <button
                 onClick={() => toggleCat(cat._id)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color || '#6366f1' }} />
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: cat.color || '#6366f1'}} />
                 <span className="flex-1 text-left truncate font-medium">{cat.name}</span>
-                {expandedCats.has(cat._id) ? <ChevronDown className="w-3 h-3 shrink-0" /> : <ChevronRight className="w-3 h-3 shrink-0" />}
+                {expandedCats.has(cat._id) ? (
+                  <ChevronDown className="w-3 h-3 shrink-0" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 shrink-0" />
+                )}
               </button>
 
               {expandedCats.has(cat._id) && (
@@ -234,8 +268,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                       <div key={sec._id}>
                         <button
                           onClick={() => handleSectionClick(sec._id)}
-                          className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 transition-colors font-medium"
-                        >
+                          className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 transition-colors font-medium">
                           <ChevronRight className="w-3 h-3 shrink-0 text-slate-400" />
                           <span className="truncate">{sec.name}</span>
                         </button>
@@ -252,8 +285,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                                 selectedPageId === page._id
                                   ? 'bg-indigo-100 text-indigo-700 font-semibold'
                                   : 'text-slate-600 hover:bg-slate-100'
-                              }`}
-                            >
+                              }`}>
                               {page.title}
                             </button>
                           ))}
@@ -270,7 +302,10 @@ export default function OrgFilesView({ categories, sections: propSections, pages
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
         {/* Upload drop zone */}
         <div
-          onDragEnter={e => { e.preventDefault(); setIsDragging(true); }}
+          onDragEnter={e => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
           onDragOver={e => e.preventDefault()}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
@@ -281,15 +316,8 @@ export default function OrgFilesView({ categories, sections: propSections, pages
               ? 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer'
               : 'border-slate-200 bg-white opacity-60'
           }`}
-          onClick={() => selectedPageId && fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={handleFileInput}
-          />
+          onClick={() => selectedPageId && fileInputRef.current?.click()}>
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInput} />
           {uploading ? (
             <div className="flex items-center justify-center gap-2 text-indigo-600">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -303,9 +331,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                   ? `Drop files to attach to "${selectedPageTitle}"`
                   : 'Select a note first to attach files'}
               </p>
-              {selectedPageId && (
-                <p className="text-xs text-slate-400 mt-1">or click to browse</p>
-              )}
+              {selectedPageId && <p className="text-xs text-slate-400 mt-1">or click to browse</p>}
             </>
           )}
         </div>
@@ -321,11 +347,8 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                     key={f.id}
                     onClick={() => setFilter(f.id)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
-                      filter === f.id
-                        ? 'bg-indigo-600 text-white'
-                        : 'text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
+                      filter === f.id ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
                     {f.label}
                   </button>
                 ))}
@@ -352,8 +375,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                 {filteredAtts.map(att => (
                   <div
                     key={att._id}
-                    className="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-md hover:border-indigo-200 transition-all duration-200 group"
-                  >
+                    className="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-md hover:border-indigo-200 transition-all duration-200 group">
                     <div className="flex items-center justify-between mb-2">
                       {getFileIcon(att.mimeType)}
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -364,8 +386,7 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                             rel="noopener noreferrer"
                             download={att.name}
                             className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"
-                            title="Download"
-                          >
+                            title="Download">
                             <Download className="w-3.5 h-3.5" />
                           </a>
                         )}
@@ -374,21 +395,15 @@ export default function OrgFilesView({ categories, sections: propSections, pages
                     <p className="text-xs font-medium text-slate-800 truncate" title={att.name}>
                       {att.name}
                     </p>
-                    {att.size && (
-                      <p className="text-xs text-slate-400 mt-0.5">{formatSize(att.size)}</p>
-                    )}
+                    {att.size && <p className="text-xs text-slate-400 mt-0.5">{formatSize(att.size)}</p>}
                     {att.createdAt && (
                       <p className="text-xs text-slate-300 mt-0.5">
-                        {new Date(att.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(att.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
                       </p>
                     )}
                     {att.mimeType?.startsWith('image/') && att.url && (
                       <div className="mt-2 rounded-lg overflow-hidden">
-                        <img
-                          src={att.url}
-                          alt={att.name}
-                          className="w-full h-16 object-cover"
-                        />
+                        <img src={att.url} alt={att.name} className="w-full h-16 object-cover" />
                       </div>
                     )}
                   </div>

@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
 import {authOptions} from '@/lib/auth';
@@ -7,15 +7,12 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !(session.user as any).openAiApiEnabled) {
-      return NextResponse.json(
-        {error: 'Access Denied: Audio features restricted.'},
-        {status: 403},
-      );
+      return NextResponse.json({error: 'Access Denied: Audio features restricted.'}, {status: 403});
     }
 
     const formData = await req.formData();
     const file = formData.get('file') as Blob;
-    
+
     if (!file) {
       return NextResponse.json({error: 'No audio file provided'}, {status: 400});
     }

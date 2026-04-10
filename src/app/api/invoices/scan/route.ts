@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 /* eslint-disable simple-import-sort/imports */
 import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';

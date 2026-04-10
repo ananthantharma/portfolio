@@ -8,28 +8,90 @@ import {authOptions} from '@/lib/auth';
 
 // ─── Country ISO2 mapping ────────────────────────────────────────────────────
 const COUNTRY_ISO: Record<string, string> = {
-  Afghanistan: 'AF', Albania: 'AL', Algeria: 'DZ', Argentina: 'AR',
-  Australia: 'AU', Austria: 'AT', Bangladesh: 'BD', Belarus: 'BY',
-  Belgium: 'BE', Bolivia: 'BO', Brazil: 'BR', Bulgaria: 'BG',
-  Cambodia: 'KH', Canada: 'CA', Chile: 'CL', China: 'CN',
-  Colombia: 'CO', 'Costa Rica': 'CR', Croatia: 'HR', 'Czech Republic': 'CZ',
-  Denmark: 'DK', Ecuador: 'EC', Egypt: 'EG', Ethiopia: 'ET',
-  Finland: 'FI', France: 'FR', Germany: 'DE', Ghana: 'GH',
-  Greece: 'GR', Guatemala: 'GT', Honduras: 'HN', Hungary: 'HU',
-  India: 'IN', Indonesia: 'ID', Iran: 'IR', Iraq: 'IQ',
-  Ireland: 'IE', Israel: 'IL', Italy: 'IT', Japan: 'JP',
-  Jordan: 'JO', Kazakhstan: 'KZ', Kenya: 'KE', Kuwait: 'KW',
-  Libya: 'LY', Malaysia: 'MY', Mexico: 'MX', Morocco: 'MA',
-  Myanmar: 'MM', Netherlands: 'NL', 'New Zealand': 'NZ', Nigeria: 'NG',
-  'North Korea': 'KP', Norway: 'NO', Pakistan: 'PK', Peru: 'PE',
-  Philippines: 'PH', Poland: 'PL', Portugal: 'PT', Qatar: 'QA',
-  Romania: 'RO', Russia: 'RU', 'Saudi Arabia': 'SA', Singapore: 'SG',
-  'South Africa': 'ZA', 'South Korea': 'KR', Spain: 'ES', Sweden: 'SE',
-  Switzerland: 'CH', Syria: 'SY', Taiwan: 'TW', Thailand: 'TH',
-  Turkey: 'TR', UAE: 'AE', 'United Arab Emirates': 'AE',
-  Ukraine: 'UA', 'United Kingdom': 'GB', UK: 'GB',
-  USA: 'US', 'United States': 'US', Uruguay: 'UY',
-  Venezuela: 'VE', Vietnam: 'VN', Zimbabwe: 'ZW',
+  Afghanistan: 'AF',
+  Albania: 'AL',
+  Algeria: 'DZ',
+  Argentina: 'AR',
+  Australia: 'AU',
+  Austria: 'AT',
+  Bangladesh: 'BD',
+  Belarus: 'BY',
+  Belgium: 'BE',
+  Bolivia: 'BO',
+  Brazil: 'BR',
+  Bulgaria: 'BG',
+  Cambodia: 'KH',
+  Canada: 'CA',
+  Chile: 'CL',
+  China: 'CN',
+  Colombia: 'CO',
+  'Costa Rica': 'CR',
+  Croatia: 'HR',
+  'Czech Republic': 'CZ',
+  Denmark: 'DK',
+  Ecuador: 'EC',
+  Egypt: 'EG',
+  Ethiopia: 'ET',
+  Finland: 'FI',
+  France: 'FR',
+  Germany: 'DE',
+  Ghana: 'GH',
+  Greece: 'GR',
+  Guatemala: 'GT',
+  Honduras: 'HN',
+  Hungary: 'HU',
+  India: 'IN',
+  Indonesia: 'ID',
+  Iran: 'IR',
+  Iraq: 'IQ',
+  Ireland: 'IE',
+  Israel: 'IL',
+  Italy: 'IT',
+  Japan: 'JP',
+  Jordan: 'JO',
+  Kazakhstan: 'KZ',
+  Kenya: 'KE',
+  Kuwait: 'KW',
+  Libya: 'LY',
+  Malaysia: 'MY',
+  Mexico: 'MX',
+  Morocco: 'MA',
+  Myanmar: 'MM',
+  Netherlands: 'NL',
+  'New Zealand': 'NZ',
+  Nigeria: 'NG',
+  'North Korea': 'KP',
+  Norway: 'NO',
+  Pakistan: 'PK',
+  Peru: 'PE',
+  Philippines: 'PH',
+  Poland: 'PL',
+  Portugal: 'PT',
+  Qatar: 'QA',
+  Romania: 'RO',
+  Russia: 'RU',
+  'Saudi Arabia': 'SA',
+  Singapore: 'SG',
+  'South Africa': 'ZA',
+  'South Korea': 'KR',
+  Spain: 'ES',
+  Sweden: 'SE',
+  Switzerland: 'CH',
+  Syria: 'SY',
+  Taiwan: 'TW',
+  Thailand: 'TH',
+  Turkey: 'TR',
+  UAE: 'AE',
+  'United Arab Emirates': 'AE',
+  Ukraine: 'UA',
+  'United Kingdom': 'GB',
+  UK: 'GB',
+  USA: 'US',
+  'United States': 'US',
+  Uruguay: 'UY',
+  Venezuela: 'VE',
+  Vietnam: 'VN',
+  Zimbabwe: 'ZW',
 };
 
 // World Bank indicators: id → { label, higherIsBetter }
@@ -77,7 +139,13 @@ async function getWorldBankData(country: string) {
           label,
           value: latest.value,
           year: latest.date,
-          trend: prev ? (latest.value! > prev.value! ? 'up' : latest.value! < prev.value! ? 'down' : 'stable') : 'stable',
+          trend: prev
+            ? latest.value! > prev.value!
+              ? 'up'
+              : latest.value! < prev.value!
+              ? 'down'
+              : 'stable'
+            : 'stable',
           higherIsBetter,
           riskFlag:
             (higherIsBetter && latest.value! < 0) ||
@@ -97,7 +165,9 @@ async function getWorldBankData(country: string) {
 // ─── Source 2: REST Countries ─────────────────────────────────────────────────
 async function getCountryContext(country: string) {
   try {
-    const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fields=name,region,subregion,population,area,currencies,languages,flags,landlocked,borders,timezones`;
+    const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(
+      country,
+    )}?fields=name,region,subregion,population,area,currencies,languages,flags,landlocked,borders,timezones`;
     const res = await fetchWithTimeout(url, 6000);
     if (!res.ok) return null;
     const json = await res.json();
@@ -138,7 +208,8 @@ async function getGdeltNews(name: string, country: string) {
       language: a.language,
       sourceCountry: a.sourcecountry,
       tone: typeof a.tone === 'number' ? a.tone : null, // negative = bad
-      sentiment: typeof a.tone === 'number' ? (a.tone < -5 ? 'negative' : a.tone > 2 ? 'positive' : 'neutral') : 'unknown',
+      sentiment:
+        typeof a.tone === 'number' ? (a.tone < -5 ? 'negative' : a.tone > 2 ? 'positive' : 'neutral') : 'unknown',
     }));
   } catch {
     return [];
@@ -190,7 +261,8 @@ async function getSecFilings(name: string) {
       form: h._source?.form_type,
       fileDate: h._source?.file_date,
       period: h._source?.period_of_report,
-      edgarUrl: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=${encodeURIComponent(name)}&type=${h._source?.form_type}&dateb=&owner=include&count=10`,
+      edgarUrl: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=${encodeURIComponent(name)}&type=${h
+        ._source?.form_type}&dateb=&owner=include&count=10`,
       isAdverseEvent: h._source?.form_type === '8-K',
     }));
   } catch {
@@ -349,18 +421,52 @@ async function getCurrencyRisk(country: string) {
   try {
     // Map country → currency ISO
     const CURRENCY_MAP: Record<string, string> = {
-      China: 'CNY', India: 'INR', Germany: 'EUR', Japan: 'JPY',
-      UK: 'GBP', 'United Kingdom': 'GBP', France: 'EUR', Brazil: 'BRL',
-      Canada: 'CAD', Australia: 'AUD', Mexico: 'MXN', 'South Korea': 'KRW',
-      Indonesia: 'IDR', Turkey: 'TRY', 'Saudi Arabia': 'SAR', Vietnam: 'VND',
-      Thailand: 'THB', Singapore: 'SGD', Malaysia: 'MYR', Philippines: 'PHP',
-      'South Africa': 'ZAR', Nigeria: 'NGN', Egypt: 'EGP', Argentina: 'ARS',
-      Colombia: 'COP', Chile: 'CLP', Pakistan: 'PKR', Bangladesh: 'BDT',
-      Poland: 'PLN', Sweden: 'SEK', Norway: 'NOK', Denmark: 'DKK',
-      Switzerland: 'CHF', Russia: 'RUB', Ukraine: 'UAH', Israel: 'ILS',
-      UAE: 'AED', 'United Arab Emirates': 'AED', Qatar: 'QAR', Kuwait: 'KWD',
-      Morocco: 'MAD', Kenya: 'KES', Myanmar: 'MMK', Belarus: 'BYN',
-      Iran: 'IRR', Venezuela: 'VES',
+      China: 'CNY',
+      India: 'INR',
+      Germany: 'EUR',
+      Japan: 'JPY',
+      UK: 'GBP',
+      'United Kingdom': 'GBP',
+      France: 'EUR',
+      Brazil: 'BRL',
+      Canada: 'CAD',
+      Australia: 'AUD',
+      Mexico: 'MXN',
+      'South Korea': 'KRW',
+      Indonesia: 'IDR',
+      Turkey: 'TRY',
+      'Saudi Arabia': 'SAR',
+      Vietnam: 'VND',
+      Thailand: 'THB',
+      Singapore: 'SGD',
+      Malaysia: 'MYR',
+      Philippines: 'PHP',
+      'South Africa': 'ZAR',
+      Nigeria: 'NGN',
+      Egypt: 'EGP',
+      Argentina: 'ARS',
+      Colombia: 'COP',
+      Chile: 'CLP',
+      Pakistan: 'PKR',
+      Bangladesh: 'BDT',
+      Poland: 'PLN',
+      Sweden: 'SEK',
+      Norway: 'NOK',
+      Denmark: 'DKK',
+      Switzerland: 'CHF',
+      Russia: 'RUB',
+      Ukraine: 'UAH',
+      Israel: 'ILS',
+      UAE: 'AED',
+      'United Arab Emirates': 'AED',
+      Qatar: 'QAR',
+      Kuwait: 'KWD',
+      Morocco: 'MAD',
+      Kenya: 'KES',
+      Myanmar: 'MMK',
+      Belarus: 'BYN',
+      Iran: 'IRR',
+      Venezuela: 'VES',
     };
     const currency = CURRENCY_MAP[country] || 'USD';
     if (currency === 'USD') return {currency: 'USD', rate: 1, note: 'Base currency'};
@@ -388,8 +494,11 @@ async function maybeCreateAlerts(
   // Sanctions hit
   if (data.sanctions?.available && data.sanctions.matches?.some((m: any) => m.match)) {
     alertsToCreate.push({
-      userEmail, supplierId, supplierName,
-      severity: 'Critical', category: 'Compliance',
+      userEmail,
+      supplierId,
+      supplierName,
+      severity: 'Critical',
+      category: 'Compliance',
       title: 'Sanctions Match Detected',
       description: `OpenSanctions match found for ${supplierName}. Immediate compliance review required.`,
       source: 'OpenSanctions API',
@@ -400,8 +509,11 @@ async function maybeCreateAlerts(
   const negativeArticles = (data.gdeltNews || []).filter((a: any) => a.tone !== null && a.tone < -10);
   if (negativeArticles.length >= 3) {
     alertsToCreate.push({
-      userEmail, supplierId, supplierName,
-      severity: 'High', category: 'News',
+      userEmail,
+      supplierId,
+      supplierName,
+      severity: 'High',
+      category: 'News',
       title: `High Volume of Negative News (${negativeArticles.length} articles)`,
       description: `GDELT global news monitoring detected significant negative coverage: "${negativeArticles[0]?.title}"`,
       source: 'GDELT News Intelligence',
@@ -412,8 +524,11 @@ async function maybeCreateAlerts(
   const adverseFilings = (data.secFilings || []).filter((f: any) => f.isAdverseEvent);
   if (adverseFilings.length > 0) {
     alertsToCreate.push({
-      userEmail, supplierId, supplierName,
-      severity: 'Warning', category: 'Financial',
+      userEmail,
+      supplierId,
+      supplierName,
+      severity: 'Warning',
+      category: 'Financial',
       title: `SEC 8-K Material Event Filing Detected`,
       description: `${adverseFilings.length} 8-K filing(s) found for ${supplierName} in the past 12 months (${adverseFilings[0]?.fileDate}).`,
       source: 'SEC EDGAR',
@@ -424,10 +539,15 @@ async function maybeCreateAlerts(
   const pvStat = data.countryRisk?.indicators?.find((i: any) => i?.indicator === 'PV.EST');
   if (pvStat && pvStat.value < -1.0) {
     alertsToCreate.push({
-      userEmail, supplierId, supplierName,
-      severity: 'Warning', category: 'Operational',
+      userEmail,
+      supplierId,
+      supplierName,
+      severity: 'Warning',
+      category: 'Operational',
       title: 'High Country Political Instability Risk',
-      description: `World Bank Political Stability score for ${supplierName}'s country is ${pvStat.value.toFixed(2)} (scale: -2.5 to +2.5). Elevated supply disruption risk.`,
+      description: `World Bank Political Stability score for ${supplierName}'s country is ${pvStat.value.toFixed(
+        2,
+      )} (scale: -2.5 to +2.5). Elevated supply disruption risk.`,
       source: 'World Bank Governance Indicators',
     });
   }
@@ -435,10 +555,15 @@ async function maybeCreateAlerts(
   // Yahoo Finance: heavily leveraged
   if (data.financials?.debtToEquity && data.financials.debtToEquity > 200) {
     alertsToCreate.push({
-      userEmail, supplierId, supplierName,
-      severity: 'Warning', category: 'Financial',
+      userEmail,
+      supplierId,
+      supplierName,
+      severity: 'Warning',
+      category: 'Financial',
       title: 'High Debt-to-Equity Ratio Detected',
-      description: `${supplierName} has a debt-to-equity ratio of ${data.financials.debtToEquity.toFixed(0)}%, indicating significant financial leverage.`,
+      description: `${supplierName} has a debt-to-equity ratio of ${data.financials.debtToEquity.toFixed(
+        0,
+      )}%, indicating significant financial leverage.`,
       source: 'Yahoo Finance',
     });
   }
@@ -486,8 +611,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     getCurrencyRisk(country),
   ]);
 
-  const ok = <T>(r: PromiseSettledResult<T>, fallback: T) =>
-    r.status === 'fulfilled' ? r.value : fallback;
+  const ok = <T>(r: PromiseSettledResult<T>, fallback: T) => (r.status === 'fulfilled' ? r.value : fallback);
 
   const responseData = {
     supplier: {name, country, category: category || ''},
@@ -515,12 +639,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let alertsCreated = 0;
   if (createAlerts === 'true' && supplierId) {
     try {
-      alertsCreated = await maybeCreateAlerts(
-        session.user.email,
-        supplierId,
-        name,
-        responseData.sources,
-      );
+      alertsCreated = await maybeCreateAlerts(session.user.email, supplierId, name, responseData.sources);
     } catch {
       // non-fatal
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import {
   Plus,
@@ -32,16 +32,42 @@ interface Contact {
 }
 
 const POSITIONS = [
-  'C-Suite/Executive', 'VP', 'Director', 'Manager', 'Senior/Lead',
-  'Specialist', 'Entry Level', 'Intern', 'Consultant/Freelance',
+  'C-Suite/Executive',
+  'VP',
+  'Director',
+  'Manager',
+  'Senior/Lead',
+  'Specialist',
+  'Entry Level',
+  'Intern',
+  'Consultant/Freelance',
 ];
 
 const DEPARTMENTS = [
-  'Cloud & Platform', 'Commercial & Finance', 'Cyber Security', 'Digital Systems/AI',
-  'Enterprise Architecture', 'Finance', 'Legal', 'HR', 'Marketing', 'Operations',
-  'Product', 'Engineering', 'Sales', 'Design', 'Data & Analytics', 'Risk & Compliance',
-  'IT Support', 'DevOps', 'QA', 'Research', 'Strategy', 'Communications',
-  'Procurement', 'Other',
+  'Cloud & Platform',
+  'Commercial & Finance',
+  'Cyber Security',
+  'Digital Systems/AI',
+  'Enterprise Architecture',
+  'Finance',
+  'Legal',
+  'HR',
+  'Marketing',
+  'Operations',
+  'Product',
+  'Engineering',
+  'Sales',
+  'Design',
+  'Data & Analytics',
+  'Risk & Compliance',
+  'IT Support',
+  'DevOps',
+  'QA',
+  'Research',
+  'Strategy',
+  'Communications',
+  'Procurement',
+  'Other',
 ];
 
 function getInitialsColor(name: string): string {
@@ -61,12 +87,24 @@ function getInitialsColor(name: string): string {
 }
 
 function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 const EMPTY_CONTACT: Omit<Contact, '_id' | 'userEmail'> = {
-  name: '', company: '', phone: '', email: '', notes: '',
-  position: '', department: '', type: 'External', image: '',
+  name: '',
+  company: '',
+  phone: '',
+  email: '',
+  notes: '',
+  position: '',
+  department: '',
+  type: 'External',
+  image: '',
 };
 
 interface ContactModalProps {
@@ -78,8 +116,8 @@ interface ContactModalProps {
   title: string;
 }
 
-function ContactModal({ contact, onChange, onClose, onSubmit, loading, title }: ContactModalProps) {
-  const set = (key: string, val: string) => onChange({ ...contact, [key]: val });
+function ContactModal({contact, onChange, onClose, onSubmit, loading, title}: ContactModalProps) {
+  const set = (key: string, val: string) => onChange({...contact, [key]: val});
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
@@ -138,10 +176,13 @@ function ContactModal({ contact, onChange, onClose, onSubmit, loading, title }: 
               <select
                 value={contact.position || ''}
                 onChange={e => set('position', e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Select position</option>
-                {POSITIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                {POSITIONS.map(p => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -149,10 +190,13 @@ function ContactModal({ contact, onChange, onClose, onSubmit, loading, title }: 
               <select
                 value={contact.department || ''}
                 onChange={e => set('department', e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Select department</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                {DEPARTMENTS.map(d => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -168,8 +212,7 @@ function ContactModal({ contact, onChange, onClose, onSubmit, loading, title }: 
                       contact.type === t
                         ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
+                    }`}>
                     {t}
                   </button>
                 ))}
@@ -199,15 +242,13 @@ function ContactModal({ contact, onChange, onClose, onSubmit, loading, title }: 
         <div className="px-5 py-4 border-t border-slate-200 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700"
-          >
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700">
             Cancel
           </button>
           <button
             onClick={onSubmit}
             disabled={loading || !contact.name.trim()}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
-          >
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50">
             {loading ? 'Saving...' : 'Save Contact'}
           </button>
         </div>
@@ -221,7 +262,7 @@ interface AIImportModalProps {
   onImport: (contact: Omit<Contact, '_id' | 'userEmail'>) => void;
 }
 
-function AIImportModal({ onClose, onImport }: AIImportModalProps) {
+function AIImportModal({onClose, onImport}: AIImportModalProps) {
   const [text, setText] = useState('');
   const [model, setModel] = useState<'gemini' | 'openai'>('gemini');
   const [loading, setLoading] = useState(false);
@@ -247,14 +288,17 @@ function AIImportModal({ onClose, onImport }: AIImportModalProps) {
         const res = await axios.post('/api/openai/generate', {
           apiKey: 'MANAGED',
           model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{role: 'user', content: prompt}],
         });
         responseText = res.data.text || '';
       }
       // Strip markdown if present
-      const clean = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const clean = responseText
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
       const obj = JSON.parse(clean);
-      setParsed({ ...EMPTY_CONTACT, ...obj });
+      setParsed({...EMPTY_CONTACT, ...obj});
     } catch (err: any) {
       setError('Failed to parse contact. Please check the AI response or try again.');
       console.error('AI parse error', err);
@@ -291,16 +335,14 @@ function AIImportModal({ onClose, onImport }: AIImportModalProps) {
             <select
               value={model}
               onChange={e => setModel(e.target.value as 'gemini' | 'openai')}
-              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            >
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500">
               <option value="gemini">Gemini Flash</option>
               <option value="openai">GPT-4o-mini</option>
             </select>
             <button
               onClick={parse}
               disabled={loading || !text.trim()}
-              className="ml-auto flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
-            >
+              className="ml-auto flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Parse Contact
             </button>
@@ -314,16 +356,20 @@ function AIImportModal({ onClose, onImport }: AIImportModalProps) {
           {parsed && (
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2">
               <p className="text-xs font-semibold text-slate-700 mb-2">Extracted fields:</p>
-              {Object.entries(parsed).filter(([, v]) => v).map(([k, v]) => (
-                <div key={k} className="flex gap-2 text-xs">
-                  <span className="font-medium text-slate-500 capitalize w-24 shrink-0">{k}:</span>
-                  <span className="text-slate-800 break-all">{v as string}</span>
-                </div>
-              ))}
+              {Object.entries(parsed)
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="flex gap-2 text-xs">
+                    <span className="font-medium text-slate-500 capitalize w-24 shrink-0">{k}:</span>
+                    <span className="text-slate-800 break-all">{v as string}</span>
+                  </div>
+                ))}
               <button
-                onClick={() => { onImport(parsed); onClose(); }}
-                className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 text-sm font-medium"
-              >
+                onClick={() => {
+                  onImport(parsed);
+                  onClose();
+                }}
+                className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-2 text-sm font-medium">
                 Use This Contact
               </button>
             </div>
@@ -334,7 +380,7 @@ function AIImportModal({ onClose, onImport }: AIImportModalProps) {
   );
 }
 
-export default function OrgContactsView({ globalSearch }: { globalSearch?: string }) {
+export default function OrgContactsView({globalSearch}: {globalSearch?: string}) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(globalSearch || '');
@@ -347,24 +393,35 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
   const [detailNotes, setDetailNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
 
-  useEffect(() => { setSearch(globalSearch || ''); }, [globalSearch]);
+  useEffect(() => {
+    setSearch(globalSearch || '');
+  }, [globalSearch]);
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get('/api/contacts');
       if (res.data.success) setContacts(res.data.data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchContacts(); }, [fetchContacts]);
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
 
-  const openAdd = () => { setEditContact(null); setForm(EMPTY_CONTACT); setShowModal(true); };
+  const openAdd = () => {
+    setEditContact(null);
+    setForm(EMPTY_CONTACT);
+    setShowModal(true);
+  };
   const openEdit = (c: Contact) => {
     setEditContact(c);
-    const { _id, userEmail, ...rest } = c;
-    setForm({ ...EMPTY_CONTACT, ...rest });
+    const {_id, userEmail, ...rest} = c;
+    setForm({...EMPTY_CONTACT, ...rest});
     setShowModal(true);
   };
 
@@ -375,15 +432,18 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
       if (editContact) {
         const res = await axios.put(`/api/contacts/${editContact._id}`, form);
         if (res.data.success) {
-          setContacts(prev => prev.map(c => c._id === editContact._id ? { ...c, ...form } : c));
+          setContacts(prev => prev.map(c => (c._id === editContact._id ? {...c, ...form} : c)));
         }
       } else {
         const res = await axios.post('/api/contacts', form);
         if (res.data.success) setContacts(prev => [...prev, res.data.data]);
       }
       setShowModal(false);
-    } catch (err) { console.error(err); }
-    finally { setSaving(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -392,18 +452,23 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
       await axios.delete(`/api/contacts/${id}`);
       setContacts(prev => prev.filter(c => c._id !== id));
       if (selectedContact?._id === id) setSelectedContact(null);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const saveNotes = async () => {
     if (!selectedContact) return;
     setSavingNotes(true);
     try {
-      await axios.put(`/api/contacts/${selectedContact._id}`, { ...selectedContact, notes: detailNotes });
-      setContacts(prev => prev.map(c => c._id === selectedContact._id ? { ...c, notes: detailNotes } : c));
-      setSelectedContact(prev => prev ? { ...prev, notes: detailNotes } : prev);
-    } catch (err) { console.error(err); }
-    finally { setSavingNotes(false); }
+      await axios.put(`/api/contacts/${selectedContact._id}`, {...selectedContact, notes: detailNotes});
+      setContacts(prev => prev.map(c => (c._id === selectedContact._id ? {...c, notes: detailNotes} : c)));
+      setSelectedContact(prev => (prev ? {...prev, notes: detailNotes} : prev));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingNotes(false);
+    }
   };
 
   const handleSelectContact = (c: Contact) => {
@@ -413,14 +478,15 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
 
   const handleAIImport = (parsed: Omit<Contact, '_id' | 'userEmail'>) => {
     setEditContact(null);
-    setForm({ ...EMPTY_CONTACT, ...parsed });
+    setForm({...EMPTY_CONTACT, ...parsed});
     setShowModal(true);
   };
 
-  const filtered = contacts.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    (c.company && c.company.toLowerCase().includes(search.toLowerCase())) ||
-    (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
+  const filtered = contacts.filter(
+    c =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      (c.company && c.company.toLowerCase().includes(search.toLowerCase())) ||
+      (c.email && c.email.toLowerCase().includes(search.toLowerCase())),
   );
 
   return (
@@ -441,15 +507,13 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
           </div>
           <button
             onClick={() => setShowAIModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all duration-200"
-          >
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all duration-200">
             <Sparkles className="w-4 h-4 text-indigo-500" />
             Smart Import
           </button>
           <button
             onClick={openAdd}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200"
-          >
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200">
             <Plus className="w-4 h-4" />
             Add Contact
           </button>
@@ -467,10 +531,7 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
             <div className="text-center py-16">
               <User className="w-12 h-12 text-slate-200 mx-auto mb-3" />
               <p className="text-slate-400 text-sm">No contacts found</p>
-              <button
-                onClick={openAdd}
-                className="mt-3 text-indigo-600 text-sm hover:underline"
-              >
+              <button onClick={openAdd} className="mt-3 text-indigo-600 text-sm hover:underline">
                 Add your first contact
               </button>
             </div>
@@ -484,13 +545,19 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
                     selectedContact?._id === contact._id
                       ? 'border-indigo-300 shadow-md ring-1 ring-indigo-200'
                       : 'border-slate-200'
-                  }`}
-                >
+                  }`}>
                   <div className="flex items-start gap-3">
                     {contact.image ? (
-                      <img src={contact.image} alt={contact.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                      <img
+                        src={contact.image}
+                        alt={contact.name}
+                        className="w-10 h-10 rounded-full object-cover shrink-0"
+                      />
                     ) : (
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${getInitialsColor(contact.name)}`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${getInitialsColor(
+                          contact.name,
+                        )}`}>
                         {getInitials(contact.name)}
                       </div>
                     )}
@@ -510,8 +577,7 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
                       <a
                         href={`mailto:${contact.email}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex items-center gap-1.5 text-xs text-indigo-600 hover:underline truncate"
-                      >
+                        className="flex items-center gap-1.5 text-xs text-indigo-600 hover:underline truncate">
                         <Mail className="w-3 h-3 shrink-0" />
                         {contact.email}
                       </a>
@@ -536,11 +602,10 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
                       </span>
                     )}
                     {contact.type && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        contact.type === 'Internal'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-amber-50 text-amber-700'
-                      }`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          contact.type === 'Internal' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                        }`}>
                         {contact.type}
                       </span>
                     )}
@@ -549,15 +614,19 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
                   {/* Hover actions */}
                   <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={e => { e.stopPropagation(); openEdit(contact); }}
-                      className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
-                    >
+                      onClick={e => {
+                        e.stopPropagation();
+                        openEdit(contact);
+                      }}
+                      className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-300 transition-colors">
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={e => { e.stopPropagation(); handleDelete(contact._id); }}
-                      className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-red-600 hover:border-red-300 transition-colors"
-                    >
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDelete(contact._id);
+                      }}
+                      className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-red-600 hover:border-red-300 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -580,17 +649,22 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <div className="flex items-center gap-3">
               {selectedContact.image ? (
-                <img src={selectedContact.image} alt={selectedContact.name} className="w-14 h-14 rounded-full object-cover" />
+                <img
+                  src={selectedContact.image}
+                  alt={selectedContact.name}
+                  className="w-14 h-14 rounded-full object-cover"
+                />
               ) : (
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold ${getInitialsColor(selectedContact.name)}`}>
+                <div
+                  className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold ${getInitialsColor(
+                    selectedContact.name,
+                  )}`}>
                   {getInitials(selectedContact.name)}
                 </div>
               )}
               <div>
                 <p className="font-semibold text-slate-900">{selectedContact.name}</p>
-                {selectedContact.company && (
-                  <p className="text-sm text-slate-500">{selectedContact.company}</p>
-                )}
+                {selectedContact.company && <p className="text-sm text-slate-500">{selectedContact.company}</p>}
               </div>
             </div>
 
@@ -625,11 +699,12 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
 
             <div className="flex flex-wrap gap-1.5">
               {selectedContact.type && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  selectedContact.type === 'Internal'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-amber-50 text-amber-700'
-                }`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    selectedContact.type === 'Internal'
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-amber-50 text-amber-700'
+                  }`}>
                   {selectedContact.type}
                 </span>
               )}
@@ -647,8 +722,7 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
               <button
                 onClick={saveNotes}
                 disabled={savingNotes}
-                className="mt-1.5 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-1.5 text-xs font-medium transition-all disabled:opacity-50"
-              >
+                className="mt-1.5 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg py-1.5 text-xs font-medium transition-all disabled:opacity-50">
                 {savingNotes ? 'Saving...' : 'Save Notes'}
               </button>
             </div>
@@ -656,14 +730,12 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
             <div className="flex gap-2">
               <button
                 onClick={() => openEdit(selectedContact)}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all"
-              >
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-all">
                 <Edit3 className="w-3.5 h-3.5" /> Edit
               </button>
               <button
                 onClick={() => handleDelete(selectedContact._id)}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white border border-red-200 hover:bg-red-50 text-red-600 transition-all"
-              >
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-white border border-red-200 hover:bg-red-50 text-red-600 transition-all">
                 <Trash2 className="w-3.5 h-3.5" /> Delete
               </button>
             </div>
@@ -682,12 +754,7 @@ export default function OrgContactsView({ globalSearch }: { globalSearch?: strin
           title={editContact ? 'Edit Contact' : 'Add Contact'}
         />
       )}
-      {showAIModal && (
-        <AIImportModal
-          onClose={() => setShowAIModal(false)}
-          onImport={handleAIImport}
-        />
-      )}
+      {showAIModal && <AIImportModal onClose={() => setShowAIModal(false)} onImport={handleAIImport} />}
     </div>
   );
 }

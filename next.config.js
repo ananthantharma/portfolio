@@ -18,7 +18,7 @@ const nextConfig = {
     return config;
   },
   experimental: {
-    serverComponentsExternalPackages: ['@vercel/blob', 'undici'],
+    serverComponentsExternalPackages: ['@vercel/blob', 'undici', 'mammoth', 'pdf-lib'],
   },
   compress: true,
   generateEtags: true,

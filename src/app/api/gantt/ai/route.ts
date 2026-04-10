@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import {GoogleGenerativeAI} from '@google/generative-ai';
 import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';

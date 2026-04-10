@@ -79,7 +79,14 @@ interface NewsArticle {
 
 interface SanctionsData {
   available: boolean;
-  matches: Array<{id: string; caption: string; score: number; match: boolean; datasets: string[]; sanctionedBy?: string[]}>;
+  matches: Array<{
+    id: string;
+    caption: string;
+    score: number;
+    match: boolean;
+    datasets: string[];
+    sanctionedBy?: string[];
+  }>;
 }
 
 interface CountryContext {
@@ -159,15 +166,9 @@ const SectionHeader = ({icon, title, count, badge}: {icon: string; title: string
     <span className="text-xl">{icon}</span>
     <h3 className="font-semibold text-gray-800">{title}</h3>
     {count !== undefined && (
-      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-        {count}
-      </span>
+      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{count}</span>
     )}
-    {badge && (
-      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-        {badge}
-      </span>
-    )}
+    {badge && <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{badge}</span>}
   </div>
 );
 
@@ -197,20 +198,39 @@ const SentimentPill = ({sentiment}: {sentiment: string}) => {
     Bearish: 'bg-red-100 text-red-700',
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${colors[sentiment] || 'bg-gray-100 text-gray-600'}`}>
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+        colors[sentiment] || 'bg-gray-100 text-gray-600'
+      }`}>
       {sentiment}
     </span>
   );
 };
 
 // ─── Setup Guide for missing API keys ─────────────────────────────────────────
-const ApiKeySetupGuide = ({hasNewsApi, hasOpenSanctions, hasAlphaVantage}: {
-  hasNewsApi: boolean; hasOpenSanctions: boolean; hasAlphaVantage: boolean;
+const ApiKeySetupGuide = ({
+  hasNewsApi,
+  hasOpenSanctions,
+  hasAlphaVantage,
+}: {
+  hasNewsApi: boolean;
+  hasOpenSanctions: boolean;
+  hasAlphaVantage: boolean;
 }) => {
   const missing = [
     !hasNewsApi && {name: 'News API', env: 'NEWS_API_KEY', url: 'https://newsapi.org/', free: '100 req/day free'},
-    !hasOpenSanctions && {name: 'OpenSanctions', env: 'OPENSANCTIONS_API_KEY', url: 'https://www.opensanctions.org/', free: '10k req/mo free'},
-    !hasAlphaVantage && {name: 'Alpha Vantage', env: 'ALPHA_VANTAGE_KEY', url: 'https://www.alphavantage.co/', free: '500 req/day free'},
+    !hasOpenSanctions && {
+      name: 'OpenSanctions',
+      env: 'OPENSANCTIONS_API_KEY',
+      url: 'https://www.opensanctions.org/',
+      free: '10k req/mo free',
+    },
+    !hasAlphaVantage && {
+      name: 'Alpha Vantage',
+      env: 'ALPHA_VANTAGE_KEY',
+      url: 'https://www.alphavantage.co/',
+      free: '500 req/day free',
+    },
   ].filter(Boolean) as Array<{name: string; env: string; url: string; free: string}>;
 
   if (missing.length === 0) return null;
@@ -239,7 +259,10 @@ const ApiKeySetupGuide = ({hasNewsApi, hasOpenSanctions, hasAlphaVantage}: {
 };
 
 // ─── Section: Country Risk (World Bank) ───────────────────────────────────────
-const CountryRiskSection = ({data, context}: {
+const CountryRiskSection = ({
+  data,
+  context,
+}: {
   data: IntelligenceData['sources']['countryRisk'];
   context: CountryContext | null;
 }) => (
@@ -269,7 +292,9 @@ const CountryRiskSection = ({data, context}: {
             ind && (
               <div
                 key={ind.indicator}
-                className={`rounded-lg border p-3 ${ind.riskFlag ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50'}`}>
+                className={`rounded-lg border p-3 ${
+                  ind.riskFlag ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50'
+                }`}>
                 <p className="text-xs text-gray-500">{ind.label}</p>
                 <div className="mt-0.5 flex items-center gap-1.5">
                   <span className={`text-lg font-bold ${ind.riskFlag ? 'text-red-700' : 'text-gray-800'}`}>
@@ -305,9 +330,7 @@ const CurrencySection = ({data}: {data: CurrencyRisk | null}) => {
             <p className="text-xs text-gray-400">Rate vs USD</p>
             <p className="text-xl font-bold text-gray-800">{fmtNumber(data.ratePerUSD ?? null, 4)}</p>
           </div>
-          {data.lastUpdated && (
-            <p className="ml-auto text-xs text-gray-400">Updated: {fmtDate(data.lastUpdated)}</p>
-          )}
+          {data.lastUpdated && <p className="ml-auto text-xs text-gray-400">Updated: {fmtDate(data.lastUpdated)}</p>}
         </div>
       )}
     </Card>
@@ -333,12 +356,16 @@ const SanctionsSection = ({data, hasKey}: {data: SanctionsData; hasKey: boolean}
         {data.matches.map(m => (
           <div
             key={m.id}
-            className={`rounded-lg border p-3 ${m.match ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+            className={`rounded-lg border p-3 ${
+              m.match ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'
+            }`}>
             <div className="flex items-center justify-between">
               <span className="font-medium text-gray-800">{m.caption}</span>
               {m.match && <span className="rounded-full bg-red-100 px-2 text-xs font-bold text-red-700">MATCH</span>}
             </div>
-            <p className="mt-0.5 text-xs text-gray-500">Score: {(m.score * 100).toFixed(0)}% · Datasets: {m.datasets?.join(', ')}</p>
+            <p className="mt-0.5 text-xs text-gray-500">
+              Score: {(m.score * 100).toFixed(0)}% · Datasets: {m.datasets?.join(', ')}
+            </p>
           </div>
         ))}
       </div>
@@ -355,10 +382,18 @@ const CompanyRegistrySection = ({data}: {data: OpenCorpCompany[]}) => (
     ) : (
       <div className="space-y-3">
         {data.map((c, i) => (
-          <div key={i} className={`rounded-lg border p-3 ${c.inactive || c.dissolutionDate ? 'border-red-100 bg-red-50' : 'border-gray-100 bg-gray-50'}`}>
+          <div
+            key={i}
+            className={`rounded-lg border p-3 ${
+              c.inactive || c.dissolutionDate ? 'border-red-100 bg-red-50' : 'border-gray-100 bg-gray-50'
+            }`}>
             <div className="flex items-start justify-between gap-2">
               <div>
-                <a href={c.profileUrl} target="_blank" rel="noreferrer" className="font-medium text-blue-700 hover:underline">
+                <a
+                  href={c.profileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-blue-700 hover:underline">
                   {c.name}
                 </a>
                 <p className="text-xs text-gray-500">
@@ -398,7 +433,9 @@ const SecFilingsSection = ({data}: {data: SecFiling[]}) => (
         {data.map((f, i) => (
           <div
             key={i}
-            className={`flex items-center justify-between rounded-lg border p-3 text-sm ${f.isAdverseEvent ? 'border-orange-200 bg-orange-50' : 'border-gray-100 bg-gray-50'}`}>
+            className={`flex items-center justify-between rounded-lg border p-3 text-sm ${
+              f.isAdverseEvent ? 'border-orange-200 bg-orange-50' : 'border-gray-100 bg-gray-50'
+            }`}>
             <div>
               <div className="flex items-center gap-2">
                 <span
@@ -426,16 +463,20 @@ const SecFilingsSection = ({data}: {data: SecFiling[]}) => (
 
 // ─── Section: Yahoo Finance ───────────────────────────────────────────────────
 const FinancialsSection = ({data}: {data: YahooFinancials | null}) => {
-  if (!data) return (
-    <Card>
-      <SectionHeader icon="📈" title="Public Market Financials" badge="Yahoo Finance" />
-      <p className="text-sm text-gray-400">No publicly traded match found for this supplier</p>
-    </Card>
-  );
+  if (!data)
+    return (
+      <Card>
+        <SectionHeader icon="📈" title="Public Market Financials" badge="Yahoo Finance" />
+        <p className="text-sm text-gray-400">No publicly traded match found for this supplier</p>
+      </Card>
+    );
 
   const recColor: Record<string, string> = {
-    buy: 'text-emerald-600', hold: 'text-yellow-600', sell: 'text-red-600',
-    'strong buy': 'text-emerald-700', 'strong sell': 'text-red-700',
+    buy: 'text-emerald-600',
+    hold: 'text-yellow-600',
+    sell: 'text-red-600',
+    'strong buy': 'text-emerald-700',
+    'strong sell': 'text-red-700',
   };
 
   return (
@@ -443,9 +484,15 @@ const FinancialsSection = ({data}: {data: YahooFinancials | null}) => {
       <SectionHeader icon="📈" title="Public Market Financials" badge="Yahoo Finance" />
       <div className="mb-3 flex items-center gap-3">
         <div>
-          <p className="text-xs text-gray-400">{data.exchange}: {data.symbol}</p>
+          <p className="text-xs text-gray-400">
+            {data.exchange}: {data.symbol}
+          </p>
           <p className="font-semibold text-gray-800">{data.name}</p>
-          {data.sector && <p className="text-xs text-gray-500">{data.sector} · {data.industry}</p>}
+          {data.sector && (
+            <p className="text-xs text-gray-500">
+              {data.sector} · {data.industry}
+            </p>
+          )}
         </div>
         <div className="ml-auto text-right">
           <p className="text-2xl font-bold text-gray-900">
@@ -453,7 +500,8 @@ const FinancialsSection = ({data}: {data: YahooFinancials | null}) => {
           </p>
           {data.priceChange1d != null && (
             <p className={`text-sm font-medium ${data.priceChange1d >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-              {data.priceChange1d >= 0 ? '+' : ''}{fmtPct(data.priceChange1d)} today
+              {data.priceChange1d >= 0 ? '+' : ''}
+              {fmtPct(data.priceChange1d)} today
             </p>
           )}
         </div>
@@ -472,11 +520,16 @@ const FinancialsSection = ({data}: {data: YahooFinancials | null}) => {
           {label: 'P/E Ratio', val: fmtNumber(data.trailingPE)},
           {label: 'Total Debt', val: fmtBillions(data.totalDebt)},
           {label: 'Employees', val: data.fullTimeEmployees ? data.fullTimeEmployees.toLocaleString() : '—'},
-          {label: 'Analyst Rating', val: data.recommendationKey ? (
-            <span className={`font-semibold capitalize ${recColor[data.recommendationKey] || 'text-gray-700'}`}>
-              {data.recommendationKey}
-            </span>
-          ) : '—'},
+          {
+            label: 'Analyst Rating',
+            val: data.recommendationKey ? (
+              <span className={`font-semibold capitalize ${recColor[data.recommendationKey] || 'text-gray-700'}`}>
+                {data.recommendationKey}
+              </span>
+            ) : (
+              '—'
+            ),
+          },
         ].map(({label, val}) => (
           <div key={label} className="rounded-lg bg-gray-50 p-2.5">
             <p className="text-xs text-gray-400">{label}</p>
@@ -491,7 +544,11 @@ const FinancialsSection = ({data}: {data: YahooFinancials | null}) => {
         </p>
       )}
       {data.website && (
-        <a href={data.website} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-blue-600 hover:underline">
+        <a
+          href={data.website}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-1 inline-block text-xs text-blue-600 hover:underline">
           {data.website} →
         </a>
       )}
@@ -512,9 +569,15 @@ const GdeltNewsSection = ({data}: {data: GdeltArticle[]}) => {
         <>
           <div className="space-y-2">
             {shown.map((a, i) => (
-              <div key={i} className="flex items-start gap-2 rounded-lg border border-gray-100 p-3 hover:border-gray-200">
+              <div
+                key={i}
+                className="flex items-start gap-2 rounded-lg border border-gray-100 p-3 hover:border-gray-200">
                 <div className="min-w-0 flex-1">
-                  <a href={a.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-800 hover:text-blue-700 hover:underline line-clamp-2">
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-medium text-gray-800 hover:text-blue-700 hover:underline line-clamp-2">
                     {a.title}
                   </a>
                   <p className="mt-0.5 text-xs text-gray-400">
@@ -524,9 +587,7 @@ const GdeltNewsSection = ({data}: {data: GdeltArticle[]}) => {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <SentimentPill sentiment={a.sentiment} />
-                  {a.tone != null && (
-                    <span className="text-xs text-gray-400">tone: {a.tone.toFixed(1)}</span>
-                  )}
+                  {a.tone != null && <span className="text-xs text-gray-400">tone: {a.tone.toFixed(1)}</span>}
                 </div>
               </div>
             ))}
@@ -559,11 +620,17 @@ const NewsApiSection = ({data, hasKey}: {data: NewsArticle[]; hasKey: boolean}) 
                 <img src={a.imageUrl} alt="" className="h-14 w-20 shrink-0 rounded object-cover" />
               )}
               <div className="min-w-0 flex-1">
-                <a href={a.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-800 hover:underline line-clamp-2">
+                <a
+                  href={a.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm font-medium text-gray-800 hover:underline line-clamp-2">
                   {a.title}
                 </a>
                 {a.description && <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{a.description}</p>}
-                <p className="mt-1 text-xs text-gray-400">{a.source} · {fmtDate(a.date)}</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {a.source} · {fmtDate(a.date)}
+                </p>
               </div>
             </div>
           ))}
@@ -583,11 +650,17 @@ const AlphaVantageSection = ({data, hasKey}: {data: AlphaVantageItem[]; hasKey: 
         {data.map((a, i) => (
           <div key={i} className="flex items-start justify-between gap-2 rounded-lg border border-gray-100 p-3">
             <div className="min-w-0 flex-1">
-              <a href={a.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-gray-800 hover:underline line-clamp-2">
+              <a
+                href={a.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-gray-800 hover:underline line-clamp-2">
                 {a.title}
               </a>
               {a.summary && <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{a.summary}</p>}
-              <p className="mt-1 text-xs text-gray-400">{a.source} · {fmtDate(a.date)}</p>
+              <p className="mt-1 text-xs text-gray-400">
+                {a.source} · {fmtDate(a.date)}
+              </p>
             </div>
             <SentimentPill sentiment={a.overallSentiment} />
           </div>
@@ -647,8 +720,8 @@ export const SupplierIntelligence: React.FC<Props> = ({
         <div className="mb-4 text-5xl">🔍</div>
         <h3 className="mb-2 text-lg font-semibold text-gray-800">Supplier Intelligence</h3>
         <p className="mb-6 text-sm text-gray-500">
-          Pull live data from 10 free sources: World Bank, GDELT news, OpenCorporates registry,
-          SEC EDGAR filings, Yahoo Finance, exchange rates, and more.
+          Pull live data from 10 free sources: World Bank, GDELT news, OpenCorporates registry, SEC EDGAR filings, Yahoo
+          Finance, exchange rates, and more.
         </p>
         <div className="mb-4 flex items-center justify-center gap-2 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
@@ -661,14 +734,20 @@ export const SupplierIntelligence: React.FC<Props> = ({
             <span className="text-gray-600">Auto-create alerts from findings</span>
           </label>
         </div>
-        <button
-          onClick={() => fetchIntelligence()}
-          className="btn-primary px-6 py-2 text-sm">
+        <button onClick={() => fetchIntelligence()} className="btn-primary px-6 py-2 text-sm">
           Run Intelligence Scan
         </button>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {['🌍 World Bank', '📰 GDELT News', '🏢 OpenCorporates', '📋 SEC EDGAR',
-            '📈 Yahoo Finance', '💱 FX Rates', '🚫 OpenSanctions*', '📰 NewsAPI*', '📊 AlphaVantage*',
+          {[
+            '🌍 World Bank',
+            '📰 GDELT News',
+            '🏢 OpenCorporates',
+            '📋 SEC EDGAR',
+            '📈 Yahoo Finance',
+            '💱 FX Rates',
+            '🚫 OpenSanctions*',
+            '📰 NewsAPI*',
+            '📊 AlphaVantage*',
           ].map(s => (
             <span key={s} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
               {s}
@@ -685,7 +764,9 @@ export const SupplierIntelligence: React.FC<Props> = ({
       <div className="rounded-xl border border-gray-100 bg-white p-12 text-center shadow-sm">
         <div className="mb-3 text-4xl">⏳</div>
         <p className="font-medium text-gray-700">Scanning intelligence sources…</p>
-        <p className="mt-1 text-sm text-gray-400">Querying World Bank, GDELT, SEC EDGAR, Yahoo Finance, and more in parallel</p>
+        <p className="mt-1 text-sm text-gray-400">
+          Querying World Bank, GDELT, SEC EDGAR, Yahoo Finance, and more in parallel
+        </p>
         <div className="mt-4 flex justify-center gap-1">
           {[0.1, 0.2, 0.3, 0.4, 0.5].map(d => (
             <div
@@ -760,9 +841,7 @@ export const SupplierIntelligence: React.FC<Props> = ({
             <span>·</span>
             <span>{s.secFilings.length} SEC filings</span>
           </div>
-          <button
-            onClick={() => fetchIntelligence()}
-            className="btn-secondary text-xs">
+          <button onClick={() => fetchIntelligence()} className="btn-secondary text-xs">
             🔄 Refresh
           </button>
         </div>

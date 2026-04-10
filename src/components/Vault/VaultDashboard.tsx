@@ -41,46 +41,44 @@ interface VaultDashboardProps {
 type NavSection = VaultItemType | 'all' | 'favorites';
 
 /* ─── Config per type ────────────────────────────────────────────────── */
-const TYPE_CONFIG: Record<
-  VaultItemType,
-  {label: string; color: string; bg: string; border: string; Icon: LucideIcon}
-> = {
-  password: {
-    label: 'Password',
-    color: 'text-blue-400',
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/20',
-    Icon: KeyRound,
-  },
-  card: {
-    label: 'Card',
-    color: 'text-violet-400',
-    bg: 'bg-violet-500/10',
-    border: 'border-violet-500/20',
-    Icon: CreditCard,
-  },
-  note: {
-    label: 'Secure Note',
-    color: 'text-amber-400',
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
-    Icon: FileText,
-  },
-  identity: {
-    label: 'Identity',
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/20',
-    Icon: User,
-  },
-  apikey: {
-    label: 'API Key',
-    color: 'text-cyan-400',
-    bg: 'bg-cyan-500/10',
-    border: 'border-cyan-500/20',
-    Icon: Key,
-  },
-};
+const TYPE_CONFIG: Record<VaultItemType, {label: string; color: string; bg: string; border: string; Icon: LucideIcon}> =
+  {
+    password: {
+      label: 'Password',
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+      Icon: KeyRound,
+    },
+    card: {
+      label: 'Card',
+      color: 'text-violet-400',
+      bg: 'bg-violet-500/10',
+      border: 'border-violet-500/20',
+      Icon: CreditCard,
+    },
+    note: {
+      label: 'Secure Note',
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+      Icon: FileText,
+    },
+    identity: {
+      label: 'Identity',
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      Icon: User,
+    },
+    apikey: {
+      label: 'API Key',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-500/10',
+      border: 'border-cyan-500/20',
+      Icon: Key,
+    },
+  };
 
 /* ─── Helpers ────────────────────────────────────────────────────────── */
 const getFavicon = (url: string) => {
@@ -92,9 +90,7 @@ const getFavicon = (url: string) => {
   }
 };
 
-const maskCard = (n?: string) =>
-  n ? '**** **** **** ' + n.replace(/\s/g, '').slice(-4) : '•••• •••• •••• ••••';
-
+const maskCard = (n?: string) => (n ? '**** **** **** ' + n.replace(/\s/g, '').slice(-4) : '•••• •••• •••• ••••');
 
 /* ─── SecurityBadge ──────────────────────────────────────────────────── */
 const SecurityBadge = memo(({password}: {password?: string}) => {
@@ -102,9 +98,7 @@ const SecurityBadge = memo(({password}: {password?: string}) => {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-        ok
-          ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400'
-          : 'border-red-500/25 bg-red-500/10 text-red-400'
+        ok ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-400' : 'border-red-500/25 bg-red-500/10 text-red-400'
       }`}>
       {ok ? <ShieldCheck size={9} /> : <ShieldAlert size={9} />}
       {ok ? 'Strong' : 'Weak'}
@@ -184,14 +178,15 @@ const VaultCard = memo(
     return (
       <div
         className={`group relative overflow-hidden rounded-2xl border bg-[#0e0e16] transition-all duration-200
-          ${grid ? 'flex flex-col gap-4 p-5 hover:-translate-y-0.5 hover:shadow-2xl' : 'flex items-center gap-4 px-5 py-3.5'}
+          ${
+            grid
+              ? 'flex flex-col gap-4 p-5 hover:-translate-y-0.5 hover:shadow-2xl'
+              : 'flex items-center gap-4 px-5 py-3.5'
+          }
           ${cfg.border} hover:border-opacity-60`}
         style={{borderColor: 'rgba(255,255,255,0.07)'}}>
-
         {/* Type stripe at top (grid only) */}
-        {grid && (
-          <div className={`absolute inset-x-0 top-0 h-0.5 ${cfg.bg} opacity-80`} />
-        )}
+        {grid && <div className={`absolute inset-x-0 top-0 h-0.5 ${cfg.bg} opacity-80`} />}
 
         {/* Icon & info */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -217,14 +212,16 @@ const VaultCard = memo(
         {grid && data.itemType === 'password' && (
           <div className="flex items-center justify-between">
             <SecurityBadge password={data.password} />
-            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color} ${cfg.bg} ${cfg.border}`}>
               {cfg.label}
             </span>
           </div>
         )}
         {grid && data.itemType !== 'password' && (
           <div className="flex justify-end">
-            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.color} ${cfg.bg} ${cfg.border}`}>
               {cfg.label}
             </span>
           </div>
@@ -253,9 +250,7 @@ const VaultCard = memo(
           {/* Quick copy */}
           <button
             className={`rounded-lg p-1.5 transition-colors ${
-              isCopied
-                ? 'bg-emerald-500/15 text-emerald-400'
-                : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'
+              isCopied ? 'bg-emerald-500/15 text-emerald-400' : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-300'
             }`}
             onClick={e => {
               e.stopPropagation();
@@ -330,9 +325,7 @@ const NavItem = memo(
   }) => (
     <button
       className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
-        active
-          ? 'bg-white/8 text-white shadow-sm'
-          : 'text-zinc-500 hover:bg-white/4 hover:text-zinc-300'
+        active ? 'bg-white/8 text-white shadow-sm' : 'text-zinc-500 hover:bg-white/4 hover:text-zinc-300'
       }`}
       onClick={onClick}>
       <span className={active ? 'text-white' : 'text-zinc-600 group-hover:text-zinc-400'}>{icon}</span>
@@ -425,7 +418,6 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = memo(
 
     return (
       <div className="flex h-full bg-[#07070f] text-zinc-100 overflow-hidden font-sans">
-
         {/* ── Sidebar ── */}
         <aside className="flex w-60 flex-col border-r border-white/[0.06] bg-[#07070f]">
           {/* Logo */}
@@ -487,15 +479,11 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = memo(
 
         {/* ── Main ── */}
         <main className="flex min-w-0 flex-1 flex-col bg-[#07070f]">
-
           {/* Top bar */}
           <header className="flex h-14 flex-shrink-0 items-center gap-4 border-b border-white/[0.06] px-6">
             {/* Search */}
             <div className="relative flex-1 max-w-lg">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600"
-                size={14}
-              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={14} />
               <input
                 className="w-full rounded-xl border border-white/[0.06] bg-white/[0.03] py-2 pl-9 pr-4 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-all focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20"
                 onChange={e => setSearch(e.target.value)}
@@ -538,7 +526,9 @@ export const VaultDashboard: React.FC<VaultDashboardProps> = memo(
               <h1 className="text-base font-bold text-white">
                 {navSections.find(s => s.id === activeSection)?.label ?? 'All Items'}
               </h1>
-              <p className="text-xs text-zinc-600">{filtered.length} item{filtered.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-zinc-600">
+                {filtered.length} item{filtered.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
 

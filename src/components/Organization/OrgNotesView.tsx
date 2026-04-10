@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 import {
   Plus,
@@ -16,7 +16,7 @@ import {
   FileText,
   Check,
 } from 'lucide-react';
-import { Category, Section, Page, PageTab } from './OrganizationLayout';
+import {Category, Section, Page, PageTab} from './OrganizationLayout';
 import RichTextEditor from '../Notes/RichTextEditor';
 
 interface OrgNotesViewProps {
@@ -96,7 +96,10 @@ export default function OrgNotesView({
 
   // Load selected page detail
   useEffect(() => {
-    if (!selectedPageId) { setSelectedPage(null); return; }
+    if (!selectedPageId) {
+      setSelectedPage(null);
+      return;
+    }
     const found = pages.find(p => p._id === selectedPageId);
     if (found) {
       setSelectedPage(found);
@@ -145,12 +148,10 @@ export default function OrgNotesView({
     if (!selectedPage || !activeTabId) return;
     setSaveStatus('saving');
     try {
-      const updatedTabs = selectedPage.tabs.map(t =>
-        t._id === activeTabId ? { ...t, content } : t
-      );
-      await axios.put(`/api/notes/pages/${selectedPage._id}`, { tabs: updatedTabs });
-      setSelectedPage(prev => prev ? { ...prev, tabs: updatedTabs } : prev);
-      setPages(pages.map((p: Page) => p._id === selectedPage._id ? { ...p, tabs: updatedTabs } : p));
+      const updatedTabs = selectedPage.tabs.map(t => (t._id === activeTabId ? {...t, content} : t));
+      await axios.put(`/api/notes/pages/${selectedPage._id}`, {tabs: updatedTabs});
+      setSelectedPage(prev => (prev ? {...prev, tabs: updatedTabs} : prev));
+      setPages(pages.map((p: Page) => (p._id === selectedPage._id ? {...p, tabs: updatedTabs} : p)));
       setSaveStatus('saved');
     } catch {
       setSaveStatus('unsaved');
@@ -168,7 +169,8 @@ export default function OrgNotesView({
   const toggleCategory = (id: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
     setSelectedCategoryId(id);
@@ -187,25 +189,29 @@ export default function OrgNotesView({
   const createCategory = async () => {
     if (!newCatName.trim()) return;
     try {
-      const res = await axios.post('/api/notes/categories', { name: newCatName.trim() });
+      const res = await axios.post('/api/notes/categories', {name: newCatName.trim()});
       if (res.data.success) {
         setCategories([...categories, res.data.data]);
         setNewCatName('');
         setAddingCat(false);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const createSection = async (categoryId: string) => {
     if (!newSecName.trim()) return;
     try {
-      const res = await axios.post('/api/notes/sections', { name: newSecName.trim(), categoryId });
+      const res = await axios.post('/api/notes/sections', {name: newSecName.trim(), categoryId});
       if (res.data.success) {
         setSections([...sections, res.data.data]);
         setNewSecName('');
         setAddingSec(null);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const createPage = async () => {
@@ -214,46 +220,55 @@ export default function OrgNotesView({
       const res = await axios.post('/api/notes/pages', {
         title: 'Untitled',
         sectionId: selectedSectionId,
-        tabs: [{ title: 'Main', content: '', order: 0 }],
+        tabs: [{title: 'Main', content: '', order: 0}],
       });
       if (res.data.success) {
         const newPage = res.data.data;
         setPages([...pages, newPage]);
         setSelectedPageId(newPage._id);
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const deletePage = async (id: string) => {
     try {
       await axios.delete(`/api/notes/pages/${id}`);
       setPages(pages.filter(p => p._id !== id));
-      if (selectedPageId === id) { setSelectedPageId(null); setSelectedPage(null); }
-    } catch (err) { console.error(err); }
+      if (selectedPageId === id) {
+        setSelectedPageId(null);
+        setSelectedPage(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const renamePage = async (id: string) => {
     if (!renameValue.trim()) return;
     try {
-      await axios.put(`/api/notes/pages/${id}`, { title: renameValue.trim() });
-      setPages(pages.map(p => p._id === id ? { ...p, title: renameValue.trim() } : p));
-      if (selectedPage?._id === id) setSelectedPage(prev => prev ? { ...prev, title: renameValue.trim() } : prev);
+      await axios.put(`/api/notes/pages/${id}`, {title: renameValue.trim()});
+      setPages(pages.map(p => (p._id === id ? {...p, title: renameValue.trim()} : p)));
+      if (selectedPage?._id === id) setSelectedPage(prev => (prev ? {...prev, title: renameValue.trim()} : prev));
       setRenamingPageId(null);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const toggleFlag = async (page: Page) => {
     const newVal = !page.isFlagged;
-    await axios.put(`/api/notes/pages/${page._id}`, { isFlagged: newVal });
-    setPages(pages.map(p => p._id === page._id ? { ...p, isFlagged: newVal } : p));
-    if (selectedPage?._id === page._id) setSelectedPage(prev => prev ? { ...prev, isFlagged: newVal } : prev);
+    await axios.put(`/api/notes/pages/${page._id}`, {isFlagged: newVal});
+    setPages(pages.map(p => (p._id === page._id ? {...p, isFlagged: newVal} : p)));
+    if (selectedPage?._id === page._id) setSelectedPage(prev => (prev ? {...prev, isFlagged: newVal} : prev));
   };
 
   const toggleImportant = async (page: Page) => {
     const newVal = !page.isImportant;
-    await axios.put(`/api/notes/pages/${page._id}`, { isImportant: newVal });
-    setPages(pages.map(p => p._id === page._id ? { ...p, isImportant: newVal } : p));
-    if (selectedPage?._id === page._id) setSelectedPage(prev => prev ? { ...prev, isImportant: newVal } : prev);
+    await axios.put(`/api/notes/pages/${page._id}`, {isImportant: newVal});
+    setPages(pages.map(p => (p._id === page._id ? {...p, isImportant: newVal} : p)));
+    if (selectedPage?._id === page._id) setSelectedPage(prev => (prev ? {...prev, isImportant: newVal} : prev));
   };
 
   const runAiAction = async (action: string) => {
@@ -289,9 +304,10 @@ export default function OrgNotesView({
     setAiPreview(null);
   };
 
-  const filteredPages = pages.filter(p =>
-    p.title.toLowerCase().includes(pageSearch.toLowerCase()) ||
-    (globalSearch && p.title.toLowerCase().includes(globalSearch.toLowerCase()))
+  const filteredPages = pages.filter(
+    p =>
+      p.title.toLowerCase().includes(pageSearch.toLowerCase()) ||
+      (globalSearch && p.title.toLowerCase().includes(globalSearch.toLowerCase())),
   );
 
   void selectedPage?.tabs.find(t => t._id === activeTabId); // kept for potential future use
@@ -299,14 +315,13 @@ export default function OrgNotesView({
   return (
     <div className="flex h-full">
       {/* Left panel: categories + sections */}
-      <div className="shrink-0 bg-white flex flex-col overflow-y-auto" style={{ width: leftWidth }}>
+      <div className="shrink-0 bg-white flex flex-col overflow-y-auto" style={{width: leftWidth}}>
         <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Notebooks</span>
           <button
             onClick={() => setAddingCat(v => !v)}
             className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors"
-            title="Add category"
-          >
+            title="Add category">
             <Plus className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -317,7 +332,10 @@ export default function OrgNotesView({
               autoFocus
               value={newCatName}
               onChange={e => setNewCatName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') createCategory(); if (e.key === 'Escape') setAddingCat(false); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') createCategory();
+                if (e.key === 'Escape') setAddingCat(false);
+              }}
               placeholder="Category name"
               className="flex-1 text-xs border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
@@ -334,12 +352,8 @@ export default function OrgNotesView({
                 onClick={() => toggleCategory(cat._id)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                   selectedCategoryId === cat._id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: cat.color || '#6366f1' }}
-                />
+                }`}>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{backgroundColor: cat.color || '#6366f1'}} />
                 <span className="flex-1 text-left truncate font-medium">{cat.name}</span>
                 {expandedCategories.has(cat._id) ? (
                   <ChevronDown className="w-3 h-3 shrink-0" />
@@ -360,8 +374,7 @@ export default function OrgNotesView({
                           selectedSectionId === sec._id
                             ? 'bg-indigo-100 text-indigo-700 font-semibold'
                             : 'text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
+                        }`}>
                         {sec.name}
                       </button>
                     ))}
@@ -385,9 +398,11 @@ export default function OrgNotesView({
                     </div>
                   ) : (
                     <button
-                      onClick={() => { setAddingSec(cat._id); setNewSecName(''); }}
-                      className="w-full flex items-center gap-1 px-3 py-1 text-xs text-slate-400 hover:text-indigo-600 transition-colors"
-                    >
+                      onClick={() => {
+                        setAddingSec(cat._id);
+                        setNewSecName('');
+                      }}
+                      className="w-full flex items-center gap-1 px-3 py-1 text-xs text-slate-400 hover:text-indigo-600 transition-colors">
                       <Plus className="w-3 h-3" /> Section
                     </button>
                   )}
@@ -411,7 +426,7 @@ export default function OrgNotesView({
       />
 
       {/* Middle panel: pages list */}
-      <div className="shrink-0 bg-slate-50 flex flex-col" style={{ width: middleWidth }}>
+      <div className="shrink-0 bg-slate-50 flex flex-col" style={{width: middleWidth}}>
         <div className="p-2.5 border-b border-slate-200 bg-white">
           <div className="flex items-center gap-1.5 mb-2">
             <input
@@ -425,8 +440,7 @@ export default function OrgNotesView({
           {selectedSectionId && (
             <button
               onClick={createPage}
-              className="w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg py-1.5 transition-all duration-200"
-            >
+              className="w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg py-1.5 transition-all duration-200">
               <Plus className="w-3.5 h-3.5" />
               New Page
             </button>
@@ -435,13 +449,9 @@ export default function OrgNotesView({
 
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {!selectedSectionId ? (
-            <div className="text-center py-8 text-slate-400 text-xs">
-              Select a section to view pages
-            </div>
+            <div className="text-center py-8 text-slate-400 text-xs">Select a section to view pages</div>
           ) : filteredPages.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 text-xs">
-              No pages yet
-            </div>
+            <div className="text-center py-8 text-slate-400 text-xs">No pages yet</div>
           ) : (
             filteredPages.map(page => (
               <div
@@ -451,8 +461,7 @@ export default function OrgNotesView({
                     ? 'bg-white border-indigo-200 shadow-sm'
                     : 'bg-white border-transparent hover:border-slate-200 hover:shadow-sm'
                 }`}
-                onClick={() => handleSelectPage(page)}
-              >
+                onClick={() => handleSelectPage(page)}>
                 {renamingPageId === page._id ? (
                   <input
                     autoFocus
@@ -473,16 +482,18 @@ export default function OrgNotesView({
                         {page.isFlagged && <Flag className="w-3 h-3 text-amber-400" />}
                         {page.isImportant && <Star className="w-3 h-3 text-rose-400" />}
                         <button
-                          onClick={e => { e.stopPropagation(); setMenuOpenFor(menuOpenFor === page._id ? null : page._id); }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-700"
-                        >
+                          onClick={e => {
+                            e.stopPropagation();
+                            setMenuOpenFor(menuOpenFor === page._id ? null : page._id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-700">
                           <MoreHorizontal className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
                     {page.updatedAt && (
                       <p className="text-xs text-slate-400 mt-0.5">
-                        {new Date(page.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(page.updatedAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
                       </p>
                     )}
                   </>
@@ -491,31 +502,39 @@ export default function OrgNotesView({
                 {menuOpenFor === page._id && (
                   <div
                     className="absolute right-0 top-8 z-50 bg-white border border-slate-200 rounded-lg shadow-lg py-1 w-36"
-                    onClick={e => e.stopPropagation()}
-                  >
+                    onClick={e => e.stopPropagation()}>
                     <button
-                      onClick={() => { setRenamingPageId(page._id); setRenameValue(page.title); setMenuOpenFor(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      onClick={() => {
+                        setRenamingPageId(page._id);
+                        setRenameValue(page.title);
+                        setMenuOpenFor(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       <Edit3 className="w-3 h-3" /> Rename
                     </button>
                     <button
-                      onClick={() => { toggleFlag(page); setMenuOpenFor(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      onClick={() => {
+                        toggleFlag(page);
+                        setMenuOpenFor(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       <Flag className="w-3 h-3" /> {page.isFlagged ? 'Unflag' : 'Flag'}
                     </button>
                     <button
-                      onClick={() => { toggleImportant(page); setMenuOpenFor(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      onClick={() => {
+                        toggleImportant(page);
+                        setMenuOpenFor(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       <Star className="w-3 h-3" /> {page.isImportant ? 'Unmark' : 'Important'}
                     </button>
                     <hr className="my-1 border-slate-100" />
                     <button
-                      onClick={() => { deletePage(page._id); setMenuOpenFor(null); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
-                    >
+                      onClick={() => {
+                        deletePage(page._id);
+                        setMenuOpenFor(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50">
                       <Trash2 className="w-3 h-3" /> Delete
                     </button>
                   </div>
@@ -556,23 +575,29 @@ export default function OrgNotesView({
                   value={selectedPage.title}
                   onChange={e => {
                     const val = e.target.value;
-                    setSelectedPage(prev => prev ? { ...prev, title: val } : prev);
-                    setPages(pages.map((p: Page) => p._id === selectedPage._id ? { ...p, title: val } : p));
+                    setSelectedPage(prev => (prev ? {...prev, title: val} : prev));
+                    setPages(pages.map((p: Page) => (p._id === selectedPage._id ? {...p, title: val} : p)));
                     clearTimeout(saveTimerRef.current!);
                     saveTimerRef.current = setTimeout(async () => {
                       try {
-                        await axios.put(`/api/notes/pages/${selectedPage._id}`, { title: val });
+                        await axios.put(`/api/notes/pages/${selectedPage._id}`, {title: val});
                         setSaveStatus('saved');
-                      } catch { setSaveStatus('unsaved'); }
+                      } catch {
+                        setSaveStatus('unsaved');
+                      }
                     }, 800);
                   }}
                   className="text-2xl font-semibold text-slate-900 bg-transparent focus:outline-none w-full placeholder-slate-300"
                   placeholder="Untitled"
                 />
-                <span className={`text-xs ml-4 shrink-0 ${
-                  saveStatus === 'saved' ? 'text-emerald-500' :
-                  saveStatus === 'saving' ? 'text-indigo-400' : 'text-amber-400'
-                }`}>
+                <span
+                  className={`text-xs ml-4 shrink-0 ${
+                    saveStatus === 'saved'
+                      ? 'text-emerald-500'
+                      : saveStatus === 'saving'
+                      ? 'text-indigo-400'
+                      : 'text-amber-400'
+                  }`}>
                   {saveStatus === 'saved' ? 'Saved' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved'}
                 </span>
               </div>
@@ -588,8 +613,7 @@ export default function OrgNotesView({
                         activeTabId === tab._id
                           ? 'border-indigo-600 text-indigo-700 bg-indigo-50'
                           : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
+                      }`}>
                       {tab.title}
                     </button>
                   ))}
@@ -607,14 +631,12 @@ export default function OrgNotesView({
                   <div className="flex gap-1.5">
                     <button
                       onClick={applyAiPreview}
-                      className="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-md hover:bg-indigo-700"
-                    >
+                      className="text-xs bg-indigo-600 text-white px-2.5 py-1 rounded-md hover:bg-indigo-700">
                       Apply
                     </button>
                     <button
                       onClick={() => setAiPreview(null)}
-                      className="text-xs bg-white border border-slate-200 text-slate-700 px-2.5 py-1 rounded-md hover:bg-slate-50"
-                    >
+                      className="text-xs bg-white border border-slate-200 text-slate-700 px-2.5 py-1 rounded-md hover:bg-slate-50">
                       Discard
                     </button>
                   </div>
@@ -641,8 +663,7 @@ export default function OrgNotesView({
                   selectedPage?.isFlagged
                     ? 'bg-amber-50 text-amber-600 border border-amber-200'
                     : 'text-slate-500 hover:bg-slate-50 border border-transparent'
-                }`}
-              >
+                }`}>
                 <Flag className="w-3.5 h-3.5" />
                 {selectedPage?.isFlagged ? 'Flagged' : 'Flag'}
               </button>
@@ -653,8 +674,7 @@ export default function OrgNotesView({
                   selectedPage?.isImportant
                     ? 'bg-rose-50 text-rose-600 border border-rose-200'
                     : 'text-slate-500 hover:bg-slate-50 border border-transparent'
-                }`}
-              >
+                }`}>
                 <Star className="w-3.5 h-3.5" />
                 {selectedPage?.isImportant ? 'Important' : 'Mark Important'}
               </button>
@@ -663,8 +683,7 @@ export default function OrgNotesView({
                 <button
                   onClick={() => setShowAiDropdown(v => !v)}
                   disabled={aiLoading}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all duration-200 disabled:opacity-50"
-                >
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all duration-200 disabled:opacity-50">
                   {aiLoading ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
@@ -676,20 +695,17 @@ export default function OrgNotesView({
                   <div className="absolute bottom-8 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg py-1 w-40">
                     <button
                       onClick={() => runAiAction('rewrite')}
-                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       ✨ Rewrite
                     </button>
                     <button
                       onClick={() => runAiAction('summarize')}
-                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       📋 Summarize
                     </button>
                     <button
                       onClick={() => runAiAction('suggestions')}
-                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-                    >
+                      className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50">
                       💡 Suggestions
                     </button>
                   </div>

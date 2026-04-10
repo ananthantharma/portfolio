@@ -89,6 +89,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
           secureLoginEnabled: payload.secureLoginEnabled,
           financeEnabled: payload.financeEnabled,
           invoiceEnabled: payload.invoiceEnabled,
+          formFillEnabled: payload.formFillEnabled,
         }),
       });
 
@@ -162,6 +163,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
                           <PermissionCheckbox user={user} field="secureLoginEnabled" label="Vault" />
                           <PermissionCheckbox user={user} field="financeEnabled" label="Finance" />
                           <PermissionCheckbox user={user} field="invoiceEnabled" label="Invoices" />
+                          <PermissionCheckbox user={user} field="formFillEnabled" label="Form Fill" />
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">

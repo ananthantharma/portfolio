@@ -16,7 +16,14 @@ interface DashboardData {
   byStatus: Record<string, number>;
   avgScore: number;
   byCategory: Array<{name: string; count: number; avgScore: number}>;
-  topRisky: Array<{_id: string; name: string; country: string; category: string; overallScore: number; riskLevel: string}>;
+  topRisky: Array<{
+    _id: string;
+    name: string;
+    country: string;
+    category: string;
+    overallScore: number;
+    riskLevel: string;
+  }>;
   recentAlerts: AlertDoc[];
   unreadAlerts: number;
   criticalAlerts: number;
@@ -169,7 +176,11 @@ const SupplierRiskDashboard = () => {
                           {s.country} · {s.category}
                         </p>
                       </div>
-                      <RiskBadge level={s.riskLevel as 'Low' | 'Medium' | 'High' | 'Critical'} score={s.overallScore} size="sm" />
+                      <RiskBadge
+                        level={s.riskLevel as 'Low' | 'Medium' | 'High' | 'Critical'}
+                        score={s.overallScore}
+                        size="sm"
+                      />
                     </Link>
                   ))}
                 </div>
@@ -201,7 +212,9 @@ const SupplierRiskDashboard = () => {
                         {cat.avgScore}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400">{cat.count} supplier{cat.count !== 1 ? 's' : ''} · avg score</p>
+                    <p className="text-xs text-gray-400">
+                      {cat.count} supplier{cat.count !== 1 ? 's' : ''} · avg score
+                    </p>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
                       <div
                         className={`h-full rounded-full ${

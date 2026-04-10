@@ -693,7 +693,8 @@ const TaskFormModal: React.FC<TaskFormModalProps> = React.memo(
                                       {file.name}
                                     </a>
                                   ) : (
-                                    <span className={`truncate ${email ? 'text-blue-600 font-medium' : 'text-gray-600'}`}>
+                                    <span
+                                      className={`truncate ${email ? 'text-blue-600 font-medium' : 'text-gray-600'}`}>
                                       {file.name}
                                     </span>
                                   )}

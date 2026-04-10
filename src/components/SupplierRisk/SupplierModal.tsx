@@ -16,8 +16,22 @@ const CATEGORIES = [
 ];
 
 const COUNTRIES = [
-  'USA', 'Canada', 'Germany', 'UK', 'France', 'China', 'India', 'Japan', 'South Korea',
-  'Vietnam', 'Mexico', 'Brazil', 'Australia', 'Singapore', 'South Africa', 'Other',
+  'USA',
+  'Canada',
+  'Germany',
+  'UK',
+  'France',
+  'China',
+  'India',
+  'Japan',
+  'South Korea',
+  'Vietnam',
+  'Mexico',
+  'Brazil',
+  'Australia',
+  'Singapore',
+  'South Africa',
+  'Other',
 ];
 
 interface SupplierFormData {
@@ -76,7 +90,7 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
       if (initial) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rawTags = (initial as any).tags;
-        const tagsStr = Array.isArray(rawTags) ? rawTags.join(', ') : (rawTags ?? '');
+        const tagsStr = Array.isArray(rawTags) ? rawTags.join(', ') : rawTags ?? '';
         setForm({...DEFAULT_FORM, ...(initial as Partial<SupplierFormData>), tags: tagsStr});
       } else {
         setForm(DEFAULT_FORM);
@@ -86,8 +100,7 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
 
   if (!isOpen) return null;
 
-  const set = (field: keyof SupplierFormData, value: unknown) =>
-    setForm(p => ({...p, [field]: value}));
+  const set = (field: keyof SupplierFormData, value: unknown) => setForm(p => ({...p, [field]: value}));
   const setRisk = (
     dim: 'financialRisk' | 'operationalRisk' | 'complianceRisk' | 'esgRisk',
     key: 'score' | 'notes',
@@ -134,13 +147,17 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
               <div>
                 <label className="label">Country *</label>
                 <select className="input" value={form.country} onChange={e => set('country', e.target.value)}>
-                  {COUNTRIES.map(c => <option key={c}>{c}</option>)}
+                  {COUNTRIES.map(c => (
+                    <option key={c}>{c}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="label">Category *</label>
                 <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  {CATEGORIES.map(c => (
+                    <option key={c}>{c}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -149,7 +166,12 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
               </div>
               <div>
                 <label className="label">Contact Email</label>
-                <input className="input" type="email" value={form.contactEmail} onChange={e => set('contactEmail', e.target.value)} />
+                <input
+                  className="input"
+                  type="email"
+                  value={form.contactEmail}
+                  onChange={e => set('contactEmail', e.target.value)}
+                />
               </div>
               <div>
                 <label className="label">Website</label>
@@ -157,24 +179,38 @@ export const SupplierModal: React.FC<Props> = ({isOpen, onClose, onSave, initial
               </div>
               <div>
                 <label className="label">Annual Spend</label>
-                <input className="input" type="number" value={form.annualSpend} onChange={e => set('annualSpend', e.target.value)} />
+                <input
+                  className="input"
+                  type="number"
+                  value={form.annualSpend}
+                  onChange={e => set('annualSpend', e.target.value)}
+                />
               </div>
               <div>
                 <label className="label">Status</label>
                 <select className="input" value={form.status} onChange={e => set('status', e.target.value)}>
-                  {['Active', 'Onboarding', 'Under Review', 'Suspended', 'Inactive'].map(s => <option key={s}>{s}</option>)}
+                  {['Active', 'Onboarding', 'Under Review', 'Suspended', 'Inactive'].map(s => (
+                    <option key={s}>{s}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="label">Tags (comma-separated)</label>
-                <input className="input" value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="Tier 1, Strategic" />
+                <input
+                  className="input"
+                  value={form.tags}
+                  onChange={e => set('tags', e.target.value)}
+                  placeholder="Tier 1, Strategic"
+                />
               </div>
             </div>
           </section>
 
           {/* Risk Dimensions */}
           <section>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Risk Scores (0 = no risk, 100 = critical)</h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+              Risk Scores (0 = no risk, 100 = critical)
+            </h3>
             {(
               [
                 ['financialRisk', 'Financial Risk'],

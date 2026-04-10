@@ -123,7 +123,12 @@ const AlertsPage = () => {
             {unread > 0 && (
               <button
                 className="ml-auto rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
-                onClick={() => patch(alerts.filter(a => !a.isRead).map(a => a._id), 'markRead')}>
+                onClick={() =>
+                  patch(
+                    alerts.filter(a => !a.isRead).map(a => a._id),
+                    'markRead',
+                  )
+                }>
                 Mark all as read
               </button>
             )}

@@ -25,7 +25,10 @@ export async function GET(req: Request) {
 
     if (!recipients.length) {
       console.log('Invalid token attempt:', token);
-      return NextResponse.json({error: `Invalid or expired signing link (Token: ${token.substring(0, 10)}...)`}, {status: 404});
+      return NextResponse.json(
+        {error: `Invalid or expired signing link (Token: ${token.substring(0, 10)}...)`},
+        {status: 404},
+      );
     }
 
     const recipient = recipients[0];
@@ -117,8 +120,8 @@ export async function POST(req: Request) {
       const allFields = await sql`SELECT * FROM fields WHERE document_id = ${recipient.doc_id}`;
 
       try {
-        const { PDFDocument, rgb } = await import('pdf-lib');
-        const { put } = await import('@vercel/blob');
+        const {PDFDocument, rgb} = await import('pdf-lib');
+        const {put} = await import('@vercel/blob');
 
         // Fetch original PDF
         const resPdf = await fetch(docDetails[0].pdf_url);
@@ -133,8 +136,8 @@ export async function POST(req: Request) {
           if (pageIndex < 0 || pageIndex >= pages.length) continue;
           const page = pages[pageIndex];
 
-          const { width, height } = page.getSize();
-          
+          const {width, height} = page.getSize();
+
           // CSS wrapper bounds: 816x1056
           const scaleX = width / 816;
           const scaleY = height / 1056;
@@ -142,19 +145,19 @@ export async function POST(req: Request) {
           const fWidth = field.width * scaleX;
           const fHeight = field.height * scaleY;
           const fX = field.pos_x * scaleX;
-          const fY = height - (field.pos_y * scaleY) - fHeight;
+          const fY = height - field.pos_y * scaleY - fHeight;
 
           if (field.value.startsWith('data:image/png')) {
             const base64Data = field.value.split(',')[1];
             // Convert to a plain Uint8Array that pdf-lib expects
             const imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
             const imgDoc = await pdfDoc.embedPng(imgBytes);
-            page.drawImage(imgDoc, { x: fX, y: fY, width: fWidth, height: fHeight });
+            page.drawImage(imgDoc, {x: fX, y: fY, width: fWidth, height: fHeight});
           } else {
             // Text or Date
             page.drawText(field.value, {
-              x: fX + (10 * scaleX),
-              y: fY + (fHeight / 2) - 5,
+              x: fX + 10 * scaleX,
+              y: fY + fHeight / 2 - 5,
               size: 14 * scaleY,
               color: rgb(0.1, 0.1, 0.18),
             });

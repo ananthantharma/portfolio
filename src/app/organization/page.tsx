@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import React from 'react';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import {getServerSession} from 'next-auth';
+import {authOptions} from '@/lib/auth';
 import AccessDenied from '@/components/AccessDenied';
 import OrganizationLayout from '@/components/Organization/OrganizationLayout';
 

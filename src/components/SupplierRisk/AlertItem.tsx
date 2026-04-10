@@ -45,10 +45,10 @@ export const AlertItem: React.FC<Props> = ({alert, onResolve, onMarkRead, compac
 
   return (
     <div
-      className={`relative border-l-4 ${cfg.border} rounded-r-lg bg-white p-4 shadow-sm transition-opacity ${alert.isResolved ? 'opacity-50' : ''} ${!alert.isRead ? 'ring-1 ring-inset ring-gray-200' : ''}`}>
-      {!alert.isRead && (
-        <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-blue-500" />
-      )}
+      className={`relative border-l-4 ${cfg.border} rounded-r-lg bg-white p-4 shadow-sm transition-opacity ${
+        alert.isResolved ? 'opacity-50' : ''
+      } ${!alert.isRead ? 'ring-1 ring-inset ring-gray-200' : ''}`}>
+      {!alert.isRead && <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-blue-500" />}
       <div className="flex items-start gap-3">
         <span className="text-lg leading-none">{cfg.icon}</span>
         <div className="min-w-0 flex-1">

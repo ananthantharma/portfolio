@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import {useRouter} from 'next/navigation';
+import {useSession} from 'next-auth/react';
+import {useEffect} from 'react';
 
-export default function OrganizationRootLayout({ children }: { children: React.ReactNode }) {
-  const { status } = useSession();
+export default function OrganizationRootLayout({children}: {children: React.ReactNode}) {
+  const {status} = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -42,12 +42,11 @@ export default function OrganizationRootLayout({ children }: { children: React.R
           height: '36px',
           background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
           boxShadow: '0 2px 12px rgba(249,115,22,0.45)',
-        }}
-      >
+        }}>
         <span className="text-white text-sm font-black">A</span>
       </Link>
 
-      <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>{children}</div>
+      <div style={{position: 'fixed', inset: 0, overflow: 'hidden'}}>{children}</div>
     </>
   );
 }

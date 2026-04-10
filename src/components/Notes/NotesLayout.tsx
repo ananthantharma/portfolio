@@ -24,13 +24,14 @@ import {
   MicrophoneIcon,
   CloudIcon,
   ClipboardIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import {useSession} from 'next-auth/react';
+import React, {useCallback, useEffect, useState, useMemo} from 'react';
 
-import { INoteCategory } from '@/models/NoteCategory';
-import { INotePage } from '@/models/NotePage';
-import { INoteSection } from '@/models/NoteSection';
+import {INoteCategory} from '@/models/NoteCategory';
+import {INotePage} from '@/models/NotePage';
+import {INoteSection} from '@/models/NoteSection';
 
 import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
@@ -47,8 +48,8 @@ import ToDoListModal from './ToDoListModal';
 import UserProfileMenu from '../UserProfileMenu';
 import MovePageModal from './MovePageModal';
 import GoogleCalendarModal from './GoogleCalendarModal';
-import { BadgeSettingsProvider } from './BadgeSettingsContext';
-import { BadgeSettingsModal } from './BadgeSettingsModal';
+import {BadgeSettingsProvider} from './BadgeSettingsContext';
+import {BadgeSettingsModal} from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
 import AudioRecorderModal from './AudioRecorderModal';
@@ -86,10 +87,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAudioRecorderOpen, setIsAudioRecorderOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
-    pages: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    sections: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-    categories: Record<string, { todo: { count: number; minDays: number | null }; important: number; flagged: number }>;
-  }>({ pages: {}, sections: {}, categories: {} });
+    pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    sections: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+    categories: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+  }>({pages: {}, sections: {}, categories: {}});
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
@@ -423,7 +424,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Category Operations
   const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
     try {
-      const response = await axios.post('/api/notes/categories', { name, color, icon, image });
+      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
@@ -433,7 +434,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/categories/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/categories/${id}`, {name, color, icon, image});
         setCategories(prev => prev.map(cat => (cat._id === id ? response.data.data : cat)));
       } catch (error) {
         console.error('Error renaming category:', error);
@@ -459,7 +460,7 @@ const NotesLayout: React.FC = React.memo(() => {
     setCategories(newOrder); // Optimistic update
     try {
       await axios.put('/api/notes/categories/reorder', {
-        items: newOrder.map((cat, index) => ({ id: cat._id, order: index })),
+        items: newOrder.map((cat, index) => ({id: cat._id, order: index})),
       });
     } catch (error) {
       console.error('Error reordering categories:', error);
@@ -491,7 +492,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenameSection = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/sections/${id}`, { name, color, icon, image });
+        const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
       } catch (error) {
         console.error('Error renaming section:', error);
@@ -518,7 +519,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setSections(newOrder);
       try {
         await axios.put('/api/notes/sections/reorder', {
-          items: newOrder.map((sec, index) => ({ id: sec._id, order: index })),
+          items: newOrder.map((sec, index) => ({id: sec._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering sections:', error);
@@ -554,7 +555,7 @@ const NotesLayout: React.FC = React.memo(() => {
       // 1. Fetch/Create 'Other Notes' Category
       let category = categories.find(c => c.name === 'Other Notes');
       if (!category) {
-        const catRes = await axios.post('/api/notes/categories', { name: 'Other Notes' });
+        const catRes = await axios.post('/api/notes/categories', {name: 'Other Notes'});
         category = catRes.data.data;
         setCategories(prev => [...prev, category as INoteCategory]);
       }
@@ -564,7 +565,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const secRes = await axios.get(`/api/notes/sections?categoryId=${category!._id}`);
       let section = secRes.data.data.find((s: INoteSection) => s.name === 'Other');
       if (!section) {
-        const createSecRes = await axios.post('/api/notes/sections', { name: 'Other', categoryId: category!._id });
+        const createSecRes = await axios.post('/api/notes/sections', {name: 'Other', categoryId: category!._id});
         section = createSecRes.data.data;
         if (selectedCategoryId === category!._id) {
           setSections(prev => [...prev, section]);
@@ -572,7 +573,7 @@ const NotesLayout: React.FC = React.memo(() => {
       }
 
       // 3. Create Page
-      const pageRes = await axios.post('/api/notes/pages', { title: 'New Note', sectionId: section._id });
+      const pageRes = await axios.post('/api/notes/pages', {title: 'New Note', sectionId: section._id});
       const newPage = pageRes.data.data;
 
       // 4. Navigate to new Quick Note
@@ -592,7 +593,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
-        const response = await axios.put(`/api/notes/pages/${id}`, { title, color, icon, image });
+        const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
         setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
       } catch (error) {
         console.error('Error renaming page:', error);
@@ -617,15 +618,22 @@ const NotesLayout: React.FC = React.memo(() => {
   const [selectedPageToMove, setSelectedPageToMove] = useState<INotePage | null>(null);
 
   // Recent pages tracking (persisted in localStorage)
-  const [recentPages, setRecentPages] = useState<Array<{
-    id: string; title: string; categoryId: string; categoryName: string;
-    sectionId: string; sectionName: string; timestamp: number;
-  }>>([]);
+  const [recentPages, setRecentPages] = useState<
+    Array<{
+      id: string;
+      title: string;
+      categoryId: string;
+      categoryName: string;
+      sectionId: string;
+      sectionName: string;
+      timestamp: number;
+    }>
+  >([]);
 
   const handleMovePage = useCallback(
     async (pageId: string, destSectionId: string) => {
       try {
-        await axios.put(`/api/notes/pages/${pageId}`, { sectionId: destSectionId });
+        await axios.put(`/api/notes/pages/${pageId}`, {sectionId: destSectionId});
         if (selectedSectionId && destSectionId !== selectedSectionId) {
           setPages(prev => prev.filter(p => p._id !== pageId));
           if (selectedPageId === pageId) setSelectedPageId(null);
@@ -642,7 +650,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
-      const response = await axios.put(`/api/notes/pages/${id}`, { tabs: data });
+      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
       setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
     } catch (error) {
       console.error('Error saving page content:', error);
@@ -654,7 +662,7 @@ const NotesLayout: React.FC = React.memo(() => {
       setPages(newOrder);
       try {
         await axios.put('/api/notes/pages/reorder', {
-          items: newOrder.map((page, index) => ({ id: page._id, order: index })),
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
         });
       } catch (error) {
         console.error('Error reordering pages:', error);
@@ -672,7 +680,9 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     const saved = localStorage.getItem('NOTES_RECENT_PAGES');
     if (saved) {
-      try { setRecentPages(JSON.parse(saved)); } catch {}
+      try {
+        setRecentPages(JSON.parse(saved));
+      } catch {}
     }
   }, []);
 
@@ -685,21 +695,24 @@ const NotesLayout: React.FC = React.memo(() => {
     if (!page || !cat || !sec) return;
     setRecentPages(prev => {
       const filtered = prev.filter(p => p.id !== selectedPageId);
-      const updated = [{
-        id: selectedPageId,
-        title: page.title || 'Untitled',
-        categoryId: selectedCategoryId,
-        categoryName: cat.name,
-        sectionId: selectedSectionId,
-        sectionName: sec.name,
-        timestamp: Date.now(),
-      }, ...filtered].slice(0, 8);
+      const updated = [
+        {
+          id: selectedPageId,
+          title: page.title || 'Untitled',
+          categoryId: selectedCategoryId,
+          categoryName: cat.name,
+          sectionId: selectedSectionId,
+          sectionName: sec.name,
+          timestamp: Date.now(),
+        },
+        ...filtered,
+      ].slice(0, 8);
       localStorage.setItem('NOTES_RECENT_PAGES', JSON.stringify(updated));
       return updated;
     });
   }, [selectedPageId]);
 
-  const handleJumpToRecentPage = useCallback((rp: { id: string; categoryId: string; sectionId: string }) => {
+  const handleJumpToRecentPage = useCallback((rp: {id: string; categoryId: string; sectionId: string}) => {
     setSelectedCategoryId(rp.categoryId);
     setTimeout(() => {
       setSelectedSectionId(rp.sectionId);
@@ -716,7 +729,7 @@ const NotesLayout: React.FC = React.memo(() => {
     if (h < 24) return `${h}h ago`;
     const days = Math.floor(h / 24);
     if (days < 7) return `${days}d ago`;
-    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return new Date(ts).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
   }, []);
 
   const greeting = useMemo(() => {
@@ -724,9 +737,15 @@ const NotesLayout: React.FC = React.memo(() => {
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   }, []);
 
-  const dateStr = useMemo(() => new Date().toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric',
-  }), []);
+  const dateStr = useMemo(
+    () =>
+      new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      }),
+    [],
+  );
 
   const handleOpenImportant = useCallback(() => setIsImportantOpen(true), []);
   const handleOpenKeyTasks = useCallback(() => setIsKeyTasksOpen(true), []);
@@ -762,9 +781,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
 
-
-
-  const { data: session } = useSession();
+  const {data: session} = useSession();
 
   const userName = useMemo(() => {
     const n = (session?.user as any)?.name || session?.user?.email || '';
@@ -847,8 +864,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <BadgeSettingsProvider>
-      <div className="relative flex h-screen w-full overflow-hidden bg-[#F7F7F8] text-slate-900" style={{fontFamily:'"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'}}>
-
+      <div
+        className="relative flex h-screen w-full overflow-hidden bg-[#F7F7F8] text-slate-900"
+        style={{fontFamily: '"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'}}>
         {/* Background — subtle radial wash */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-[15%] -left-[10%] h-[50%] w-[50%] rounded-full bg-violet-100/30 blur-[120px]" />
@@ -856,26 +874,35 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         <div className="relative flex h-full w-full flex-col overflow-hidden p-2.5 gap-2">
-
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
             <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl bg-white/80 backdrop-blur-xl px-4 py-2 z-40 gap-2 md:gap-0 !overflow-visible">
-
               {/* Left: Brand + Breadcrumbs */}
               <div className="flex items-center gap-2 text-[12.5px] overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto">
                 <button
-                  onClick={() => { setSelectedCategoryId(null); setSelectedSectionId(null); setSelectedPageId(null); }}
+                  onClick={() => {
+                    setSelectedCategoryId(null);
+                    setSelectedSectionId(null);
+                    setSelectedPageId(null);
+                  }}
                   className="flex items-center gap-2.5 group"
                   title="Go to Workspace">
                   <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 flex-shrink-0">
                     <HomeIcon className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <span className="font-semibold text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">Notes</span>
+                  <span className="font-semibold text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">
+                    Notes
+                  </span>
                 </button>
                 {currentCategory && (
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <button onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }} className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                    <button
+                      onClick={() => {
+                        setSelectedSectionId(null);
+                        setSelectedPageId(null);
+                      }}
+                      className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
                       {currentCategory.name}
                     </button>
                   </>
@@ -883,7 +910,9 @@ const NotesLayout: React.FC = React.memo(() => {
                 {currentSection && (
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <button onClick={() => setSelectedPageId(null)} className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                    <button
+                      onClick={() => setSelectedPageId(null)}
+                      className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
                       {currentSection.name}
                     </button>
                   </>
@@ -941,7 +970,11 @@ const NotesLayout: React.FC = React.memo(() => {
                   onClick={toggleFocusMode}
                   className="rounded-lg p-1.5 text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
                   title="Focus Mode (Ctrl+\\)">
-                  {isFocusMode ? <ArrowsPointingInIcon className="h-4 w-4" /> : <ArrowsPointingOutIcon className="h-4 w-4" />}
+                  {isFocusMode ? (
+                    <ArrowsPointingInIcon className="h-4 w-4" />
+                  ) : (
+                    <ArrowsPointingOutIcon className="h-4 w-4" />
+                  )}
                 </button>
 
                 <UserProfileMenu />
@@ -951,19 +984,34 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ── Main Panel ── */}
           <div className="flex flex-1 overflow-hidden gap-1.5 min-h-0">
-
             {/* ── Resource Rail: Mini Side Bar ── */}
             {!isFocusMode && (
               <div className="flex flex-col items-center py-3 px-2 rounded-2xl bg-white/60 backdrop-blur-xl gap-3 select-none z-[45] w-[48px] h-fit sticky top-0 md:relative">
-                
                 {/* AI Tools Section */}
                 <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">AI</div>
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
+                    AI
+                  </div>
                   {[
-                    { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'text-indigo-500 hover:bg-indigo-50' },
-                    { icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite, color: 'text-fuchsia-500 hover:bg-fuchsia-50' },
-                    { icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true), color: 'text-violet-600 hover:bg-violet-50' },
-                  ].map(({ icon: Icon, label, action, color }) => (
+                    {
+                      icon: ChatBubbleLeftRightIcon,
+                      label: 'AI Chat',
+                      action: handleOpenAIChat,
+                      color: 'text-indigo-500 hover:bg-indigo-50',
+                    },
+                    {
+                      icon: SparklesIcon,
+                      label: 'Rewrite',
+                      action: handleOpenRewrite,
+                      color: 'text-fuchsia-500 hover:bg-fuchsia-50',
+                    },
+                    {
+                      icon: BriefcaseIcon,
+                      label: 'Executive',
+                      action: () => setIsExecutiveModalOpen(true),
+                      color: 'text-violet-600 hover:bg-violet-50',
+                    },
+                  ].map(({icon: Icon, label, action, color}) => (
                     <button
                       key={label}
                       onClick={action}
@@ -982,13 +1030,35 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* Productivity Section */}
                 <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">PROD</div>
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
+                    PROD
+                  </div>
                   {[
-                    { icon: ClipboardDocumentListIcon, label: 'Tasks', action: handleOpenToDoList, color: 'text-rose-500 hover:bg-rose-50' },
-                    { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'text-blue-500 hover:bg-blue-50' },
-                    { icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true), color: 'text-orange-500 hover:bg-orange-50' },
-                    { icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true), color: 'text-emerald-500 hover:bg-emerald-50' },
-                  ].map(({ icon: Icon, label, action, color }) => (
+                    {
+                      icon: ClipboardDocumentListIcon,
+                      label: 'Tasks',
+                      action: handleOpenToDoList,
+                      color: 'text-rose-500 hover:bg-rose-50',
+                    },
+                    {
+                      icon: CalendarDaysIcon,
+                      label: 'Calendar',
+                      action: () => setIsCalendarOpen(true),
+                      color: 'text-blue-500 hover:bg-blue-50',
+                    },
+                    {
+                      icon: MicrophoneIcon,
+                      label: 'Audio',
+                      action: () => setIsAudioRecorderOpen(true),
+                      color: 'text-orange-500 hover:bg-orange-50',
+                    },
+                    {
+                      icon: CloudIcon,
+                      label: 'Drive',
+                      action: () => setIsDriveOpen(true),
+                      color: 'text-emerald-500 hover:bg-emerald-50',
+                    },
+                  ].map(({icon: Icon, label, action, color}) => (
                     <button
                       key={label}
                       onClick={action}
@@ -1007,14 +1077,47 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* Utilities Section */}
                 <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">UTIL</div>
+                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
+                    UTIL
+                  </div>
                   {[
-                    { icon: PhotoIcon, label: 'OCR', action: handleOpenImageExtract, color: 'text-sky-500 hover:bg-sky-50' },
-                    { icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment, color: 'text-orange-600 hover:bg-orange-50' },
-                    { icon: UsersIcon, label: 'Contacts', action: handleOpenContactList, color: 'text-slate-500 hover:bg-slate-50' },
-                    { icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true), color: 'text-amber-500 hover:bg-amber-50' },
-                    { icon: Cog6ToothIcon, label: 'Settings', action: handleOpenSettings, color: 'text-slate-400 hover:bg-slate-50 hover:text-slate-600' },
-                  ].map(({ icon: Icon, label, action, color }) => (
+                    {
+                      icon: PhotoIcon,
+                      label: 'OCR',
+                      action: handleOpenImageExtract,
+                      color: 'text-sky-500 hover:bg-sky-50',
+                    },
+                    {
+                      icon: ClipboardIcon,
+                      label: 'Assessment',
+                      action: handleOpenAssessment,
+                      color: 'text-orange-600 hover:bg-orange-50',
+                    },
+                    {
+                      icon: UsersIcon,
+                      label: 'Contacts',
+                      action: handleOpenContactList,
+                      color: 'text-slate-500 hover:bg-slate-50',
+                    },
+                    {
+                      icon: BookmarkIcon,
+                      label: 'Bookmarks',
+                      action: () => setIsBookmarksOpen(true),
+                      color: 'text-amber-500 hover:bg-amber-50',
+                    },
+                    {
+                      icon: DocumentTextIcon,
+                      label: 'Form Fill',
+                      action: () => window.open('/pdf-autofill', '_blank'),
+                      color: 'text-indigo-500 hover:bg-indigo-50',
+                    },
+                    {
+                      icon: Cog6ToothIcon,
+                      label: 'Settings',
+                      action: handleOpenSettings,
+                      color: 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                    },
+                  ].map(({icon: Icon, label, action, color}) => (
                     <button
                       key={label}
                       onClick={action}
@@ -1034,7 +1137,7 @@ const NotesLayout: React.FC = React.memo(() => {
             {/* Sidebar 1: Categories */}
             <aside
               className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{ width: isCategoryCollapsed ? 52 : categoryWidth }}>
+              style={{width: isCategoryCollapsed ? 52 : categoryWidth}}>
               <CategoryList
                 categories={categories}
                 isCollapsed={isCategoryCollapsed}
@@ -1059,7 +1162,7 @@ const NotesLayout: React.FC = React.memo(() => {
             {/* Sidebar 2: Sections */}
             <aside
               className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{ width: isSectionCollapsed ? 52 : sectionWidth }}>
+              style={{width: isSectionCollapsed ? 52 : sectionWidth}}>
               <SectionList
                 sections={sections}
                 selectedSectionId={selectedSectionId}
@@ -1084,7 +1187,7 @@ const NotesLayout: React.FC = React.memo(() => {
             {/* Sidebar 3: Pages */}
             <aside
               className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{ width: isPageCollapsed ? 52 : pageWidth }}>
+              style={{width: isPageCollapsed ? 52 : pageWidth}}>
               <PageList
                 pages={pages}
                 selectedPageId={selectedPageId}
@@ -1109,7 +1212,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
             {/* Content Area */}
             <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white transition-all duration-200">
-
               {/* Page open: Editor */}
               {selectedPageId ? (
                 <div className="h-full overflow-hidden">
@@ -1120,16 +1222,19 @@ const NotesLayout: React.FC = React.memo(() => {
                     onSave={handleSavePageContent}
                   />
                 </div>
-
-              /* Section selected, no page: Pages overview */
-              ) : selectedSectionId ? (
+              ) : /* Section selected, no page: Pages overview */
+              selectedSectionId ? (
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
                   <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">{currentCategory?.name}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">
+                          {currentCategory?.name}
+                        </p>
                         <h1 className="text-2xl font-bold text-slate-900">{currentSection?.name}</h1>
-                        <p className="text-sm text-slate-400 mt-0.5">{pages.length} page{pages.length !== 1 ? 's' : ''}</p>
+                        <p className="text-sm text-slate-400 mt-0.5">
+                          {pages.length} page{pages.length !== 1 ? 's' : ''}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleAddPage('New Page')}
@@ -1173,22 +1278,25 @@ const NotesLayout: React.FC = React.memo(() => {
                           onClick={() => handleAddPage('New Page')}
                           className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[110px]">
                           <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
-                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">New Page</span>
+                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">
+                            New Page
+                          </span>
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
-
-              /* Category selected, no section: Sections overview */
-              ) : selectedCategoryId ? (
+              ) : /* Category selected, no section: Sections overview */
+              selectedCategoryId ? (
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
                   <div className="max-w-3xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Notebook</p>
                         <h1 className="text-2xl font-bold text-slate-900">{currentCategory?.name}</h1>
-                        <p className="text-sm text-slate-400 mt-0.5">{sections.length} section{sections.length !== 1 ? 's' : ''}</p>
+                        <p className="text-sm text-slate-400 mt-0.5">
+                          {sections.length} section{sections.length !== 1 ? 's' : ''}
+                        </p>
                       </div>
                       <button
                         onClick={() => handleAddSection('New Section')}
@@ -1202,7 +1310,9 @@ const NotesLayout: React.FC = React.memo(() => {
                         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
                           <BookmarkIcon className="h-7 w-7 text-slate-300" />
                         </div>
-                        <p className="text-[13px] text-slate-400 font-medium">No sections yet. Create your first one.</p>
+                        <p className="text-[13px] text-slate-400 font-medium">
+                          No sections yet. Create your first one.
+                        </p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1233,58 +1343,99 @@ const NotesLayout: React.FC = React.memo(() => {
                           onClick={() => handleAddSection('New Section')}
                           className="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[120px]">
                           <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
-                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">New Section</span>
+                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">
+                            New Section
+                          </span>
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
-
-              /* Nothing selected: Workspace dashboard */
               ) : (
+                /* Nothing selected: Workspace dashboard */
                 <div className="h-full overflow-y-auto custom-scrollbar px-6 md:px-10 py-8 md:py-12">
                   <div className="max-w-5xl mx-auto">
-
                     {/* Greeting — fluid typography */}
                     <div className="flex flex-col gap-1 mb-10 pt-4 px-2">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500/80 mb-1">{dateStr}</p>
-                      <h1 className="font-bold text-slate-900 tracking-tight leading-none" style={{fontSize:'clamp(2rem, 4vw, 3rem)'}}>
-                        {greeting}<span className="text-slate-300">.</span>
-                        {userName && <span className="block text-slate-400 mt-1 font-medium text-[clamp(1rem, 2vw, 1.5rem)] tracking-normal italic">Good to see you, {userName}</span>}
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500/80 mb-1">
+                        {dateStr}
+                      </p>
+                      <h1
+                        className="font-bold text-slate-900 tracking-tight leading-none"
+                        style={{fontSize: 'clamp(2rem, 4vw, 3rem)'}}>
+                        {greeting}
+                        <span className="text-slate-300">.</span>
+                        {userName && (
+                          <span className="block text-slate-400 mt-1 font-medium text-[clamp(1rem, 2vw, 1.5rem)] tracking-normal italic">
+                            Good to see you, {userName}
+                          </span>
+                        )}
                       </h1>
                     </div>
- 
+
                     {/* Bento Grid — Stats + Recent */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
                       <div className="group p-6 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Notebooks</p>
                         <div className="flex items-baseline gap-2">
-                          <p className="font-bold text-slate-900 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{categories.length}</p>
+                          <p
+                            className="font-bold text-slate-900 leading-none"
+                            style={{fontSize: 'clamp(2rem, 3vw, 2.5rem)'}}>
+                            {categories.length}
+                          </p>
                           <span className="text-xs font-medium text-slate-300 uppercase tracking-tighter">total</span>
                         </div>
                       </div>
 
-                      <button onClick={handleOpenToDoList} className="group text-left p-6 rounded-[2.5rem] bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
-                        {activeTaskCount > 0 && <span className="absolute top-4 right-6 h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />}
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/60 mb-3">Active Tasks</p>
-                        <p className="font-bold text-rose-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{activeTaskCount}</p>
+                      <button
+                        onClick={handleOpenToDoList}
+                        className="group text-left p-6 rounded-[2.5rem] bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
+                        {activeTaskCount > 0 && (
+                          <span className="absolute top-4 right-6 h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                        )}
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/60 mb-3">
+                          Active Tasks
+                        </p>
+                        <p
+                          className="font-bold text-rose-600 leading-none"
+                          style={{fontSize: 'clamp(2rem, 3vw, 2.5rem)'}}>
+                          {activeTaskCount}
+                        </p>
                       </button>
 
-                      <button onClick={handleOpenKeyTasks} className="group text-left p-6 rounded-[2.5rem] bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/60 mb-3">Flagged</p>
-                        <p className="font-bold text-amber-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{totalFlagged}</p>
+                      <button
+                        onClick={handleOpenKeyTasks}
+                        className="group text-left p-6 rounded-[2.5rem] bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/60 mb-3">
+                          Flagged
+                        </p>
+                        <p
+                          className="font-bold text-amber-600 leading-none"
+                          style={{fontSize: 'clamp(2rem, 3vw, 2.5rem)'}}>
+                          {totalFlagged}
+                        </p>
                       </button>
 
-                      <button onClick={handleOpenImportant} className="group text-left p-6 rounded-[2.5rem] bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/60 mb-3">Important</p>
-                        <p className="font-bold text-indigo-600 leading-none" style={{fontSize:'clamp(2rem, 3vw, 2.5rem)'}}>{totalImportant}</p>
+                      <button
+                        onClick={handleOpenImportant}
+                        className="group text-left p-6 rounded-[2.5rem] bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/60 mb-3">
+                          Important
+                        </p>
+                        <p
+                          className="font-bold text-indigo-600 leading-none"
+                          style={{fontSize: 'clamp(2rem, 3vw, 2.5rem)'}}>
+                          {totalImportant}
+                        </p>
                       </button>
                     </div>
 
                     {/* Recent pages */}
                     {recentPages.length > 0 && (
                       <div className="mb-12">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-5 px-1">Recent</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-5 px-1">
+                          Recent
+                        </p>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                           {recentPages.map(rp => (
                             <button
@@ -1307,17 +1458,24 @@ const NotesLayout: React.FC = React.memo(() => {
 
                     {/* Quick actions — pill buttons */}
                     <div className="mb-8">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">Quick Actions</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">
+                        Quick Actions
+                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {[
-                          { icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote },
-                          { icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch },
-                          { icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat },
-                          { icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true) },
-                          { icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true) },
-                          { icon: MicrophoneIcon, label: 'Record', action: () => setIsAudioRecorderOpen(true) },
-                          { icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks },
-                        ].map(({ icon: Icon, label, action }) => (
+                          {icon: DocumentPlusIcon, label: 'Quick Note', action: handleQuickNote},
+                          {icon: MagnifyingGlassIcon, label: 'Search', action: handleOpenSearch},
+                          {icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat},
+                          {icon: PlusCircleIcon, label: 'New Task', action: () => setIsDirectTaskCreateOpen(true)},
+                          {icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true)},
+                          {icon: MicrophoneIcon, label: 'Record', action: () => setIsAudioRecorderOpen(true)},
+                          {
+                            icon: DocumentTextIcon,
+                            label: 'Form Fill',
+                            action: () => window.open('/pdf-autofill', '_blank'),
+                          },
+                          {icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks},
+                        ].map(({icon: Icon, label, action}) => (
                           <button
                             key={label}
                             onClick={action}
@@ -1332,7 +1490,9 @@ const NotesLayout: React.FC = React.memo(() => {
                     {/* Notebooks list */}
                     {categories.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">Notebooks</p>
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">
+                          Notebooks
+                        </p>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                           {categories.map(cat => {
                             const catBadge = badgeCounts.categories[cat._id as string];
@@ -1342,9 +1502,13 @@ const NotesLayout: React.FC = React.memo(() => {
                                 onClick={() => handleSelectCategory(cat._id as string)}
                                 className="group text-left p-4 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]">
                                 <div className="flex items-center justify-between">
-                                  <p className="text-[13px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">{cat.name}</p>
+                                  <p className="text-[13px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">
+                                    {cat.name}
+                                  </p>
                                   {catBadge?.todo?.count > 0 && (
-                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-100/80 text-rose-500 px-1.5 py-0.5 rounded-full font-semibold">{catBadge.todo.count}</span>
+                                    <span className="ml-2 flex-shrink-0 text-[9px] bg-rose-100/80 text-rose-500 px-1.5 py-0.5 rounded-full font-semibold">
+                                      {catBadge.todo.count}
+                                    </span>
                                   )}
                                 </div>
                               </button>
@@ -1407,10 +1571,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
         <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
-        <AudioRecorderModal
-          isOpen={isAudioRecorderOpen}
-          onClose={() => setIsAudioRecorderOpen(false)}
-        />
+        <AudioRecorderModal isOpen={isAudioRecorderOpen} onClose={() => setIsAudioRecorderOpen(false)} />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
 
         {selectedPageToMove && (
@@ -1450,7 +1611,7 @@ const NotesLayout: React.FC = React.memo(() => {
             <button
               onClick={() => setIsDirectTaskCreateOpen(true)}
               className="relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
-              style={{ width: '3.25rem', height: '3.25rem' }}
+              style={{width: '3.25rem', height: '3.25rem'}}
               title="New Task">
               {activeTaskCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rose-600 ring-2 ring-rose-500 shadow-sm">

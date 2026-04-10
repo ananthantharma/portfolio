@@ -1,6 +1,6 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import React, { Fragment, memo, useState } from 'react';
+import {Dialog, Transition} from '@headlessui/react';
+import {ArrowPathIcon, ClipboardDocumentIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, memo, useState} from 'react';
 
 interface ExecutiveModalProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ The Re-ASK: Conclude the email by repeating the opening "ASK" word-for-word.
 
 Here is the draft email I need you to rewrite using these exact rules:`;
 
-const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({ isOpen, onClose, onInsert }) => {
+const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({isOpen, onClose, onInsert}) => {
   const [draftEmail, setDraftEmail] = useState('');
   const [rewrittenText, setRewrittenText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -57,7 +57,7 @@ const ExecutiveModal: React.FC<ExecutiveModalProps> = memo(({ isOpen, onClose, o
     try {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           prompt: fullPrompt,
           model: 'gemini-flash-latest',

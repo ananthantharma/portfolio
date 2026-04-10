@@ -41,10 +41,7 @@ export const ScoreBar: React.FC<{score: number; label?: string}> = ({score, labe
         </div>
       )}
       <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${color}`}
-          style={{width: `${score}%`}}
-        />
+        <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{width: `${score}%`}} />
       </div>
     </div>
   );
