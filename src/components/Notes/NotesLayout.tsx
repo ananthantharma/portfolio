@@ -1526,6 +1526,27 @@ const NotesLayout: React.FC = React.memo(() => {
           />
         )}
 
+        {/* ── Floating Tasks Button (left) ── */}
+        <div className="fixed bottom-6 left-6 z-[9998]">
+          <div className="group relative flex items-center justify-center">
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
+              Open Tasks
+              <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 border-4 border-transparent border-r-slate-800" />
+            </div>
+            {activeTaskCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-rose-600 ring-2 ring-rose-400 shadow-sm z-10">
+                {activeTaskCount > 9 ? '9+' : activeTaskCount}
+              </span>
+            )}
+            <button
+              onClick={handleOpenToDoList}
+              className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              title="Open Tasks">
+              <ClipboardDocumentListIcon className="h-5 w-5 drop-shadow-sm" />
+            </button>
+          </div>
+        </div>
+
         {/* ── Floating Action Buttons ── */}
         <div className="fixed bottom-6 right-6 z-[9998] flex flex-col items-center gap-3">
           <div className="group relative flex items-center justify-center">

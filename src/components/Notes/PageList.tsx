@@ -165,7 +165,7 @@ const PageItem = React.memo<PageItemProps>(
         )}
 
         <div className="flex items-center gap-1.5 overflow-hidden w-full">
-          {/* Expand / collapse chevron for parent pages */}
+          {/* Chevron area — fixed w-4 so all root pages align regardless of children */}
           {hasChildren ? (
             <button
               className="flex-shrink-0 rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
@@ -176,10 +176,10 @@ const PageItem = React.memo<PageItemProps>(
               title={isExpanded ? 'Collapse' : 'Expand'}>
               {isExpanded ? <ChevronDownIcon className="h-3 w-3" /> : <ChevronRightIcon className="h-3 w-3" />}
             </button>
-          ) : (
-            /* spacer so text aligns when there are no children */
-            isChild && <span className="flex-shrink-0 w-4" />
-          )}
+          ) : !isChild ? (
+            /* invisible spacer — same width as chevron button so icon/text lines up with parent pages */
+            <span className="flex-shrink-0 w-4" />
+          ) : null}
 
           <div className="flex-shrink-0">
             {page.image ? (
