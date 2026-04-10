@@ -647,6 +647,24 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId, selectedPageId],
   );
 
+  const handleTogglePageInactive = useCallback(async (id: string, isInactive: boolean) => {
+    try {
+      const response = await axios.put(`/api/notes/pages/${id}`, {isInactive});
+      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
+    } catch (error) {
+      console.error('Error toggling page inactive:', error);
+    }
+  }, []);
+
+  const handleSetParentPage = useCallback(async (pageId: string, parentPageId: string | null) => {
+    try {
+      const response = await axios.put(`/api/notes/pages/${pageId}`, {parentPageId});
+      setPages(prev => prev.map(page => (page._id === pageId ? response.data.data : page)));
+    } catch (error) {
+      console.error('Error setting parent page:', error);
+    }
+  }, []);
+
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     try {
       // data coming from NoteEditor is now the 'tabs' array
@@ -1197,6 +1215,8 @@ const NotesLayout: React.FC = React.memo(() => {
                 onDeletePage={handleDeletePage}
                 onMovePage={setSelectedPageToMove}
                 onReorderPages={handleReorderPages}
+                onToggleInactive={handleTogglePageInactive}
+                onSetParentPage={handleSetParentPage}
                 isCollapsed={isPageCollapsed}
                 onToggleCollapse={handleTogglePageCollapse}
                 badgeCounts={badgeCounts.pages}

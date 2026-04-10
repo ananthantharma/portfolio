@@ -18,6 +18,8 @@ export interface INotePage extends Document {
   icon?: string;
   image?: string | null;
   sectionId: mongoose.Types.ObjectId;
+  parentPageId?: mongoose.Types.ObjectId | string | null;
+  isInactive?: boolean;
   isFlagged: boolean;
   isImportant: boolean;
   todoCount?: number;
@@ -68,6 +70,15 @@ const NotePageSchema: Schema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'NoteSection',
       required: true,
+    },
+    parentPageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'NotePage',
+      default: null,
+    },
+    isInactive: {
+      type: Boolean,
+      default: false,
     },
     isFlagged: {
       type: Boolean,
