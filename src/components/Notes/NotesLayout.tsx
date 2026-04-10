@@ -894,33 +894,31 @@ const NotesLayout: React.FC = React.memo(() => {
         <div className="relative flex h-full w-full flex-col overflow-hidden p-2.5 gap-2">
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
-            <div className="flex-shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between rounded-2xl bg-white/80 backdrop-blur-xl px-4 py-2 z-40 gap-2 md:gap-0 !overflow-visible">
-              {/* Left: Brand + Breadcrumbs */}
-              <div className="flex items-center gap-2 text-[12.5px] overflow-x-auto whitespace-nowrap scrollbar-hide w-full md:w-auto">
+            <div className="flex-shrink-0 flex items-center justify-between rounded-2xl bg-white/95 backdrop-blur-sm border border-slate-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)] px-3 h-12 z-30 gap-3">
+              {/* Left: Logo + Breadcrumbs */}
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
                 <button
                   onClick={() => {
                     setSelectedCategoryId(null);
                     setSelectedSectionId(null);
                     setSelectedPageId(null);
                   }}
-                  className="flex items-center gap-2.5 group"
+                  className="flex items-center gap-1.5 flex-shrink-0 group"
                   title="Go to Workspace">
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 flex-shrink-0">
-                    <HomeIcon className="h-3.5 w-3.5 text-white" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-violet-500/25">
+                    <HomeIcon className="h-3 w-3 text-white" />
                   </div>
-                  <span className="font-semibold text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">
+                  <span className="font-semibold text-[13px] text-slate-800 group-hover:text-violet-600 transition-colors tracking-tight">
                     Notes
                   </span>
                 </button>
+
                 {currentCategory && (
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
                     <button
-                      onClick={() => {
-                        setSelectedSectionId(null);
-                        setSelectedPageId(null);
-                      }}
-                      className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                      onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
+                      className="text-[12px] font-medium text-slate-400 hover:text-violet-600 transition-colors truncate max-w-[100px]">
                       {currentCategory.name}
                     </button>
                   </>
@@ -930,7 +928,7 @@ const NotesLayout: React.FC = React.memo(() => {
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
                     <button
                       onClick={() => setSelectedPageId(null)}
-                      className="font-medium text-slate-400 hover:text-violet-600 transition-colors">
+                      className="text-[12px] font-medium text-slate-400 hover:text-violet-600 transition-colors truncate max-w-[100px]">
                       {currentSection.name}
                     </button>
                   </>
@@ -938,62 +936,64 @@ const NotesLayout: React.FC = React.memo(() => {
                 {selectedPage && (
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <span className="font-semibold text-slate-700">{selectedPage.title || 'Untitled'}</span>
+                    <span className="text-[12px] font-semibold text-slate-700 truncate max-w-[140px]">
+                      {selectedPage.title || 'Untitled'}
+                    </span>
                   </>
                 )}
               </div>
 
-              {/* Right: Essentials only — tools live in the side rail */}
-              <div className="flex items-center gap-1 w-full md:w-auto ml-auto">
+              {/* Right: Actions */}
+              <div className="flex items-center gap-0.5 flex-shrink-0">
                 {dbSize && (
-                  <span className="hidden xl:block text-[10px] text-slate-400 font-mono tracking-tight bg-[#F0F0F2] px-1.5 py-0.5 rounded-md flex-shrink-0">
+                  <span className="hidden xl:flex text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md mr-1.5">
                     {dbSize}
                   </span>
                 )}
 
-                {/* Search */}
+                {/* Search — pill */}
                 <button
-                  className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
                   onClick={handleOpenSearch}
-                  title="Command Palette (Ctrl+K)">
-                  <MagnifyingGlassIcon className="h-3.5 w-3.5" />
-                  <span className="hidden xl:inline">Search</span>
-                  <kbd className="hidden xl:inline ml-0.5 text-[9px] text-slate-300 font-mono">⌘K</kbd>
+                  title="Command Palette (Ctrl+K)"
+                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 bg-slate-50 border border-slate-100 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-all duration-150 mr-1">
+                  <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline">Search</span>
+                  <kbd className="hidden lg:inline text-[9px] text-slate-300 font-mono ml-0.5 bg-white border border-slate-200 px-1 py-0.5 rounded">⌘K</kbd>
                 </button>
 
                 {/* Tasks */}
                 <button
-                  className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
                   onClick={handleOpenToDoList}
-                  title="View Tasks">
+                  title="Tasks"
+                  className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150">
                   <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-                  <span className="hidden lg:inline">Tasks</span>
+                  <span className="hidden md:inline">Tasks</span>
                   {activeTaskCount > 0 && (
-                    <span className="absolute -top-1 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ring-2 ring-white">
+                    <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[8px] font-bold text-white">
                       {activeTaskCount}
                     </span>
                   )}
                 </button>
 
+                <div className="w-px h-4 bg-slate-200 mx-1" />
+
                 {/* Quick Note */}
                 <button
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
                   onClick={handleQuickNote}
-                  title="Quick Note">
-                  <DocumentPlusIcon className="h-3.5 w-3.5" />
+                  title="Quick Note"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-all duration-150">
+                  <DocumentPlusIcon className="h-4 w-4" />
                 </button>
 
                 {/* Focus Mode */}
                 <button
                   onClick={toggleFocusMode}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-[#F0F0F2] hover:text-slate-600 transition-all duration-150"
-                  title="Focus Mode (Ctrl+\\)">
-                  {isFocusMode ? (
-                    <ArrowsPointingInIcon className="h-4 w-4" />
-                  ) : (
-                    <ArrowsPointingOutIcon className="h-4 w-4" />
-                  )}
+                  title="Focus Mode (Ctrl+\)"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150">
+                  {isFocusMode ? <ArrowsPointingInIcon className="h-4 w-4" /> : <ArrowsPointingOutIcon className="h-4 w-4" />}
                 </button>
+
+                <div className="w-px h-4 bg-slate-200 mx-1" />
 
                 <UserProfileMenu />
               </div>
@@ -1002,153 +1002,74 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ── Main Panel ── */}
           <div className="flex flex-1 overflow-hidden gap-1.5 min-h-0">
-            {/* ── Resource Rail: Mini Side Bar ── */}
+            {/* ── Resource Rail ── */}
             {!isFocusMode && (
-              <div className="flex flex-col items-center py-3 px-2 rounded-2xl bg-white/60 backdrop-blur-xl gap-3 select-none z-[45] w-[48px] h-fit sticky top-0 md:relative">
-                {/* AI Tools Section */}
-                <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
-                    AI
-                  </div>
-                  {[
-                    {
-                      icon: ChatBubbleLeftRightIcon,
-                      label: 'AI Chat',
-                      action: handleOpenAIChat,
-                      color: 'text-indigo-500 hover:bg-indigo-50',
-                    },
-                    {
-                      icon: SparklesIcon,
-                      label: 'Rewrite',
-                      action: handleOpenRewrite,
-                      color: 'text-fuchsia-500 hover:bg-fuchsia-50',
-                    },
-                    {
-                      icon: BriefcaseIcon,
-                      label: 'Executive',
-                      action: () => setIsExecutiveModalOpen(true),
-                      color: 'text-violet-600 hover:bg-violet-50',
-                    },
-                  ].map(({icon: Icon, label, action, color}) => (
-                    <button
-                      key={label}
-                      onClick={action}
-                      title={label}
-                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
-                      <Icon className="h-5 w-5" />
-                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
-                        {label}
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-col items-center py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 w-10 flex-shrink-0 overflow-y-auto custom-scrollbar">
+                {/* AI */}
+                {[
+                  {icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600'},
+                  {icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite, color: 'text-fuchsia-500 hover:bg-fuchsia-50 hover:text-fuchsia-600'},
+                  {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true), color: 'text-violet-600 hover:bg-violet-50'},
+                ].map(({icon: Icon, label, action, color}) => (
+                  <button key={label} onClick={action} title={label}
+                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
+                    <Icon className="h-[15px] w-[15px]" />
+                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                      {label}
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                    </span>
+                  </button>
+                ))}
 
-                <div className="w-6 h-px bg-slate-100/80 mx-auto" />
+                <div className="w-5 h-px bg-slate-100 my-1.5" />
 
-                {/* Productivity Section */}
-                <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
-                    PROD
-                  </div>
-                  {[
-                    {
-                      icon: ClipboardDocumentListIcon,
-                      label: 'Tasks',
-                      action: handleOpenToDoList,
-                      color: 'text-rose-500 hover:bg-rose-50',
-                    },
-                    {
-                      icon: CalendarDaysIcon,
-                      label: 'Calendar',
-                      action: () => setIsCalendarOpen(true),
-                      color: 'text-blue-500 hover:bg-blue-50',
-                    },
-                    {
-                      icon: MicrophoneIcon,
-                      label: 'Audio',
-                      action: () => setIsAudioRecorderOpen(true),
-                      color: 'text-orange-500 hover:bg-orange-50',
-                    },
-                    {
-                      icon: CloudIcon,
-                      label: 'Drive',
-                      action: () => setIsDriveOpen(true),
-                      color: 'text-emerald-500 hover:bg-emerald-50',
-                    },
-                  ].map(({icon: Icon, label, action, color}) => (
-                    <button
-                      key={label}
-                      onClick={action}
-                      title={label}
-                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
-                      <Icon className="h-5 w-5" />
-                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
-                        {label}
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {/* Productivity */}
+                {[
+                  {icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'text-blue-500 hover:bg-blue-50'},
+                  {icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true), color: 'text-orange-500 hover:bg-orange-50'},
+                  {icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true), color: 'text-emerald-500 hover:bg-emerald-50'},
+                ].map(({icon: Icon, label, action, color}) => (
+                  <button key={label} onClick={action} title={label}
+                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
+                    <Icon className="h-[15px] w-[15px]" />
+                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                      {label}
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                    </span>
+                  </button>
+                ))}
 
-                <div className="w-6 h-px bg-slate-100/80 mx-auto" />
+                <div className="w-5 h-px bg-slate-100 my-1.5" />
 
-                {/* Utilities Section */}
-                <div className="flex flex-col gap-2">
-                  <div className="px-1 py-1 text-[8px] font-black text-slate-400 uppercase tracking-tighter text-center border-b border-slate-100/50 mb-1">
-                    UTIL
-                  </div>
-                  {[
-                    {
-                      icon: PhotoIcon,
-                      label: 'OCR',
-                      action: handleOpenImageExtract,
-                      color: 'text-sky-500 hover:bg-sky-50',
-                    },
-                    {
-                      icon: ClipboardIcon,
-                      label: 'Assessment',
-                      action: handleOpenAssessment,
-                      color: 'text-orange-600 hover:bg-orange-50',
-                    },
-                    {
-                      icon: UsersIcon,
-                      label: 'Contacts',
-                      action: handleOpenContactList,
-                      color: 'text-slate-500 hover:bg-slate-50',
-                    },
-                    {
-                      icon: BookmarkIcon,
-                      label: 'Bookmarks',
-                      action: () => setIsBookmarksOpen(true),
-                      color: 'text-amber-500 hover:bg-amber-50',
-                    },
-                    {
-                      icon: DocumentTextIcon,
-                      label: 'Form Fill',
-                      action: () => window.open('/pdf-autofill', '_blank'),
-                      color: 'text-indigo-500 hover:bg-indigo-50',
-                    },
-                    {
-                      icon: Cog6ToothIcon,
-                      label: 'Settings',
-                      action: handleOpenSettings,
-                      color: 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
-                    },
-                  ].map(({icon: Icon, label, action, color}) => (
-                    <button
-                      key={label}
-                      onClick={action}
-                      title={label}
-                      className={`p-2 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${color}`}>
-                      <Icon className="h-5 w-5" />
-                      <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl ring-1 ring-white/10">
-                        {label}
-                        <div className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {/* Utilities */}
+                {[
+                  {icon: PhotoIcon, label: 'OCR', action: handleOpenImageExtract, color: 'text-sky-500 hover:bg-sky-50'},
+                  {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment, color: 'text-orange-600 hover:bg-orange-50'},
+                  {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList, color: 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'},
+                  {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true), color: 'text-amber-500 hover:bg-amber-50'},
+                  {icon: DocumentTextIcon, label: 'Form Fill', action: () => window.open('/pdf-autofill', '_blank'), color: 'text-indigo-500 hover:bg-indigo-50'},
+                ].map(({icon: Icon, label, action, color}) => (
+                  <button key={label} onClick={action} title={label}
+                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
+                    <Icon className="h-[15px] w-[15px]" />
+                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                      {label}
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                    </span>
+                  </button>
+                ))}
+
+                <div className="w-5 h-px bg-slate-100 my-1.5" />
+
+                {/* Settings */}
+                <button onClick={handleOpenSettings} title="Settings"
+                  className="relative flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 group">
+                  <Cog6ToothIcon className="h-[15px] w-[15px]" />
+                  <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                    Settings
+                    <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                  </span>
+                </button>
               </div>
             )}
 
