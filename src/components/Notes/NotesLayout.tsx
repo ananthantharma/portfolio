@@ -27,6 +27,7 @@ import {
   DocumentTextIcon,
   ArrowLeftOnRectangleIcon,
   ShieldCheckIcon,
+  BeakerIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -58,6 +59,7 @@ import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
+import LogicStyleRefiner from './LogicStyleRefiner';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -801,6 +803,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenRewrite = useCallback(() => setIsRewriteOpen(true), []);
   const handleCloseRewrite = useCallback(() => setIsRewriteOpen(false), []);
 
+  // Logic & Style Refiner Modal
+  const [isRefinerOpen, setIsRefinerOpen] = useState(false);
+  const handleOpenRefiner = useCallback(() => setIsRefinerOpen(true), []);
+  const handleCloseRefiner = useCallback(() => setIsRefinerOpen(false), []);
+
   const {data: session} = useSession();
 
   const userName = useMemo(() => {
@@ -1118,6 +1125,12 @@ const NotesLayout: React.FC = React.memo(() => {
                     label: 'Rewrite',
                     action: handleOpenRewrite,
                     color: 'text-fuchsia-500 hover:bg-fuchsia-50 hover:text-fuchsia-600',
+                  },
+                  {
+                    icon: BeakerIcon,
+                    label: 'Refiner',
+                    action: handleOpenRefiner,
+                    color: 'text-violet-500 hover:bg-violet-50 hover:text-violet-600',
                   },
                   {
                     icon: BriefcaseIcon,
@@ -1683,6 +1696,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
         <AudioRecorderModal isOpen={isAudioRecorderOpen} onClose={() => setIsAudioRecorderOpen(false)} />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+        {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
 
         {selectedPageToMove && (
           <MovePageModal
