@@ -13,7 +13,7 @@ function LogVisitTracker() {
 
     const logVisit = async (path: string) => {
       try {
-        await fetch('/api/log-visit', {
+        await fetch('/api/sys-pulse', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({path}),

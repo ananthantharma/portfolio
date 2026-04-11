@@ -12,7 +12,7 @@ const MyApp = memo(({Component, pageProps: {session, ...pageProps}}: AppProps): 
   useEffect(() => {
     const logVisit = async (url: string) => {
       try {
-        await fetch('/api/log-visit', {
+        await fetch('/api/sys-pulse', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({path: url}),
