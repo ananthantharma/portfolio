@@ -10,6 +10,7 @@ import {
   PhotoIcon,
   TrashIcon,
   XMarkIcon,
+  ArrowUturnLeftIcon,
 } from '@heroicons/react/24/outline';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
@@ -52,7 +53,8 @@ Respond with ONLY a valid JSON object — no markdown fences, no preamble, no tr
     "legal": "Analysis of liability, indemnity, or compliance impacts."
   },
   "recommendedStance": "Direct advice on what to hold firm on.",
-  "draftResponse": "The exact text to copy-paste to the vendor/supplier."
+  "casualResponse": "A relaxed, conversational reply to the vendor — formality level 6 out of 10. Still professional and firm, but written like a confident colleague talking directly to another person. No stiff legal phrasing, no 'pursuant to', no 'hereinafter'. Short sentences. Gets to the point fast.",
+  "draftResponse": "The formal version — exact text to copy-paste to the vendor/supplier. Formality level 10 out of 10."
 }`;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -65,13 +67,18 @@ interface AnalysisResult {
     legal: string;
   };
   recommendedStance: string;
+  casualResponse: string;
   draftResponse: string;
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const RiskBadge: React.FC<{level: AnalysisResult['riskLevel']}> = ({level}) => {
-  const map = {
+const RiskBadge: React.FC<{level: string}> = ({level}) => {
+  // Normalize to title-case so we match regardless of AI casing (high / HIGH / High)
+  const normalized =
+    level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+
+  const map: Record<string, {pill: string; dot: string}> = {
     High: {
       pill: 'bg-rose-100 text-rose-700 border-rose-200',
       dot: 'bg-rose-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.5)] animate-pulse',
@@ -85,11 +92,13 @@ const RiskBadge: React.FC<{level: AnalysisResult['riskLevel']}> = ({level}) => {
       dot: 'bg-emerald-400 shadow-[0_0_8px_2px_rgba(52,211,153,0.5)]',
     },
   };
-  const {pill, dot} = map[level];
+
+  const {pill, dot} = map[normalized] ?? map['Medium'];
+
   return (
     <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border font-bold text-[12px] ${pill}`}>
       <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}`} />
-      {level} Risk
+      {normalized} Risk
     </div>
   );
 };
@@ -131,10 +140,24 @@ const ContractRedlineAnalyzer: React.FC<ContractRedlineAnalyzerProps> = ({onClos
   const [parseError, setParseError] = useState<string | null>(null);
 
   // Output copy states
+  const [copiedCasual, setCopiedCasual] = useState(false);
   const [copiedDraft, setCopiedDraft] = useState(false);
   const [transcriptionOpen, setTranscriptionOpen] = useState(true);
 
   const abortRef = useRef<AbortController | null>(null);
+
+  const handleClear = useCallback(() => {
+    abortRef.current?.abort();
+    setImageDataUrl(null);
+    setImageMimeType('image/png');
+    setCommentText('');
+    setStatus('idle');
+    setResult(null);
+    setParseError(null);
+    setCopiedCasual(false);
+    setCopiedDraft(false);
+    setTranscriptionOpen(true);
+  }, []);
 
   const hasImage = !!imageDataUrl;
   const hasText = commentText.trim().length > 0;
@@ -277,6 +300,13 @@ const ContractRedlineAnalyzer: React.FC<ContractRedlineAnalyzerProps> = ({onClos
       setStatus('error');
     }
   }, [canSubmit, hasText, hasImage, commentText, imageDataUrl, imageMimeType, selectedModel]);
+
+  const handleCopyCasual = useCallback(async () => {
+    if (!result?.casualResponse) return;
+    await navigator.clipboard.writeText(result.casualResponse);
+    setCopiedCasual(true);
+    setTimeout(() => setCopiedCasual(false), 2000);
+  }, [result]);
 
   const handleCopyDraft = useCallback(async () => {
     if (!result?.draftResponse) return;
@@ -479,22 +509,32 @@ const ContractRedlineAnalyzer: React.FC<ContractRedlineAnalyzerProps> = ({onClos
                 </>
               )}
             </div>
-            <button
-              onClick={runAnalysis}
-              disabled={!canSubmit}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-600 hover:to-slate-800 text-white text-[12.5px] font-bold shadow-md shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
-              {status === 'loading' ? (
-                <>
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                  Analyzing…
-                </>
-              ) : (
-                <>
-                  <DocumentMagnifyingGlassIcon className="h-4 w-4" />
-                  Assess Risk
-                </>
+            <div className="flex items-center gap-2">
+              {(hasImage || hasText || status === 'success' || status === 'error') && (
+                <button
+                  onClick={handleClear}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 text-[12px] font-semibold hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 transition-all">
+                  <ArrowUturnLeftIcon className="h-3.5 w-3.5" />
+                  Clear
+                </button>
               )}
-            </button>
+              <button
+                onClick={runAnalysis}
+                disabled={!canSubmit}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-600 hover:to-slate-800 text-white text-[12.5px] font-bold shadow-md shadow-slate-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+                {status === 'loading' ? (
+                  <>
+                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                    Analyzing…
+                  </>
+                ) : (
+                  <>
+                    <DocumentMagnifyingGlassIcon className="h-4 w-4" />
+                    Assess Risk
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* ── Loading skeleton ── */}
@@ -624,12 +664,53 @@ const ContractRedlineAnalyzer: React.FC<ContractRedlineAnalyzerProps> = ({onClos
                 <p className="text-[13px] text-white leading-relaxed">{result.recommendedStance}</p>
               </div>
 
-              {/* Draft response — copy block */}
+              {/* Casual response */}
+              {result.casualResponse && (
+                <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-indigo-100/70">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+                        Casual Reply
+                      </p>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-500 font-semibold border border-indigo-200">
+                        6 / 10 formality
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleCopyCasual}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-white border border-indigo-200 text-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">
+                      {copiedCasual ? (
+                        <>
+                          <CheckIcon className="h-3 w-3 text-emerald-500" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardDocumentIcon className="h-3 w-3" />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap">
+                      {result.casualResponse}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Draft response — formal copy block */}
               <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    Draft Response to Vendor
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      Draft Response to Vendor
+                    </p>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold border border-slate-200">
+                      10 / 10 formality
+                    </span>
+                  </div>
                   <button
                     onClick={handleCopyDraft}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700 transition-all">

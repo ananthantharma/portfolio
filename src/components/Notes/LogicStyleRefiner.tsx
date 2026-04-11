@@ -119,7 +119,8 @@ const TypeBadge: React.FC<{type: CritiqueType}> = ({type}) => {
   );
 };
 
-const AuditStatusBadge: React.FC<{status: AuditResult['status']}> = ({status}) => {
+const AuditStatusBadge: React.FC<{status: string}> = ({status}) => {
+  const normalized = (status || '').toLowerCase().trim();
   const map: Record<string, {cls: string; label: string; dot: string}> = {
     red: {
       cls: 'bg-rose-100 text-rose-700 border-rose-200',
@@ -137,7 +138,7 @@ const AuditStatusBadge: React.FC<{status: AuditResult['status']}> = ({status}) =
       dot: 'bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.45)]',
     },
   };
-  const {cls, label, dot} = map[status] ?? map.yellow;
+  const {cls, label, dot} = map[normalized] ?? map['yellow'];
   return (
     <div className="flex items-center gap-1.5">
       <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all duration-500 ${dot}`} />
