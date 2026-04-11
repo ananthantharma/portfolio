@@ -2,9 +2,9 @@
 
 import {SessionProvider} from 'next-auth/react';
 import {usePathname, useSearchParams} from 'next/navigation';
-import {useEffect} from 'react';
+import {useEffect, Suspense} from 'react';
 
-export function Providers({children}: {children: React.ReactNode}) {
+function LogVisitTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -28,5 +28,16 @@ export function Providers({children}: {children: React.ReactNode}) {
     }
   }, [pathname, searchParams]);
 
-  return <SessionProvider>{children}</SessionProvider>;
+  return null;
+}
+
+export function Providers({children}: {children: React.ReactNode}) {
+  return (
+    <SessionProvider>
+      <Suspense fallback={null}>
+        <LogVisitTracker />
+      </Suspense>
+      {children}
+    </SessionProvider>
+  );
 }

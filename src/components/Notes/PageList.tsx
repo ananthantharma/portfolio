@@ -98,10 +98,7 @@ const PageItem = React.memo<PageItemProps>(
       [page.color],
     );
 
-    const collapsedStyle = useMemo(
-      () => ({color: isSelected ? undefined : page.color}),
-      [isSelected, page.color],
-    );
+    const collapsedStyle = useMemo(() => ({color: isSelected ? undefined : page.color}), [isSelected, page.color]);
 
     const renderBadges = () => {
       if (!badgeStats) return null;
@@ -122,9 +119,9 @@ const PageItem = React.memo<PageItemProps>(
     if (isCollapsed) {
       return (
         <button
-          className={`relative p-2 rounded-lg transition-all ${
-            isInactive ? 'opacity-40' : ''
-          } ${isSelected ? 'bg-violet-600/10 ring-1 ring-violet-500/30 shadow-sm' : 'hover:bg-slate-100'}`}
+          className={`relative p-2 rounded-lg transition-all ${isInactive ? 'opacity-40' : ''} ${
+            isSelected ? 'bg-violet-600/10 ring-1 ring-violet-500/30 shadow-sm' : 'hover:bg-slate-100'
+          }`}
           onClick={() => onSelect(page._id as string)}
           title={page.title || 'Untitled'}>
           {page.image ? (
@@ -332,10 +329,7 @@ const PageList: React.FC<PageListProps> = React.memo(
     const [parentPickerFor, setParentPickerFor] = useState<string | null>(null);
 
     // ── Tree helpers ──────────────────────────────────────────────────────────
-    const rootPages = useMemo(
-      () => pages.filter(p => !p.parentPageId),
-      [pages],
-    );
+    const rootPages = useMemo(() => pages.filter(p => !p.parentPageId), [pages]);
 
     const childrenMap = useMemo(() => {
       const map: Record<string, INotePage[]> = {};
@@ -494,7 +488,11 @@ const PageList: React.FC<PageListProps> = React.memo(
       return (
         <div className="flex h-full flex-col gap-2 p-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-8 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay: `${i * 100}ms`}} />
+            <div
+              key={i}
+              className="h-8 rounded-lg bg-slate-200/60 animate-pulse"
+              style={{animationDelay: `${i * 100}ms`}}
+            />
           ))}
         </div>
       );

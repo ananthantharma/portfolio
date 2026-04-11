@@ -22,7 +22,5 @@ export default function NotesLayout({children}: {children: React.ReactNode}) {
     return null;
   }
 
-  return (
-    <div style={{position: 'fixed', inset: 0, overflow: 'hidden'}}>{children}</div>
-  );
+  return <div style={{position: 'fixed', inset: 0, overflow: 'hidden'}}>{children}</div>;
 }

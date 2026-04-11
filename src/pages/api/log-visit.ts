@@ -17,8 +17,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const {path} = req.body;
 
-    // Extract IP
-    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || 'unknown';
+    // Extract IP robustly
+    const forwardedFor = req.headers['x-forwarded-for'];
+    let ip = 'unknown';
+    if (typeof forwardedFor === 'string') {
+      ip = forwardedFor.split(',')[0].trim();
+    } else if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+      ip = forwardedFor[0].trim();
+    } else if (req.socket.remoteAddress) {
+      ip = req.socket.remoteAddress;
+    }
 
     const userAgent = req.headers['user-agent'] || 'unknown';
 

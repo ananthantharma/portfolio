@@ -918,13 +918,14 @@ const NotesLayout: React.FC = React.memo(() => {
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
             <div className="flex-shrink-0 flex items-center h-11 rounded-2xl bg-white/95 backdrop-blur-sm border border-slate-100/90 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-30 overflow-visible">
-
               {/* ── Far-left: Portfolio home link ── */}
               <Link
                 href="/"
                 title="Back to Portfolio"
                 className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-l-2xl bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 transition-all duration-150 group">
-                <span className="text-white text-[13px] font-black tracking-tight group-hover:scale-110 transition-transform duration-150">A</span>
+                <span className="text-white text-[13px] font-black tracking-tight group-hover:scale-110 transition-transform duration-150">
+                  A
+                </span>
               </Link>
 
               <div className="w-px h-5 bg-slate-100 mx-0 flex-shrink-0" />
@@ -951,7 +952,10 @@ const NotesLayout: React.FC = React.memo(() => {
                   <>
                     <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
                     <button
-                      onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
+                      onClick={() => {
+                        setSelectedSectionId(null);
+                        setSelectedPageId(null);
+                      }}
                       className="text-[12px] font-medium text-slate-400 hover:text-violet-600 transition-colors truncate max-w-[100px]">
                       {currentCategory.name}
                     </button>
@@ -992,7 +996,9 @@ const NotesLayout: React.FC = React.memo(() => {
                   className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 bg-slate-50 border border-slate-100 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-all duration-150 mr-1">
                   <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0" />
                   <span className="hidden sm:inline">Search</span>
-                  <kbd className="hidden lg:inline text-[9px] text-slate-300 font-mono ml-0.5 bg-white border border-slate-200 px-1 py-0.5 rounded">⌘K</kbd>
+                  <kbd className="hidden lg:inline text-[9px] text-slate-300 font-mono ml-0.5 bg-white border border-slate-200 px-1 py-0.5 rounded">
+                    ⌘K
+                  </kbd>
                 </button>
 
                 {/* Tasks */}
@@ -1024,7 +1030,11 @@ const NotesLayout: React.FC = React.memo(() => {
                   onClick={toggleFocusMode}
                   title="Focus Mode (Ctrl+\)"
                   className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150">
-                  {isFocusMode ? <ArrowsPointingInIcon className="h-4 w-4" /> : <ArrowsPointingOutIcon className="h-4 w-4" />}
+                  {isFocusMode ? (
+                    <ArrowsPointingInIcon className="h-4 w-4" />
+                  ) : (
+                    <ArrowsPointingOutIcon className="h-4 w-4" />
+                  )}
                 </button>
 
                 <div className="w-px h-4 bg-slate-200 mx-1" />
@@ -1052,14 +1062,17 @@ const NotesLayout: React.FC = React.memo(() => {
 
                   {/* Dropdown — position: fixed so it's never clipped by overflow:hidden */}
                   {isProfileOpen && (
-                    <div className="fixed mt-2 w-52 rounded-xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 z-[200] overflow-hidden"
+                    <div
+                      className="fixed mt-2 w-52 rounded-xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 z-[200] overflow-hidden"
                       style={{
                         top: (profileRef.current?.getBoundingClientRect().bottom ?? 0) + 6,
                         right: window.innerWidth - (profileRef.current?.getBoundingClientRect().right ?? 0),
                       }}>
                       {/* User info header */}
                       <div className="px-4 py-3 bg-gradient-to-br from-slate-50 to-white border-b border-slate-100">
-                        <p className="text-[13px] font-semibold text-slate-800 truncate">{session?.user?.name || 'User'}</p>
+                        <p className="text-[13px] font-semibold text-slate-800 truncate">
+                          {session?.user?.name || 'User'}
+                        </p>
                         <p className="text-[11px] text-slate-400 truncate mt-0.5">{session?.user?.email}</p>
                       </div>
                       {/* Actions */}
@@ -1094,11 +1107,29 @@ const NotesLayout: React.FC = React.memo(() => {
               <div className="flex flex-col items-center py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 w-10 flex-shrink-0 overflow-y-auto custom-scrollbar">
                 {/* AI */}
                 {[
-                  {icon: ChatBubbleLeftRightIcon, label: 'AI Chat', action: handleOpenAIChat, color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600'},
-                  {icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite, color: 'text-fuchsia-500 hover:bg-fuchsia-50 hover:text-fuchsia-600'},
-                  {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true), color: 'text-violet-600 hover:bg-violet-50'},
+                  {
+                    icon: ChatBubbleLeftRightIcon,
+                    label: 'AI Chat',
+                    action: handleOpenAIChat,
+                    color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600',
+                  },
+                  {
+                    icon: SparklesIcon,
+                    label: 'Rewrite',
+                    action: handleOpenRewrite,
+                    color: 'text-fuchsia-500 hover:bg-fuchsia-50 hover:text-fuchsia-600',
+                  },
+                  {
+                    icon: BriefcaseIcon,
+                    label: 'Executive',
+                    action: () => setIsExecutiveModalOpen(true),
+                    color: 'text-violet-600 hover:bg-violet-50',
+                  },
                 ].map(({icon: Icon, label, action, color}) => (
-                  <button key={label} onClick={action} title={label}
+                  <button
+                    key={label}
+                    onClick={action}
+                    title={label}
                     className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
                     <Icon className="h-[15px] w-[15px]" />
                     <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
@@ -1112,11 +1143,29 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* Productivity */}
                 {[
-                  {icon: CalendarDaysIcon, label: 'Calendar', action: () => setIsCalendarOpen(true), color: 'text-blue-500 hover:bg-blue-50'},
-                  {icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true), color: 'text-orange-500 hover:bg-orange-50'},
-                  {icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true), color: 'text-emerald-500 hover:bg-emerald-50'},
+                  {
+                    icon: CalendarDaysIcon,
+                    label: 'Calendar',
+                    action: () => setIsCalendarOpen(true),
+                    color: 'text-blue-500 hover:bg-blue-50',
+                  },
+                  {
+                    icon: MicrophoneIcon,
+                    label: 'Audio',
+                    action: () => setIsAudioRecorderOpen(true),
+                    color: 'text-orange-500 hover:bg-orange-50',
+                  },
+                  {
+                    icon: CloudIcon,
+                    label: 'Drive',
+                    action: () => setIsDriveOpen(true),
+                    color: 'text-emerald-500 hover:bg-emerald-50',
+                  },
                 ].map(({icon: Icon, label, action, color}) => (
-                  <button key={label} onClick={action} title={label}
+                  <button
+                    key={label}
+                    onClick={action}
+                    title={label}
                     className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
                     <Icon className="h-[15px] w-[15px]" />
                     <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
@@ -1130,13 +1179,41 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* Utilities */}
                 {[
-                  {icon: PhotoIcon, label: 'OCR', action: handleOpenImageExtract, color: 'text-sky-500 hover:bg-sky-50'},
-                  {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment, color: 'text-orange-600 hover:bg-orange-50'},
-                  {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList, color: 'text-slate-500 hover:bg-slate-100 hover:text-slate-700'},
-                  {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true), color: 'text-amber-500 hover:bg-amber-50'},
-                  {icon: DocumentTextIcon, label: 'Form Fill', action: () => window.open('/pdf-autofill', '_blank'), color: 'text-indigo-500 hover:bg-indigo-50'},
+                  {
+                    icon: PhotoIcon,
+                    label: 'OCR',
+                    action: handleOpenImageExtract,
+                    color: 'text-sky-500 hover:bg-sky-50',
+                  },
+                  {
+                    icon: ClipboardIcon,
+                    label: 'Assessment',
+                    action: handleOpenAssessment,
+                    color: 'text-orange-600 hover:bg-orange-50',
+                  },
+                  {
+                    icon: UsersIcon,
+                    label: 'Contacts',
+                    action: handleOpenContactList,
+                    color: 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                  },
+                  {
+                    icon: BookmarkIcon,
+                    label: 'Bookmarks',
+                    action: () => setIsBookmarksOpen(true),
+                    color: 'text-amber-500 hover:bg-amber-50',
+                  },
+                  {
+                    icon: DocumentTextIcon,
+                    label: 'Form Fill',
+                    action: () => window.open('/pdf-autofill', '_blank'),
+                    color: 'text-indigo-500 hover:bg-indigo-50',
+                  },
                 ].map(({icon: Icon, label, action, color}) => (
-                  <button key={label} onClick={action} title={label}
+                  <button
+                    key={label}
+                    onClick={action}
+                    title={label}
                     className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
                     <Icon className="h-[15px] w-[15px]" />
                     <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
@@ -1149,7 +1226,9 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className="w-5 h-px bg-slate-100 my-1.5" />
 
                 {/* Settings */}
-                <button onClick={handleOpenSettings} title="Settings"
+                <button
+                  onClick={handleOpenSettings}
+                  title="Settings"
                   className="relative flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 group">
                   <Cog6ToothIcon className="h-[15px] w-[15px]" />
                   <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
