@@ -28,6 +28,7 @@ import {
   ArrowLeftOnRectangleIcon,
   ShieldCheckIcon,
   BeakerIcon,
+  DocumentMagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -60,6 +61,7 @@ import GoogleDriveModal from './GoogleDriveModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
+import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -808,6 +810,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenRefiner = useCallback(() => setIsRefinerOpen(true), []);
   const handleCloseRefiner = useCallback(() => setIsRefinerOpen(false), []);
 
+  // Contract Redline Analyzer Modal
+  const [isRedlineOpen, setIsRedlineOpen] = useState(false);
+  const handleOpenRedline = useCallback(() => setIsRedlineOpen(true), []);
+  const handleCloseRedline = useCallback(() => setIsRedlineOpen(false), []);
+
   const {data: session} = useSession();
 
   const userName = useMemo(() => {
@@ -1131,6 +1138,12 @@ const NotesLayout: React.FC = React.memo(() => {
                     label: 'Refiner',
                     action: handleOpenRefiner,
                     color: 'text-violet-500 hover:bg-violet-50 hover:text-violet-600',
+                  },
+                  {
+                    icon: DocumentMagnifyingGlassIcon,
+                    label: 'Redline Analyzer',
+                    action: handleOpenRedline,
+                    color: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800',
                   },
                   {
                     icon: BriefcaseIcon,
@@ -1697,6 +1710,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <AudioRecorderModal isOpen={isAudioRecorderOpen} onClose={() => setIsAudioRecorderOpen(false)} />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
         {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
+        {isRedlineOpen && <ContractRedlineAnalyzer onClose={handleCloseRedline} />}
 
         {selectedPageToMove && (
           <MovePageModal
