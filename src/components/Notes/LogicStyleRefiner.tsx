@@ -4,104 +4,77 @@ import {
   BeakerIcon,
   CheckIcon,
   ClipboardDocumentIcon,
-  DocumentMagnifyingGlassIcon,
   XMarkIcon,
   ArrowPathIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 type AudienceType = 'Executive' | 'General Public' | 'Technical';
-type Status = 'idle' | 'loading' | 'success' | 'error';
+type PipelineStatus = 'idle' | 'loading' | 'success' | 'error';
+type CritiqueType = 'logic' | 'clarity' | 'redundancy';
 
-interface CritiquePoint {
+interface Critique {
+  id: string;
+  type: CritiqueType;
   quote: string;
   issue: string;
+  suggestedInstruction: string;
 }
 
 interface AuditResult {
-  status: string;
+  status: 'red' | 'yellow' | 'green';
   summary: string;
-  critiquePoints: CritiquePoint[];
+  critiques: Critique[];
 }
 
-// ─── Inline diff ────────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
-function computeDiff(original: string, revised: string): React.ReactNode[] {
-  // Word-level diff using Longest Common Subsequence
-  const aWords = original.split(/(\s+)/);
-  const bWords = revised.split(/(\s+)/);
-
-  const m = aWords.length;
-  const n = bWords.length;
-
-  // Build LCS table
-  const dp: number[][] = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (aWords[i - 1] === bWords[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  // Traceback
-  const ops: {type: 'equal' | 'insert' | 'delete'; text: string}[] = [];
-  let i = m;
-  let j = n;
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && aWords[i - 1] === bWords[j - 1]) {
-      ops.unshift({type: 'equal', text: aWords[i - 1]});
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      ops.unshift({type: 'insert', text: bWords[j - 1]});
-      j--;
-    } else {
-      ops.unshift({type: 'delete', text: aWords[i - 1]});
-      i--;
-    }
-  }
-
-  return ops.map((op, idx) => {
-    if (op.type === 'equal') return <span key={idx}>{op.text}</span>;
-    if (op.type === 'insert')
-      return (
-        <span key={idx} className="bg-emerald-100 text-emerald-800 rounded px-0.5">
-          {op.text}
-        </span>
-      );
-    // delete
-    return (
-      <span key={idx} className="bg-rose-100 text-rose-700 line-through rounded px-0.5">
-        {op.text}
-      </span>
-    );
-  });
-}
-
-// ─── Status Light ────────────────────────────────────────────────────────────
-
-const StatusLight: React.FC<{status: Status; label: string}> = ({status, label}) => {
-  const color =
+const StatusLight: React.FC<{status: PipelineStatus; label: string}> = ({status, label}) => {
+  const dotClass =
     status === 'idle'
       ? 'bg-slate-300'
       : status === 'loading'
         ? 'bg-yellow-400 animate-pulse'
         : status === 'success'
-          ? 'bg-emerald-400'
-          : 'bg-rose-400';
+          ? 'bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.5)]'
+          : 'bg-rose-400 shadow-[0_0_6px_2px_rgba(251,113,133,0.5)]';
 
   return (
     <div className="flex items-center gap-1.5">
-      <span
-        className={`inline-block w-2 h-2 rounded-full flex-shrink-0 transition-all duration-300 ${color} ${status === 'success' ? 'shadow-[0_0_6px_2px_rgba(52,211,153,0.5)]' : ''} ${status === 'error' ? 'shadow-[0_0_6px_2px_rgba(251,113,133,0.5)]' : ''}`}
-      />
+      <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 transition-all duration-300 ${dotClass}`} />
       <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{label}</span>
+    </div>
+  );
+};
+
+const TypeBadge: React.FC<{type: CritiqueType}> = ({type}) => {
+  const styles: Record<CritiqueType, string> = {
+    logic: 'bg-rose-50 text-rose-600 border-rose-100',
+    clarity: 'bg-amber-50 text-amber-600 border-amber-100',
+    redundancy: 'bg-slate-100 text-slate-500 border-slate-200',
+  };
+  return (
+    <span
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${styles[type]}`}>
+      {type}
+    </span>
+  );
+};
+
+const AuditStatusBadge: React.FC<{status: AuditResult['status']}> = ({status}) => {
+  const map: Record<string, {cls: string; label: string; dot: string}> = {
+    red: {cls: 'bg-rose-100 text-rose-700 border-rose-200', label: 'Needs Work', dot: 'bg-rose-400 shadow-[0_0_6px_2px_rgba(251,113,133,0.45)]'},
+    yellow: {cls: 'bg-amber-100 text-amber-700 border-amber-200', label: 'Minor Issues', dot: 'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.45)]'},
+    green: {cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', label: 'Looks Good', dot: 'bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.45)]'},
+  };
+  const {cls, label, dot} = map[status] ?? map.yellow;
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all duration-500 ${dot}`} />
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${cls}`}>{label}</span>
     </div>
   );
 };
@@ -118,28 +91,32 @@ const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
   const [isAudienceOpen, setIsAudienceOpen] = useState(false);
   const audienceRef = useRef<HTMLDivElement>(null);
 
-  // Refiner (A)
-  const [refinerStatus, setRefinerStatus] = useState<Status>('idle');
-  const [refinerText, setRefinerText] = useState('');
-  const [showDiff, setShowDiff] = useState(false);
+  // Left panel — Refiner
+  const [refinerStatus, setRefinerStatus] = useState<PipelineStatus>('idle');
+  const [refinedText, setRefinedText] = useState('');
   const [copiedRefiner, setCopiedRefiner] = useState(false);
   const refinerAbortRef = useRef<AbortController | null>(null);
 
-  // Auditor (B)
-  const [auditorStatus, setAuditorStatus] = useState<Status>('idle');
+  // Right panel — Auditor
+  const [auditorStatus, setAuditorStatus] = useState<PipelineStatus>('idle');
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [auditError, setAuditError] = useState<string | null>(null);
   const auditorAbortRef = useRef<AbortController | null>(null);
 
-  // Highlight
-  const [highlightedQuote, setHighlightedQuote] = useState<string | null>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Per-critique fix state
+  const [fixingIds, setFixingIds] = useState<Set<string>>(new Set());
 
-  const charCount = inputText.length;
+  // Ref so Request C always sees the latest refined text without stale closure
+  const refinedTextRef = useRef(refinedText);
+  useEffect(() => {
+    refinedTextRef.current = refinedText;
+  }, [refinedText]);
+
   const CHAR_LIMIT = 5000;
+  const charCount = inputText.length;
   const isOverLimit = charCount > CHAR_LIMIT;
 
-  // Close audience dropdown on outside click
+  // Audience dropdown outside-click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (audienceRef.current && !audienceRef.current.contains(e.target as Node)) {
@@ -150,7 +127,7 @@ const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // ESC to close modal
+  // ESC to close
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -159,188 +136,202 @@ const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const runRefiner = useCallback(async () => {
-    if (!inputText.trim() || isOverLimit) return;
-
-    refinerAbortRef.current?.abort();
-    const ctrl = new AbortController();
-    refinerAbortRef.current = ctrl;
-
-    setRefinerStatus('loading');
-    setRefinerText('');
-    setShowDiff(false);
-
-    const audienceMap: Record<AudienceType, string> = {
-      Executive: 'a busy executive who needs concise, high-impact language with clear action items',
-      'General Public': 'a general audience with no specialized knowledge — use plain, friendly language',
-      Technical: 'a technical audience — precise terminology, structured, no oversimplification',
-    };
-
-    const prompt = `You are a professional writing coach specializing in clarity and persuasion.
-
-Rewrite the following text for ${audienceMap[audience]}.
-
-Rules:
-- Preserve the original meaning and key facts exactly
-- Improve flow, tone, and vocabulary for the target audience
-- Remove redundancies and tighten sentence structure
-- Output ONLY the revised text. No explanations, no preamble, no labels.
-
-<raw_text>
-${inputText}
-</raw_text>`;
-
-    try {
-      const res = await fetch('/api/gemini/generate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
-        signal: ctrl.signal,
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setRefinerText(data.text || '');
-      setRefinerStatus('success');
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return;
-      setRefinerStatus('error');
-    }
-  }, [inputText, audience, isOverLimit]);
-
-  const runAuditor = useCallback(async () => {
-    if (!inputText.trim() || isOverLimit) return;
-
-    auditorAbortRef.current?.abort();
-    const ctrl = new AbortController();
-    auditorAbortRef.current = ctrl;
-
+  // ─── Request B: Auditor ───────────────────────────────────────────────────
+  // Accepts the refined text directly so it's always fresh, never stale
+  const runAuditor = useCallback(async (textToAudit: string, signal?: AbortSignal) => {
     setAuditorStatus('loading');
     setAuditResult(null);
     setAuditError(null);
-    setHighlightedQuote(null);
 
-    const prompt = `You are a rigorous logic and clarity auditor. Analyze the following text and return a JSON object — nothing else.
+    const prompt = `You are a rigorous logic, clarity, and redundancy auditor.
 
-The JSON must have exactly this shape:
+Analyze the text below and return ONLY a valid JSON object — no markdown fences, no preamble, no trailing text.
+
+Required schema:
 {
-  "status": "Pass" | "Needs Work" | "Fail",
-  "summary": "<one sentence overall verdict>",
-  "critiquePoints": [
-    { "quote": "<exact substring from original text>", "issue": "<concise explanation of the problem>" }
+  "status": "red" | "yellow" | "green",
+  "summary": "One sentence overall verdict.",
+  "critiques": [
+    {
+      "id": "unique-kebab-id",
+      "type": "logic" | "clarity" | "redundancy",
+      "quote": "The exact flawed sentence or phrase copied verbatim from the text.",
+      "issue": "Concise explanation of the problem.",
+      "suggestedInstruction": "A precise command describing exactly how to fix it (e.g. 'Remove this sentence.' or 'Rewrite to clarify that X causes Y.')."
+    }
   ]
 }
 
-If there are no issues, return an empty critiquePoints array.
-Output raw JSON only — no markdown fences, no extra text.
+Rules:
+- "status" green = no significant issues, yellow = minor, red = significant problems.
+- "quote" must be an exact substring present in the provided text.
+- If no issues, set critiques to an empty array [].
+- Output raw JSON only — absolutely nothing else.
 
-<raw_text>
-${inputText}
-</raw_text>`;
+<refined_text>
+${textToAudit}
+</refined_text>`;
 
     try {
       const res = await fetch('/api/gemini/generate', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
-        signal: ctrl.signal,
+        signal,
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const raw: string = data.text || '';
-
-      // Strip markdown fences if present
-      const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/, '').trim();
+      const cleaned = raw
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/```\s*$/, '')
+        .trim();
       const parsed: AuditResult = JSON.parse(cleaned);
       setAuditResult(parsed);
       setAuditorStatus('success');
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') return;
+      console.error('Auditor error:', err);
       setAuditorStatus('error');
-      setAuditError('Failed to parse audit response. Try again.');
+      setAuditError('Could not parse audit response. Try retrying.');
     }
-  }, [inputText, isOverLimit]);
+  }, []);
 
-  const runBoth = useCallback(() => {
-    runRefiner();
-    runAuditor();
-  }, [runRefiner, runAuditor]);
+  // ─── Request A → B: Sequential Pipeline ──────────────────────────────────
+  const runPipeline = useCallback(async () => {
+    if (!inputText.trim() || isOverLimit) return;
 
-  const handleCritiqueClick = useCallback(
-    (quote: string) => {
-      if (highlightedQuote === quote) {
-        setHighlightedQuote(null);
-        return;
-      }
-      setHighlightedQuote(quote);
+    // Abort any in-flight requests
+    refinerAbortRef.current?.abort();
+    auditorAbortRef.current?.abort();
 
-      // Scroll input into view
-      if (inputRef.current) {
-        inputRef.current.focus();
-        const text = inputRef.current.value;
-        const idx = text.indexOf(quote);
-        if (idx !== -1) {
-          inputRef.current.setSelectionRange(idx, idx + quote.length);
-          inputRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-        }
+    const refCtrl = new AbortController();
+    const audCtrl = new AbortController();
+    refinerAbortRef.current = refCtrl;
+    auditorAbortRef.current = audCtrl;
+
+    // Reset both panels
+    setRefinerStatus('loading');
+    setRefinedText('');
+    setAuditorStatus('idle');
+    setAuditResult(null);
+    setAuditError(null);
+    setFixingIds(new Set());
+
+    const audienceMap: Record<AudienceType, string> = {
+      Executive: 'a busy executive who values concise, high-impact language with clear action items',
+      'General Public': 'a general audience — plain, friendly, everyday language; no jargon',
+      Technical: 'a technical audience — precise terminology, well-structured, no oversimplification',
+    };
+
+    const prompt = `You are a professional writing coach specialising in grammar, clarity, and conciseness.
+
+Rewrite the following text for ${audienceMap[audience]}.
+
+Rules:
+- Fix all grammar, spelling, and punctuation errors.
+- Improve clarity and conciseness — eliminate redundant words and phrases.
+- Use professional, smart, everyday vocabulary appropriate for the audience.
+- Preserve all original facts and meaning exactly.
+- Output ONLY the revised text. No preamble, no labels, no explanations.
+
+<raw_text>
+${inputText}
+</raw_text>`;
+
+    try {
+      // ── Step 1: Refine ────────────────────────────────────────────────────
+      const res = await fetch('/api/gemini/generate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
+        signal: refCtrl.signal,
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const refined = data.text || '';
+
+      setRefinedText(refined);
+      setRefinerStatus('success');
+
+      // ── Step 2: Immediately audit the refined text ────────────────────────
+      await runAuditor(refined, audCtrl.signal);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error('Refiner error:', err);
+      setRefinerStatus('error');
+    }
+  }, [inputText, audience, isOverLimit, runAuditor]);
+
+  // ─── Request C: Targeted Fixer ────────────────────────────────────────────
+  const runFixer = useCallback(
+    async (critique: Critique) => {
+      setFixingIds(prev => new Set(prev).add(critique.id));
+
+      const currentText = refinedTextRef.current;
+
+      const prompt = `You are a precise text editor. Apply one specific edit to a text body.
+
+Instructions:
+1. Locate this exact quote in the text: "${critique.quote}"
+2. Apply this instruction: ${critique.suggestedInstruction}
+3. Return the fully updated text, maintaining original formatting and structure everywhere else.
+4. Output ONLY the updated text. No preamble, no labels, no explanations.
+
+<full_text>
+${currentText}
+</full_text>`;
+
+      try {
+        const res = await fetch('/api/gemini/generate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const updatedText = data.text || '';
+
+        // Update left panel with the fixed text
+        setRefinedText(updatedText);
+
+        // Remove this critique from the list; if none remain, mark green
+        setAuditResult(prev => {
+          if (!prev) return prev;
+          const remaining = prev.critiques.filter(c => c.id !== critique.id);
+          return {
+            ...prev,
+            critiques: remaining,
+            status: remaining.length === 0 ? 'green' : prev.status,
+            summary: remaining.length === 0 ? 'All issues resolved.' : prev.summary,
+          };
+        });
+      } catch (err) {
+        console.error('Fixer failed:', err);
+      } finally {
+        setFixingIds(prev => {
+          const next = new Set(prev);
+          next.delete(critique.id);
+          return next;
+        });
       }
     },
-    [highlightedQuote],
+    [], // refs don't need to be deps
   );
 
   const handleCopyRefiner = useCallback(async () => {
-    if (!refinerText) return;
-    await navigator.clipboard.writeText(refinerText);
+    if (!refinedText) return;
+    await navigator.clipboard.writeText(refinedText);
     setCopiedRefiner(true);
     setTimeout(() => setCopiedRefiner(false), 2000);
-  }, [refinerText]);
+  }, [refinedText]);
 
-  const statusBadge = (s: AuditResult['status'] | undefined) => {
-    if (!s) return null;
-    const map: Record<string, string> = {
-      Pass: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      'Needs Work': 'bg-amber-100 text-amber-700 border-amber-200',
-      Fail: 'bg-rose-100 text-rose-700 border-rose-200',
-    };
-    return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${map[s] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-        {s}
-      </span>
-    );
-  };
-
-  // Render input text with highlighted quote
-  const renderHighlightedInput = () => {
-    if (!highlightedQuote || !inputText.includes(highlightedQuote)) {
-      return (
-        <textarea
-          ref={inputRef}
-          className="w-full flex-1 resize-none bg-transparent text-[13px] text-slate-700 leading-relaxed outline-none placeholder-slate-300 min-h-[160px]"
-          placeholder="Paste or type your text here (max 5,000 characters)…"
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          onClick={() => setHighlightedQuote(null)}
-        />
-      );
-    }
-
-    // Render as read-only overlay when a quote is highlighted
-    const idx = inputText.indexOf(highlightedQuote);
-    const before = inputText.slice(0, idx);
-    const match = inputText.slice(idx, idx + highlightedQuote.length);
-    const after = inputText.slice(idx + highlightedQuote.length);
-
-    return (
-      <div
-        className="w-full flex-1 text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap min-h-[160px] cursor-text"
-        onClick={() => setHighlightedQuote(null)}>
-        {before}
-        <mark className="bg-amber-200 text-amber-900 rounded px-0.5 ring-1 ring-amber-400">{match}</mark>
-        {after}
-      </div>
-    );
-  };
+  const isRunning = refinerStatus === 'loading' || auditorStatus === 'loading';
+  const canRun = inputText.trim().length > 0 && !isOverLimit && !isRunning;
 
   return (
     <div
@@ -349,6 +340,7 @@ ${inputText}
         if (e.target === e.currentTarget) onClose();
       }}>
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl bg-white shadow-2xl shadow-slate-900/20 border border-slate-100 overflow-hidden">
+
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 flex-shrink-0 bg-gradient-to-r from-slate-50 to-white">
           <div className="flex items-center gap-2.5">
@@ -357,7 +349,9 @@ ${inputText}
             </div>
             <div>
               <h2 className="text-[14px] font-bold text-slate-800 leading-tight">Logic & Style Refiner</h2>
-              <p className="text-[10px] text-slate-400 mt-0.5">Parallel AI rewrite + logic audit</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Sequential pipeline &mdash; Refine &rarr; Audit &rarr; Auto-Fix
+              </p>
             </div>
           </div>
           <button
@@ -367,212 +361,283 @@ ${inputText}
           </button>
         </div>
 
-        {/* ── Body ── */}
-        <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-          {/* ── LEFT: Input Panel ── */}
-          <div className="flex flex-col w-full lg:w-[38%] flex-shrink-0 p-4 gap-3 overflow-y-auto custom-scrollbar">
-            {/* Audience selector */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Target Audience</span>
-              <div ref={audienceRef} className="relative">
-                <button
-                  onClick={() => setIsAudienceOpen(v => !v)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-all">
-                  {audience}
-                  <ChevronDownIcon className={`h-3 w-3 transition-transform ${isAudienceOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {isAudienceOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-slate-100 bg-white shadow-xl overflow-hidden">
-                    {(['Executive', 'General Public', 'Technical'] as AudienceType[]).map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => {
-                          setAudience(opt);
-                          setIsAudienceOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-[12px] font-medium transition-colors ${audience === opt ? 'bg-violet-50 text-violet-700' : 'text-slate-600 hover:bg-slate-50'}`}>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Input area */}
-            <div
-              className={`relative flex flex-col flex-1 min-h-[180px] rounded-xl border p-3 bg-slate-50/50 transition-colors ${isOverLimit ? 'border-rose-300 bg-rose-50/30' : highlightedQuote ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200 focus-within:border-violet-300 focus-within:bg-white'}`}>
-              {renderHighlightedInput()}
-
-              {highlightedQuote && (
-                <button
-                  onClick={() => setHighlightedQuote(null)}
-                  className="absolute top-2 right-2 text-[10px] text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full hover:bg-amber-200 transition-colors">
-                  Clear highlight
-                </button>
-              )}
-            </div>
-
-            {/* Char counter */}
-            <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-mono tabular-nums ${isOverLimit ? 'text-rose-500 font-bold' : 'text-slate-400'}`}>
-                {charCount.toLocaleString()} / {CHAR_LIMIT.toLocaleString()}
-              </span>
-              {isOverLimit && <span className="text-[10px] text-rose-500 font-semibold">Exceeds limit</span>}
-            </div>
-
-            {/* Run button */}
+        {/* ── Input Bar ── */}
+        <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100 bg-slate-50/40 flex items-start gap-3">
+          {/* Audience dropdown */}
+          <div ref={audienceRef} className="relative flex-shrink-0 pt-0.5">
             <button
-              onClick={runBoth}
-              disabled={!inputText.trim() || isOverLimit || refinerStatus === 'loading' || auditorStatus === 'loading'}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-[13px] font-bold shadow-md shadow-violet-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
-              {refinerStatus === 'loading' || auditorStatus === 'loading' ? (
-                <>
-                  <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                  Analyzing…
-                </>
-              ) : (
-                <>
-                  <BeakerIcon className="h-4 w-4" />
-                  Run Analysis
-                </>
-              )}
+              onClick={() => setIsAudienceOpen(v => !v)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-violet-300 hover:text-violet-700 transition-all whitespace-nowrap">
+              {audience}
+              <ChevronDownIcon
+                className={`h-3 w-3 transition-transform duration-150 ${isAudienceOpen ? 'rotate-180' : ''}`}
+              />
             </button>
+            {isAudienceOpen && (
+              <div className="absolute left-0 top-full mt-1 z-50 w-44 rounded-xl border border-slate-100 bg-white shadow-xl overflow-hidden">
+                {(['Executive', 'General Public', 'Technical'] as AudienceType[]).map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => {
+                      setAudience(opt);
+                      setIsAudienceOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-[12px] font-medium transition-colors ${
+                      audience === opt ? 'bg-violet-50 text-violet-700' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* ── RIGHT: Results ── */}
-          <div className="flex flex-col flex-1 min-h-0 overflow-hidden divide-y divide-slate-100">
-            {/* Refiner Panel */}
-            <div className="flex flex-col flex-1 min-h-0 p-4 gap-3 overflow-y-auto custom-scrollbar">
-              <div className="flex items-center justify-between flex-shrink-0">
-                <StatusLight status={refinerStatus} label="Refiner" />
-                <div className="flex items-center gap-1.5">
-                  {refinerStatus === 'success' && (
-                    <>
-                      <button
-                        onClick={() => setShowDiff(v => !v)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all ${showDiff ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}`}>
-                        <DocumentMagnifyingGlassIcon className="h-3 w-3" />
-                        {showDiff ? 'Hide Diff' : 'Show Diff'}
-                      </button>
-                      <button
-                        onClick={handleCopyRefiner}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700 transition-all">
-                        {copiedRefiner ? <CheckIcon className="h-3 w-3 text-emerald-500" /> : <ClipboardDocumentIcon className="h-3 w-3" />}
-                        {copiedRefiner ? 'Copied!' : 'Copy'}
-                      </button>
-                      <button
-                        onClick={runRefiner}
-                        title="Retry Refiner"
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-500 hover:border-fuchsia-300 hover:text-fuchsia-600 transition-all">
-                        <ArrowPathIcon className="h-3 w-3" />
-                        Retry
-                      </button>
-                    </>
-                  )}
-                  {refinerStatus === 'error' && (
-                    <button
-                      onClick={runRefiner}
-                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition-all">
-                      <ArrowPathIcon className="h-3 w-3" />
-                      Retry
-                    </button>
-                  )}
-                </div>
-              </div>
+          {/* Textarea */}
+          <div className="relative flex-1 min-w-0">
+            <textarea
+              className={`w-full resize-none rounded-lg border px-3 py-2 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-300 transition-colors bg-white ${
+                isOverLimit ? 'border-rose-300 bg-rose-50/30' : 'border-slate-200 focus:border-violet-300'
+              }`}
+              placeholder="Paste or type your text here (max 5,000 characters)…"
+              value={inputText}
+              onChange={e => setInputText(e.target.value)}
+              rows={3}
+            />
+            <span
+              className={`absolute bottom-2 right-2.5 text-[9px] font-mono tabular-nums pointer-events-none ${
+                isOverLimit ? 'text-rose-500 font-bold' : 'text-slate-300'
+              }`}>
+              {charCount.toLocaleString()}&thinsp;/&thinsp;{CHAR_LIMIT.toLocaleString()}
+            </span>
+          </div>
 
-              <div className="flex-1 min-h-[100px]">
-                {refinerStatus === 'idle' && (
-                  <p className="text-[12px] text-slate-300 italic mt-2">Refined text will appear here…</p>
-                )}
-                {refinerStatus === 'loading' && (
-                  <div className="space-y-2 mt-2">
-                    {[100, 80, 90, 60].map((w, i) => (
-                      <div key={i} className={`h-3 rounded-full bg-slate-100 animate-pulse`} style={{width: `${w}%`, animationDelay: `${i * 120}ms`}} />
-                    ))}
-                  </div>
+          {/* Run button */}
+          <button
+            onClick={runPipeline}
+            disabled={!canRun}
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-[12px] font-bold shadow-md shadow-violet-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none whitespace-nowrap mt-0.5">
+            {isRunning ? (
+              <>
+                <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
+                {refinerStatus === 'loading' ? 'Refining…' : 'Auditing…'}
+              </>
+            ) : (
+              <>
+                <BeakerIcon className="h-3.5 w-3.5" />
+                Run Pipeline
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* ── Main Panels ── */}
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+
+          {/* ── LEFT: Refined Output ── */}
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-4 py-2 flex-shrink-0 border-b border-slate-50 bg-white">
+              <StatusLight status={refinerStatus} label="Refined Output" />
+              <div className="flex items-center gap-1.5">
+                {refinerStatus === 'success' && (
+                  <>
+                    <button
+                      onClick={handleCopyRefiner}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700 transition-all">
+                      {copiedRefiner ? (
+                        <CheckIcon className="h-3 w-3 text-emerald-500" />
+                      ) : (
+                        <ClipboardDocumentIcon className="h-3 w-3" />
+                      )}
+                      {copiedRefiner ? 'Copied!' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={runPipeline}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-600 transition-all">
+                      <ArrowPathIcon className="h-3 w-3" />
+                      Rerun
+                    </button>
+                  </>
                 )}
                 {refinerStatus === 'error' && (
-                  <p className="text-[12px] text-rose-500 mt-2">Request failed. Please try again.</p>
-                )}
-                {refinerStatus === 'success' && !showDiff && (
-                  <textarea
-                    className="w-full h-full min-h-[100px] resize-none bg-transparent text-[13px] text-slate-700 leading-relaxed outline-none"
-                    value={refinerText}
-                    onChange={e => setRefinerText(e.target.value)}
-                  />
-                )}
-                {refinerStatus === 'success' && showDiff && (
-                  <div className="text-[13px] leading-relaxed text-slate-700 whitespace-pre-wrap">
-                    {computeDiff(inputText, refinerText)}
-                  </div>
+                  <button
+                    onClick={runPipeline}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 transition-all">
+                    <ArrowPathIcon className="h-3 w-3" />
+                    Retry
+                  </button>
                 )}
               </div>
             </div>
 
-            {/* Auditor Panel */}
-            <div className="flex flex-col flex-1 min-h-0 p-4 gap-3 overflow-y-auto custom-scrollbar">
-              <div className="flex items-center justify-between flex-shrink-0">
-                <StatusLight status={auditorStatus} label="Auditor" />
-                {(auditorStatus === 'success' || auditorStatus === 'error') && (
+            {/* Panel body */}
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
+              {refinerStatus === 'idle' && (
+                <p className="text-[12px] text-slate-300 italic mt-1">
+                  Refined text will appear here after you run the pipeline…
+                </p>
+              )}
+
+              {refinerStatus === 'loading' && (
+                <div className="space-y-3 mt-1">
+                  <div className="flex items-center gap-2 mb-5">
+                    <ArrowPathIcon className="h-4 w-4 text-violet-400 animate-spin" />
+                    <span className="text-[12px] text-violet-500 font-medium">Refining your text…</span>
+                  </div>
+                  {[100, 78, 92, 65, 85].map((w, i) => (
+                    <div
+                      key={i}
+                      className="h-3 rounded-full bg-slate-100 animate-pulse"
+                      style={{width: `${w}%`, animationDelay: `${i * 100}ms`}}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {refinerStatus === 'error' && (
+                <p className="text-[12px] text-rose-500 mt-1">Refinement failed. Check your connection and retry.</p>
+              )}
+
+              {refinerStatus === 'success' && (
+                <textarea
+                  className="w-full h-full min-h-[200px] resize-none bg-transparent text-[13px] text-slate-700 leading-relaxed outline-none"
+                  value={refinedText}
+                  onChange={e => setRefinedText(e.target.value)}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* ── RIGHT: Logic Audit ── */}
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            {/* Panel header */}
+            <div className="flex items-center justify-between px-4 py-2 flex-shrink-0 border-b border-slate-50 bg-white">
+              <StatusLight
+                status={auditorStatus}
+                label={auditorStatus === 'loading' ? 'Auditing output…' : 'Logic Audit'}
+              />
+              <div className="flex items-center gap-2">
+                {auditorStatus === 'success' && auditResult && (
+                  <AuditStatusBadge status={auditResult.status} />
+                )}
+                {(auditorStatus === 'success' || auditorStatus === 'error') && refinedText && (
                   <button
-                    onClick={runAuditor}
+                    onClick={() => runAuditor(refinedText)}
                     className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 transition-all">
                     <ArrowPathIcon className="h-3 w-3" />
                     Retry
                   </button>
                 )}
               </div>
+            </div>
 
-              <div className="flex-1 min-h-[80px]">
-                {auditorStatus === 'idle' && (
-                  <p className="text-[12px] text-slate-300 italic">Logic audit will appear here…</p>
-                )}
-                {auditorStatus === 'loading' && (
-                  <div className="space-y-2 mt-2">
-                    {[70, 90, 55, 80].map((w, i) => (
-                      <div key={i} className="h-3 rounded-full bg-slate-100 animate-pulse" style={{width: `${w}%`, animationDelay: `${i * 100}ms`}} />
-                    ))}
+            {/* Panel body */}
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
+              {auditorStatus === 'idle' && (
+                <p className="text-[12px] text-slate-300 italic mt-1">
+                  {refinerStatus === 'success'
+                    ? 'Audit is running…'
+                    : 'Audit results will appear after the pipeline runs…'}
+                </p>
+              )}
+
+              {auditorStatus === 'loading' && (
+                <div className="space-y-3 mt-1">
+                  <div className="flex items-center gap-2 mb-5">
+                    <ArrowPathIcon className="h-4 w-4 text-indigo-400 animate-spin" />
+                    <span className="text-[12px] text-indigo-500 font-medium">Auditing refined output…</span>
                   </div>
-                )}
-                {auditorStatus === 'error' && (
-                  <p className="text-[12px] text-rose-500">{auditError || 'Audit failed. Try again.'}</p>
-                )}
-                {auditorStatus === 'success' && auditResult && (
-                  <div className="flex flex-col gap-3">
-                    {/* Summary row */}
-                    <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      {statusBadge(auditResult.status)}
-                      <p className="text-[12px] text-slate-600 leading-relaxed flex-1">{auditResult.summary}</p>
+                  {[75, 92, 58, 83].map((w, i) => (
+                    <div
+                      key={i}
+                      className="h-3 rounded-full bg-slate-100 animate-pulse"
+                      style={{width: `${w}%`, animationDelay: `${i * 120}ms`}}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {auditorStatus === 'error' && (
+                <p className="text-[12px] text-rose-500 mt-1">{auditError || 'Audit failed. Retry above.'}</p>
+              )}
+
+              {auditorStatus === 'success' && auditResult && (
+                <div className="flex flex-col gap-3">
+                  {/* Summary */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <p className="text-[12px] text-slate-600 leading-relaxed">{auditResult.summary}</p>
+                  </div>
+
+                  {auditResult.critiques.length === 0 ? (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                      <CheckIcon className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                      <p className="text-[12px] text-emerald-700 font-medium">No issues found. Looks great!</p>
                     </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        {auditResult.critiques.length} issue
+                        {auditResult.critiques.length !== 1 ? 's' : ''} &mdash; click ✓ to auto-fix
+                      </p>
 
-                    {/* Critique points */}
-                    {auditResult.critiquePoints.length === 0 ? (
-                      <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-                        <CheckIcon className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                        <p className="text-[12px] text-emerald-700 font-medium">No logic issues found.</p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1.5">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">
-                          Issues — click to highlight
-                        </p>
-                        {auditResult.critiquePoints.map((pt, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleCritiqueClick(pt.quote)}
-                            className={`w-full text-left p-3 rounded-xl border transition-all group ${highlightedQuote === pt.quote ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300' : 'bg-white border-slate-100 hover:border-amber-200 hover:bg-amber-50/50'}`}>
-                            <p className={`text-[11px] font-mono leading-snug mb-1 transition-colors ${highlightedQuote === pt.quote ? 'text-amber-800' : 'text-slate-500 group-hover:text-amber-700'}`}>
-                              &ldquo;{pt.quote.length > 80 ? pt.quote.slice(0, 80) + '…' : pt.quote}&rdquo;
-                            </p>
-                            <p className="text-[12px] text-slate-600 leading-relaxed">{pt.issue}</p>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                      {auditResult.critiques.map(critique => {
+                        const isFixing = fixingIds.has(critique.id);
+                        return (
+                          <div
+                            key={critique.id}
+                            className={`flex gap-3 p-3 rounded-xl border bg-white transition-all ${
+                              isFixing
+                                ? 'border-violet-200 bg-violet-50/30'
+                                : 'border-slate-100 hover:border-slate-200 hover:shadow-sm'
+                            }`}>
+                            {/* ── Fix button ── */}
+                            <button
+                              onClick={() => !isFixing && runFixer(critique)}
+                              disabled={isFixing}
+                              title="Auto-fix this issue"
+                              className={`flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border transition-all mt-0.5 ${
+                                isFixing
+                                  ? 'border-violet-200 bg-violet-50 cursor-not-allowed'
+                                  : 'border-emerald-200 bg-emerald-50 hover:bg-emerald-500 hover:border-emerald-500 cursor-pointer group/fix'
+                              }`}>
+                              {isFixing ? (
+                                <ArrowPathIcon className="h-3.5 w-3.5 text-violet-400 animate-spin" />
+                              ) : (
+                                <CheckIcon className="h-3.5 w-3.5 text-emerald-500 group-hover/fix:text-white transition-colors" />
+                              )}
+                            </button>
+
+                            {/* ── Critique body ── */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <TypeBadge type={critique.type} />
+                                {isFixing && (
+                                  <span className="text-[10px] text-violet-500 font-medium animate-pulse">
+                                    Fixing…
+                                  </span>
+                                )}
+                              </div>
+                              <p
+                                className="text-[11px] font-mono text-slate-400 leading-snug mb-1.5 truncate"
+                                title={critique.quote}>
+                                &ldquo;
+                                {critique.quote.length > 72
+                                  ? critique.quote.slice(0, 72) + '…'
+                                  : critique.quote}
+                                &rdquo;
+                              </p>
+                              <p className="text-[12px] text-slate-600 leading-relaxed">{critique.issue}</p>
+                              <p className="text-[11px] text-indigo-500 mt-1 font-medium italic leading-snug">
+                                {critique.suggestedInstruction}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
