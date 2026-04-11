@@ -26,11 +26,11 @@ export interface BadgeSettings {
 const DEFAULT_SETTINGS: BadgeSettings = {
   thresholds: {critical: 3, urgent: 7, upcoming: 14, planned: 21},
   colors: {
-    critical: 'bg-red-500',
-    urgent: 'bg-red-500',
-    upcoming: 'bg-orange-500',
-    planned: 'bg-purple-500',
-    longTerm: 'bg-green-500',
+    critical: 'bg-rose-400',
+    urgent: 'bg-orange-400',
+    upcoming: 'bg-amber-400',
+    planned: 'bg-violet-400',
+    longTerm: 'bg-emerald-400',
   },
   animations: {critical: '1s', urgent: '3s'},
 };

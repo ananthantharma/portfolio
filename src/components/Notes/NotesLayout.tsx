@@ -1101,7 +1101,7 @@ const NotesLayout: React.FC = React.memo(() => {
           )}
 
           {/* ── Main Panel ── */}
-          <div className="flex flex-1 overflow-hidden gap-1.5 min-h-0">
+          <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
             {/* ── Resource Rail ── */}
             {!isFocusMode && (
               <div className="flex flex-col items-center py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 w-10 flex-shrink-0 overflow-y-auto custom-scrollbar">
@@ -1239,83 +1239,86 @@ const NotesLayout: React.FC = React.memo(() => {
               </div>
             )}
 
-            {/* Sidebar 1: Categories */}
-            <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{width: isCategoryCollapsed ? 52 : categoryWidth}}>
-              <CategoryList
-                categories={categories}
-                isCollapsed={isCategoryCollapsed}
-                loading={false}
-                onAddCategory={handleAddCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onRenameCategory={handleRenameCategory}
-                onReorderCategories={handleReorderCategories}
-                onSelectCategory={handleSelectCategory}
-                onToggleCollapse={handleToggleCategoryCollapse}
-                selectedCategoryId={selectedCategoryId}
-                badgeCounts={badgeCounts.categories}
-              />
-              {!isCategoryCollapsed && (
-                <div
-                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
-                  onMouseDown={e => startResizing(e, 'category')}
+            {/* ── Sidebar Group: seamless depth layering, no hard borders ── */}
+            <div className="relative flex h-full flex-shrink-0 rounded-xl overflow-hidden shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)]">
+              {/* Notebooks — deepest gray */}
+              <aside
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#E6E6EB] border-r border-black/[0.05] transition-all duration-200"
+                style={{width: isCategoryCollapsed ? 48 : categoryWidth}}>
+                <CategoryList
+                  categories={categories}
+                  isCollapsed={isCategoryCollapsed}
+                  loading={false}
+                  onAddCategory={handleAddCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onRenameCategory={handleRenameCategory}
+                  onReorderCategories={handleReorderCategories}
+                  onSelectCategory={handleSelectCategory}
+                  onToggleCollapse={handleToggleCategoryCollapse}
+                  selectedCategoryId={selectedCategoryId}
+                  badgeCounts={badgeCounts.categories}
                 />
-              )}
-            </aside>
+                {!isCategoryCollapsed && (
+                  <div
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
+                    onMouseDown={e => startResizing(e, 'category')}
+                  />
+                )}
+              </aside>
 
-            {/* Sidebar 2: Sections */}
-            <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{width: isSectionCollapsed ? 52 : sectionWidth}}>
-              <SectionList
-                sections={sections}
-                selectedSectionId={selectedSectionId}
-                onSelectSection={handleSelectSection}
-                onAddSection={handleAddSection}
-                onRenameSection={handleRenameSection}
-                onDeleteSection={handleDeleteSection}
-                onReorderSections={handleReorderSections}
-                isCollapsed={isSectionCollapsed}
-                onToggleCollapse={handleToggleSectionCollapse}
-                badgeCounts={badgeCounts.sections}
-                loading={loadingSections}
-              />
-              {!isSectionCollapsed && (
-                <div
-                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
-                  onMouseDown={e => startResizing(e, 'section')}
+              {/* Sections — mid gray */}
+              <aside
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#EDEDF1] border-r border-black/[0.05] transition-all duration-200"
+                style={{width: isSectionCollapsed ? 48 : sectionWidth}}>
+                <SectionList
+                  sections={sections}
+                  selectedSectionId={selectedSectionId}
+                  onSelectSection={handleSelectSection}
+                  onAddSection={handleAddSection}
+                  onRenameSection={handleRenameSection}
+                  onDeleteSection={handleDeleteSection}
+                  onReorderSections={handleReorderSections}
+                  isCollapsed={isSectionCollapsed}
+                  onToggleCollapse={handleToggleSectionCollapse}
+                  badgeCounts={badgeCounts.sections}
+                  loading={loadingSections}
                 />
-              )}
-            </aside>
+                {!isSectionCollapsed && (
+                  <div
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
+                    onMouseDown={e => startResizing(e, 'section')}
+                  />
+                )}
+              </aside>
 
-            {/* Sidebar 3: Pages */}
-            <aside
-              className="relative flex h-full flex-shrink-0 flex-col overflow-hidden rounded-xl bg-[#F0F0F2]/80 backdrop-blur-xl transition-all duration-200"
-              style={{width: isPageCollapsed ? 52 : pageWidth}}>
-              <PageList
-                pages={pages}
-                selectedPageId={selectedPageId}
-                onSelectPage={setSelectedPageId}
-                onAddPage={handleAddPage}
-                onRenamePage={handleRenamePage}
-                onDeletePage={handleDeletePage}
-                onMovePage={setSelectedPageToMove}
-                onReorderPages={handleReorderPages}
-                onToggleInactive={handleTogglePageInactive}
-                onSetParentPage={handleSetParentPage}
-                isCollapsed={isPageCollapsed}
-                onToggleCollapse={handleTogglePageCollapse}
-                badgeCounts={badgeCounts.pages}
-                loading={loadingPages}
-              />
-              {!isPageCollapsed && (
-                <div
-                  className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/30 transition-colors z-50"
-                  onMouseDown={e => startResizing(e, 'page')}
+              {/* Pages — lightest */}
+              <aside
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#F4F4F7] transition-all duration-200"
+                style={{width: isPageCollapsed ? 48 : pageWidth}}>
+                <PageList
+                  pages={pages}
+                  selectedPageId={selectedPageId}
+                  onSelectPage={setSelectedPageId}
+                  onAddPage={handleAddPage}
+                  onRenamePage={handleRenamePage}
+                  onDeletePage={handleDeletePage}
+                  onMovePage={setSelectedPageToMove}
+                  onReorderPages={handleReorderPages}
+                  onToggleInactive={handleTogglePageInactive}
+                  onSetParentPage={handleSetParentPage}
+                  isCollapsed={isPageCollapsed}
+                  onToggleCollapse={handleTogglePageCollapse}
+                  badgeCounts={badgeCounts.pages}
+                  loading={loadingPages}
                 />
-              )}
-            </aside>
+                {!isPageCollapsed && (
+                  <div
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
+                    onMouseDown={e => startResizing(e, 'page')}
+                  />
+                )}
+              </aside>
+            </div>
 
             {/* Content Area */}
             <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white transition-all duration-200">
@@ -1693,7 +1696,7 @@ const NotesLayout: React.FC = React.memo(() => {
         )}
 
         {/* ── Floating Tasks Button (left) ── */}
-        <div className="fixed bottom-6 left-6 z-[9998]">
+        <div className="fixed bottom-8 left-8 z-[9998]">
           <div className="group relative flex items-center justify-center">
             <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
               Open Tasks
@@ -1706,7 +1709,7 @@ const NotesLayout: React.FC = React.memo(() => {
             )}
             <button
               onClick={handleOpenToDoList}
-              className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 text-white shadow-[0_8px_28px_rgba(244,63,94,0.35)] hover:shadow-[0_12px_36px_rgba(244,63,94,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
               title="Open Tasks">
               <ClipboardDocumentListIcon className="h-5 w-5 drop-shadow-sm" />
             </button>
@@ -1714,7 +1717,7 @@ const NotesLayout: React.FC = React.memo(() => {
         </div>
 
         {/* ── Floating Action Buttons ── */}
-        <div className="fixed bottom-6 right-6 z-[9998] flex flex-col items-center gap-3">
+        <div className="fixed bottom-8 right-8 z-[9998] flex flex-col items-center gap-3">
           <div className="group relative flex items-center justify-center">
             <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
               Quick Note
@@ -1722,7 +1725,7 @@ const NotesLayout: React.FC = React.memo(() => {
             </div>
             <button
               onClick={handleQuickNote}
-              className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 text-white shadow-[0_8px_28px_rgba(99,102,241,0.35)] hover:shadow-[0_12px_36px_rgba(99,102,241,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
               title="Quick Note">
               <DocumentPlusIcon className="h-5 w-5 drop-shadow-sm" />
             </button>
@@ -1738,7 +1741,7 @@ const NotesLayout: React.FC = React.memo(() => {
             )}
             <button
               onClick={() => setIsDirectTaskCreateOpen(true)}
-              className="relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-xl shadow-rose-500/30 hover:shadow-2xl hover:shadow-rose-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              className="relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-[0_8px_28px_rgba(244,63,94,0.35)] hover:shadow-[0_12px_36px_rgba(244,63,94,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
               style={{width: '3.25rem', height: '3.25rem'}}
               title="New Task">
               {activeTaskCount > 0 && (

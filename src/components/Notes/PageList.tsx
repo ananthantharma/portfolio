@@ -119,8 +119,8 @@ const PageItem = React.memo<PageItemProps>(
     if (isCollapsed) {
       return (
         <button
-          className={`relative p-2 rounded-lg transition-all ${isInactive ? 'opacity-40' : ''} ${
-            isSelected ? 'bg-violet-600/10 ring-1 ring-violet-500/30 shadow-sm' : 'hover:bg-slate-100'
+          className={`relative p-2 rounded-lg transition-all duration-150 ${isInactive ? 'opacity-40' : ''} ${
+            isSelected ? 'bg-violet-500/[0.10]' : 'hover:bg-black/[0.04]'
           }`}
           onClick={() => onSelect(page._id as string)}
           title={page.title || 'Untitled'}>
@@ -146,21 +146,16 @@ const PageItem = React.memo<PageItemProps>(
 
     const inner = (
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-[13px] transition-all duration-150 ${
           isInactive
             ? isSelected
-              ? 'bg-slate-100 text-slate-400 ring-1 ring-slate-200 font-semibold'
-              : 'text-slate-300 hover:bg-slate-50/60 hover:text-slate-400'
+              ? 'bg-slate-200/50 text-slate-400 font-semibold'
+              : 'text-slate-300 hover:bg-black/[0.02] hover:text-slate-400'
             : isSelected
-            ? 'bg-violet-600/10 text-slate-800 ring-1 ring-violet-500/20 font-semibold'
-            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+            ? 'bg-violet-500/[0.10] text-slate-800 font-semibold'
+            : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         } ${isChild ? 'border-l-2 border-slate-200/80' : ''}`}
         onClick={() => onSelect(page._id as string)}>
-        {/* Accent Bar */}
-        {isSelected && !isInactive && (
-          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-violet-500" />
-        )}
-
         <div className="flex items-center gap-1.5 overflow-hidden w-full">
           {/* Chevron area — fixed w-4 so all root pages align regardless of children */}
           {hasChildren ? (
@@ -547,7 +542,7 @@ const PageList: React.FC<PageListProps> = React.memo(
       <div className="flex h-full flex-col relative">
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pages</h2>
+          <h2 className="text-[9px] font-bold uppercase tracking-widest text-slate-400/80">Pages</h2>
           <div className="flex items-center gap-0.5">
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"

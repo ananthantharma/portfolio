@@ -81,8 +81,8 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all ${
-          isSelected ? 'bg-violet-600/10 ring-1 ring-violet-500/30 shadow-sm' : 'hover:bg-slate-100'
+        className={`relative p-2 rounded-lg transition-all duration-150 ${
+          isSelected ? 'bg-violet-500/[0.10]' : 'hover:bg-black/[0.04]'
         }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
@@ -109,16 +109,12 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-[13px] transition-all duration-200 ${
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-[13px] transition-all duration-150 ${
           isSelected
-            ? 'bg-violet-600/10 text-slate-800 ring-1 ring-violet-500/20 font-semibold'
-            : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
+            ? 'bg-violet-500/[0.10] text-slate-800 font-semibold'
+            : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(category._id as string)}>
-        {/* Accent Bar */}
-        {isSelected && (
-          <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-violet-500" />
-        )}
 
         <div className="flex items-center gap-3 overflow-hidden">
           {category.image ? (
@@ -295,7 +291,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
         {/* Header */}
         <div className="flex items-center justify-between px-3 py-2.5">
           {!isCollapsed && (
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Notebooks</h2>
+            <h2 className="text-[9px] font-bold uppercase tracking-widest text-slate-400/80">Notebooks</h2>
           )}
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             <button
@@ -368,7 +364,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               onPointerDown={e => e.stopPropagation()}>
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
                 <SortableContext items={categories.map(c => c._id as string)} strategy={verticalListSortingStrategy}>
-                  <ul className="space-y-1">
+                  <ul className="space-y-0.5">
                     {categories.map(category => {
                       if (editingId === category._id) {
                         return (
