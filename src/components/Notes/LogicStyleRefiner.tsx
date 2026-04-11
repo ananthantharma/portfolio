@@ -10,11 +10,66 @@ import {
 } from '@heroicons/react/24/outline';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 type AudienceType = 'Executive' | 'General Public' | 'Technical';
+type Provider = 'gemini' | 'openai';
 type PipelineStatus = 'idle' | 'loading' | 'success' | 'error';
 type CritiqueType = 'logic' | 'clarity' | 'redundancy';
+
+interface ModelOption {
+  id: string;
+  label: string;
+  provider: Provider;
+}
+
+const MODEL_OPTIONS: ModelOption[] = [
+  {id: 'gemini-flash-latest', label: 'Gemini Flash', provider: 'gemini'},
+  {id: 'gemini-pro-latest', label: 'Gemini Pro', provider: 'gemini'},
+  {id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite', provider: 'gemini'},
+  {id: 'gpt-4o', label: 'GPT-5.2', provider: 'openai'},
+  {id: 'gpt-4o-mini', label: 'GPT-5 mini', provider: 'openai'},
+  {id: 'gpt-3.5-turbo', label: 'GPT-5 nano', provider: 'openai'},
+];
+
+const DEFAULT_MODEL = MODEL_OPTIONS[0]; // gemini-flash-latest
+
+// ─── API helper — routes to the right endpoint by provider ──────────────────
+
+async function callAI(
+  prompt: string,
+  model: ModelOption,
+  signal?: AbortSignal,
+): Promise<string> {
+  if (model.provider === 'gemini') {
+    const res = await fetch('/api/gemini/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({apiKey: 'MANAGED', prompt, model: model.id}),
+      signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data.text || '';
+  } else {
+    // OpenAI — messages-based endpoint
+    const res = await fetch('/api/openai/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        apiKey: 'MANAGED',
+        model: model.id,
+        messages: [{role: 'user', content: prompt}],
+      }),
+      signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data.text || '';
+  }
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Critique {
   id: string;
@@ -66,18 +121,49 @@ const TypeBadge: React.FC<{type: CritiqueType}> = ({type}) => {
 
 const AuditStatusBadge: React.FC<{status: AuditResult['status']}> = ({status}) => {
   const map: Record<string, {cls: string; label: string; dot: string}> = {
-    red: {cls: 'bg-rose-100 text-rose-700 border-rose-200', label: 'Needs Work', dot: 'bg-rose-400 shadow-[0_0_6px_2px_rgba(251,113,133,0.45)]'},
-    yellow: {cls: 'bg-amber-100 text-amber-700 border-amber-200', label: 'Minor Issues', dot: 'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.45)]'},
-    green: {cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', label: 'Looks Good', dot: 'bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.45)]'},
+    red: {
+      cls: 'bg-rose-100 text-rose-700 border-rose-200',
+      label: 'Needs Work',
+      dot: 'bg-rose-400 shadow-[0_0_6px_2px_rgba(251,113,133,0.45)]',
+    },
+    yellow: {
+      cls: 'bg-amber-100 text-amber-700 border-amber-200',
+      label: 'Minor Issues',
+      dot: 'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.45)]',
+    },
+    green: {
+      cls: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      label: 'Looks Good',
+      dot: 'bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.45)]',
+    },
   };
   const {cls, label, dot} = map[status] ?? map.yellow;
   return (
     <div className="flex items-center gap-1.5">
       <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all duration-500 ${dot}`} />
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${cls}`}>{label}</span>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${cls}`}>
+        {label}
+      </span>
     </div>
   );
 };
+
+// ─── Dropdown ─────────────────────────────────────────────────────────────────
+
+function useDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return {isOpen, setIsOpen, ref};
+}
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -88,8 +174,10 @@ interface LogicStyleRefinerProps {
 const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
   const [inputText, setInputText] = useState('');
   const [audience, setAudience] = useState<AudienceType>('General Public');
-  const [isAudienceOpen, setIsAudienceOpen] = useState(false);
-  const audienceRef = useRef<HTMLDivElement>(null);
+  const [selectedModel, setSelectedModel] = useState<ModelOption>(DEFAULT_MODEL);
+
+  const audienceDropdown = useDropdown();
+  const modelDropdown = useDropdown();
 
   // Left panel — Refiner
   const [refinerStatus, setRefinerStatus] = useState<PipelineStatus>('idle');
@@ -106,7 +194,7 @@ const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
   // Per-critique fix state
   const [fixingIds, setFixingIds] = useState<Set<string>>(new Set());
 
-  // Ref so Request C always sees the latest refined text without stale closure
+  // Ref so Request C always reads the latest refined text
   const refinedTextRef = useRef(refinedText);
   useEffect(() => {
     refinedTextRef.current = refinedText;
@@ -116,34 +204,14 @@ const LogicStyleRefiner: React.FC<LogicStyleRefinerProps> = ({onClose}) => {
   const charCount = inputText.length;
   const isOverLimit = charCount > CHAR_LIMIT;
 
-  // Audience dropdown outside-click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (audienceRef.current && !audienceRef.current.contains(e.target as Node)) {
-        setIsAudienceOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  // ─── Request B: Auditor ─────────────────────────────────────────────────
+  const runAuditor = useCallback(
+    async (textToAudit: string, signal?: AbortSignal) => {
+      setAuditorStatus('loading');
+      setAuditResult(null);
+      setAuditError(null);
 
-  // ESC to close
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  // ─── Request B: Auditor ───────────────────────────────────────────────────
-  // Accepts the refined text directly so it's always fresh, never stale
-  const runAuditor = useCallback(async (textToAudit: string, signal?: AbortSignal) => {
-    setAuditorStatus('loading');
-    setAuditResult(null);
-    setAuditError(null);
-
-    const prompt = `You are a rigorous logic, clarity, and redundancy auditor.
+      const prompt = `You are a rigorous logic, clarity, and redundancy auditor.
 
 Analyze the text below and return ONLY a valid JSON object — no markdown fences, no preamble, no trailing text.
 
@@ -157,7 +225,7 @@ Required schema:
       "type": "logic" | "clarity" | "redundancy",
       "quote": "The exact flawed sentence or phrase copied verbatim from the text.",
       "issue": "Concise explanation of the problem.",
-      "suggestedInstruction": "A precise command describing exactly how to fix it (e.g. 'Remove this sentence.' or 'Rewrite to clarify that X causes Y.')."
+      "suggestedInstruction": "A precise command describing exactly how to fix it."
     }
   ]
 }
@@ -172,38 +240,30 @@ Rules:
 ${textToAudit}
 </refined_text>`;
 
-    try {
-      const res = await fetch('/api/gemini/generate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
-        signal,
-      });
+      try {
+        const text = await callAI(prompt, selectedModel, signal);
+        const cleaned = text
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/```\s*$/, '')
+          .trim();
+        const parsed: AuditResult = JSON.parse(cleaned);
+        setAuditResult(parsed);
+        setAuditorStatus('success');
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        console.error('Auditor error:', err);
+        setAuditorStatus('error');
+        setAuditError('Could not parse audit response. Try retrying.');
+      }
+    },
+    [selectedModel],
+  );
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const raw: string = data.text || '';
-      const cleaned = raw
-        .replace(/^```json\s*/i, '')
-        .replace(/^```\s*/i, '')
-        .replace(/```\s*$/, '')
-        .trim();
-      const parsed: AuditResult = JSON.parse(cleaned);
-      setAuditResult(parsed);
-      setAuditorStatus('success');
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') return;
-      console.error('Auditor error:', err);
-      setAuditorStatus('error');
-      setAuditError('Could not parse audit response. Try retrying.');
-    }
-  }, []);
-
-  // ─── Request A → B: Sequential Pipeline ──────────────────────────────────
+  // ─── Request A → B: Sequential Pipeline ─────────────────────────────────
   const runPipeline = useCallback(async () => {
     if (!inputText.trim() || isOverLimit) return;
 
-    // Abort any in-flight requests
     refinerAbortRef.current?.abort();
     auditorAbortRef.current?.abort();
 
@@ -212,7 +272,6 @@ ${textToAudit}
     refinerAbortRef.current = refCtrl;
     auditorAbortRef.current = audCtrl;
 
-    // Reset both panels
     setRefinerStatus('loading');
     setRefinedText('');
     setAuditorStatus('idle');
@@ -242,38 +301,25 @@ ${inputText}
 </raw_text>`;
 
     try {
-      // ── Step 1: Refine ────────────────────────────────────────────────────
-      const res = await fetch('/api/gemini/generate', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
-        signal: refCtrl.signal,
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const refined = data.text || '';
-
+      const refined = await callAI(prompt, selectedModel, refCtrl.signal);
       setRefinedText(refined);
       setRefinerStatus('success');
 
-      // ── Step 2: Immediately audit the refined text ────────────────────────
+      // Step 2: audit the refined output
       await runAuditor(refined, audCtrl.signal);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error('Refiner error:', err);
       setRefinerStatus('error');
     }
-  }, [inputText, audience, isOverLimit, runAuditor]);
+  }, [inputText, audience, isOverLimit, selectedModel, runAuditor]);
 
-  // ─── Request C: Targeted Fixer ────────────────────────────────────────────
-  const runFixer = useCallback(
-    async (critique: Critique) => {
-      setFixingIds(prev => new Set(prev).add(critique.id));
+  // ─── Request C: Targeted Fixer ──────────────────────────────────────────
+  const runFixer = useCallback(async (critique: Critique) => {
+    setFixingIds(prev => new Set(prev).add(critique.id));
 
-      const currentText = refinedTextRef.current;
-
-      const prompt = `You are a precise text editor. Apply one specific edit to a text body.
+    const currentText = refinedTextRef.current;
+    const prompt = `You are a precise text editor. Apply one specific edit to a text body.
 
 Instructions:
 1. Locate this exact quote in the text: "${critique.quote}"
@@ -285,43 +331,29 @@ Instructions:
 ${currentText}
 </full_text>`;
 
-      try {
-        const res = await fetch('/api/gemini/generate', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({apiKey: 'MANAGED', prompt, model: 'gemini-flash-latest'}),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const updatedText = data.text || '';
-
-        // Update left panel with the fixed text
-        setRefinedText(updatedText);
-
-        // Remove this critique from the list; if none remain, mark green
-        setAuditResult(prev => {
-          if (!prev) return prev;
-          const remaining = prev.critiques.filter(c => c.id !== critique.id);
-          return {
-            ...prev,
-            critiques: remaining,
-            status: remaining.length === 0 ? 'green' : prev.status,
-            summary: remaining.length === 0 ? 'All issues resolved.' : prev.summary,
-          };
-        });
-      } catch (err) {
-        console.error('Fixer failed:', err);
-      } finally {
-        setFixingIds(prev => {
-          const next = new Set(prev);
-          next.delete(critique.id);
-          return next;
-        });
-      }
-    },
-    [], // refs don't need to be deps
-  );
+    try {
+      const updatedText = await callAI(prompt, selectedModel);
+      setRefinedText(updatedText);
+      setAuditResult(prev => {
+        if (!prev) return prev;
+        const remaining = prev.critiques.filter(c => c.id !== critique.id);
+        return {
+          ...prev,
+          critiques: remaining,
+          status: remaining.length === 0 ? 'green' : prev.status,
+          summary: remaining.length === 0 ? 'All issues resolved.' : prev.summary,
+        };
+      });
+    } catch (err) {
+      console.error('Fixer failed:', err);
+    } finally {
+      setFixingIds(prev => {
+        const next = new Set(prev);
+        next.delete(critique.id);
+        return next;
+      });
+    }
+  }, [selectedModel]);
 
   const handleCopyRefiner = useCallback(async () => {
     if (!refinedText) return;
@@ -333,12 +365,14 @@ ${currentText}
   const isRunning = refinerStatus === 'loading' || auditorStatus === 'loading';
   const canRun = inputText.trim().length > 0 && !isOverLimit && !isRunning;
 
+  const providerColor: Record<Provider, string> = {
+    gemini: 'bg-blue-500',
+    openai: 'bg-emerald-500',
+  };
+
   return (
-    <div
-      className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={e => {
-        if (e.target === e.currentTarget) onClose();
-      }}>
+    // ── No onClick on backdrop — must use X button to close ──
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col rounded-2xl bg-white shadow-2xl shadow-slate-900/20 border border-slate-100 overflow-hidden">
 
         {/* ── Header ── */}
@@ -356,31 +390,33 @@ ${currentText}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-colors"
+            title="Close">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
 
         {/* ── Input Bar ── */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100 bg-slate-50/40 flex items-start gap-3">
-          {/* Audience dropdown */}
-          <div ref={audienceRef} className="relative flex-shrink-0 pt-0.5">
+        <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100 bg-slate-50/40 flex items-start gap-2.5">
+
+          {/* ── Audience dropdown ── */}
+          <div ref={audienceDropdown.ref} className="relative flex-shrink-0 pt-0.5">
             <button
-              onClick={() => setIsAudienceOpen(v => !v)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-violet-300 hover:text-violet-700 transition-all whitespace-nowrap">
+              onClick={() => audienceDropdown.setIsOpen(v => !v)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11.5px] font-semibold text-slate-700 hover:border-violet-300 hover:text-violet-700 transition-all whitespace-nowrap">
               {audience}
               <ChevronDownIcon
-                className={`h-3 w-3 transition-transform duration-150 ${isAudienceOpen ? 'rotate-180' : ''}`}
+                className={`h-3 w-3 transition-transform duration-150 ${audienceDropdown.isOpen ? 'rotate-180' : ''}`}
               />
             </button>
-            {isAudienceOpen && (
+            {audienceDropdown.isOpen && (
               <div className="absolute left-0 top-full mt-1 z-50 w-44 rounded-xl border border-slate-100 bg-white shadow-xl overflow-hidden">
                 {(['Executive', 'General Public', 'Technical'] as AudienceType[]).map(opt => (
                   <button
                     key={opt}
                     onClick={() => {
                       setAudience(opt);
-                      setIsAudienceOpen(false);
+                      audienceDropdown.setIsOpen(false);
                     }}
                     className={`w-full text-left px-3 py-2 text-[12px] font-medium transition-colors ${
                       audience === opt ? 'bg-violet-50 text-violet-700' : 'text-slate-600 hover:bg-slate-50'
@@ -392,7 +428,67 @@ ${currentText}
             )}
           </div>
 
-          {/* Textarea */}
+          {/* ── Model dropdown ── */}
+          <div ref={modelDropdown.ref} className="relative flex-shrink-0 pt-0.5">
+            <button
+              onClick={() => modelDropdown.setIsOpen(v => !v)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11.5px] font-semibold text-slate-700 hover:border-indigo-300 hover:text-indigo-700 transition-all whitespace-nowrap">
+              <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${providerColor[selectedModel.provider]}`} />
+              {selectedModel.label}
+              <ChevronDownIcon
+                className={`h-3 w-3 transition-transform duration-150 ${modelDropdown.isOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {modelDropdown.isOpen && (
+              <div className="absolute left-0 top-full mt-1 z-50 w-52 rounded-xl border border-slate-100 bg-white shadow-xl overflow-hidden">
+                {/* Gemini group */}
+                <div className="px-3 pt-2.5 pb-1">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Google Gemini</p>
+                </div>
+                {MODEL_OPTIONS.filter(m => m.provider === 'gemini').map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setSelectedModel(m);
+                      modelDropdown.setIsOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] font-medium transition-colors ${
+                      selectedModel.id === m.id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                    {m.label}
+                    {m.id === DEFAULT_MODEL.id && (
+                      <span className="ml-auto text-[9px] text-slate-400 font-normal">default</span>
+                    )}
+                  </button>
+                ))}
+
+                <div className="mx-3 my-1.5 h-px bg-slate-100" />
+
+                {/* OpenAI group */}
+                <div className="px-3 pt-1 pb-1">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">OpenAI</p>
+                </div>
+                {MODEL_OPTIONS.filter(m => m.provider === 'openai').map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setSelectedModel(m);
+                      modelDropdown.setIsOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] font-medium transition-colors ${
+                      selectedModel.id === m.id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+                    }`}>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                    {m.label}
+                  </button>
+                ))}
+                <div className="h-1.5" />
+              </div>
+            )}
+          </div>
+
+          {/* ── Textarea ── */}
           <div className="relative flex-1 min-w-0">
             <textarea
               className={`w-full resize-none rounded-lg border px-3 py-2 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-300 transition-colors bg-white ${
@@ -411,7 +507,7 @@ ${currentText}
             </span>
           </div>
 
-          {/* Run button */}
+          {/* ── Run button ── */}
           <button
             onClick={runPipeline}
             disabled={!canRun}
@@ -435,7 +531,6 @@ ${currentText}
 
           {/* ── LEFT: Refined Output ── */}
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            {/* Panel header */}
             <div className="flex items-center justify-between px-4 py-2 flex-shrink-0 border-b border-slate-50 bg-white">
               <StatusLight status={refinerStatus} label="Refined Output" />
               <div className="flex items-center gap-1.5">
@@ -470,14 +565,12 @@ ${currentText}
               </div>
             </div>
 
-            {/* Panel body */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
               {refinerStatus === 'idle' && (
                 <p className="text-[12px] text-slate-300 italic mt-1">
                   Refined text will appear here after you run the pipeline…
                 </p>
               )}
-
               {refinerStatus === 'loading' && (
                 <div className="space-y-3 mt-1">
                   <div className="flex items-center gap-2 mb-5">
@@ -493,11 +586,9 @@ ${currentText}
                   ))}
                 </div>
               )}
-
               {refinerStatus === 'error' && (
                 <p className="text-[12px] text-rose-500 mt-1">Refinement failed. Check your connection and retry.</p>
               )}
-
               {refinerStatus === 'success' && (
                 <textarea
                   className="w-full h-full min-h-[200px] resize-none bg-transparent text-[13px] text-slate-700 leading-relaxed outline-none"
@@ -510,7 +601,6 @@ ${currentText}
 
           {/* ── RIGHT: Logic Audit ── */}
           <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            {/* Panel header */}
             <div className="flex items-center justify-between px-4 py-2 flex-shrink-0 border-b border-slate-50 bg-white">
               <StatusLight
                 status={auditorStatus}
@@ -531,7 +621,6 @@ ${currentText}
               </div>
             </div>
 
-            {/* Panel body */}
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-4">
               {auditorStatus === 'idle' && (
                 <p className="text-[12px] text-slate-300 italic mt-1">
@@ -540,7 +629,6 @@ ${currentText}
                     : 'Audit results will appear after the pipeline runs…'}
                 </p>
               )}
-
               {auditorStatus === 'loading' && (
                 <div className="space-y-3 mt-1">
                   <div className="flex items-center gap-2 mb-5">
@@ -556,14 +644,11 @@ ${currentText}
                   ))}
                 </div>
               )}
-
               {auditorStatus === 'error' && (
                 <p className="text-[12px] text-rose-500 mt-1">{auditError || 'Audit failed. Retry above.'}</p>
               )}
-
               {auditorStatus === 'success' && auditResult && (
                 <div className="flex flex-col gap-3">
-                  {/* Summary */}
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                     <p className="text-[12px] text-slate-600 leading-relaxed">{auditResult.summary}</p>
                   </div>
@@ -579,7 +664,6 @@ ${currentText}
                         {auditResult.critiques.length} issue
                         {auditResult.critiques.length !== 1 ? 's' : ''} &mdash; click ✓ to auto-fix
                       </p>
-
                       {auditResult.critiques.map(critique => {
                         const isFixing = fixingIds.has(critique.id);
                         return (
@@ -590,7 +674,7 @@ ${currentText}
                                 ? 'border-violet-200 bg-violet-50/30'
                                 : 'border-slate-100 hover:border-slate-200 hover:shadow-sm'
                             }`}>
-                            {/* ── Fix button ── */}
+                            {/* Fix button */}
                             <button
                               onClick={() => !isFixing && runFixer(critique)}
                               disabled={isFixing}
@@ -607,7 +691,7 @@ ${currentText}
                               )}
                             </button>
 
-                            {/* ── Critique body ── */}
+                            {/* Critique body */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-1.5">
                                 <TypeBadge type={critique.type} />
