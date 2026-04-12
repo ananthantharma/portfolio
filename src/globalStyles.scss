@@ -2,22 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design system CSS variables ────────────────────────────────────────────── */
+:root {
+  /* Glass surfaces */
+  --glass-nav:      rgba(255, 255, 255, 0.82);
+  --glass-rail:     rgba(255, 255, 255, 0.72);
+  --glass-sidebar:  rgba(255, 255, 255, 0.55);
+  --glass-surface:  rgba(255, 255, 255, 0.70);
+  --glass-content:  rgba(255, 255, 255, 0.88);
+  --glass-blur:     20px;
+  --glass-blur-xl:  32px;
+  --glass-border:   rgba(255, 255, 255, 0.35);
+  --glass-border-sm:rgba(255, 255, 255, 0.20);
+
+  /* Sidebar depth tones */
+  --sidebar-cat:    rgba(232, 230, 240, 0.72);
+  --sidebar-sec:    rgba(240, 239, 247, 0.72);
+  --sidebar-page:   rgba(248, 247, 252, 0.75);
+
+  /* Brand accent */
+  --accent-violet:  #7c3aed;
+  --accent-violet-soft: rgba(139, 92, 246, 0.12);
+
+  /* Shadows */
+  --shadow-glass:   0 4px 24px -4px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.65);
+  --shadow-float:   0 12px 48px -12px rgba(0,0,0,0.16), 0 4px 16px -4px rgba(0,0,0,0.06);
+}
+
 @layer components {
-  /* ── Supplier Risk Platform shared styles ─────────────────────────────────── */
+  /* ── Shared form / button components ─────────────────────────────────────── */
   .input {
     @apply w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-400;
   }
-
   .label {
     @apply mb-1 block text-xs font-medium text-gray-600;
   }
-
   .btn-primary {
     @apply rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
   }
-
   .btn-secondary {
     @apply rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-gray-800 disabled:opacity-50;
+  }
+
+  /* ── Glassmorphism components ─────────────────────────────────────────────── */
+  .glass-nav {
+    background: var(--glass-nav);
+    backdrop-filter: blur(var(--glass-blur-xl)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-xl)) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+  .glass-panel {
+    background: var(--glass-surface);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border-sm);
+    box-shadow: var(--shadow-glass);
+  }
+  .glass-sidebar {
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+  .glass-content {
+    background: var(--glass-content);
+    backdrop-filter: blur(var(--glass-blur-xl)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--glass-blur-xl)) saturate(180%);
+  }
+
+  /* ── Skeleton base ────────────────────────────────────────────────────────── */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(226, 226, 236, 0.7) 25%,
+      rgba(240, 240, 248, 0.9) 50%,
+      rgba(226, 226, 236, 0.7) 75%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.6s linear infinite;
+    border-radius: 6px;
   }
 }
 

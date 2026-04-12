@@ -206,18 +206,22 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     if (!resizingCol) return;
 
+    let rafId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (resizingCol === 'category') {
-        setCategoryWidth(Math.max(200, Math.min(600, e.clientX)));
-      } else if (resizingCol === 'section') {
-        // Approximate x position for section start is categoryWidth
-        // Width = Mouse X - Start X
-        const startX = isCategoryCollapsed ? 56 : categoryWidth;
-        setSectionWidth(Math.max(200, Math.min(600, e.clientX - startX)));
-      } else if (resizingCol === 'page') {
-        const startX = (isCategoryCollapsed ? 56 : categoryWidth) + (isSectionCollapsed ? 56 : sectionWidth);
-        setPageWidth(Math.max(200, Math.min(600, e.clientX - startX)));
-      }
+      if (rafId !== null) return; // throttle to one update per frame
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (resizingCol === 'category') {
+          setCategoryWidth(Math.max(200, Math.min(600, e.clientX)));
+        } else if (resizingCol === 'section') {
+          const startX = isCategoryCollapsed ? 56 : categoryWidth;
+          setSectionWidth(Math.max(200, Math.min(600, e.clientX - startX)));
+        } else if (resizingCol === 'page') {
+          const startX = (isCategoryCollapsed ? 56 : categoryWidth) + (isSectionCollapsed ? 56 : sectionWidth);
+          setPageWidth(Math.max(200, Math.min(600, e.clientX - startX)));
+        }
+      });
     };
 
     const handleMouseUp = () => {
@@ -236,6 +240,7 @@ const NotesLayout: React.FC = React.memo(() => {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [resizingCol, categoryWidth, sectionWidth, isCategoryCollapsed, isSectionCollapsed]);
 
@@ -316,7 +321,7 @@ const NotesLayout: React.FC = React.memo(() => {
     };
     fetchBadgeStats();
     // Poll for badges
-    const interval = setInterval(fetchBadgeStats, 30000); // 30s poll
+    const interval = setInterval(fetchBadgeStats, 120000); // 120s poll
     return () => clearInterval(interval);
   }, []);
 
@@ -406,17 +411,13 @@ const NotesLayout: React.FC = React.memo(() => {
 
       if ((extendedTask.title as string).startsWith('[Section]')) {
         const targetSectionId = extendedTask._id;
-        setTimeout(() => {
-          setSelectedSectionId(targetSectionId);
-          setSelectedPageId(null);
-          setTargetTabId(undefined);
-        }, 150);
+        setSelectedSectionId(targetSectionId);
+        setSelectedPageId(null);
+        setTargetTabId(undefined);
       } else {
-        setTimeout(() => {
-          setSelectedSectionId(null);
-          setSelectedPageId(null);
-          setTargetTabId(undefined);
-        }, 150);
+        setSelectedSectionId(null);
+        setSelectedPageId(null);
+        setTargetTabId(undefined);
       }
     } else {
       const sectionObj = task.sectionId as unknown as INoteSection;
@@ -429,13 +430,9 @@ const NotesLayout: React.FC = React.memo(() => {
       const targetPageId = task._id as string;
 
       setSelectedCategoryId(targetCategoryId);
-      setTimeout(() => {
-        setSelectedSectionId(targetSectionId);
-        setTimeout(() => {
-          setTargetTabId(tabId); // Set target tab BEFORE page selection triggers editor load
-          setSelectedPageId(targetPageId);
-        }, 150);
-      }, 150);
+      setSelectedSectionId(targetSectionId);
+      setTargetTabId(tabId);
+      setSelectedPageId(targetPageId);
     }
   }, []);
 
@@ -937,7 +934,7 @@ const NotesLayout: React.FC = React.memo(() => {
   return (
     <BadgeSettingsProvider>
       <div
-        className="relative flex h-screen w-full overflow-hidden bg-[#F7F7F8] text-slate-900"
+        className="relative flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-violet-50/30 text-slate-900"
         style={{fontFamily: '"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'}}>
         {/* Background — subtle radial wash */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -948,7 +945,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <div className="relative flex h-full w-full flex-col overflow-hidden p-2.5 gap-2">
           {/* ── Top Navigation Bar ── */}
           {!isFocusMode && (
-            <div className="flex-shrink-0 flex items-center h-11 rounded-2xl bg-white/95 backdrop-blur-sm border border-slate-100/90 shadow-[0_1px_3px_rgba(0,0,0,0.06)] z-30 overflow-visible">
+            <div className="flex-shrink-0 flex items-center h-11 rounded-2xl glass-nav z-30 overflow-visible">
               {/* ── Far-left: Portfolio home link ── */}
               <Link
                 href="/"
@@ -1136,8 +1133,8 @@ const NotesLayout: React.FC = React.memo(() => {
             {/* ── Resource Rail ── */}
             {!isFocusMode && (
               <div
-                className={`flex flex-col py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar transition-all duration-200 ${
-                  isResourceRailExpanded ? 'w-48 items-stretch shadow-lg' : 'w-10 items-center'
+                className={`flex flex-col py-2.5 px-1.5 rounded-xl glass-panel gap-0.5 select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar transition-all duration-200 ${
+                  isResourceRailExpanded ? 'w-48 items-stretch' : 'w-10 items-center'
                 }`}>
                 {/* Expand / Minimize Toggle Button */}
                 <div className={`flex items-center mb-1.5 ${isResourceRailExpanded ? 'justify-end pr-1' : 'justify-center'}`}>
@@ -1327,8 +1324,8 @@ const NotesLayout: React.FC = React.memo(() => {
             <div className="relative flex h-full flex-shrink-0 rounded-xl overflow-hidden shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)]">
               {/* Notebooks — deepest gray */}
               <aside
-                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#E6E6EB] border-r border-black/[0.05] transition-all duration-200"
-                style={{width: isCategoryCollapsed ? 48 : categoryWidth}}>
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden border-r border-white/20 glass-sidebar transition-all duration-200"
+                style={{width: isCategoryCollapsed ? 48 : categoryWidth, background: 'var(--sidebar-cat)'}}>
                 <CategoryList
                   categories={categories}
                   isCollapsed={isCategoryCollapsed}
@@ -1352,8 +1349,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
               {/* Sections — mid gray */}
               <aside
-                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#EDEDF1] border-r border-black/[0.05] transition-all duration-200"
-                style={{width: isSectionCollapsed ? 48 : sectionWidth}}>
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden border-r border-white/20 glass-sidebar transition-all duration-200"
+                style={{width: isSectionCollapsed ? 48 : sectionWidth, background: 'var(--sidebar-sec)'}}>
                 <SectionList
                   sections={sections}
                   selectedSectionId={selectedSectionId}
@@ -1377,8 +1374,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
               {/* Pages — lightest */}
               <aside
-                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden bg-[#F4F4F7] transition-all duration-200"
-                style={{width: isPageCollapsed ? 48 : pageWidth}}>
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden glass-sidebar transition-all duration-200"
+                style={{width: isPageCollapsed ? 48 : pageWidth, background: 'var(--sidebar-page)'}}>
                 <PageList
                   pages={pages}
                   selectedPageId={selectedPageId}
@@ -1405,7 +1402,7 @@ const NotesLayout: React.FC = React.memo(() => {
             </div>
 
             {/* Content Area */}
-            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-white transition-all duration-200">
+            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl glass-content transition-all duration-200">
               {/* Page open: Editor */}
               {selectedPageId ? (
                 <div className="h-full overflow-hidden">
