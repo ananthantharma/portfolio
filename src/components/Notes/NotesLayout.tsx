@@ -31,6 +31,7 @@ import {
   DocumentMagnifyingGlassIcon,
   ChevronDoubleRightIcon,
   ChevronDoubleLeftIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -64,6 +65,7 @@ import GoogleDriveModal from './GoogleDriveModal';
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
 import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
+import Humanizer from './Humanizer';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -825,6 +827,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenRedline = useCallback(() => setIsRedlineOpen(true), []);
   const handleCloseRedline = useCallback(() => setIsRedlineOpen(false), []);
 
+  // Humanizer Modal
+  const [isHumanizerOpen, setIsHumanizerOpen] = useState(false);
+  const handleOpenHumanizer = useCallback(() => setIsHumanizerOpen(true), []);
+  const handleCloseHumanizer = useCallback(() => setIsHumanizerOpen(false), []);
+
   const {data: session} = useSession();
 
   const userName = useMemo(() => {
@@ -1169,6 +1176,12 @@ const NotesLayout: React.FC = React.memo(() => {
                     label: 'Redline Analyzer',
                     action: handleOpenRedline,
                     color: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800',
+                  },
+                  {
+                    icon: UserIcon,
+                    label: 'Humanizer',
+                    action: handleOpenHumanizer,
+                    color: 'text-teal-500 hover:bg-teal-50 hover:text-teal-600',
                   },
                   {
                     icon: BriefcaseIcon,
@@ -1756,6 +1769,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
         {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
         {isRedlineOpen && <ContractRedlineAnalyzer onClose={handleCloseRedline} />}
+        {isHumanizerOpen && <Humanizer onClose={handleCloseHumanizer} />}
 
         {selectedPageToMove && (
           <MovePageModal
