@@ -29,6 +29,8 @@ import {
   ShieldCheckIcon,
   BeakerIcon,
   DocumentMagnifyingGlassIcon,
+  ChevronDoubleRightIcon,
+  ChevronDoubleLeftIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -81,6 +83,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isResourceRailExpanded, setIsResourceRailExpanded] = useState(false);
 
   // Modal states
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
@@ -135,6 +138,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
+
+    const savedResourceRailExpanded = localStorage.getItem('NOTES_RESOURCE_RAIL_EXPANDED');
+    if (savedResourceRailExpanded !== null) setIsResourceRailExpanded(savedResourceRailExpanded === 'true');
   }, []);
 
   // Persistence: Save to localStorage when state changes
@@ -169,6 +175,10 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
   }, [isFocusMode]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_RESOURCE_RAIL_EXPANDED', isResourceRailExpanded.toString());
+  }, [isResourceRailExpanded]);
 
   // Selection Wrappers to clear sub-selection only when manually changing
   const handleSelectCategory = useCallback((id: string | null) => {
@@ -1118,7 +1128,22 @@ const NotesLayout: React.FC = React.memo(() => {
           <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
             {/* ── Resource Rail ── */}
             {!isFocusMode && (
-              <div className="flex flex-col items-center py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 w-10 flex-shrink-0 overflow-y-auto custom-scrollbar">
+              <div
+                className={`flex flex-col py-2.5 px-1.5 rounded-xl bg-white/95 border border-slate-100 backdrop-blur-sm gap-0.5 select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar transition-all duration-200 ${
+                  isResourceRailExpanded ? 'w-48 items-stretch shadow-lg' : 'w-10 items-center'
+                }`}>
+                {/* Expand / Minimize Toggle Button */}
+                <div className={`flex items-center mb-1.5 ${isResourceRailExpanded ? 'justify-end pr-1' : 'justify-center'}`}>
+                  <button
+                    onClick={() => setIsResourceRailExpanded(!isResourceRailExpanded)}
+                    title={isResourceRailExpanded ? 'Minimize' : 'Expand'}
+                    className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98]">
+                    {isResourceRailExpanded ? <ChevronDoubleLeftIcon className="h-[15px] w-[15px]" /> : <ChevronDoubleRightIcon className="h-[15px] w-[15px]" />}
+                  </button>
+                </div>
+
+                <div className="w-5 h-px bg-slate-100 mb-1.5 self-center" />
+
                 {/* AI */}
                 {[
                   {
@@ -1155,17 +1180,22 @@ const NotesLayout: React.FC = React.memo(() => {
                   <button
                     key={label}
                     onClick={action}
-                    title={label}
-                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
-                    <Icon className="h-[15px] w-[15px]" />
-                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                      {label}
-                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                    </span>
+                    title={isResourceRailExpanded ? undefined : label}
+                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
+                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
+                    {isResourceRailExpanded && (
+                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
+                    )}
+                    {!isResourceRailExpanded && (
+                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                        {label}
+                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </span>
+                    )}
                   </button>
                 ))}
 
-                <div className="w-5 h-px bg-slate-100 my-1.5" />
+                <div className="w-5 h-px bg-slate-100 my-1.5 self-center" />
 
                 {/* Productivity */}
                 {[
@@ -1173,35 +1203,40 @@ const NotesLayout: React.FC = React.memo(() => {
                     icon: CalendarDaysIcon,
                     label: 'Calendar',
                     action: () => setIsCalendarOpen(true),
-                    color: 'text-blue-500 hover:bg-blue-50',
+                    color: 'text-blue-500 hover:bg-blue-50 hover:text-blue-600',
                   },
                   {
                     icon: MicrophoneIcon,
                     label: 'Audio',
                     action: () => setIsAudioRecorderOpen(true),
-                    color: 'text-orange-500 hover:bg-orange-50',
+                    color: 'text-orange-500 hover:bg-orange-50 hover:text-orange-600',
                   },
                   {
                     icon: CloudIcon,
                     label: 'Drive',
                     action: () => setIsDriveOpen(true),
-                    color: 'text-emerald-500 hover:bg-emerald-50',
+                    color: 'text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600',
                   },
                 ].map(({icon: Icon, label, action, color}) => (
                   <button
                     key={label}
                     onClick={action}
-                    title={label}
-                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
-                    <Icon className="h-[15px] w-[15px]" />
-                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                      {label}
-                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                    </span>
+                    title={isResourceRailExpanded ? undefined : label}
+                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
+                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
+                    {isResourceRailExpanded && (
+                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
+                    )}
+                    {!isResourceRailExpanded && (
+                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                        {label}
+                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </span>
+                    )}
                   </button>
                 ))}
 
-                <div className="w-5 h-px bg-slate-100 my-1.5" />
+                <div className="w-5 h-px bg-slate-100 my-1.5 self-center" />
 
                 {/* Utilities */}
                 {[
@@ -1209,13 +1244,13 @@ const NotesLayout: React.FC = React.memo(() => {
                     icon: PhotoIcon,
                     label: 'OCR',
                     action: handleOpenImageExtract,
-                    color: 'text-sky-500 hover:bg-sky-50',
+                    color: 'text-sky-500 hover:bg-sky-50 hover:text-sky-600',
                   },
                   {
                     icon: ClipboardIcon,
                     label: 'Assessment',
                     action: handleOpenAssessment,
-                    color: 'text-orange-600 hover:bg-orange-50',
+                    color: 'text-orange-600 hover:bg-orange-50 hover:text-orange-700',
                   },
                   {
                     icon: UsersIcon,
@@ -1227,40 +1262,50 @@ const NotesLayout: React.FC = React.memo(() => {
                     icon: BookmarkIcon,
                     label: 'Bookmarks',
                     action: () => setIsBookmarksOpen(true),
-                    color: 'text-amber-500 hover:bg-amber-50',
+                    color: 'text-amber-500 hover:bg-amber-50 hover:text-amber-600',
                   },
                   {
                     icon: DocumentTextIcon,
                     label: 'Form Fill',
                     action: () => window.open('/pdf-autofill', '_blank'),
-                    color: 'text-indigo-500 hover:bg-indigo-50',
+                    color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600',
                   },
                 ].map(({icon: Icon, label, action, color}) => (
                   <button
                     key={label}
                     onClick={action}
-                    title={label}
-                    className={`relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-150 group ${color}`}>
-                    <Icon className="h-[15px] w-[15px]" />
-                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                      {label}
-                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                    </span>
+                    title={isResourceRailExpanded ? undefined : label}
+                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
+                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
+                    {isResourceRailExpanded && (
+                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
+                    )}
+                    {!isResourceRailExpanded && (
+                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                        {label}
+                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                      </span>
+                    )}
                   </button>
                 ))}
 
-                <div className="w-5 h-px bg-slate-100 my-1.5" />
+                <div className="mt-auto w-5 h-px bg-slate-100 my-1.5 self-center" />
 
                 {/* Settings */}
                 <button
                   onClick={handleOpenSettings}
-                  title="Settings"
-                  className="relative flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 group">
-                  <Cog6ToothIcon className="h-[15px] w-[15px]" />
-                  <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                    Settings
-                    <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                  </span>
+                  title={isResourceRailExpanded ? undefined : 'Settings'}
+                  className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 group active:scale-[0.98]`}>
+                  <Cog6ToothIcon className="h-[15px] w-[15px] flex-shrink-0" />
+                  {isResourceRailExpanded && (
+                    <span className="ml-3 text-[12.5px] font-medium truncate">Settings</span>
+                  )}
+                  {!isResourceRailExpanded && (
+                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
+                      Settings
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                    </span>
+                  )}
                 </button>
               </div>
             )}
