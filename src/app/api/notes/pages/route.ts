@@ -20,7 +20,8 @@ export async function GET(request: Request) {
   await dbConnect();
 
   // Ensure models are registered to avoid MissingSchemaError during population
-  console.log('Registered Models:', NoteSection.modelName, NoteCategory.modelName);
+  void NoteSection.modelName;
+  void NoteCategory.modelName;
 
   const {searchParams} = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
@@ -48,8 +49,6 @@ export async function GET(request: Request) {
         }
 
         if (searchSectionNamesOnly) {
-          console.log('DEBUG: Searching Sections/Categories with regex:', search);
-
           // Search Sections
           const sections = await NoteSection.find({name: searchRegex, userEmail}).populate('categoryId');
           results = [
@@ -64,10 +63,6 @@ export async function GET(request: Request) {
 
           // Search Categories (Notebooks)
           const categories = await NoteCategory.find({name: searchRegex, userEmail});
-          console.log(
-            'DEBUG: Matched Categories:',
-            categories.map(c => c.name),
-          );
 
           // Return Categories as "Sections" for UI consistency
           results = [

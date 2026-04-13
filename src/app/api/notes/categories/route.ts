@@ -23,67 +23,44 @@ export async function GET() {
   await dbConnect();
   try {
     const userEmail = session!.user!.email;
-    const categories = await NoteCategory.find({userEmail}).sort({order: 1});
+    // Run all independent queries concurrently
+    const [categories, sections, importantPages, flaggedPages, activeToDos] = await Promise.all([
+      NoteCategory.find({userEmail}).sort({order: 1}),
+      NoteSection.find({userEmail}).select('_id categoryId'),
+      NotePage.find({userEmail, isImportant: true}).select('sectionId'),
+      NotePage.find({userEmail, isFlagged: true}).select('sectionId'),
+      ToDo.find({userEmail, isCompleted: false, sourcePageId: {$ne: null}}).select('sourcePageId'),
+    ]);
 
-    // Fetch all sections for mapping
-    const sections = await NoteSection.find({userEmail});
+    // Build section→category lookup map
     const sectionToCategoryMap: Record<string, string> = {};
     sections.forEach((sec: INoteSection) => {
       sectionToCategoryMap[sec._id.toString()] = sec.categoryId.toString();
     });
 
-    // Fetch all important pages
-    const importantPages = await NotePage.find({userEmail, isImportant: true}).select('sectionId');
+    // Fetch todo pages now that we have activeToDos (depends on previous batch)
+    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
+    const todoPages = todoPageIds.length
+      ? await NotePage.find({_id: {$in: todoPageIds}, userEmail}).select('sectionId')
+      : [];
 
-    // Fetch all flagged pages
-    const flaggedPages = await NotePage.find({userEmail, isFlagged: true}).select('sectionId');
-
-    // Count important pages per category
+    // Aggregate counts per category
     const categoryImportantCounts: Record<string, number> = {};
     importantPages.forEach(page => {
       const catId = sectionToCategoryMap[page.sectionId.toString()];
-      if (catId) {
-        categoryImportantCounts[catId] = (categoryImportantCounts[catId] || 0) + 1;
-      }
+      if (catId) categoryImportantCounts[catId] = (categoryImportantCounts[catId] || 0) + 1;
     });
 
-    // Count flagged pages per category
     const categoryFlaggedCounts: Record<string, number> = {};
     flaggedPages.forEach(page => {
       const catId = sectionToCategoryMap[page.sectionId.toString()];
-      if (catId) {
-        categoryFlaggedCounts[catId] = (categoryFlaggedCounts[catId] || 0) + 1;
-      }
+      if (catId) categoryFlaggedCounts[catId] = (categoryFlaggedCounts[catId] || 0) + 1;
     });
-
-    // Valid Active To-Dos (isCompleted: false)
-    // We want to count HOW MANY PAGES have at least one active to-do.
-    // Logic:
-    // 1. Get all active ToDos with a sourcePageId
-    // 2. Get distinct sourcePageIds
-    // 3. Find sectionId for those pages
-    // 4. Aggregate by Category
-
-    const activeToDos = await ToDo.find({
-      userEmail,
-      isCompleted: false,
-      sourcePageId: {$ne: null},
-    }).select('sourcePageId');
-
-    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
-
-    // Find the pages to get their section IDs
-    const todoPages = await NotePage.find({
-      _id: {$in: todoPageIds},
-      userEmail,
-    }).select('sectionId');
 
     const categoryToDoCounts: Record<string, number> = {};
     todoPages.forEach(page => {
       const catId = sectionToCategoryMap[page.sectionId.toString()];
-      if (catId) {
-        categoryToDoCounts[catId] = (categoryToDoCounts[catId] || 0) + 1;
-      }
+      if (catId) categoryToDoCounts[catId] = (categoryToDoCounts[catId] || 0) + 1;
     });
 
     const categoriesWithCount = categories.map(cat => ({

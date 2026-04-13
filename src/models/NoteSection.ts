@@ -20,7 +20,6 @@ const NoteSectionSchema: Schema = new Schema(
     userEmail: {
       type: String,
       required: true,
-      index: true,
     },
     name: {
       type: String,
@@ -54,6 +53,10 @@ const NoteSectionSchema: Schema = new Schema(
     timestamps: true,
   },
 );
+
+// Compound indexes for the access patterns used in every query
+NoteSectionSchema.index({userEmail: 1, categoryId: 1}); // sections by category (primary query)
+NoteSectionSchema.index({userEmail: 1, order: 1});      // sorted list
 
 export default (mongoose.models.NoteSection as Model<INoteSection>) ||
   mongoose.model<INoteSection>('NoteSection', NoteSectionSchema);

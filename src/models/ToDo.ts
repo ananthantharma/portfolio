@@ -45,7 +45,6 @@ const ToDoSchema = new Schema<IToDo>(
     userEmail: {
       type: String,
       required: true,
-      index: true,
     },
     sourcePageId: {type: Schema.Types.ObjectId, ref: 'NotePage', required: false},
     tabId: {type: String, required: false}, // ID of the tab within the page
@@ -100,5 +99,9 @@ const ToDoSchema = new Schema<IToDo>(
   },
   {timestamps: true},
 );
+
+// Compound indexes for the badge-counting queries used on every navigation
+ToDoSchema.index({userEmail: 1, isCompleted: 1, sourcePageId: 1}); // active todos per page
+ToDoSchema.index({userEmail: 1, sourcePageId: 1});                  // todos lookup by page
 
 export default (mongoose.models.ToDo as Model<IToDo>) || mongoose.model<IToDo>('ToDo', ToDoSchema);

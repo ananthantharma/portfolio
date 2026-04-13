@@ -33,7 +33,6 @@ const NotePageSchema: Schema = new Schema(
     userEmail: {
       type: String,
       required: true,
-      index: true,
     },
     title: {
       type: String,
@@ -97,5 +96,10 @@ const NotePageSchema: Schema = new Schema(
     timestamps: true,
   },
 );
+
+// Compound indexes for the access patterns used in every request
+NotePageSchema.index({userEmail: 1, sectionId: 1, order: 1}); // sidebar page list (primary query)
+NotePageSchema.index({userEmail: 1, isImportant: 1});          // badge counting: important
+NotePageSchema.index({userEmail: 1, isFlagged: 1});            // badge counting: flagged
 
 export default (mongoose.models.NotePage as Model<INotePage>) || mongoose.model<INotePage>('NotePage', NotePageSchema);

@@ -28,20 +28,19 @@ export async function GET(request: Request) {
     const query: any = {userEmail: session.user.email};
     if (categoryId) query.categoryId = categoryId;
 
-    const sections = await NoteSection.find(query).sort({order: 1});
+    // Run all independent queries concurrently
+    const [sections, importantPages, flaggedPages, activeToDos] = await Promise.all([
+      NoteSection.find(query).sort({order: 1}),
+      NotePage.find({userEmail: session.user.email, isImportant: true}).select('sectionId'),
+      NotePage.find({userEmail: session.user.email, isFlagged: true}).select('sectionId'),
+      ToDo.find({userEmail: session.user.email, isCompleted: false, sourcePageId: {$ne: null}}).select('sourcePageId'),
+    ]);
 
-    // Fetch important pages to count
-    // Optimization: If we have many sections, fetching ALL important pages might be slightly redundant if we only care about specific sections,
-    // but for consistency and simplicity (and since filtering by section list in mongo might be complex if list is large), fetching all important for user is fine.
-    const importantPages = await NotePage.find({
-      userEmail: session.user.email,
-      isImportant: true,
-    }).select('sectionId');
-
-    const flaggedPages = await NotePage.find({
-      userEmail: session.user.email,
-      isFlagged: true,
-    }).select('sectionId');
+    // Fetch todo pages (depends on activeToDos result)
+    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
+    const todoPages = todoPageIds.length
+      ? await NotePage.find({_id: {$in: todoPageIds}, userEmail: session.user.email}).select('sectionId')
+      : [];
 
     const sectionImportantCounts: Record<string, number> = {};
     importantPages.forEach(page => {
@@ -54,20 +53,6 @@ export async function GET(request: Request) {
       const secId = page.sectionId.toString();
       sectionFlaggedCounts[secId] = (sectionFlaggedCounts[secId] || 0) + 1;
     });
-
-    // To-Do Logic for Sections
-    const activeToDos = await ToDo.find({
-      userEmail: session.user.email,
-      isCompleted: false,
-      sourcePageId: {$ne: null},
-    }).select('sourcePageId');
-
-    const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
-
-    const todoPages = await NotePage.find({
-      _id: {$in: todoPageIds},
-      userEmail: session.user.email,
-    }).select('sectionId');
 
     const sectionToDoCounts: Record<string, number> = {};
     todoPages.forEach(page => {

@@ -230,6 +230,69 @@ const NotesLayout: React.FC = React.memo(() => {
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
 
+  // ── Client-side caches — switching between sections/categories is instant ────
+  const sectionsCache = useRef<Record<string, INoteSection[]>>({});
+  const pagesCache = useRef<Record<string, INotePage[]>>({});
+
+  const formatBytes = (bytes: number, decimals = 2) => {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('/api/notes/categories');
+      if (response.data && Array.isArray(response.data.data)) {
+        setCategories(response.data.data);
+      } else {
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setCategories([]);
+    }
+  };
+
+  const fetchSections = useCallback(async (categoryId: string) => {
+    if (sectionsCache.current[categoryId]) {
+      setSections(sectionsCache.current[categoryId]);
+      return;
+    }
+    setLoadingSections(true);
+    try {
+      const response = await axios.get(`/api/notes/sections?categoryId=${categoryId}`);
+      const data = response.data.data;
+      sectionsCache.current[categoryId] = data;
+      setSections(data);
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+    } finally {
+      setLoadingSections(false);
+    }
+  }, []);
+
+  const fetchPages = useCallback(async (sectionId: string) => {
+    if (pagesCache.current[sectionId]) {
+      setPages(pagesCache.current[sectionId]);
+      return;
+    }
+    setLoadingPages(true);
+    try {
+      const response = await axios.get(`/api/notes/pages?sectionId=${sectionId}`);
+      const data = response.data.data;
+      pagesCache.current[sectionId] = data;
+      setPages(data);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+    } finally {
+      setLoadingPages(false);
+    }
+  }, []);
+
   // Fetch categories on mount
   useEffect(() => {
     fetchCategories();
@@ -242,7 +305,16 @@ const NotesLayout: React.FC = React.memo(() => {
     } else {
       setSections([]);
     }
-  }, [selectedCategoryId]);
+  }, [selectedCategoryId, fetchSections]);
+
+  // Keep caches in sync after mutations so re-navigation is instant
+  useEffect(() => {
+    if (selectedSectionId) pagesCache.current[selectedSectionId] = pages;
+  }, [pages, selectedSectionId]);
+
+  useEffect(() => {
+    if (selectedCategoryId) sectionsCache.current[selectedCategoryId] = sections;
+  }, [sections, selectedCategoryId]);
 
   // Active Task Count Logic
   const [activeTaskCount, setActiveTaskCount] = useState(0);
@@ -277,7 +349,7 @@ const NotesLayout: React.FC = React.memo(() => {
     } else {
       setPages([]);
     }
-  }, [selectedSectionId]);
+  }, [selectedSectionId, fetchPages]);
 
   useEffect(() => {
     const fetchDbStats = async () => {
@@ -308,53 +380,6 @@ const NotesLayout: React.FC = React.memo(() => {
     return () => clearInterval(interval);
   }, []);
 
-  const formatBytes = (bytes: number, decimals = 2) => {
-    if (!+bytes) return '0 Bytes';
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get('/api/notes/categories');
-      if (response.data && Array.isArray(response.data.data)) {
-        setCategories(response.data.data);
-      } else {
-        console.error('Invalid categories data received:', response.data);
-        setCategories([]);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      setCategories([]);
-    }
-  };
-
-  const fetchSections = async (categoryId: string) => {
-    setLoadingSections(true);
-    try {
-      const response = await axios.get(`/api/notes/sections?categoryId=${categoryId}`);
-      setSections(response.data.data);
-    } catch (error) {
-      console.error('Error fetching sections:', error);
-    } finally {
-      setLoadingSections(false);
-    }
-  };
-
-  const fetchPages = async (sectionId: string) => {
-    setLoadingPages(true);
-    try {
-      const response = await axios.get(`/api/notes/pages?sectionId=${sectionId}`);
-      setPages(response.data.data);
-    } catch (error) {
-      console.error('Error fetching pages:', error);
-    } finally {
-      setLoadingPages(false);
-    }
-  };
 
   const fetchFlaggedTasks = useCallback(async () => {
     const response = await axios.get('/api/notes/pages?isFlagged=true');
@@ -574,14 +599,10 @@ const NotesLayout: React.FC = React.memo(() => {
       const pageRes = await axios.post('/api/notes/pages', {title: 'New Note', sectionId: section._id});
       const newPage = pageRes.data.data;
 
-      // 4. Navigate to new Quick Note
+      // 4. Navigate to new Quick Note — React 18 batches these automatically
       setSelectedCategoryId(category!._id as string);
-      setTimeout(() => {
-        setSelectedSectionId(section._id as string);
-        setTimeout(() => {
-          setSelectedPageId(newPage._id as string);
-        }, 150);
-      }, 150);
+      setSelectedSectionId(section._id as string);
+      setSelectedPageId(newPage._id as string);
     } catch (error) {
       console.error('Error creating quick note:', error);
       alert('Failed to create quick note.');
