@@ -48,9 +48,8 @@ import FlaggedItemsModal from './FlaggedItemsModal';
 import AssessmentModal from './AssessmentModal';
 import ImageExtractionModal from './ImageExtractionModal';
 import NoteEditor from './NoteEditor';
-import PageList from './PageList';
 // import SearchModal from './SearchModal'; // Replaced by CommandPalette
-import SectionList from './SectionList';
+import SectionPageList from './SectionPageList';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
 import MovePageModal from './MovePageModal';
@@ -81,7 +80,6 @@ const NotesLayout: React.FC = React.memo(() => {
   // Sidebar visibility states
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
-  const [isPageCollapsed, setIsPageCollapsed] = useState(false);
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -105,9 +103,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Resizable Sidebar State
   const [categoryWidth, setCategoryWidth] = useState(200);
-  const [sectionWidth, setSectionWidth] = useState(200);
-  const [pageWidth, setPageWidth] = useState(200);
-  const [resizingCol, setResizingCol] = useState<'category' | 'section' | 'page' | null>(null);
+  const [sectionWidth, setSectionWidth] = useState(260);
+  const [resizingCol, setResizingCol] = useState<'category' | 'section' | null>(null);
 
   // Persistence: Load from localStorage on mount
   useEffect(() => {
@@ -126,17 +123,11 @@ const NotesLayout: React.FC = React.memo(() => {
     const savedSectionWidth = localStorage.getItem('NOTES_SECTION_WIDTH');
     if (savedSectionWidth) setSectionWidth(parseInt(savedSectionWidth));
 
-    const savedPageWidth = localStorage.getItem('NOTES_PAGE_WIDTH');
-    if (savedPageWidth) setPageWidth(parseInt(savedPageWidth));
-
     const savedCategoryCollapsed = localStorage.getItem('NOTES_CATEGORY_COLLAPSED');
     if (savedCategoryCollapsed !== null) setIsCategoryCollapsed(savedCategoryCollapsed === 'true');
 
     const savedSectionCollapsed = localStorage.getItem('NOTES_SECTION_COLLAPSED');
     if (savedSectionCollapsed !== null) setIsSectionCollapsed(savedSectionCollapsed === 'true');
-
-    const savedPageCollapsed = localStorage.getItem('NOTES_PAGE_COLLAPSED');
-    if (savedPageCollapsed !== null) setIsPageCollapsed(savedPageCollapsed === 'true');
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
@@ -171,10 +162,6 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [isSectionCollapsed]);
 
   useEffect(() => {
-    localStorage.setItem('NOTES_PAGE_COLLAPSED', isPageCollapsed.toString());
-  }, [isPageCollapsed]);
-
-  useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
   }, [isFocusMode]);
 
@@ -198,7 +185,7 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
-  const startResizing = useCallback((e: React.MouseEvent, col: 'category' | 'section' | 'page') => {
+  const startResizing = useCallback((e: React.MouseEvent, col: 'category' | 'section') => {
     setResizingCol(col);
     e.preventDefault();
   }, []);
@@ -216,10 +203,7 @@ const NotesLayout: React.FC = React.memo(() => {
           setCategoryWidth(Math.max(200, Math.min(600, e.clientX)));
         } else if (resizingCol === 'section') {
           const startX = isCategoryCollapsed ? 56 : categoryWidth;
-          setSectionWidth(Math.max(200, Math.min(600, e.clientX - startX)));
-        } else if (resizingCol === 'page') {
-          const startX = (isCategoryCollapsed ? 56 : categoryWidth) + (isSectionCollapsed ? 56 : sectionWidth);
-          setPageWidth(Math.max(200, Math.min(600, e.clientX - startX)));
+          setSectionWidth(Math.max(220, Math.min(600, e.clientX - startX)));
         }
       });
     };
@@ -230,7 +214,6 @@ const NotesLayout: React.FC = React.memo(() => {
       // Save widths to localStorage when resizing stops
       localStorage.setItem('NOTES_CATEGORY_WIDTH', categoryWidth.toString());
       localStorage.setItem('NOTES_SECTION_WIDTH', sectionWidth.toString());
-      localStorage.setItem('NOTES_PAGE_WIDTH', pageWidth.toString());
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -242,7 +225,7 @@ const NotesLayout: React.FC = React.memo(() => {
       document.removeEventListener('mouseup', handleMouseUp);
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [resizingCol, categoryWidth, sectionWidth, isCategoryCollapsed, isSectionCollapsed]);
+  }, [resizingCol, categoryWidth, sectionWidth, isCategoryCollapsed]);
 
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
@@ -807,7 +790,6 @@ const NotesLayout: React.FC = React.memo(() => {
     () => setIsSectionCollapsed(!isSectionCollapsed),
     [isSectionCollapsed],
   );
-  const handleTogglePageCollapse = useCallback(() => setIsPageCollapsed(!isPageCollapsed), [isPageCollapsed]);
 
   // Standalone Rewrite Modal
   const [isRewriteOpen, setIsRewriteOpen] = useState(false);
@@ -1347,11 +1329,11 @@ const NotesLayout: React.FC = React.memo(() => {
                 )}
               </aside>
 
-              {/* Sections — mid gray */}
+              {/* Sections + Pages — combined */}
               <aside
-                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden border-r border-white/20 glass-sidebar transition-all duration-200"
+                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden glass-sidebar transition-all duration-200"
                 style={{width: isSectionCollapsed ? 48 : sectionWidth, background: 'var(--sidebar-sec)'}}>
-                <SectionList
+                <SectionPageList
                   sections={sections}
                   selectedSectionId={selectedSectionId}
                   onSelectSection={handleSelectSection}
@@ -1359,24 +1341,8 @@ const NotesLayout: React.FC = React.memo(() => {
                   onRenameSection={handleRenameSection}
                   onDeleteSection={handleDeleteSection}
                   onReorderSections={handleReorderSections}
-                  isCollapsed={isSectionCollapsed}
-                  onToggleCollapse={handleToggleSectionCollapse}
-                  badgeCounts={badgeCounts.sections}
-                  loading={loadingSections}
-                />
-                {!isSectionCollapsed && (
-                  <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
-                    onMouseDown={e => startResizing(e, 'section')}
-                  />
-                )}
-              </aside>
-
-              {/* Pages — lightest */}
-              <aside
-                className="relative flex h-full flex-shrink-0 flex-col overflow-hidden glass-sidebar transition-all duration-200"
-                style={{width: isPageCollapsed ? 48 : pageWidth, background: 'var(--sidebar-page)'}}>
-                <PageList
+                  loadingSections={loadingSections}
+                  sectionBadgeCounts={badgeCounts.sections}
                   pages={pages}
                   selectedPageId={selectedPageId}
                   onSelectPage={setSelectedPageId}
@@ -1387,15 +1353,15 @@ const NotesLayout: React.FC = React.memo(() => {
                   onReorderPages={handleReorderPages}
                   onToggleInactive={handleTogglePageInactive}
                   onSetParentPage={handleSetParentPage}
-                  isCollapsed={isPageCollapsed}
-                  onToggleCollapse={handleTogglePageCollapse}
-                  badgeCounts={badgeCounts.pages}
-                  loading={loadingPages}
+                  loadingPages={loadingPages}
+                  pageBadgeCounts={badgeCounts.pages}
+                  isCollapsed={isSectionCollapsed}
+                  onToggleCollapse={handleToggleSectionCollapse}
                 />
-                {!isPageCollapsed && (
+                {!isSectionCollapsed && (
                   <div
                     className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
-                    onMouseDown={e => startResizing(e, 'page')}
+                    onMouseDown={e => startResizing(e, 'section')}
                   />
                 )}
               </aside>
