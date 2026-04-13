@@ -106,6 +106,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
 
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // ... (Modal states)
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -444,10 +445,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
       // Send to Parent
       try {
         setIsSaving(true);
+        setSaveError(null);
         await onSave(page._id as string, sanitizedTabs as any);
         setIsDirty(false);
       } catch (error) {
         console.error('Failed to save page', error);
+        setSaveError('Save failed — page may be too large. Try removing large images.');
       } finally {
         setIsSaving(false);
       }
@@ -2218,6 +2221,15 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         </div>
       </div>
 
+      {saveError && (
+        <div className="mx-5 mb-1 flex items-center gap-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-[11px] text-red-700">
+          <ExclamationTriangleIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>{saveError}</span>
+          <button className="ml-auto text-red-400 hover:text-red-600" onClick={() => setSaveError(null)}>
+            <XMarkIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
       <div className="flex-1 overflow-hidden px-5 py-3 relative">
         <RichTextEditor
           onChange={handleContentChange}

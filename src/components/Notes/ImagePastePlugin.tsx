@@ -20,6 +20,25 @@ function fileToDataURL(file: File): Promise<string> {
   });
 }
 
+// Compress pasted images to keep request bodies well under the 4 MB limit.
+function compressImage(dataUrl: string, maxWidth = 1600, quality = 0.85): Promise<string> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(maxWidth / img.width, 1);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(dataUrl); return; }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export function ImagePastePlugin() {
   const [editor] = useLexicalComposerContext();
 
@@ -55,7 +74,8 @@ export function ImagePastePlugin() {
           if (!file) return;
 
           try {
-            const dataUrl = await fileToDataURL(file);
+            const raw = await fileToDataURL(file);
+            const dataUrl = await compressImage(raw);
             editor.update(() => {
               const imageNode = $createImageNode({
                 src: dataUrl,

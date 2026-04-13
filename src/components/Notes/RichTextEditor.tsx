@@ -1,5 +1,25 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 
+// Compress an image data URL to a JPEG with a bounded width.
+// Keeps images well under the 4 MB request-body limit.
+async function compressImage(dataUrl: string, maxWidth = 1600, quality = 0.85): Promise<string> {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const ratio = Math.min(maxWidth / img.width, 1);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(dataUrl); return; }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl); // fallback: keep original
+    img.src = dataUrl;
+  });
+}
+
 // Lexical Core
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
@@ -408,8 +428,8 @@ function ToolbarPlugin() {
             const file = e.target.files?.[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = () => {
-              const src = reader.result as string;
+            reader.onload = async () => {
+              const src = await compressImage(reader.result as string);
               editor.update(() => {
                 const node = $createImageNode({src, altText: file.name});
                 const sel = $getSelection();

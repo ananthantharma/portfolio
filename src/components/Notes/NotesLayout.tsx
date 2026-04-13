@@ -703,13 +703,10 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
-    try {
-      // data coming from NoteEditor is now the 'tabs' array
-      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
-      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
-    } catch (error) {
-      console.error('Error saving page content:', error);
-    }
+    // data coming from NoteEditor is now the 'tabs' array
+    // Do NOT swallow errors — let them propagate to NoteEditor so isDirty stays true
+    const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
+    setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
   }, []);
 
   const handleReorderPages = useCallback(
