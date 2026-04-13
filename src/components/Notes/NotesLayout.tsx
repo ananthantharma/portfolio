@@ -233,6 +233,11 @@ const NotesLayout: React.FC = React.memo(() => {
   // ── Client-side caches — switching between sections/categories is instant ────
   const sectionsCache = useRef<Record<string, INoteSection[]>>({});
   const pagesCache = useRef<Record<string, INotePage[]>>({});
+  // Tracks which sectionId the current `pages` state actually belongs to.
+  // Only used for cache-sync — prevents writing stale data when selectedSectionId
+  // changes before the new fetch resolves.
+  const pagesBelongToSection = useRef<string | null>(null);
+  const sectionsBelongToCategory = useRef<string | null>(null);
 
   const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -259,6 +264,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const fetchSections = useCallback(async (categoryId: string) => {
     if (sectionsCache.current[categoryId]) {
+      sectionsBelongToCategory.current = categoryId;
       setSections(sectionsCache.current[categoryId]);
       return;
     }
@@ -267,6 +273,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const response = await axios.get(`/api/notes/sections?categoryId=${categoryId}`);
       const data = response.data.data;
       sectionsCache.current[categoryId] = data;
+      sectionsBelongToCategory.current = categoryId;
       setSections(data);
     } catch (error) {
       console.error('Error fetching sections:', error);
@@ -277,6 +284,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const fetchPages = useCallback(async (sectionId: string) => {
     if (pagesCache.current[sectionId]) {
+      pagesBelongToSection.current = sectionId;
       setPages(pagesCache.current[sectionId]);
       return;
     }
@@ -285,6 +293,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const response = await axios.get(`/api/notes/pages?sectionId=${sectionId}`);
       const data = response.data.data;
       pagesCache.current[sectionId] = data;
+      pagesBelongToSection.current = sectionId;
       setPages(data);
     } catch (error) {
       console.error('Error fetching pages:', error);
@@ -307,13 +316,22 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, [selectedCategoryId, fetchSections]);
 
-  // Keep caches in sync after mutations so re-navigation is instant
+  // Keep caches in sync after mutations so re-navigation is instant.
+  // Only write when the state's owner ref matches the current selection —
+  // this prevents caching stale data when the selection changes before the
+  // new fetch resolves.
   useEffect(() => {
-    if (selectedSectionId) pagesCache.current[selectedSectionId] = pages;
+    const sid = pagesBelongToSection.current;
+    if (sid && sid === selectedSectionId) {
+      pagesCache.current[sid] = pages;
+    }
   }, [pages, selectedSectionId]);
 
   useEffect(() => {
-    if (selectedCategoryId) sectionsCache.current[selectedCategoryId] = sections;
+    const cid = sectionsBelongToCategory.current;
+    if (cid && cid === selectedCategoryId) {
+      sectionsCache.current[cid] = sections;
+    }
   }, [sections, selectedCategoryId]);
 
   // Active Task Count Logic
