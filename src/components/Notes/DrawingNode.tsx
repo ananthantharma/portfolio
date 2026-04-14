@@ -416,20 +416,28 @@ export class DrawingNode extends DecoratorNode<React.ReactElement> {
    */
   static importDOM(): DOMConversionMap | null {
     return {
-      img: () => ({
-        conversion: (el: HTMLElement): DOMConversionOutput | null => {
-          if (!el.hasAttribute('data-lexical-drawing')) return null;
-          const img = el as HTMLImageElement;
-          return {
-            node: $createDrawingNode({
-              dataUrl: img.src,
-              width: img.width || INITIAL_WIDTH,
-              height: img.height || INITIAL_HEIGHT,
-            }),
-          };
-        },
-        priority: 1,
-      }),
+      // The attribute check MUST be in the outer function so that
+      // getConversionFunction returns null for regular <img> elements and
+      // falls through to ImageNode's priority-0 handler.  Previously the outer
+      // function always returned a non-null descriptor, which caused DrawingNode
+      // (priority 1) to win the bid for every <img> and then silently drop it
+      // when the inner conversion returned null — wiping out all inline images.
+      img: (domNode: HTMLElement) => {
+        if (!domNode.hasAttribute('data-lexical-drawing')) return null;
+        return {
+          conversion: (el: HTMLElement): DOMConversionOutput | null => {
+            const img = el as HTMLImageElement;
+            return {
+              node: $createDrawingNode({
+                dataUrl: img.src,
+                width: img.width || INITIAL_WIDTH,
+                height: img.height || INITIAL_HEIGHT,
+              }),
+            };
+          },
+          priority: 1,
+        };
+      },
     };
   }
 
