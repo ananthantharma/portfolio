@@ -1,6 +1,8 @@
 import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
 import {AuthOptions} from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import bcrypt from 'bcryptjs';
 
 import clientPromise from './mongodb';
 
@@ -43,6 +45,55 @@ export const authOptions: AuthOptions = {
           access_type: 'offline',
           response_type: 'code',
         },
+      },
+    }),
+
+    CredentialsProvider({
+      name: 'Username & Password',
+      credentials: {
+        email: {label: 'Email / Username', type: 'text'},
+        password: {label: 'Password', type: 'password'},
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const client = await clientPromise;
+        const db = client.db('qt_portfolio');
+
+        // Look up by email OR by the username field, and explicitly include the password hash
+        const user = await db
+          .collection('users')
+          .findOne(
+            {
+              isCredentialsUser: true,
+              $or: [
+                {email: credentials.email.toLowerCase()},
+                {username: credentials.email.toLowerCase()},
+              ],
+            },
+            {projection: {password: 1, name: 1, email: 1, image: 1, expiresAt: 1}},
+          );
+
+        if (!user) return null;
+
+        // Check expiry
+        if (user.expiresAt && new Date() > new Date(user.expiresAt)) {
+          console.log('CredentialsProvider: Account expired for', credentials.email);
+          return null;
+        }
+
+        const valid = await bcrypt.compare(credentials.password, user.password);
+        if (!valid) return null;
+
+        // Update last login
+        await db.collection('users').updateOne({_id: user._id}, {$set: {lastLogin: new Date()}});
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          image: user.image ?? null,
+        };
       },
     }),
   ],
@@ -106,9 +157,12 @@ export const authOptions: AuthOptions = {
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
 
-      // Refresh access token if expired
+      const userId = user?.id;
+      if (!userId) return session;
+
+      // Google users: refresh access token if expired
       const account = await db.collection('accounts').findOne({
-        userId: new (await import('mongodb')).ObjectId(user.id),
+        userId: new (await import('mongodb')).ObjectId(userId),
         provider: 'google',
       });
 
@@ -165,7 +219,7 @@ export const authOptions: AuthOptions = {
 
       // Fetch user permissions
       const dbUser = await db.collection('users').findOne({
-        _id: new (await import('mongodb')).ObjectId(user.id),
+        _id: new (await import('mongodb')).ObjectId(userId),
       });
 
       if (dbUser) {
@@ -191,8 +245,9 @@ export const authOptions: AuthOptions = {
         session.user = {
           ...session.user,
           ...permissions,
-          id: user.id,
+          id: userId,
           isTrusted,
+          isCredentialsUser: dbUser.isCredentialsUser || false,
         };
       }
 

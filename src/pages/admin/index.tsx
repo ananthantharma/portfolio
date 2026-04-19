@@ -23,12 +23,27 @@ const PERMISSION_FIELDS = [
 
 const ADMIN_EMAIL = 'lankanprinze@gmail.com';
 
+const DEFAULT_NEW_USER = {
+  name: '',
+  email: '',
+  password: '',
+  expiresAt: '',
+};
+
 const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, accessLogs}) => {
   const [users, setUsers] = React.useState<any[]>(initialUsers);
   const [expandedIps, setExpandedIps] = React.useState<Set<string>>(new Set());
   const [sortOrder, setSortOrder] = React.useState<'asc' | 'desc'>('desc');
   const [saving, setSaving] = React.useState<Set<string>>(new Set());
   const [filter, setFilter] = React.useState<'all' | 'pending'>('all');
+  const [deleting, setDeleting] = React.useState<Set<string>>(new Set());
+
+  // Create test account form
+  const [showCreateForm, setShowCreateForm] = React.useState(false);
+  const [newUser, setNewUser] = React.useState(DEFAULT_NEW_USER);
+  const [creating, setCreating] = React.useState(false);
+  const [createError, setCreateError] = React.useState('');
+  const [createdCredentials, setCreatedCredentials] = React.useState<{email: string; password: string} | null>(null);
 
   const groupedLogs = React.useMemo(() => {
     const groups: {[ip: string]: IAccessLog[]} = {};
@@ -99,6 +114,64 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
     applyPermissions(userId, payload);
   };
 
+  const handleDelete = async (userId: string, userName: string) => {
+    if (!confirm(`Delete user "${userName}"? This cannot be undone.`)) return;
+    setDeleting(prev => new Set(prev).add(userId));
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/delete`, {method: 'DELETE'});
+      if (!res.ok) throw new Error('Failed');
+      setUsers(prev => prev.filter(u => u._id !== userId));
+    } catch {
+      alert('Failed to delete user. Please try again.');
+    } finally {
+      setDeleting(prev => { const next = new Set(prev); next.delete(userId); return next; });
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreating(true);
+    try {
+      const res = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          name: newUser.name || newUser.email,
+          email: newUser.email,
+          password: newUser.password,
+          expiresAt: newUser.expiresAt || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setCreateError(data.error || 'Failed to create user'); return; }
+
+      // Show the credentials to copy
+      setCreatedCredentials({email: newUser.email, password: newUser.password});
+
+      // Add to local list so it appears immediately
+      setUsers(prev => [...prev, {
+        _id: data.userId,
+        name: newUser.name || newUser.email,
+        email: newUser.email,
+        isCredentialsUser: true,
+        secureLoginEnabled: true,
+        notesEnabled: true,
+        financeEnabled: true,
+        googleApiEnabled: true,
+        openAiApiEnabled: true,
+        invoiceEnabled: true,
+        formFillEnabled: true,
+        lastLogin: null,
+        expiresAt: newUser.expiresAt || null,
+      }]);
+      setNewUser(DEFAULT_NEW_USER);
+      setShowCreateForm(false);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleGrantAll = (userId: string) => {
     const payload: Record<string, boolean> = {};
     PERMISSION_FIELDS.forEach(({field}) => { payload[field] = true; });
@@ -117,6 +190,105 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <span className="text-sm text-gray-400">Logged in as {ADMIN_EMAIL}</span>
+        </div>
+
+        {/* Created credentials confirmation */}
+        {createdCredentials && (
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-600 text-lg">✓</span>
+                <h3 className="font-semibold text-emerald-800">Test account created — share these credentials</h3>
+              </div>
+              <button onClick={() => setCreatedCredentials(null)} className="text-emerald-400 hover:text-emerald-600 text-lg leading-none">×</button>
+            </div>
+            <div className="bg-white rounded-lg border border-emerald-200 p-4 font-mono text-sm space-y-1">
+              <div><span className="text-gray-400">Email:    </span><span className="font-semibold text-gray-800">{createdCredentials.email}</span></div>
+              <div><span className="text-gray-400">Password: </span><span className="font-semibold text-gray-800">{createdCredentials.password}</span></div>
+              <div><span className="text-gray-400">Login URL: </span><span className="font-semibold text-gray-800">{typeof window !== 'undefined' ? window.location.origin : ''}/login</span></div>
+            </div>
+            <p className="mt-3 text-xs text-emerald-700">Copy the credentials above and send them. Delete the account from the Users table once testing is complete.</p>
+          </div>
+        )}
+
+        {/* Create test account */}
+        <div className="rounded-xl bg-white p-6 shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Test Account</h2>
+              <p className="text-sm text-gray-400 mt-0.5">Create a temporary username &amp; password account to share with testers.</p>
+            </div>
+            <button
+              onClick={() => { setShowCreateForm(v => !v); setCreateError(''); }}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                showCreateForm
+                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm'
+              }`}>
+              {showCreateForm ? 'Cancel' : '+ Create Account'}
+            </button>
+          </div>
+
+          {showCreateForm && (
+            <form onSubmit={handleCreateUser} className="border-t border-gray-100 pt-5 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Display name (optional)</label>
+                  <input
+                    type="text"
+                    value={newUser.name}
+                    onChange={e => setNewUser(p => ({...p, name: e.target.value}))}
+                    placeholder="Google Verifier"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Email <span className="text-red-400">*</span></label>
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={e => setNewUser(p => ({...p, email: e.target.value}))}
+                    placeholder="tester@example.com"
+                    required
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Password <span className="text-red-400">*</span> <span className="text-gray-300">(min 8 chars)</span></label>
+                  <input
+                    type="text"
+                    value={newUser.password}
+                    onChange={e => setNewUser(p => ({...p, password: e.target.value}))}
+                    placeholder="Temp password"
+                    required
+                    minLength={8}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Auto-expire on (optional)</label>
+                  <input
+                    type="datetime-local"
+                    value={newUser.expiresAt}
+                    onChange={e => setNewUser(p => ({...p, expiresAt: e.target.value}))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-400">All permissions are granted by default. You can adjust them in the Users table after creation.</p>
+              {createError && (
+                <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{createError}</p>
+              )}
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-500 disabled:opacity-50 transition-colors shadow-sm">
+                  {creating ? 'Creating…' : 'Create & Show Credentials'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Users Section */}
@@ -201,22 +373,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
                             </div>
                           )}
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-sm font-medium text-gray-900 truncate">
                                 {user.name || '—'}
                               </span>
                               {isAdmin && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-indigo-100 text-indigo-600">
-                                  ADMIN
-                                </span>
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-indigo-100 text-indigo-600">ADMIN</span>
+                              )}
+                              {user.isCredentialsUser && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-purple-100 text-purple-600">PWD</span>
                               )}
                               {isPending && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700">
-                                  NEW
-                                </span>
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700">NEW</span>
                               )}
                             </div>
                             <div className="text-xs text-gray-400 truncate">{user.email}</div>
+                            {user.expiresAt && (
+                              <div className="text-[10px] text-orange-500 font-medium">
+                                Expires {new Date(user.expiresAt).toLocaleDateString()}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -251,7 +427,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
                       {/* Quick actions */}
                       <td className="py-4 text-right">
                         {!isAdmin && (
-                          <div className="flex items-center justify-end gap-1.5">
+                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
                             <button
                               onClick={() => handleGrantAll(user._id)}
                               disabled={isSaving}
@@ -263,8 +439,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({users: initialUsers, acc
                               onClick={() => handleRevokeAll(user._id)}
                               disabled={isSaving}
                               title="Revoke all permissions"
-                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-40">
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 transition-colors disabled:opacity-40">
                               Revoke
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user._id, user.name || user.email)}
+                              disabled={deleting.has(user._id)}
+                              title="Delete user permanently"
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-40">
+                              {deleting.has(user._id) ? '…' : 'Delete'}
                             </button>
                           </div>
                         )}

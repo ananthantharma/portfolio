@@ -4,6 +4,10 @@ export interface IUser extends Document {
   name?: string;
   email?: string;
   image?: string;
+  password?: string;          // hashed — only set for credentials users
+  isCredentialsUser?: boolean; // true for username/password accounts
+  username?: string;           // optional display username for credentials users
+  expiresAt?: Date;            // optional auto-expiry for temp accounts
   googleApiEnabled?: boolean;
   openAiApiEnabled?: boolean;
   notesEnabled?: boolean;
@@ -43,6 +47,10 @@ const UserSchema: Schema = new Schema(
     name: String,
     email: String,
     image: String,
+    password: {type: String, select: false}, // never returned in queries unless explicitly selected
+    isCredentialsUser: {type: Boolean, default: false},
+    username: {type: String},
+    expiresAt: {type: Date},
     emailVerified: Date,
     lastLogin: Date,
     googleApiEnabled: {type: Boolean, default: false},
