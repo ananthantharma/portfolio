@@ -1,8 +1,32 @@
 import {MongoDBAdapter} from '@next-auth/mongodb-adapter';
-import {AuthOptions} from 'next-auth'; // Use AuthOptions type
+import {AuthOptions} from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
 import clientPromise from './mongodb';
+
+/** Emails that always receive full access — no manual admin approval needed.
+ *  Add Google verification accounts here, or set the TRUSTED_EMAILS env var
+ *  as a comma-separated list (e.g. TRUSTED_EMAILS=foo@gmail.com,bar@gmail.com).
+ */
+const ADMIN_EMAIL = 'lankanprinze@gmail.com';
+
+const TRUSTED_EMAILS: Set<string> = new Set([
+  ADMIN_EMAIL,
+  // Google OAuth verification team test accounts
+  'davincii.040823@gmail.com',
+  // Add more trusted emails here, or use the env var below
+  ...(process.env.TRUSTED_EMAILS ? process.env.TRUSTED_EMAILS.split(',').map(e => e.trim().toLowerCase()) : []),
+]);
+
+const ALL_PERMISSIONS = {
+  googleApiEnabled: true,
+  openAiApiEnabled: true,
+  notesEnabled: true,
+  secureLoginEnabled: true,
+  financeEnabled: true,
+  invoiceEnabled: true,
+  formFillEnabled: true,
+};
 
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise, {
@@ -25,69 +49,73 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async signIn({user, account}) {
-      console.log('SignIn Attempt:', {email: user.email, provider: account?.provider});
+      const email = user.email?.toLowerCase() ?? '';
+      console.log('SignIn Attempt:', {email, provider: account?.provider});
 
-      if (account?.provider === 'google' && user.email) {
+      if (account?.provider === 'google' && email) {
         try {
           const client = await clientPromise;
           const db = client.db('qt_portfolio');
 
-          // Find the user in the database by email to get the correct ObjectId
           const dbUser = await db.collection('users').findOne({email: user.email});
 
           if (dbUser) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const updateData: any = {
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            const tokenUpdate: any = {
               access_token: account.access_token,
               expires_at: account.expires_at,
               scope: account.scope,
               token_type: account.token_type,
               id_token: account.id_token,
             };
-
             if (account.refresh_token) {
-              updateData.refresh_token = account.refresh_token;
+              tokenUpdate.refresh_token = account.refresh_token;
             }
 
-            // Upsert the account linked to this user
-            // We use upsert because sometimes the account document might be missing even if user exists
             await db.collection('accounts').updateOne(
-              {
-                provider: 'google',
-                userId: dbUser._id,
-              },
-              {$set: updateData},
+              {provider: 'google', userId: dbUser._id},
+              {$set: tokenUpdate},
               {upsert: true},
             );
 
-            // Update user last login
-            await db.collection('users').updateOne({_id: dbUser._id}, {$set: {lastLogin: new Date()}});
+            // Auto-provision trusted emails with full permissions if they
+            // don't have them yet (e.g. first sign-in of a Google verifier).
+            const isTrusted = TRUSTED_EMAILS.has(email);
+            const hasNoPermissions = !dbUser.secureLoginEnabled && !dbUser.notesEnabled;
 
-            console.log('SignIn: Updated account tokens for', user.email);
+            if (isTrusted && hasNoPermissions) {
+              await db.collection('users').updateOne(
+                {_id: dbUser._id},
+                {$set: {...ALL_PERMISSIONS, lastLogin: new Date()}},
+              );
+              console.log('SignIn: Auto-provisioned full permissions for trusted email', email);
+            } else {
+              await db.collection('users').updateOne({_id: dbUser._id}, {$set: {lastLogin: new Date()}});
+            }
           } else {
-            console.log('SignIn: User not found in DB yet (first login?), skipping token update.');
+            console.log('SignIn: User not found in DB yet (first login), skipping token update.');
           }
         } catch (error) {
-          console.error('SignIn: Failed to update tokens', error);
+          console.error('SignIn: Failed to update tokens/permissions', error);
         }
       }
       return true;
     },
+
     async session({session, user}: {session: any; user: any}) {
-      // Fetch the account to get the access token
       const client = await clientPromise;
       const db = client.db('qt_portfolio');
+
+      // Refresh access token if expired
       const account = await db.collection('accounts').findOne({
         userId: new (await import('mongodb')).ObjectId(user.id),
         provider: 'google',
       });
 
       if (account) {
-        console.log('NextAuth Session: Account found for user', user.id);
         const now = Date.now() / 1000;
         let accessToken = account.access_token;
 
-        // Has the access token expired?
         if (account.expires_at && now > account.expires_at) {
           console.log('NextAuth Session: Access Token Expired, attempting to refresh...');
           try {
@@ -107,11 +135,8 @@ export const authOptions: AuthOptions = {
 
             const refreshedTokens = await response.json();
 
-            if (!response.ok) {
-              throw refreshedTokens;
-            }
+            if (!response.ok) throw refreshedTokens;
 
-            console.log('NextAuth Session: Refresh successful, updating DB');
             const newExpiresAt = Math.floor(Date.now() / 1000 + refreshedTokens.expires_in);
 
             await db.collection('accounts').updateOne(
@@ -136,29 +161,38 @@ export const authOptions: AuthOptions = {
 
         session.accessToken = accessToken;
         session.refreshToken = account.refresh_token;
-      } else {
-        console.log('NextAuth Session: No Google account found for user', user.id);
       }
 
-      // Fetch User Permissions
+      // Fetch user permissions
       const dbUser = await db.collection('users').findOne({
         _id: new (await import('mongodb')).ObjectId(user.id),
       });
 
       if (dbUser) {
-        // Default Permissions for Admin (lankanprinze@gmail.com)
-        const isAdmin = dbUser.email?.toLowerCase() === 'lankanprinze@gmail.com';
+        const email = dbUser.email?.toLowerCase() ?? '';
+        const isTrusted = TRUSTED_EMAILS.has(email);
+
+        // Trusted emails always get full access, regardless of DB flags.
+        // This is the safety net in case the signIn auto-provision hasn't
+        // run yet (e.g. the user doc was created by the adapter but the
+        // signIn callback fired before finding it).
+        const permissions = isTrusted
+          ? ALL_PERMISSIONS
+          : {
+              googleApiEnabled: dbUser.googleApiEnabled || false,
+              openAiApiEnabled: dbUser.openAiApiEnabled || false,
+              notesEnabled: dbUser.notesEnabled || false,
+              secureLoginEnabled: dbUser.secureLoginEnabled || false,
+              financeEnabled: dbUser.financeEnabled || false,
+              invoiceEnabled: dbUser.invoiceEnabled || false,
+              formFillEnabled: dbUser.formFillEnabled || false,
+            };
 
         session.user = {
           ...session.user,
-          googleApiEnabled: isAdmin ? true : dbUser.googleApiEnabled || false,
-          openAiApiEnabled: isAdmin ? true : dbUser.openAiApiEnabled || false,
-          notesEnabled: isAdmin ? true : dbUser.notesEnabled || false,
-          secureLoginEnabled: isAdmin ? true : dbUser.secureLoginEnabled || false, // Vault
-          financeEnabled: isAdmin ? true : dbUser.financeEnabled || false,
-          invoiceEnabled: isAdmin ? true : dbUser.invoiceEnabled || false,
-          formFillEnabled: isAdmin ? true : dbUser.formFillEnabled || false,
+          ...permissions,
           id: user.id,
+          isTrusted,
         };
       }
 
