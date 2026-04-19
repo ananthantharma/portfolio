@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, simple-import-sort/imports */
-import React, {useMemo, useState, useCallback, useEffect} from 'react';
+import React, {useMemo, useState, useCallback, useEffect, useRef} from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -33,6 +33,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   StarIcon,
+  ViewColumnsIcon,
 } from '@heroicons/react/24/outline';
 import {INotePage} from '@/models/NotePage';
 import {CheckCircleIcon as CheckCircleSolid, StarIcon as StarIconSolid} from '@heroicons/react/24/solid';
@@ -232,6 +233,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   }, []);
 
   const [colWidths, setColWidths] = useState<Record<string, number>>({});
+  const colsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -243,6 +245,25 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
       console.error('Error loading col widths', e);
     }
   }, []);
+
+  const handleFitColumns = useCallback(() => {
+    const container = colsContainerRef.current;
+    if (!container) return;
+    const visibleCols = COLUMNS.filter(c => !minimizedCols[c.id]);
+    const count = visibleCols.length;
+    if (count === 0) return;
+    // gap-3 = 12px per gap, (count - 1) gaps total
+    const totalGap = (count - 1) * 12;
+    const colW = Math.floor((container.offsetWidth - totalGap) / count);
+    const next: Record<string, number> = {};
+    visibleCols.forEach(c => {
+      next[c.id] = colW;
+    });
+    setColWidths(next);
+    try {
+      localStorage.setItem('todo_col_widths', JSON.stringify(next));
+    } catch {}
+  }, [minimizedCols]);
 
   const handleWidthChange = useCallback((colId: string, w: number) => {
     setColWidths(prev => {
@@ -343,13 +364,22 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
             onChange={e => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-5 text-xs text-gray-400 ml-auto">
-          {COLUMNS.map(col => (
-            <div key={col.id} className="flex items-center gap-1.5">
-              {col.icon}
-              <span className="font-medium">{columnCounts[col.id]}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-5 text-xs text-gray-400">
+            {COLUMNS.map(col => (
+              <div key={col.id} className="flex items-center gap-1.5">
+                {col.icon}
+                <span className="font-medium">{columnCounts[col.id]}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={handleFitColumns}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white/60 border border-white/60 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/60 hover:border-indigo-200 transition-all backdrop-blur-sm shadow-sm"
+            title="Fit all columns evenly to window width">
+            <ViewColumnsIcon className="h-3.5 w-3.5" />
+            Fit
+          </button>
         </div>
       </div>
 
@@ -359,7 +389,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         measuring={{droppable: {strategy: MeasuringStrategy.Always}}}>
-        <div className="flex gap-3 flex-1 overflow-x-auto pb-2 min-h-0">
+        <div ref={colsContainerRef} className="flex gap-3 flex-1 overflow-x-auto pb-2 min-h-0">
           {COLUMNS.map(col => (
             <Column
               key={col.id}
@@ -949,120 +979,114 @@ const TaskCard = ({
             )}
           </div>
 
-          {/* Mac-style priority dots — red=High, yellow=Medium, green=Low */}
-          {!isOverlay && onPriorityChange && (
-            <div
-              className="flex items-center gap-[5px] flex-shrink-0 mt-0.5"
-              onPointerDown={e => e.stopPropagation()}
-              title="Set priority">
-              {(
-                [
-                  {p: 'High', active: 'bg-red-400 shadow-[0_0_6px_1px_rgba(248,113,113,0.7)]', inactive: 'bg-red-200/50 hover:bg-red-300/70', ring: 'ring-red-300'},
-                  {p: 'Medium', active: 'bg-amber-400 shadow-[0_0_6px_1px_rgba(251,191,36,0.7)]', inactive: 'bg-amber-200/50 hover:bg-amber-300/70', ring: 'ring-amber-300'},
-                  {p: 'Low', active: 'bg-emerald-400 shadow-[0_0_6px_1px_rgba(52,211,153,0.7)]', inactive: 'bg-emerald-200/50 hover:bg-emerald-300/70', ring: 'ring-emerald-300'},
-                ] as const
-              ).map(({p, active, inactive, ring}) => {
-                const isActive = todo.priority === p;
-                return (
+          {/* Right column: minimize · priority dots · actions */}
+          {!isOverlay && (
+            <div className="flex flex-col items-end gap-1.5 flex-shrink-0" onPointerDown={e => e.stopPropagation()}>
+              {/* Minimize toggle */}
+              {onToggleMinimize && (
+                <button
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleMinimize();
+                  }}
+                  className="p-1 text-gray-400 hover:text-gray-700 rounded-md transition-colors self-end"
+                  title={isMinimized ? 'Expand' : 'Collapse'}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`h-4 w-4 transition-transform duration-200 ${isMinimized ? 'rotate-180' : ''}`}>
+                    <path
+                      fillRule="evenodd"
+                      d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
+
+              {/* Mac-style priority dots — red=High, amber=Medium, green=Low */}
+              {onPriorityChange && (
+                <div className="flex items-center gap-[5px]">
+                  {(
+                    [
+                      {p: 'High', active: 'bg-red-400 shadow-[0_0_6px_1px_rgba(248,113,113,0.7)]', inactive: 'bg-red-200/50 hover:bg-red-300/70', ring: 'ring-red-300'},
+                      {p: 'Medium', active: 'bg-amber-400 shadow-[0_0_6px_1px_rgba(251,191,36,0.7)]', inactive: 'bg-amber-200/50 hover:bg-amber-300/70', ring: 'ring-amber-300'},
+                      {p: 'Low', active: 'bg-emerald-400 shadow-[0_0_6px_1px_rgba(52,211,153,0.7)]', inactive: 'bg-emerald-200/50 hover:bg-emerald-300/70', ring: 'ring-emerald-300'},
+                    ] as const
+                  ).map(({p, active, inactive, ring}) => {
+                    const isActive = todo.priority === p;
+                    return (
+                      <button
+                        key={p}
+                        onClick={e => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          onPriorityChange(isActive ? 'None' : p);
+                        }}
+                        className={`h-[11px] w-[11px] rounded-full transition-all duration-150 ${
+                          isActive ? `${active} ring-1 ${ring} ring-offset-[1.5px]` : inactive
+                        }`}
+                        title={isActive ? `Remove ${p} priority` : `Set ${p} priority`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Edit · Delete · Star */}
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                {onEdit && (
                   <button
-                    key={p}
                     onClick={e => {
                       e.stopPropagation();
                       e.preventDefault();
-                      onPriorityChange(isActive ? 'None' : p);
+                      onEdit();
                     }}
-                    className={`h-[11px] w-[11px] rounded-full transition-all duration-150 ${
-                      isActive ? `${active} ring-1 ${ring} ring-offset-[1.5px]` : inactive
+                    className="p-1 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100/80 transition-colors"
+                    title="Edit">
+                    <PencilIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onDelete();
+                    }}
+                    className="p-1 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50/80 transition-colors"
+                    title="Delete">
+                    <TrashIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                {onToggleStar && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onToggleStar();
+                    }}
+                    className={`p-1 rounded-md transition-all duration-200 ${
+                      isStarred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     }`}
-                    title={isActive ? `Remove ${p} priority` : `Set ${p} priority`}
-                  />
-                );
-              })}
+                    title={isStarred ? 'Unstar' : 'Star this task'}>
+                    {isStarred ? (
+                      <StarIconSolid
+                        className="h-3.5 w-3.5 transition-all duration-300"
+                        style={{
+                          color: '#ff1744',
+                          filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
+                        }}
+                      />
+                    ) : (
+                      <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-          )}
-
-          {/* Hover actions */}
-          {!isOverlay && (
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              {onEdit && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onEdit();
-                  }}
-                  onPointerDown={e => e.stopPropagation()}
-                  className="p-1 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
-                  title="Edit">
-                  <PencilIcon className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onDelete();
-                  }}
-                  onPointerDown={e => e.stopPropagation()}
-                  className="p-1 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors"
-                  title="Delete">
-                  <TrashIcon className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* ★ Star — always visible when starred, hover-only when unstarred */}
-          {onToggleStar && !isOverlay && (
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-                onToggleStar();
-              }}
-              onPointerDown={e => e.stopPropagation()}
-              className={`p-1 rounded-md transition-all duration-200 flex-shrink-0 ${
-                isStarred ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-              }`}
-              title={isStarred ? 'Unstar' : 'Star this task'}>
-              {isStarred ? (
-                <StarIconSolid
-                  className="h-3.5 w-3.5 transition-all duration-300"
-                  style={{
-                    color: '#ff1744',
-                    filter: 'drop-shadow(0 0 6px #ff1744) drop-shadow(0 0 14px #ff174488)',
-                  }}
-                />
-              ) : (
-                <StarIcon className="h-3.5 w-3.5 text-gray-300/40 hover:text-gray-400 transition-colors duration-200" />
-              )}
-            </button>
-          )}
-
-          {/* Minimize toggle */}
-          {onToggleMinimize && !isOverlay && (
-            <button
-              onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleMinimize();
-              }}
-              onPointerDown={e => e.stopPropagation()}
-              className="p-1 text-gray-400 hover:text-gray-700 rounded-md transition-colors"
-              title={isMinimized ? 'Expand' : 'Collapse'}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className={`h-4 w-4 transition-transform duration-200 ${isMinimized ? 'rotate-180' : ''}`}>
-                <path
-                  fillRule="evenodd"
-                  d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
           )}
         </div>
 
