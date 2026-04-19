@@ -309,42 +309,9 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
     setMounted(true);
   }, []);
 
-  // Brandfetch State
-  const [brandSearchTerm, setBrandSearchTerm] = useState(selectedImage || '');
-  const [previewImage, setPreviewImage] = useState<string | null>(selectedImage || null);
+  // Brand Logo State
+  const [brandDomain, setBrandDomain] = useState(selectedImage || '');
   const [previewError, setPreviewError] = useState(false);
-  const [isLoadingBrands, setIsLoadingBrands] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [brandResults, setBrandResults] = useState<any[]>([]);
-  const [showBrandResults, setShowBrandResults] = useState(false);
-
-  // Debounce search
-  useEffect(() => {
-    const searchBrands = async () => {
-      if (!brandSearchTerm || brandSearchTerm.includes('.') || brandSearchTerm.length < 2) {
-        setBrandResults([]);
-        setShowBrandResults(false);
-        return;
-      }
-
-      setIsLoadingBrands(true);
-      try {
-        const res = await fetch(`/api/notes/brandfetch/search?q=${encodeURIComponent(brandSearchTerm)}`);
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          setBrandResults(data.data);
-          setShowBrandResults(true);
-        }
-      } catch (error) {
-        console.error('Brand search failed', error);
-      } finally {
-        setIsLoadingBrands(false);
-      }
-    };
-
-    const timeoutId = setTimeout(searchBrands, 500);
-    return () => clearTimeout(timeoutId);
-  }, [brandSearchTerm]);
 
   const filteredIcons = useMemo(() => {
     const all = Object.keys(ICON_options).filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -396,30 +363,9 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
     }
   }, [isOpen]);
 
-  const handleBrandInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setBrandSearchTerm(value);
-    setPreviewError(false);
-
-    // If user types a domain directly
-    if (value.includes('.')) {
-      setPreviewImage(value);
-      setShowBrandResults(false);
-    } else {
-      setPreviewImage(null);
-    }
-  };
-
-  const handleSelectBrandResult = (domain: string, name: string) => {
-    setBrandSearchTerm(name);
-    setPreviewImage(domain);
-    setShowBrandResults(false);
-    setPreviewError(false);
-  };
-
   const handleSelectBrand = () => {
-    if (previewImage && !previewError) {
-      onSelectIcon('Globe', previewImage); // 'Globe' as fallback icon
+    if (brandDomain && !previewError) {
+      onSelectIcon('Globe', brandDomain);
       setIsOpen(false);
     }
   };
@@ -438,7 +384,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
             onError={e => {
               e.currentTarget.style.display = 'none';
             }}
-            src={`/api/notes/brandfetch?domain=${selectedImage}`}
+            src={`https://logo.clearbit.com/${selectedImage}`}
           />
         ) : (
           <SelectedIconComponent className="h-4 w-4" />
@@ -517,56 +463,30 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
                 </div>
               </>
             ) : (
-              <div className="flex flex-col gap-3 relative">
-                <div className="text-xs text-gray-500">Search for a company or enter a domain.</div>
-                <div className="relative">
-                  <input
-                    autoFocus
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder-gray-400"
-                    onChange={handleBrandInputChange}
-                    placeholder="e.g. Tesla or google.com"
-                    type="text"
-                    value={brandSearchTerm}
-                  />
-                  {isLoadingBrands && (
-                    <div className="absolute right-3 top-2.5">
-                      <Loader className="h-4 w-4 animate-spin text-gray-400" />
-                    </div>
-                  )}
-                </div>
+              <div className="flex flex-col gap-3">
+                <div className="text-xs text-gray-500">Enter a domain to use its logo.</div>
+                <input
+                  autoFocus
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder-gray-400"
+                  onChange={e => { setBrandDomain(e.target.value.trim()); setPreviewError(false); }}
+                  placeholder="e.g. google.com"
+                  type="text"
+                  value={brandDomain}
+                />
 
-                {/* Search Results Dropdown */}
-                {showBrandResults && brandResults.length > 0 && (
-                  <div className="absolute top-[60px] left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
-                    {brandResults.map(result => (
-                      <button
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
-                        key={result.brandId}
-                        onClick={() => handleSelectBrandResult(result.domain, result.name)}
-                        type="button">
-                        <div className="flex items-center gap-2">
-                          {result.icon && <img alt="" className="w-5 h-5 object-contain" src={result.icon} />}
-                          <span className="font-medium text-gray-900">{result.name}</span>
-                        </div>
-                        <span className="text-xs text-gray-400">{result.domain}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {previewImage && (
+                {brandDomain && (
                   <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center border border-gray-100 min-h-[80px]">
                     {!previewError ? (
                       <img
                         alt="Preview"
                         className="h-10 w-10 object-contain"
                         onError={() => setPreviewError(true)}
-                        src={`/api/notes/brandfetch?domain=${previewImage}`}
+                        src={`https://logo.clearbit.com/${brandDomain}`}
                       />
                     ) : (
                       <div className="text-xs text-red-500 flex flex-col items-center gap-1">
                         <AlertCircle className="h-5 w-5" />
-                        <span>Failed to load logo</span>
+                        <span>Logo not found</span>
                       </div>
                     )}
                   </div>
@@ -574,11 +494,11 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
 
                 <button
                   className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
-                    previewImage && !previewError
+                    brandDomain && !previewError
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
-                  disabled={!previewImage || previewError}
+                  disabled={!brandDomain || previewError}
                   onClick={handleSelectBrand}>
                   Use Logo
                 </button>

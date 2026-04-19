@@ -93,7 +93,7 @@ const SectionItem = React.memo<{
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
-            src={`/api/notes/brandfetch?domain=${section.image}`}
+            src={`https://logo.clearbit.com/${section.image}`}
           />
         ) : null}
         <SectionIcon
@@ -124,7 +124,7 @@ const SectionItem = React.memo<{
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
-              src={`/api/notes/brandfetch?domain=${section.image}`}
+              src={`https://logo.clearbit.com/${section.image}`}
             />
           ) : null}
           <SectionIcon

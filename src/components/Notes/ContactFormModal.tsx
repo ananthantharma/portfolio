@@ -189,7 +189,7 @@ const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
                         className={`h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${avatarColor}`}>
                         {image ? (
                           <img
-                            src={`/api/notes/brandfetch?domain=${image}`}
+                            src={`https://logo.clearbit.com/${image}`}
                             alt={name}
                             className="h-14 w-14 rounded-full object-contain bg-white border border-gray-100"
                             onError={e => {

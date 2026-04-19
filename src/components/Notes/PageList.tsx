@@ -132,7 +132,7 @@ const PageItem = React.memo<PageItemProps>(
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
-              src={`/api/notes/brandfetch?domain=${page.image}`}
+              src={`https://logo.clearbit.com/${page.image}`}
             />
           ) : null}
           <PageIcon
@@ -182,7 +182,7 @@ const PageItem = React.memo<PageItemProps>(
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove('hidden');
                 }}
-                src={`/api/notes/brandfetch?domain=${page.image}`}
+                src={`https://logo.clearbit.com/${page.image}`}
               />
             ) : null}
             <PageIcon

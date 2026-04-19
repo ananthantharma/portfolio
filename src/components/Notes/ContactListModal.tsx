@@ -58,7 +58,7 @@ const ContactAvatar = React.memo(({name, image}: {name: string; image?: string})
     <div className="relative flex-shrink-0">
       {image ? (
         <img
-          src={`/api/notes/brandfetch?domain=${image}`}
+          src={`https://logo.clearbit.com/${image}`}
           alt={name}
           className="h-11 w-11 rounded-full object-contain bg-white border border-gray-100"
           onError={e => {

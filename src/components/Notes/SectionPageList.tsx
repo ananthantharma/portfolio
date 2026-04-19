@@ -171,7 +171,7 @@ const PageRow = React.memo<PageRowProps>(
               e.currentTarget.style.display = 'none';
               (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
             }}
-            src={`/api/notes/brandfetch?domain=${page.image}`}
+            src={`https://logo.clearbit.com/${page.image}`}
           />
         ) : null}
         <PageIcon
@@ -513,7 +513,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 onClick={() => onSelectSection(sec._id as string)}
                 title={sec.name}>
                 {sec.image ? (
-                  <img alt={sec.name} className="h-5 w-5 object-contain" src={`/api/notes/brandfetch?domain=${sec.image}`} />
+                  <img alt={sec.name} className="h-5 w-5 object-contain" src={`https://logo.clearbit.com/${sec.image}`} />
                 ) : (
                   <SectionIcon
                     className={`h-5 w-5 ${isSelected ? 'text-violet-600' : 'text-slate-600'}`}
@@ -689,7 +689,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   : <ChevronRightIcon className="h-3 w-3" />}
                               </span>
                               {section.image ? (
-                                <img alt={section.name} className="h-4 w-4 object-contain flex-shrink-0" src={`/api/notes/brandfetch?domain=${section.image}`} />
+                                <img alt={section.name} className="h-4 w-4 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
                               ) : (
                                 <SectionIcon
                                   className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-400'}`}

@@ -94,7 +94,7 @@ const CategoryItem = React.memo<{
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
-            src={`/api/notes/brandfetch?domain=${category.image}`}
+            src={`https://logo.clearbit.com/${category.image}`}
           />
         ) : null}
         <CategoryIcon
@@ -125,7 +125,7 @@ const CategoryItem = React.memo<{
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
               }}
-              src={`/api/notes/brandfetch?domain=${category.image}`}
+              src={`https://logo.clearbit.com/${category.image}`}
             />
           ) : null}
           <CategoryIcon
