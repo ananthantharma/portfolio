@@ -15,7 +15,6 @@ import {
   StarIcon,
   TrashIcon,
   XMarkIcon,
-  SparklesIcon,
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
 } from '@heroicons/react/24/outline';
@@ -188,9 +187,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
     const [viewMode, setViewMode] = useState<'list' | 'board'>(isStandalone ? 'list' : 'board');
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [prefilledData, setPrefilledData] = useState<Partial<TaskFormData> | undefined>(undefined);
-
-    // AI Priority State
-    const [isAIPrioritizing, setIsAIPrioritizing] = useState(false);
 
     // Star feature — persisted via localStorage
     const [starredIds, setStarredIds] = useState<Set<string>>(() => {
@@ -537,51 +533,17 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
       }
     };
 
-    // AI Priority Suggest
-    const handleAIPrioritySuggest = async () => {
-      const unprioritized = todos.filter(t => !t.isCompleted && (!t.priority || t.priority === 'None'));
-      if (unprioritized.length === 0) return;
-      setIsAIPrioritizing(true);
+    const handlePriorityChange = async (id: string, priority: string) => {
+      setTodos(prev => prev.map(t => (t._id === id ? ({...t, priority} as any) : t)));
       try {
-        const taskList = unprioritized
-          .map(
-            t => `- "${t.title}" (due: ${new Date(t.dueDate).toLocaleDateString()}, category: ${t.category || 'None'})`,
-          )
-          .join('\n');
-
-        const res = await fetch('/api/gemini/generate', {
-          method: 'POST',
+        await fetch(`/api/todos/${id}`, {
+          method: 'PUT',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            prompt: `You are a task prioritization assistant. Analyze these tasks and assign priorities (High, Medium, or Low) based on urgency, due date proximity, and category importance. Return ONLY a JSON array like [{"title":"exact task title","priority":"High|Medium|Low"}].\n\nTasks:\n${taskList}`,
-          }),
+          body: JSON.stringify({priority}),
         });
-        const data = await res.json();
-        const text = data.text || data.result || '';
-
-        // Extract JSON from response
-        const jsonMatch = text.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          const suggestions = JSON.parse(jsonMatch[0]);
-          // Apply suggestions
-          for (const suggestion of suggestions) {
-            const matchingTodo = unprioritized.find(
-              t => t.title.toLowerCase().trim() === suggestion.title?.toLowerCase().trim(),
-            );
-            if (matchingTodo && ['High', 'Medium', 'Low'].includes(suggestion.priority)) {
-              await fetch(`/api/todos/${matchingTodo._id}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({priority: suggestion.priority}),
-              });
-            }
-          }
-          fetchTodos();
-        }
-      } catch (err) {
-        console.error('AI Priority suggestion failed:', err);
-      } finally {
-        setIsAIPrioritizing(false);
+      } catch (error) {
+        console.error('Failed to update priority', error);
+        fetchTodos();
       }
     };
 
@@ -616,9 +578,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
         return sortDirection === 'asc' ? comparison : -comparison;
       });
     }, [filteredTodos, sortField, sortDirection]);
-
-    // Stats
-    const unprioritizedCount = todos.filter(t => !t.isCompleted && (!t.priority || t.priority === 'None')).length;
 
     const getCategoryStyle = (categoryName: string | undefined) => {
       if (!categoryName) return 'bg-gray-50 text-gray-500';
@@ -728,18 +687,6 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                   <Squares2X2Icon className="h-4 w-4" />
                 </button>
               </div>
-
-              {/* AI Priority */}
-              {unprioritizedCount > 0 && !isStandalone && (
-                <button
-                  onClick={handleAIPrioritySuggest}
-                  disabled={isAIPrioritizing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-lg transition-all disabled:opacity-50"
-                  title={`Auto-prioritize ${unprioritizedCount} tasks`}>
-                  <SparklesIcon className={`h-3.5 w-3.5 ${isAIPrioritizing ? 'animate-spin' : ''}`} />
-                  {isAIPrioritizing ? 'Analyzing…' : `AI Prioritize`}
-                </button>
-              )}
 
               {/* Email */}
               <button
@@ -862,6 +809,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = React.memo(
                 onReorder={handleReorder}
                 onClose={onClose}
                 onCategoryChange={handleCategoryChange}
+                onPriorityChange={handlePriorityChange}
               />
             </div>
           ) : (

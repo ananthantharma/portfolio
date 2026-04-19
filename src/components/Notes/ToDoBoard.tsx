@@ -28,7 +28,6 @@ import {
   ClockIcon,
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
-  PauseCircleIcon,
   PlusIcon,
   ChevronRightIcon,
   ChevronUpIcon,
@@ -52,6 +51,7 @@ interface ToDoBoardProps {
   onReorder?: (activeId: string, overId: string) => void;
   onClose: () => void;
   onCategoryChange?: (id: string, category: string) => void;
+  onPriorityChange?: (id: string, priority: string) => void;
 }
 
 const TASK_CATEGORIES = [
@@ -125,30 +125,6 @@ const COLUMNS: {
     emptyIcon: <ExclamationTriangleIcon className="h-6 w-6 text-rose-200" />,
     emptyText: 'Needs review',
   },
-  {
-    id: 'parked',
-    title: 'Parked',
-    icon: <div className="h-2.5 w-2.5 rounded-sm bg-indigo-500" />,
-    dotColor: 'bg-indigo-500',
-    headerGradient: 'from-indigo-50 to-indigo-100/30',
-    headerText: 'text-indigo-700',
-    borderColor: 'border-indigo-200',
-    dropHighlight: 'ring-indigo-300 bg-indigo-50/30',
-    emptyIcon: <PauseCircleIcon className="h-6 w-6 text-indigo-200" />,
-    emptyText: 'On hold for now',
-  },
-  {
-    id: 'done',
-    title: 'Done',
-    icon: <div className="h-2.5 w-2.5 rounded-sm bg-emerald-400" />,
-    dotColor: 'bg-emerald-400',
-    headerGradient: 'from-emerald-50 to-emerald-100/30',
-    headerText: 'text-emerald-700',
-    borderColor: 'border-emerald-200',
-    dropHighlight: 'ring-emerald-300 bg-emerald-50/30',
-    emptyIcon: <CheckCircleSolid className="h-6 w-6 text-emerald-200" />,
-    emptyText: 'Completed tasks appear here',
-  },
 ];
 
 const WIP_LIMIT = 5;
@@ -203,6 +179,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
   onReorder,
   onClose,
   onCategoryChange,
+  onPriorityChange,
 }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -405,6 +382,7 @@ const ToDoBoard: React.FC<ToDoBoardProps> = ({
               starredIds={starredIds}
               onToggleStar={toggleStar}
               onCategoryChange={onCategoryChange}
+              onPriorityChange={onPriorityChange}
             />
           ))}
         </div>
@@ -442,6 +420,7 @@ const Column = ({
   starredIds,
   onToggleStar,
   onCategoryChange,
+  onPriorityChange,
 }: {
   col: (typeof COLUMNS)[0];
   todos: IToDo[];
@@ -462,6 +441,7 @@ const Column = ({
   starredIds: Set<string>;
   onToggleStar: (id: string) => void;
   onCategoryChange?: (id: string, category: string) => void;
+  onPriorityChange?: (id: string, priority: string) => void;
 }) => {
   const {setNodeRef, isOver} = useDroppable({id: col.id});
   const isOverWipLimit = col.id === 'in-progress' && todos.length > WIP_LIMIT;
@@ -469,9 +449,9 @@ const Column = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col relative rounded-2xl border transition-all duration-300 ${
+      className={`flex flex-col relative rounded-2xl border transition-all duration-300 backdrop-blur-md ${
         isColumnMinimized ? 'min-w-[60px] max-w-[60px]' : colWidth ? '' : 'flex-1 min-w-[240px] max-w-[320px]'
-      } ${isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `${col.borderColor} bg-white/40`}`}
+      } ${isOver ? `${col.borderColor} ring-2 ${col.dropHighlight}` : `border-white/40 bg-white/20 shadow-lg`}`}
       style={{
         width: !isColumnMinimized && colWidth ? `${colWidth}px` : undefined,
         flex: !isColumnMinimized && colWidth ? 'none' : undefined,
@@ -505,7 +485,7 @@ const Column = ({
       <div
         className={`px-3 py-2.5 rounded-t-2xl flex ${
           isColumnMinimized ? 'flex-col gap-2' : 'justify-between'
-        } items-center bg-gradient-to-b ${col.headerGradient} border-b ${col.borderColor}`}>
+        } items-center bg-white/30 backdrop-blur-sm border-b border-white/40`}>
         <div className={`flex items-center gap-2 ${isColumnMinimized ? 'flex-col' : ''}`}>
           <div className="flex items-center gap-1.5 flex-col">
             {col.icon}
@@ -582,6 +562,7 @@ const Column = ({
                 isStarred={starredIds.has(todo._id)}
                 onToggleStar={() => onToggleStar(todo._id)}
                 onCategoryChange={onCategoryChange ? (cat: string) => onCategoryChange(todo._id, cat) : undefined}
+              onPriorityChange={onPriorityChange ? (p: string) => onPriorityChange(todo._id, p) : undefined}
               />
             ))}
           </SortableContext>
@@ -610,6 +591,7 @@ const DraggableTask = ({
   isStarred,
   onToggleStar,
   onCategoryChange,
+  onPriorityChange,
 }: {
   todo: IToDo;
   onEdit: (t: IToDo) => void;
@@ -625,6 +607,7 @@ const DraggableTask = ({
   isStarred: boolean;
   onToggleStar: () => void;
   onCategoryChange?: (category: string) => void;
+  onPriorityChange?: (priority: string) => void;
 }) => {
   const {attributes, listeners, setNodeRef, transform, transition} = useSortable({
     id: todo._id,
@@ -660,6 +643,7 @@ const DraggableTask = ({
         isStarred={isStarred}
         onToggleStar={onToggleStar}
         onCategoryChange={onCategoryChange}
+        onPriorityChange={onPriorityChange}
       />
     </div>
   );
@@ -855,6 +839,7 @@ const TaskCard = ({
   isStarred,
   onToggleStar,
   onCategoryChange,
+  onPriorityChange,
 }: {
   todo: IToDo;
   isOverlay?: boolean;
@@ -870,6 +855,7 @@ const TaskCard = ({
   isStarred?: boolean;
   onToggleStar?: () => void;
   onCategoryChange?: (category: string) => void;
+  onPriorityChange?: (priority: string) => void;
 }) => {
   const isDone = todo.status === 'done' || todo.isCompleted;
   const isMinimized = todo.isMinimized ?? true;
@@ -907,16 +893,16 @@ const TaskCard = ({
       }}
       className={`relative group rounded-xl border transition-all duration-150 overflow-hidden ${
         todo.neonColor && neonColors[todo.neonColor]
-          ? `isolate ring-0 border-transparent bg-white shadow-sm hover:shadow-md before:absolute before:-z-20 before:-inset-[100%] before:animate-[spin_3s_linear_infinite] ${
+          ? `isolate ring-0 border-transparent bg-white/80 backdrop-blur-md shadow-sm hover:shadow-md before:absolute before:-z-20 before:-inset-[100%] before:animate-[spin_3s_linear_infinite] ${
               neonColors[todo.neonColor]
-            } before:content-[""] after:absolute after:inset-[3.5px] after:-z-10 after:bg-white after:rounded-[10px] after:content-[""]`
+            } before:content-[""] after:absolute after:inset-[3.5px] after:-z-10 after:bg-white/80 after:backdrop-blur-md after:rounded-[10px] after:content-[""]`
           : isOverlay
-          ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white'
+          ? 'shadow-2xl ring-2 ring-gray-900/10 rotate-[1.5deg] scale-[1.03] bg-white/90 backdrop-blur-md'
           : isDone
-          ? 'bg-gray-50/60 border-gray-100 opacity-55'
+          ? 'bg-white/40 backdrop-blur-sm border-white/30 opacity-55'
           : dateInfo?.isOverdue
-          ? 'bg-white border-red-200 hover:border-red-300 hover:shadow-md'
-          : 'bg-white border-gray-150 hover:border-gray-300 hover:shadow-md'
+          ? 'bg-white/75 backdrop-blur-md border-red-200/60 hover:border-red-300/80 hover:shadow-md hover:shadow-red-100/30'
+          : 'bg-white/75 backdrop-blur-md border-white/50 hover:border-white/70 hover:shadow-md hover:shadow-gray-200/40'
       } ${!isOverlay ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       {/* Priority top accent line */}
       <div className={`h-[3px] w-full ${priorityAccent[todo.priority] || priorityAccent.None}`} />
@@ -962,6 +948,38 @@ const TaskCard = ({
               </div>
             )}
           </div>
+
+          {/* Mac-style priority dots — red=High, yellow=Medium, green=Low */}
+          {!isOverlay && onPriorityChange && (
+            <div
+              className="flex items-center gap-[5px] flex-shrink-0 mt-0.5"
+              onPointerDown={e => e.stopPropagation()}
+              title="Set priority">
+              {(
+                [
+                  {p: 'High', active: 'bg-red-400 shadow-[0_0_6px_1px_rgba(248,113,113,0.7)]', inactive: 'bg-red-200/50 hover:bg-red-300/70', ring: 'ring-red-300'},
+                  {p: 'Medium', active: 'bg-amber-400 shadow-[0_0_6px_1px_rgba(251,191,36,0.7)]', inactive: 'bg-amber-200/50 hover:bg-amber-300/70', ring: 'ring-amber-300'},
+                  {p: 'Low', active: 'bg-emerald-400 shadow-[0_0_6px_1px_rgba(52,211,153,0.7)]', inactive: 'bg-emerald-200/50 hover:bg-emerald-300/70', ring: 'ring-emerald-300'},
+                ] as const
+              ).map(({p, active, inactive, ring}) => {
+                const isActive = todo.priority === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onPriorityChange(isActive ? 'None' : p);
+                    }}
+                    className={`h-[11px] w-[11px] rounded-full transition-all duration-150 ${
+                      isActive ? `${active} ring-1 ${ring} ring-offset-[1.5px]` : inactive
+                    }`}
+                    title={isActive ? `Remove ${p} priority` : `Set ${p} priority`}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {/* Hover actions */}
           {!isOverlay && (
