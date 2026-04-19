@@ -451,8 +451,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
                         onClick={() => {
                           onSelectIcon(iconName, null); // Clear image
                           setIsOpen(false);
-                          setPreviewImage(null);
-                          setBrandSearchTerm('');
+                          setBrandDomain('');
                         }}
                         title={iconName}
                         type="button">
