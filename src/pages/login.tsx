@@ -26,11 +26,15 @@ export default function Login() {
         email: email.trim(),
         password,
       });
-      if (result?.error) {
-        setError('Invalid email or password.');
+      if (!result?.ok || result?.error) {
+        setError('Invalid email or password. Please check your credentials and try again.');
       } else {
-        router.push('/dashboard');
+        // Force a full page navigation so the new JWT session cookie is
+        // picked up cleanly by the dashboard.
+        window.location.href = '/dashboard';
       }
+    } catch {
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
