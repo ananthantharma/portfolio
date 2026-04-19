@@ -209,9 +209,9 @@ export const authOptions: AuthOptions = {
 
       // Attach tokens for Google API calls
       if (token.provider === 'google') {
-        (session as any).accessToken = token.accessToken;
-        (session as any).refreshToken = token.refreshToken;
-        if (token.error) (session as any).error = token.error;
+        session.accessToken = token.accessToken;
+        session.refreshToken = token.refreshToken;
+        if (token.error) session.error = token.error;
       }
 
       // Fetch current permissions from DB (cheap single query)
