@@ -32,6 +32,7 @@ import {
   ChevronDoubleRightIcon,
   ChevronDoubleLeftIcon,
   UserIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -65,6 +66,7 @@ import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
 import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
 import Humanizer from './Humanizer';
+import TruthTeller from './TruthTeller';
 
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
@@ -847,6 +849,11 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenHumanizer = useCallback(() => setIsHumanizerOpen(true), []);
   const handleCloseHumanizer = useCallback(() => setIsHumanizerOpen(false), []);
 
+  // Truth Teller Modal
+  const [isTruthTellerOpen, setIsTruthTellerOpen] = useState(false);
+  const handleOpenTruthTeller = useCallback(() => setIsTruthTellerOpen(true), []);
+  const handleCloseTruthTeller = useCallback(() => setIsTruthTellerOpen(false), []);
+
   const {data: session} = useSession();
 
   const userName = useMemo(() => {
@@ -1197,6 +1204,12 @@ const NotesLayout: React.FC = React.memo(() => {
                     label: 'Humanizer',
                     action: handleOpenHumanizer,
                     color: 'text-teal-500 hover:bg-teal-50 hover:text-teal-600',
+                  },
+                  {
+                    icon: BoltIcon,
+                    label: 'Truth Teller',
+                    action: handleOpenTruthTeller,
+                    color: 'text-rose-500 hover:bg-rose-50 hover:text-rose-600',
                   },
                   {
                     icon: BriefcaseIcon,
@@ -1769,6 +1782,7 @@ const NotesLayout: React.FC = React.memo(() => {
         {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
         {isRedlineOpen && <ContractRedlineAnalyzer onClose={handleCloseRedline} />}
         {isHumanizerOpen && <Humanizer onClose={handleCloseHumanizer} />}
+        {isTruthTellerOpen && <TruthTeller onClose={handleCloseTruthTeller} />}
 
         {selectedPageToMove && (
           <MovePageModal
