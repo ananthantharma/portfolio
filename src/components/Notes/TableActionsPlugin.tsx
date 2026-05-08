@@ -149,12 +149,38 @@ interface ToolbarPos {
 
 function TableFloatingToolbar({
   pos,
+  tableEl,
   onClose,
 }: {
   pos: ToolbarPos;
+  tableEl: HTMLTableElement | null;
   onClose: () => void;
 }) {
   const [editor] = useLexicalComposerContext();
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyTable = async () => {
+    if (!tableEl) return;
+    const html = tableEl.outerHTML;
+    const text = tableEl.innerText;
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], {type: 'text/html'}),
+          'text/plain': new Blob([text], {type: 'text/plain'}),
+        }),
+      ]);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   const btn = (label: string, title: string, onClick: () => void) => (
     <button
@@ -182,6 +208,13 @@ function TableFloatingToolbar({
         zIndex: 9999,
       }}
       className="flex items-center gap-0.5 px-1 py-1 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 select-none">
+      <button
+        title="Copy entire table"
+        onMouseDown={(e) => { e.preventDefault(); handleCopyTable(); }}
+        className="px-2 py-1 text-[11px] font-medium rounded whitespace-nowrap transition-colors text-blue-600 hover:bg-blue-50">
+        {copied ? '✓ Copied' : 'Copy'}
+      </button>
+      <div className="w-px h-4 bg-slate-200" />
       {btn('+Row ↑', 'Insert row above', () => dispatch(() => $insertTableRowAtSelection(false)))}
       {btn('+Row ↓', 'Insert row below', () => dispatch(() => $insertTableRowAtSelection(true)))}
       <div className="w-px h-4 bg-slate-200" />
@@ -196,9 +229,14 @@ function TableFloatingToolbar({
 
 // ─── Main Plugin ──────────────────────────────────────────────────────────────
 
+interface ToolbarData {
+  pos: ToolbarPos;
+  tableEl: HTMLTableElement;
+}
+
 export function TableActionsPlugin(): React.ReactPortal | null {
   const [editor] = useLexicalComposerContext();
-  const [toolbarPos, setToolbarPos] = useState<ToolbarPos | null>(null);
+  const [toolbarData, setToolbarData] = useState<ToolbarData | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useColumnResizer(editor);
@@ -207,7 +245,7 @@ export function TableActionsPlugin(): React.ReactPortal | null {
     const root = editor.getRootElement();
     if (!root) return;
     const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) { setToolbarPos(null); return; }
+    if (!sel || sel.rangeCount === 0) { setToolbarData(null); return; }
     const range = sel.getRangeAt(0);
     let el = range.commonAncestorContainer as HTMLElement;
     if (el.nodeType === Node.TEXT_NODE) el = el.parentElement!;
@@ -223,14 +261,14 @@ export function TableActionsPlugin(): React.ReactPortal | null {
       cursor = cursor.parentElement;
     }
 
-    if (!cell) { setToolbarPos(null); return; }
+    if (!cell) { setToolbarData(null); return; }
 
     const table = cell.closest('table');
-    if (!table) { setToolbarPos(null); return; }
+    if (!table) { setToolbarData(null); return; }
     const rect = table.getBoundingClientRect();
-    setToolbarPos({
-      top: rect.top - 36,
-      left: rect.left,
+    setToolbarData({
+      pos: { top: rect.top - 36, left: rect.left },
+      tableEl: table as HTMLTableElement,
     });
   }, [editor]);
 
@@ -252,10 +290,14 @@ export function TableActionsPlugin(): React.ReactPortal | null {
     };
   }, [editor, updateToolbarPosition]);
 
-  if (!toolbarPos) return null;
+  if (!toolbarData) return null;
 
   return createPortal(
-    <TableFloatingToolbar pos={toolbarPos} onClose={() => setToolbarPos(null)} />,
+    <TableFloatingToolbar
+      pos={toolbarData.pos}
+      tableEl={toolbarData.tableEl}
+      onClose={() => setToolbarData(null)}
+    />,
     document.body,
   );
 }

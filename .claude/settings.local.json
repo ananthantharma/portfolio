@@ -8,7 +8,9 @@
       "Bash(node -e \"const t = require\\('@lexical/table'\\); console.log\\(Object.keys\\(t\\).join\\('\\\\n'\\)\\)\")",
       "Bash(node -e \"const t = require\\('lexical'\\); console.log\\(Object.keys\\(t\\).filter\\(k => k.includes\\('DOM'\\) || k.includes\\('Node'\\)\\).join\\('\\\\n'\\)\\)\")",
       "Bash(node -e \"const {TableCellNode} = require\\('@lexical/table'\\); const proto = TableCellNode.prototype; console.log\\(Object.getOwnPropertyNames\\(proto\\).join\\('\\\\n'\\)\\)\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(Get-ChildItem -Recurse -Path . -Include *note*,*page*,*table*,*editor* -File)",
+      "Bash(grep -E \"\\\\.tsx$\")"
     ]
   }
 }
