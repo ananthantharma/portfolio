@@ -5,6 +5,7 @@ import axios from 'axios';
 import {
   ChatBubbleLeftRightIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   ClipboardDocumentListIcon,
   FlagIcon,
   HomeIcon,
@@ -80,6 +81,7 @@ const NotesLayout: React.FC = React.memo(() => {
   // Sidebar visibility states
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
+  const [isRailExpanded, setIsRailExpanded] = useState(false);
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -130,6 +132,9 @@ const NotesLayout: React.FC = React.memo(() => {
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
+
+    const savedRailExpanded = localStorage.getItem('NOTES_RAIL_EXPANDED');
+    if (savedRailExpanded !== null) setIsRailExpanded(savedRailExpanded === 'true');
   }, []);
 
   // Persistence: Save to localStorage when state changes
@@ -160,6 +165,10 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
   }, [isFocusMode]);
+
+  useEffect(() => {
+    localStorage.setItem('NOTES_RAIL_EXPANDED', isRailExpanded.toString());
+  }, [isRailExpanded]);
 
   // Selection Wrappers to clear sub-selection only when manually changing
   const handleSelectCategory = useCallback((id: string | null) => {
@@ -1120,25 +1129,38 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ── Main Panel ── */}
           <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
-            {/* ── Resource Rail — 64px icon palette, grouped by function ── */}
+            {/* ── Resource Rail — expandable icon palette, grouped by function ── */}
             {!isFocusMode && (
-              <div className="flex flex-col py-3 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar w-16 items-center gap-0.5">
+              <div className={`flex flex-col py-3 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar gap-0.5 transition-all duration-200 ${isRailExpanded ? 'w-44 items-stretch px-1.5' : 'w-16 items-center'}`}>
+                {/* Toggle expand/collapse */}
+                <button
+                  onClick={() => setIsRailExpanded(v => !v)}
+                  title={isRailExpanded ? 'Collapse' : 'Expand'}
+                  className={`flex items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 mb-1 ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-10 h-8'}`}>
+                  <ChevronRightIcon className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${isRailExpanded ? 'rotate-180' : ''}`} />
+                  {isRailExpanded && <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400/70 truncate">Collapse</span>}
+                </button>
+
                 {/* ── AI tools ── */}
-                {/* Chat — single accent */}
-                <button onClick={handleOpenAIChat} title="AI Chat" className="flex items-center justify-center w-10 h-9 rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98]">
-                  <ChatBubbleLeftRightIcon className="h-[18px] w-[18px]" />
+                <button
+                  onClick={handleOpenAIChat}
+                  title="AI Chat"
+                  className={`flex items-center rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                  <ChatBubbleLeftRightIcon className="h-[18px] w-[18px] flex-shrink-0" />
+                  {isRailExpanded && <span className="truncate text-left text-[12px]">AI Chat</span>}
                 </button>
                 {[
                   {icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite},
                   {icon: BeakerIcon, label: 'Refiner', action: handleOpenRefiner},
                   {icon: UserIcon, label: 'Humanize', action: handleOpenHumanizer},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
-                    <Icon className="h-[18px] w-[18px]" />
+                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
+                    {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
 
-                <div className="w-7 h-px bg-slate-200/60 my-1" />
+                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
 
                 {/* ── Document tools ── */}
                 {[
@@ -1149,18 +1171,25 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment},
                   {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
-                    <Icon className="h-[18px] w-[18px]" />
+                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
+                    {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
 
-                <div className="w-7 h-px bg-slate-200/60 my-1" />
+                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
 
                 {/* ── Personal tools ── */}
                 {/* Calendar — small dot to flag upcoming events */}
-                <button onClick={() => setIsCalendarOpen(true)} title="Calendar" className="relative flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
-                  <CalendarDaysIcon className="h-[18px] w-[18px]" />
-                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                <button
+                  onClick={() => setIsCalendarOpen(true)}
+                  title="Calendar"
+                  className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                  <div className="relative flex-shrink-0">
+                    <CalendarDaysIcon className="h-[18px] w-[18px]" />
+                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                  </div>
+                  {isRailExpanded && <span className="truncate text-left text-[12px]">Calendar</span>}
                 </button>
                 {[
                   {icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true)},
@@ -1168,40 +1197,48 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
                   {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
-                    <Icon className="h-[18px] w-[18px]" />
+                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
+                    {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
 
                 {/* Push to bottom */}
                 <div className="flex-1" />
-                <div className="w-7 h-px bg-slate-200/60 mb-1" />
+                <div className={`h-px bg-slate-200/60 mb-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
 
                 {/* Settings */}
-                <button onClick={handleOpenSettings} title="Settings" className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98]">
-                  <Cog6ToothIcon className="h-[18px] w-[18px]" />
+                <button
+                  onClick={handleOpenSettings}
+                  title="Settings"
+                  className={`flex items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                  <Cog6ToothIcon className="h-[18px] w-[18px] flex-shrink-0" />
+                  {isRailExpanded && <span className="truncate text-left text-[12px]">Settings</span>}
                 </button>
 
                 {/* Avatar — green presence dot + task badge */}
                 <button
                   onClick={() => setIsProfileOpen(v => !v)}
                   title={userName}
-                  className="relative flex items-center justify-center w-10 h-9 rounded-lg hover:bg-slate-100 transition-all duration-150 mb-1">
-                  {session?.user?.image ? (
-                    <img src={session.user.image} alt="avatar" className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
-                      <span className="text-white text-[11px] font-bold">{userInitial}</span>
-                    </div>
-                  )}
-                  {/* Green presence dot */}
-                  <span className="absolute bottom-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-white" />
-                  {/* Task badge */}
-                  {activeTaskCount > 0 && (
-                    <span className="absolute top-1 right-0.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[7px] font-bold text-white ring-1 ring-white">
-                      {activeTaskCount > 9 ? '9+' : activeTaskCount}
-                    </span>
-                  )}
+                  className={`flex items-center rounded-lg hover:bg-slate-100 transition-all duration-150 mb-1 ${isRailExpanded ? 'gap-2.5 px-2 py-1.5 w-full' : 'justify-center w-10 h-9'}`}>
+                  <div className="relative flex-shrink-0">
+                    {session?.user?.image ? (
+                      <img src={session.user.image} alt="avatar" className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200" />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
+                        <span className="text-white text-[11px] font-bold">{userInitial}</span>
+                      </div>
+                    )}
+                    {/* Green presence dot */}
+                    <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-white translate-x-0.5 translate-y-0.5" />
+                    {/* Task badge */}
+                    {activeTaskCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[7px] font-bold text-white ring-1 ring-white">
+                        {activeTaskCount > 9 ? '9+' : activeTaskCount}
+                      </span>
+                    )}
+                  </div>
+                  {isRailExpanded && <span className="truncate text-left text-[12px] font-medium text-slate-600">{userName}</span>}
                 </button>
               </div>
             )}
