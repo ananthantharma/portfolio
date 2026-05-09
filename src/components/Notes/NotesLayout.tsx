@@ -4,7 +4,7 @@
 import axios from 'axios';
 import {
   ChatBubbleLeftRightIcon,
-  ChevronRightIcon,
+  ChevronDownIcon,
   ClipboardDocumentListIcon,
   FlagIcon,
   HomeIcon,
@@ -29,8 +29,6 @@ import {
   ShieldCheckIcon,
   BeakerIcon,
   DocumentMagnifyingGlassIcon,
-  ChevronDoubleRightIcon,
-  ChevronDoubleLeftIcon,
   UserIcon,
   BoltIcon,
 } from '@heroicons/react/24/outline';
@@ -85,7 +83,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const [isResourceRailExpanded, setIsResourceRailExpanded] = useState(false);
 
   // Modal states
   const [isKeyTasksOpen, setIsKeyTasksOpen] = useState(false);
@@ -133,9 +130,6 @@ const NotesLayout: React.FC = React.memo(() => {
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
-
-    const savedResourceRailExpanded = localStorage.getItem('NOTES_RESOURCE_RAIL_EXPANDED');
-    if (savedResourceRailExpanded !== null) setIsResourceRailExpanded(savedResourceRailExpanded === 'true');
   }, []);
 
   // Persistence: Save to localStorage when state changes
@@ -166,10 +160,6 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
   }, [isFocusMode]);
-
-  useEffect(() => {
-    localStorage.setItem('NOTES_RESOURCE_RAIL_EXPANDED', isResourceRailExpanded.toString());
-  }, [isResourceRailExpanded]);
 
   // Selection Wrappers to clear sub-selection only when manually changing
   const handleSelectCategory = useCallback((id: string | null) => {
@@ -774,6 +764,19 @@ const NotesLayout: React.FC = React.memo(() => {
     }, 150);
   }, []);
 
+  const categoryRecentPages = useMemo(
+    () =>
+      selectedCategoryId
+        ? recentPages.filter(rp => rp.categoryId === selectedCategoryId).slice(0, 2)
+        : [],
+    [recentPages, selectedCategoryId],
+  );
+
+  const handleJumpToRecentInSection = useCallback((sectionId: string, pageId: string) => {
+    setSelectedSectionId(sectionId);
+    setTimeout(() => setSelectedPageId(pageId), 150);
+  }, []);
+
   const formatTimeAgo = useCallback((ts: number) => {
     const d = Date.now() - ts;
     const m = Math.floor(d / 60000);
@@ -983,84 +986,46 @@ const NotesLayout: React.FC = React.memo(() => {
 
               <div className="w-px h-5 bg-slate-100 mx-0 flex-shrink-0" />
 
-              {/* ── Notes workspace home + breadcrumbs ── */}
-              <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden px-3">
+              {/* ── Workspace switcher + ⌘K command bar ── */}
+              <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden px-2">
+                {/* Workspace switcher */}
                 <button
                   onClick={() => {
                     setSelectedCategoryId(null);
                     setSelectedSectionId(null);
                     setSelectedPageId(null);
                   }}
-                  className="flex items-center gap-1.5 flex-shrink-0 group"
-                  title="Notes Home">
-                  <div className="w-5 h-5 rounded-md bg-violet-100 flex items-center justify-center group-hover:bg-violet-500 transition-colors duration-150">
-                    <HomeIcon className="h-3 w-3 text-violet-500 group-hover:text-white transition-colors duration-150" />
+                  className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors group"
+                  title="Notes home">
+                  <div className="w-5 h-5 rounded-md bg-violet-500 flex items-center justify-center flex-shrink-0">
+                    <HomeIcon className="h-3 w-3 text-white" />
                   </div>
-                  <span className="font-semibold text-[12.5px] text-slate-700 group-hover:text-violet-600 transition-colors tracking-tight">
-                    Notes
-                  </span>
+                  <span className="font-semibold text-[13px] text-slate-700 group-hover:text-slate-900">Notes</span>
+                  <ChevronDownIcon className="h-3 w-3 text-slate-300 flex-shrink-0" />
                 </button>
 
-                {currentCategory && (
-                  <>
-                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <button
-                      onClick={() => {
-                        setSelectedSectionId(null);
-                        setSelectedPageId(null);
-                      }}
-                      className="text-[12px] font-medium text-slate-400 hover:text-violet-600 transition-colors truncate max-w-[100px]">
-                      {currentCategory.name}
-                    </button>
-                  </>
-                )}
-                {currentSection && (
-                  <>
-                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <button
-                      onClick={() => setSelectedPageId(null)}
-                      className="text-[12px] font-medium text-slate-400 hover:text-violet-600 transition-colors truncate max-w-[100px]">
-                      {currentSection.name}
-                    </button>
-                  </>
-                )}
-                {selectedPage && (
-                  <>
-                    <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                    <span className="text-[12px] font-semibold text-slate-600 truncate max-w-[140px]">
-                      {selectedPage.title || 'Untitled'}
-                    </span>
-                  </>
-                )}
-              </div>
+                <div className="w-px h-4 bg-slate-200 flex-shrink-0" />
 
-              {/* ── Right: actions + profile ── */}
-              <div className="flex items-center gap-0.5 px-2 flex-shrink-0">
-                {dbSize && (
-                  <span className="hidden xl:flex text-[10px] text-slate-400 font-mono tracking-tight bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded mr-1">
-                    {dbSize}
-                  </span>
-                )}
-
-                {/* Search */}
+                {/* ⌘K Command bar */}
                 <button
                   onClick={handleOpenSearch}
-                  title="Command Palette (Ctrl+K)"
-                  className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 bg-slate-50 border border-slate-100 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-all duration-150 mr-1">
-                  <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="hidden sm:inline">Search</span>
-                  <kbd className="hidden lg:inline text-[9px] text-slate-300 font-mono ml-0.5 bg-white border border-slate-200 px-1 py-0.5 rounded">
-                    ⌘K
-                  </kbd>
+                  title="Search or jump to... (⌘K)"
+                  className="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-slate-100/80 hover:bg-slate-200/60 border border-slate-200/50 transition-all max-w-sm">
+                  <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+                  <span className="flex-1 text-left text-[12px] text-slate-400">Jump to page...</span>
+                  <kbd className="hidden sm:flex items-center text-[10px] font-mono bg-white/80 border border-slate-200 px-1 py-0.5 rounded text-slate-300 flex-shrink-0">⌘K</kbd>
                 </button>
+              </div>
 
+              {/* ── Right: tasks, tools, profile ── */}
+              <div className="flex items-center gap-0.5 px-2 flex-shrink-0">
                 {/* Tasks */}
                 <button
                   onClick={handleOpenToDoList}
                   title="Tasks"
-                  className="relative flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150">
+                  className="relative flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150">
                   <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Tasks</span>
+                  <span className="hidden md:inline text-[12px]">Tasks</span>
                   {activeTaskCount > 0 && (
                     <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[8px] font-bold text-white">
                       {activeTaskCount}
@@ -1068,7 +1033,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   )}
                 </button>
 
-                <div className="w-px h-4 bg-slate-200 mx-1" />
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
 
                 {/* Quick Note */}
                 <button
@@ -1090,7 +1055,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   )}
                 </button>
 
-                <div className="w-px h-4 bg-slate-200 mx-1" />
+                <div className="w-px h-4 bg-slate-200 mx-0.5" />
 
                 {/* ── Inline profile — uses fixed dropdown to escape overflow:hidden ── */}
                 <div ref={profileRef} className="relative flex-shrink-0">
@@ -1155,196 +1120,86 @@ const NotesLayout: React.FC = React.memo(() => {
 
           {/* ── Main Panel ── */}
           <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
-            {/* ── Resource Rail ── */}
+            {/* ── Resource Rail — 64px icon palette, grouped by function ── */}
             {!isFocusMode && (
-              <div
-                className={`flex flex-col py-2.5 px-1.5 rounded-xl glass-panel gap-0.5 select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar transition-all duration-200 ${
-                  isResourceRailExpanded ? 'w-48 items-stretch' : 'w-10 items-center'
-                }`}>
-                {/* Expand / Minimize Toggle Button */}
-                <div className={`flex items-center mb-1.5 ${isResourceRailExpanded ? 'justify-end pr-1' : 'justify-center'}`}>
-                  <button
-                    onClick={() => setIsResourceRailExpanded(!isResourceRailExpanded)}
-                    title={isResourceRailExpanded ? 'Minimize' : 'Expand'}
-                    className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98]">
-                    {isResourceRailExpanded ? <ChevronDoubleLeftIcon className="h-[15px] w-[15px]" /> : <ChevronDoubleRightIcon className="h-[15px] w-[15px]" />}
-                  </button>
-                </div>
-
-                <div className="w-5 h-px bg-slate-100 mb-1.5 self-center" />
-
-                {/* AI */}
+              <div className="flex flex-col py-3 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar w-16 items-center gap-0.5">
+                {/* ── AI tools ── */}
+                {/* Chat — single accent */}
+                <button onClick={handleOpenAIChat} title="AI Chat" className="flex items-center justify-center w-10 h-9 rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98]">
+                  <ChatBubbleLeftRightIcon className="h-[18px] w-[18px]" />
+                </button>
                 {[
-                  {
-                    icon: ChatBubbleLeftRightIcon,
-                    label: 'AI Chat',
-                    action: handleOpenAIChat,
-                    color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600',
-                  },
-                  {
-                    icon: SparklesIcon,
-                    label: 'Rewrite',
-                    action: handleOpenRewrite,
-                    color: 'text-fuchsia-500 hover:bg-fuchsia-50 hover:text-fuchsia-600',
-                  },
-                  {
-                    icon: BeakerIcon,
-                    label: 'Refiner',
-                    action: handleOpenRefiner,
-                    color: 'text-violet-500 hover:bg-violet-50 hover:text-violet-600',
-                  },
-                  {
-                    icon: DocumentMagnifyingGlassIcon,
-                    label: 'Redline Analyzer',
-                    action: handleOpenRedline,
-                    color: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800',
-                  },
-                  {
-                    icon: UserIcon,
-                    label: 'Humanizer',
-                    action: handleOpenHumanizer,
-                    color: 'text-teal-500 hover:bg-teal-50 hover:text-teal-600',
-                  },
-                  {
-                    icon: BoltIcon,
-                    label: 'Truth Teller',
-                    action: handleOpenTruthTeller,
-                    color: 'text-rose-500 hover:bg-rose-50 hover:text-rose-600',
-                  },
-                  {
-                    icon: BriefcaseIcon,
-                    label: 'Executive',
-                    action: () => setIsExecutiveModalOpen(true),
-                    color: 'text-violet-600 hover:bg-violet-50',
-                  },
-                ].map(({icon: Icon, label, action, color}) => (
-                  <button
-                    key={label}
-                    onClick={action}
-                    title={isResourceRailExpanded ? undefined : label}
-                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
-                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
-                    {isResourceRailExpanded && (
-                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
-                    )}
-                    {!isResourceRailExpanded && (
-                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                        {label}
-                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </span>
-                    )}
+                  {icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite},
+                  {icon: BeakerIcon, label: 'Refiner', action: handleOpenRefiner},
+                  {icon: UserIcon, label: 'Humanize', action: handleOpenHumanizer},
+                ].map(({icon: Icon, label, action}) => (
+                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
+                    <Icon className="h-[18px] w-[18px]" />
                   </button>
                 ))}
 
-                <div className="w-5 h-px bg-slate-100 my-1.5 self-center" />
+                <div className="w-7 h-px bg-slate-200/60 my-1" />
 
-                {/* Productivity */}
+                {/* ── Document tools ── */}
                 {[
-                  {
-                    icon: CalendarDaysIcon,
-                    label: 'Calendar',
-                    action: () => setIsCalendarOpen(true),
-                    color: 'text-blue-500 hover:bg-blue-50 hover:text-blue-600',
-                  },
-                  {
-                    icon: MicrophoneIcon,
-                    label: 'Audio',
-                    action: () => setIsAudioRecorderOpen(true),
-                    color: 'text-orange-500 hover:bg-orange-50 hover:text-orange-600',
-                  },
-                  {
-                    icon: CloudIcon,
-                    label: 'Drive',
-                    action: () => setIsDriveOpen(true),
-                    color: 'text-emerald-500 hover:bg-emerald-50 hover:text-emerald-600',
-                  },
-                ].map(({icon: Icon, label, action, color}) => (
-                  <button
-                    key={label}
-                    onClick={action}
-                    title={isResourceRailExpanded ? undefined : label}
-                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
-                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
-                    {isResourceRailExpanded && (
-                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
-                    )}
-                    {!isResourceRailExpanded && (
-                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                        {label}
-                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </span>
-                    )}
+                  {icon: DocumentMagnifyingGlassIcon, label: 'Redline', action: handleOpenRedline},
+                  {icon: BoltIcon, label: 'Truth Teller', action: handleOpenTruthTeller},
+                  {icon: DocumentTextIcon, label: 'Form Fill', action: () => window.open('/pdf-autofill', '_blank')},
+                  {icon: PhotoIcon, label: 'OCR', action: handleOpenImageExtract},
+                  {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment},
+                  {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true)},
+                ].map(({icon: Icon, label, action}) => (
+                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
+                    <Icon className="h-[18px] w-[18px]" />
                   </button>
                 ))}
 
-                <div className="w-5 h-px bg-slate-100 my-1.5 self-center" />
+                <div className="w-7 h-px bg-slate-200/60 my-1" />
 
-                {/* Utilities */}
+                {/* ── Personal tools ── */}
+                {/* Calendar — small dot to flag upcoming events */}
+                <button onClick={() => setIsCalendarOpen(true)} title="Calendar" className="relative flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
+                  <CalendarDaysIcon className="h-[18px] w-[18px]" />
+                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
+                </button>
                 {[
-                  {
-                    icon: PhotoIcon,
-                    label: 'OCR',
-                    action: handleOpenImageExtract,
-                    color: 'text-sky-500 hover:bg-sky-50 hover:text-sky-600',
-                  },
-                  {
-                    icon: ClipboardIcon,
-                    label: 'Assessment',
-                    action: handleOpenAssessment,
-                    color: 'text-orange-600 hover:bg-orange-50 hover:text-orange-700',
-                  },
-                  {
-                    icon: UsersIcon,
-                    label: 'Contacts',
-                    action: handleOpenContactList,
-                    color: 'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
-                  },
-                  {
-                    icon: BookmarkIcon,
-                    label: 'Bookmarks',
-                    action: () => setIsBookmarksOpen(true),
-                    color: 'text-amber-500 hover:bg-amber-50 hover:text-amber-600',
-                  },
-                  {
-                    icon: DocumentTextIcon,
-                    label: 'Form Fill',
-                    action: () => window.open('/pdf-autofill', '_blank'),
-                    color: 'text-indigo-500 hover:bg-indigo-50 hover:text-indigo-600',
-                  },
-                ].map(({icon: Icon, label, action, color}) => (
-                  <button
-                    key={label}
-                    onClick={action}
-                    title={isResourceRailExpanded ? undefined : label}
-                    className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg transition-all duration-150 group active:scale-[0.98] ${color}`}>
-                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
-                    {isResourceRailExpanded && (
-                      <span className="ml-3 text-[12.5px] font-medium truncate">{label}</span>
-                    )}
-                    {!isResourceRailExpanded && (
-                      <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                        {label}
-                        <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
-                      </span>
-                    )}
+                  {icon: MicrophoneIcon, label: 'Audio', action: () => setIsAudioRecorderOpen(true)},
+                  {icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true)},
+                  {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
+                  {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
+                ].map(({icon: Icon, label, action}) => (
+                  <button key={label} onClick={action} title={label} className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98]">
+                    <Icon className="h-[18px] w-[18px]" />
                   </button>
                 ))}
 
-                <div className="mt-auto w-5 h-px bg-slate-100 my-1.5 self-center" />
+                {/* Push to bottom */}
+                <div className="flex-1" />
+                <div className="w-7 h-px bg-slate-200/60 mb-1" />
 
                 {/* Settings */}
+                <button onClick={handleOpenSettings} title="Settings" className="flex items-center justify-center w-10 h-9 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98]">
+                  <Cog6ToothIcon className="h-[18px] w-[18px]" />
+                </button>
+
+                {/* Avatar — green presence dot + task badge */}
                 <button
-                  onClick={handleOpenSettings}
-                  title={isResourceRailExpanded ? undefined : 'Settings'}
-                  className={`relative flex items-center ${isResourceRailExpanded ? 'w-full px-2.5 py-2 justify-start mb-0.5' : 'w-7 h-7 justify-center'} rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 group active:scale-[0.98]`}>
-                  <Cog6ToothIcon className="h-[15px] w-[15px] flex-shrink-0" />
-                  {isResourceRailExpanded && (
-                    <span className="ml-3 text-[12.5px] font-medium truncate">Settings</span>
+                  onClick={() => setIsProfileOpen(v => !v)}
+                  title={userName}
+                  className="relative flex items-center justify-center w-10 h-9 rounded-lg hover:bg-slate-100 transition-all duration-150 mb-1">
+                  {session?.user?.image ? (
+                    <img src={session.user.image} alt="avatar" className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
+                      <span className="text-white text-[11px] font-bold">{userInitial}</span>
+                    </div>
                   )}
-                  {!isResourceRailExpanded && (
-                    <span className="absolute left-full ml-3 px-2 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[100] shadow-xl">
-                      Settings
-                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900" />
+                  {/* Green presence dot */}
+                  <span className="absolute bottom-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-white" />
+                  {/* Task badge */}
+                  {activeTaskCount > 0 && (
+                    <span className="absolute top-1 right-0.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[7px] font-bold text-white ring-1 ring-white">
+                      {activeTaskCount > 9 ? '9+' : activeTaskCount}
                     </span>
                   )}
                 </button>
@@ -1369,6 +1224,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   onToggleCollapse={handleToggleCategoryCollapse}
                   selectedCategoryId={selectedCategoryId}
                   badgeCounts={badgeCounts.categories}
+                  dbSize={dbSize}
                 />
                 {!isCategoryCollapsed && (
                   <div
@@ -1406,6 +1262,9 @@ const NotesLayout: React.FC = React.memo(() => {
                   pageBadgeCounts={badgeCounts.pages}
                   isCollapsed={isSectionCollapsed}
                   onToggleCollapse={handleToggleSectionCollapse}
+                  categoryName={currentCategory?.name}
+                  categoryRecentPages={categoryRecentPages}
+                  onJumpToRecentPage={handleJumpToRecentInSection}
                 />
                 {!isSectionCollapsed && (
                   <div

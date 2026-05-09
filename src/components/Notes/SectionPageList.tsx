@@ -74,9 +74,14 @@ export interface SectionPageListProps {
   // Panel
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+
+  // Context
+  categoryName?: string;
+  categoryRecentPages?: Array<{id: string; title: string; sectionId: string; sectionName: string; timestamp: number}>;
+  onJumpToRecentPage?: (sectionId: string, pageId: string) => void;
 }
 
-// ─── Badge pill ───────────────────────────────────────────────────────────────
+// ─── Badge pill (section-level — shows count) ─────────────────────────────────
 
 function BadgePill({stat, collapsed}: {stat: BadgeStat; collapsed?: boolean}) {
   const {getBadgeStyle} = useBadgeSettings();
@@ -91,6 +96,29 @@ function BadgePill({stat, collapsed}: {stat: BadgeStat; collapsed?: boolean}) {
       {stat.todo.count}
     </span>
   );
+}
+
+// ─── Page dot (page-level — small indicator, section header already shows count) ──
+
+function PageDot({stat}: {stat: BadgeStat}) {
+  const {getBadgeStyle} = useBadgeSettings();
+  if (!stat?.todo || stat.todo.count === 0) return null;
+  const {className, style} = getBadgeStyle(stat.todo.minDays);
+  return <span className={`flex-shrink-0 h-1.5 w-1.5 rounded-full ${className}`} style={style} />;
+}
+
+function formatTimeAgo(date: Date | string): string {
+  const ms = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  const wks = Math.floor(days / 7);
+  if (wks < 5) return `${wks}w ago`;
+  return new Date(date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
 }
 
 // ─── Page row ─────────────────────────────────────────────────────────────────
@@ -144,10 +172,14 @@ const PageRow = React.memo<PageRowProps>(
               ? 'bg-slate-200/50 text-slate-400 font-medium'
               : 'text-slate-300 hover:bg-black/[0.02]'
             : isSelected
-            ? 'bg-violet-500/[0.10] text-slate-800 font-semibold'
+            ? 'bg-violet-50/30 text-slate-800 font-semibold'
             : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(page._id as string)}>
+        {/* Active accent bar */}
+        {isSelected && !isInactive && (
+          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-violet-500" />
+        )}
         {/* Chevron / spacer */}
         {hasChildren ? (
           <button
@@ -181,13 +213,20 @@ const PageRow = React.memo<PageRowProps>(
           style={isInactive ? undefined : iconStyle}
         />
 
-        {/* Title */}
-        <span className={`truncate flex-1 ${isInactive ? 'line-through decoration-slate-300' : ''}`}>
-          {page.title || 'Untitled'}
+        {/* Title + timestamp */}
+        <span className="flex-1 min-w-0 flex flex-col">
+          <span className={`truncate ${isInactive ? 'line-through decoration-slate-300' : ''}`}>
+            {page.title || 'Untitled'}
+          </span>
+          {!isChild && page.updatedAt && (
+            <span className="text-[9px] text-slate-400/70 leading-none mt-0.5 truncate">
+              {formatTimeAgo(page.updatedAt)}
+            </span>
+          )}
         </span>
 
-        {/* Badge */}
-        {badgeStat && <BadgePill stat={badgeStat} />}
+        {/* Dot indicator — section header already shows the count */}
+        {badgeStat && <PageDot stat={badgeStat} />}
 
         {/* Actions (hover) */}
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0">
@@ -278,6 +317,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     pageBadgeCounts,
     isCollapsed,
     onToggleCollapse,
+    categoryName,
+    categoryRecentPages,
+    onJumpToRecentPage,
   }) => {
     // ── Section edit state ────────────────────────────────────────────────────
     const [isAddingSection, setIsAddingSection] = useState(false);
@@ -509,15 +551,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             return (
               <button
                 key={sec._id as string}
-                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-violet-500/[0.10]' : 'hover:bg-black/[0.04]'}`}
+                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-slate-800' : 'hover:bg-black/[0.04]'}`}
                 onClick={() => onSelectSection(sec._id as string)}
                 title={sec.name}>
                 {sec.image ? (
                   <img alt={sec.name} className="h-5 w-5 object-contain" src={`https://logo.clearbit.com/${sec.image}`} />
                 ) : (
                   <SectionIcon
-                    className={`h-5 w-5 ${isSelected ? 'text-violet-600' : 'text-slate-600'}`}
-                    style={{color: !isSelected && sec.color ? sec.color : undefined}}
+                    className={`h-5 w-5 ${isSelected ? 'text-white' : 'text-slate-400'}`}
                   />
                 )}
                 {sectionBadgeCounts?.[sec._id as string] && (
@@ -534,8 +575,15 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     return (
       <div className="flex h-full flex-col relative">
         {/* Panel header */}
-        <div className="flex items-center justify-between px-3 py-2.5 flex-shrink-0">
-          <h2 className="text-[9px] font-bold uppercase tracking-widest text-slate-400/80">Sections</h2>
+        <div className="flex items-center justify-between px-3 pt-2.5 pb-1 flex-shrink-0">
+          <div>
+            {categoryName && (
+              <p className="text-[9px] font-medium uppercase tracking-widest text-slate-400/70 truncate mb-0.5">{categoryName}</p>
+            )}
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-400/80">
+              Sections{sections.length > 0 ? ` · ${sections.length}` : ''}
+            </h2>
+          </div>
           <div className="flex items-center gap-0.5">
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
@@ -582,6 +630,24 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <li className="text-[11px] text-slate-400 px-2 py-1">No other pages available</li>
               )}
             </ul>
+          </div>
+        )}
+
+        {/* Recently opened strip */}
+        {categoryRecentPages && categoryRecentPages.length > 0 && (
+          <div className="px-3 pb-1.5 flex-shrink-0">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400/60 mb-1">Recently opened</p>
+            <div className="flex gap-1.5">
+              {categoryRecentPages.map(rp => (
+                <button
+                  key={rp.id}
+                  className="flex-1 min-w-0 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] px-2 py-1.5 text-left transition-colors"
+                  onClick={() => onJumpToRecentPage?.(rp.sectionId, rp.id)}>
+                  <p className="text-[10px] font-medium text-slate-700 truncate">{rp.title}</p>
+                  <p className="text-[9px] text-slate-400 truncate">{rp.sectionName}</p>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -632,10 +698,6 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                     const sid = section._id as string;
                     const isSelectedSec = selectedSectionId === sid;
                     const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
-                    const secIconStyle = {
-                      color: section.color && section.color !== '#000000' ? section.color : undefined,
-                    };
-
                     // ── Section edit form ──────────────────────────────────────
                     if (editingSecId === sid) {
                       return (
@@ -675,15 +737,15 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <SortableItem id={sid}>
                           {/* ── Section row ───────────────────────────────── */}
                           <div
-                            className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-[13px] transition-all duration-150 ${
+                            className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-[13.5px] transition-all duration-150 ${
                               isSelectedSec
-                                ? 'bg-violet-500/[0.10] text-slate-800 font-semibold'
+                                ? 'bg-slate-800 text-white font-medium'
                                 : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
                             }`}
                             onClick={() => onSelectSection(sid)}>
                             <div className="flex items-center gap-2.5 overflow-hidden flex-1 min-w-0">
                               {/* Expand chevron */}
-                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-violet-400' : 'text-slate-300'}`}>
+                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-slate-400' : 'text-slate-300'}`}>
                                 {isSelectedSec
                                   ? <ChevronDownIcon className="h-3 w-3" />
                                   : <ChevronRightIcon className="h-3 w-3" />}
@@ -692,11 +754,16 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 <img alt={section.name} className="h-4 w-4 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
                               ) : (
                                 <SectionIcon
-                                  className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-400'}`}
-                                  style={isSelectedSec ? undefined : secIconStyle}
+                                  className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-slate-300' : 'text-slate-400'}`}
                                 />
                               )}
                               <span className="truncate">{section.name}</span>
+                              {/* Page count chip — in the active row */}
+                              {isSelectedSec && pages.length > 0 && (
+                                <span className="flex-shrink-0 text-[9px] font-medium text-white/50 bg-white/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                                  {pages.length}
+                                </span>
+                              )}
                             </div>
 
                             {/* Badge */}
@@ -730,10 +797,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
-                          <div className="ml-4 mt-0.5 mb-1 border-l border-slate-200/80 pl-1">
+                          <div className="ml-5 mt-0.5 mb-1 border-l-2 border-slate-200 pl-2">
                             {/* Pages sub-header */}
                             <div className="flex items-center justify-between px-1.5 py-1 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400/70">Pages</span>
+                              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70">Pages</span>
                               <div className="flex items-center gap-0.5">
                                 <button
                                   className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
@@ -786,133 +853,138 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   <div key={i} className="h-6 rounded bg-slate-200/60 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
                                 ))}
                               </div>
-                            ) : rootPages.length === 0 && !isAddingPage ? (
-                              <button
-                                className="w-full text-left px-2 py-1.5 text-[11px] text-slate-400 hover:text-violet-500 transition-colors"
-                                onClick={() => setIsAddingPage(true)}>
-                                + New page
-                              </button>
                             ) : (
-                              <DndContext collisionDetection={closestCenter} onDragEnd={handlePageDragEnd} sensors={sensors}>
-                                <SortableContext items={rootPages.map(p => p._id as string)} strategy={verticalListSortingStrategy}>
-                                  <ul className="space-y-0.5">
-                                    {rootPages.map(page => {
-                                      const pid = page._id as string;
-                                      const children = childrenMap[pid] || [];
-                                      const isExpanded = expandedParents.has(pid);
+                              <>
+                                {rootPages.length > 0 && (
+                                  <DndContext collisionDetection={closestCenter} onDragEnd={handlePageDragEnd} sensors={sensors}>
+                                    <SortableContext items={rootPages.map(p => p._id as string)} strategy={verticalListSortingStrategy}>
+                                      <ul className="space-y-0.5">
+                                        {rootPages.map(page => {
+                                          const pid = page._id as string;
+                                          const children = childrenMap[pid] || [];
+                                          const isExpanded = expandedParents.has(pid);
 
-                                      if (editingPageId === pid) {
-                                        return (
-                                          <li key={pid} className="p-1">
-                                            <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
-                                              <div className="flex items-center gap-2">
-                                                <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
-                                                <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
-                                              </div>
-                                              <input
-                                                autoFocus
-                                                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
-                                                onChange={e => setEditPageTitle(e.target.value)}
-                                                onKeyDown={e => {
-                                                  if (e.key === 'Enter') handleRenamePage();
-                                                  if (e.key === 'Escape') setEditingPageId(null);
-                                                  e.stopPropagation();
-                                                }}
-                                                onPointerDown={e => e.stopPropagation()}
-                                                value={editPageTitle}
-                                              />
-                                              <div className="flex justify-end gap-1">
-                                                <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
-                                                  <XMarkIcon className="h-4 w-4" />
-                                                </button>
-                                                <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
-                                                  <CheckIcon className="h-4 w-4" />
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </li>
-                                        );
-                                      }
+                                          if (editingPageId === pid) {
+                                            return (
+                                              <li key={pid} className="p-1">
+                                                <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+                                                  <div className="flex items-center gap-2">
+                                                    <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
+                                                    <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
+                                                  </div>
+                                                  <input
+                                                    autoFocus
+                                                    className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                                                    onChange={e => setEditPageTitle(e.target.value)}
+                                                    onKeyDown={e => {
+                                                      if (e.key === 'Enter') handleRenamePage();
+                                                      if (e.key === 'Escape') setEditingPageId(null);
+                                                      e.stopPropagation();
+                                                    }}
+                                                    onPointerDown={e => e.stopPropagation()}
+                                                    value={editPageTitle}
+                                                  />
+                                                  <div className="flex justify-end gap-1">
+                                                    <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                                                      <XMarkIcon className="h-4 w-4" />
+                                                    </button>
+                                                    <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                                                      <CheckIcon className="h-4 w-4" />
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              </li>
+                                            );
+                                          }
 
-                                      return (
-                                        <React.Fragment key={pid}>
-                                          <li>
-                                            <PageRow
-                                              page={page}
-                                              isSelected={selectedPageId === pid}
-                                              onSelect={onSelectPage}
-                                              onEdit={startEditingPage}
-                                              onDelete={onDeletePage}
-                                              onMove={onMovePage}
-                                              onToggleInactive={onToggleInactive}
-                                              onShowParentPicker={setParentPickerFor}
-                                              badgeStat={pageBadgeCounts?.[pid]}
-                                              hasChildren={children.length > 0}
-                                              isExpanded={isExpanded}
-                                              onToggleExpand={toggleParentExpanded}
-                                              sortable
-                                            />
-                                          </li>
-                                          {isExpanded && children.length > 0 && (
-                                            <li>
-                                              <ul className="ml-3 space-y-0.5 border-l border-slate-100 pl-1">
-                                                {children.map(child => {
-                                                  const cid = child._id as string;
-                                                  if (editingPageId === cid) {
-                                                    return (
-                                                      <li key={cid} className="p-1">
-                                                        <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
-                                                          <input
-                                                            autoFocus
-                                                            className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
-                                                            onChange={e => setEditPageTitle(e.target.value)}
-                                                            onKeyDown={e => {
-                                                              if (e.key === 'Enter') handleRenamePage();
-                                                              if (e.key === 'Escape') setEditingPageId(null);
-                                                              e.stopPropagation();
-                                                            }}
-                                                            onPointerDown={e => e.stopPropagation()}
-                                                            value={editPageTitle}
+                                          return (
+                                            <React.Fragment key={pid}>
+                                              <li>
+                                                <PageRow
+                                                  page={page}
+                                                  isSelected={selectedPageId === pid}
+                                                  onSelect={onSelectPage}
+                                                  onEdit={startEditingPage}
+                                                  onDelete={onDeletePage}
+                                                  onMove={onMovePage}
+                                                  onToggleInactive={onToggleInactive}
+                                                  onShowParentPicker={setParentPickerFor}
+                                                  badgeStat={pageBadgeCounts?.[pid]}
+                                                  hasChildren={children.length > 0}
+                                                  isExpanded={isExpanded}
+                                                  onToggleExpand={toggleParentExpanded}
+                                                  sortable
+                                                />
+                                              </li>
+                                              {isExpanded && children.length > 0 && (
+                                                <li>
+                                                  <ul className="ml-3 space-y-0.5 border-l border-slate-100 pl-1">
+                                                    {children.map(child => {
+                                                      const cid = child._id as string;
+                                                      if (editingPageId === cid) {
+                                                        return (
+                                                          <li key={cid} className="p-1">
+                                                            <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+                                                              <input
+                                                                autoFocus
+                                                                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                                                                onChange={e => setEditPageTitle(e.target.value)}
+                                                                onKeyDown={e => {
+                                                                  if (e.key === 'Enter') handleRenamePage();
+                                                                  if (e.key === 'Escape') setEditingPageId(null);
+                                                                  e.stopPropagation();
+                                                                }}
+                                                                onPointerDown={e => e.stopPropagation()}
+                                                                value={editPageTitle}
+                                                              />
+                                                              <div className="flex justify-end gap-1">
+                                                                <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                                                                  <XMarkIcon className="h-4 w-4" />
+                                                                </button>
+                                                                <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                                                                  <CheckIcon className="h-4 w-4" />
+                                                                </button>
+                                                              </div>
+                                                            </div>
+                                                          </li>
+                                                        );
+                                                      }
+                                                      return (
+                                                        <li key={cid}>
+                                                          <PageRow
+                                                            page={child}
+                                                            isSelected={selectedPageId === cid}
+                                                            onSelect={onSelectPage}
+                                                            onEdit={startEditingPage}
+                                                            onDelete={onDeletePage}
+                                                            onMove={onMovePage}
+                                                            onToggleInactive={onToggleInactive}
+                                                            onShowParentPicker={setParentPickerFor}
+                                                            badgeStat={pageBadgeCounts?.[cid]}
+                                                            isChild
+                                                            sortable={false}
                                                           />
-                                                          <div className="flex justify-end gap-1">
-                                                            <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
-                                                              <XMarkIcon className="h-4 w-4" />
-                                                            </button>
-                                                            <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
-                                                              <CheckIcon className="h-4 w-4" />
-                                                            </button>
-                                                          </div>
-                                                        </div>
-                                                      </li>
-                                                    );
-                                                  }
-                                                  return (
-                                                    <li key={cid}>
-                                                      <PageRow
-                                                        page={child}
-                                                        isSelected={selectedPageId === cid}
-                                                        onSelect={onSelectPage}
-                                                        onEdit={startEditingPage}
-                                                        onDelete={onDeletePage}
-                                                        onMove={onMovePage}
-                                                        onToggleInactive={onToggleInactive}
-                                                        onShowParentPicker={setParentPickerFor}
-                                                        badgeStat={pageBadgeCounts?.[cid]}
-                                                        isChild
-                                                        sortable={false}
-                                                      />
-                                                    </li>
-                                                  );
-                                                })}
-                                              </ul>
-                                            </li>
-                                          )}
-                                        </React.Fragment>
-                                      );
-                                    })}
-                                  </ul>
-                                </SortableContext>
-                              </DndContext>
+                                                        </li>
+                                                      );
+                                                    })}
+                                                  </ul>
+                                                </li>
+                                              )}
+                                            </React.Fragment>
+                                          );
+                                        })}
+                                      </ul>
+                                    </SortableContext>
+                                  </DndContext>
+                                )}
+                                {!isAddingPage && (
+                                  <button
+                                    className="w-full text-left px-2 py-1.5 text-[11px] text-slate-400 hover:text-violet-500 transition-colors"
+                                    onClick={() => setIsAddingPage(true)}>
+                                    + New page
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         )}

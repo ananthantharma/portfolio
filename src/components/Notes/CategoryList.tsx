@@ -8,14 +8,33 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
-import {ChevronLeftIcon, ChevronRightIcon, PencilIcon, PlusIcon, TrashIcon} from '@heroicons/react/24/outline';
-import React, {useCallback, useMemo, useState} from 'react';
+import {ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, CircleStackIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon} from '@heroicons/react/24/outline';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+
+// ─── Monogram helpers ─────────────────────────────────────────────────────────
+
+const MONOGRAM_COLORS = [
+  'bg-blue-500', 'bg-amber-500', 'bg-sky-500', 'bg-violet-500',
+  'bg-rose-500', 'bg-emerald-500', 'bg-orange-500', 'bg-indigo-500',
+  'bg-teal-500', 'bg-pink-500', 'bg-lime-600', 'bg-cyan-500',
+];
+
+function getMonogramColor(name: string): string {
+  const hash = name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return MONOGRAM_COLORS[hash % MONOGRAM_COLORS.length];
+}
+
+function getMonogram(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
 
 import {INoteCategory} from '@/models/NoteCategory';
 
 import {useBadgeSettings} from './BadgeSettingsContext';
 import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
+import {IconPicker} from './IconPicker';
 import {SortableItem} from './SortableItem';
 
 interface CategoryListProps {
@@ -30,6 +49,7 @@ interface CategoryListProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   badgeCounts?: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
+  dbSize?: string | null;
 }
 
 // Extracted Item Component to handle memoization
@@ -39,25 +59,12 @@ const CategoryItem = React.memo<{
   onSelect: (id: string) => void;
   onEdit: (category: INoteCategory) => void;
   onDelete: (id: string) => void;
+  onTogglePin: (id: string) => void;
+  isPinned: boolean;
   isCollapsed: boolean;
   badgeStats?: {todo: {count: number; minDays: number | null}; important: number; flagged: number};
-}>(({category, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats}) => {
-  const CategoryIcon = ICON_options[category.icon as keyof typeof ICON_options] || ICON_options.Folder;
-  const {getBadgeStyle} = useBadgeSettings(); // Added hook call
-
-  const style = useMemo(
-    () => ({
-      color: category.color && category.color !== '#000000' ? category.color : undefined,
-    }),
-    [category.color],
-  );
-
-  const collapsedStyle = useMemo(
-    () => ({
-      color: isSelected ? undefined : category.color,
-    }),
-    [isSelected, category.color],
-  );
+}>(({category, isSelected, onSelect, onEdit, onDelete, onTogglePin, isPinned, isCollapsed, badgeStats}) => {
+  const {getBadgeStyle} = useBadgeSettings();
 
   const renderBadges = () => {
     if (!badgeStats) return null;
@@ -81,27 +88,29 @@ const CategoryItem = React.memo<{
   if (isCollapsed) {
     return (
       <button
-        className={`relative p-2 rounded-lg transition-all duration-150 ${
-          isSelected ? 'bg-violet-500/[0.10]' : 'hover:bg-black/[0.04]'
+        className={`relative p-1.5 rounded-lg transition-all duration-150 ${
+          isSelected ? 'bg-slate-800' : 'hover:bg-black/[0.04]'
         }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
         {category.image ? (
           <img
             alt={category.name}
-            className="h-5 w-5 object-contain"
+            className="h-7 w-7 rounded-md object-contain"
             onError={e => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+              (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
             }}
             src={`https://logo.clearbit.com/${category.image}`}
           />
         ) : null}
-        <CategoryIcon
-          className={`h-5 w-5 ${category.image ? 'hidden' : ''} ${isSelected ? 'text-violet-600' : 'text-slate-600'}`}
-          style={collapsedStyle}
-        />
+        <div className={`h-7 w-7 rounded-md flex items-center justify-center text-white text-[10px] font-bold ${category.image ? 'hidden' : ''} ${getMonogramColor(category.name)}`}>
+          {getMonogram(category.name)}
+        </div>
         {renderBadges()}
+        {isPinned && (
+          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-400 ring-1 ring-white" />
+        )}
       </button>
     );
   }
@@ -109,37 +118,44 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-[13px] transition-all duration-150 ${
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-[13.5px] transition-all duration-150 ${
           isSelected
-            ? 'bg-violet-500/[0.10] text-slate-800 font-semibold'
+            ? 'bg-slate-800 text-white font-medium'
             : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(category._id as string)}>
 
-        <div className="flex items-center gap-3 overflow-hidden">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          {/* Monogram avatar / Clearbit logo */}
           {category.image ? (
             <img
               alt={category.name}
-              className="h-4 w-4 object-contain"
+              className="h-6 w-6 rounded-md object-contain flex-shrink-0"
               onError={e => {
                 e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
               }}
               src={`https://logo.clearbit.com/${category.image}`}
             />
           ) : null}
-          <CategoryIcon
-            className={`h-4 w-4 shrink-0 transition-colors ${category.image ? 'hidden' : ''} ${
-              isSelected ? 'text-violet-400' : 'text-slate-600 group-hover:text-slate-400'
-            }`}
-            style={style}
-          />
+          <div className={`h-6 w-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''} ${isSelected ? 'opacity-90' : ''} ${getMonogramColor(category.name)}`}>
+            {getMonogram(category.name)}
+          </div>
           <span className="truncate">{category.name}</span>
         </div>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-0.5">
           {renderBadges()}
-          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              className={`rounded p-1 transition-colors ${isPinned ? 'text-amber-400 hover:bg-amber-50' : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400'}`}
+              onClick={e => {
+                e.stopPropagation();
+                onTogglePin(category._id as string);
+              }}
+              title={isPinned ? 'Unpin' : 'Pin to top'}>
+              <StarIcon className="h-3 w-3" />
+            </button>
             <button
               className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
               onClick={e => {
@@ -180,9 +196,43 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     onToggleCollapse,
     selectedCategoryId,
     badgeCounts,
+    dbSize,
   }) => {
-    // ... (state hooks same)
     const [isAdding, setIsAdding] = useState(false);
+
+    // ── Pinned notebooks (persisted) ──────────────────────────────────────────
+    const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => {
+      if (typeof window === 'undefined') return new Set<string>();
+      try {
+        const saved = localStorage.getItem('NOTES_PINNED_CATEGORIES');
+        return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>();
+      } catch { return new Set<string>(); }
+    });
+
+    useEffect(() => {
+      localStorage.setItem('NOTES_PINNED_CATEGORIES', JSON.stringify([...pinnedIds]));
+    }, [pinnedIds]);
+
+    const togglePin = useCallback((id: string) => {
+      setPinnedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+    }, []);
+
+    // ── Sort ─────────────────────────────────────────────────────────────────
+    const [sortAlpha, setSortAlpha] = useState(false);
+
+    const pinnedCategories = useMemo(
+      () => categories.filter(c => pinnedIds.has(c._id as string)),
+      [categories, pinnedIds],
+    );
+    const unpinnedCategories = useMemo(() => {
+      const rest = categories.filter(c => !pinnedIds.has(c._id as string));
+      if (sortAlpha) return [...rest].sort((a, b) => a.name.localeCompare(b.name));
+      return rest;
+    }, [categories, pinnedIds, sortAlpha]);
     const [newCategoryName, setNewCategoryName] = useState('');
     const [newCategoryColor, setNewCategoryColor] = useState('#000000');
     const [newCategoryIcon, setNewCategoryIcon] = useState('Folder');
@@ -193,13 +243,6 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     const [editColor, setEditColor] = useState('#000000');
     const [editIcon, setEditIcon] = useState('Folder');
     const [editImage, setEditImage] = useState<string | null>(null);
-
-    // ...
-
-    // (lines 191-260 logic omitted for brevity in replacement search, assuming match on top block)
-    // I will target the top block first.
-
-    // ...
 
     const sensors = useSensors(
       useSensor(PointerSensor, {
@@ -217,16 +260,16 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
         const {active, over} = event;
 
         if (over && active.id !== over.id) {
-          const oldIndex = categories.findIndex(c => c._id === active.id);
-          const newIndex = categories.findIndex(c => c._id === over.id);
+          const oldIndex = unpinnedCategories.findIndex(c => c._id === active.id);
+          const newIndex = unpinnedCategories.findIndex(c => c._id === over.id);
 
           if (oldIndex !== -1 && newIndex !== -1) {
-            const newOrder = arrayMove(categories, oldIndex, newIndex);
-            onReorderCategories(newOrder);
+            const reorderedUnpinned = arrayMove(unpinnedCategories, oldIndex, newIndex);
+            onReorderCategories([...pinnedCategories, ...reorderedUnpinned]);
           }
         }
       },
-      [categories, onReorderCategories],
+      [unpinnedCategories, pinnedCategories, onReorderCategories],
     );
 
     const handleAdd = useCallback(() => {
@@ -289,11 +332,19 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     return (
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex items-center justify-between px-3 py-2.5 flex-shrink-0">
           {!isCollapsed && (
-            <h2 className="text-[9px] font-bold uppercase tracking-widest text-slate-400/80">Notebooks</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-400/80">Notebooks</h2>
           )}
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
+            {!isCollapsed && (
+              <button
+                className={`rounded-md p-1 transition-all duration-150 ${sortAlpha ? 'text-violet-500 bg-violet-50' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'}`}
+                onClick={() => setSortAlpha(v => !v)}
+                title="Sort alphabetically">
+                <ArrowsUpDownIcon className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
               onClick={onToggleCollapse}
@@ -314,7 +365,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
         {/* List */}
         {!isCollapsed ? (
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 min-h-0">
             {isAdding && (
               <div className="mb-2 rounded-xl border border-black/[0.06] bg-white p-3 shadow-lg relative z-20">
                 <div className="mb-3">
@@ -359,13 +410,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
             )}
 
             <div
-              className="flex-1 overflow-y-auto"
               onClick={e => e.stopPropagation()}
               onPointerDown={e => e.stopPropagation()}>
-              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
-                <SortableContext items={categories.map(c => c._id as string)} strategy={verticalListSortingStrategy}>
-                  <ul className="space-y-0.5">
-                    {categories.map(category => {
+
+              {/* Pinned notebooks */}
+              {pinnedCategories.length > 0 && (
+                <>
+                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">Pinned</p>
+                  <ul className="space-y-0.5 mb-2">
+                    {pinnedCategories.map(category => {
                       if (editingId === category._id) {
                         return (
                           <div
@@ -411,16 +464,87 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                           </div>
                         );
                       }
-
                       return (
                         <CategoryItem
                           category={category}
                           isCollapsed={false}
                           isSelected={selectedCategoryId === category._id}
+                          isPinned
                           key={category._id as string}
                           onDelete={onDeleteCategory}
                           onEdit={startEditing}
                           onSelect={onSelectCategory}
+                          onTogglePin={togglePin}
+                          badgeStats={badgeCounts?.[category._id as string]}
+                        />
+                      );
+                    })}
+                  </ul>
+                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">All</p>
+                </>
+              )}
+
+              {/* All notebooks (DnD-sortable, unpinned only) */}
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
+                <SortableContext items={unpinnedCategories.map(c => c._id as string)} strategy={verticalListSortingStrategy}>
+                  <ul className="space-y-0.5">
+                    {unpinnedCategories.map(category => {
+                      if (editingId === category._id) {
+                        return (
+                          <div
+                            className="rounded-xl border border-indigo-100 bg-white p-3 shadow-md ring-1 ring-indigo-50 relative z-20"
+                            key={category._id as string}>
+                            <div className="mb-3">
+                              <input
+                                autoFocus
+                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
+                                onChange={e => setEditName(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleRename();
+                                  if (e.key === 'Escape') setEditingId(null);
+                                  e.stopPropagation();
+                                }}
+                                onPointerDown={e => e.stopPropagation()}
+                                type="text"
+                                value={editName}
+                              />
+                            </div>
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                              <IconPicker
+                                onSelectIcon={handleIconSelect}
+                                selectedIcon={editIcon}
+                                selectedImage={editImage}
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <ColorPicker onSelectColor={setEditColor} selectedColor={editColor} />
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <button
+                                className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"
+                                onClick={() => setEditingId(null)}>
+                                Cancel
+                              </button>
+                              <button
+                                className="rounded-lg bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700 shadow-sm shadow-green-200"
+                                onClick={handleRename}>
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <CategoryItem
+                          category={category}
+                          isCollapsed={false}
+                          isSelected={selectedCategoryId === category._id}
+                          isPinned={false}
+                          key={category._id as string}
+                          onDelete={onDeleteCategory}
+                          onEdit={startEditing}
+                          onSelect={onSelectCategory}
+                          onTogglePin={togglePin}
                           badgeStats={badgeCounts?.[category._id as string]}
                         />
                       );
@@ -437,13 +561,23 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 category={category}
                 isCollapsed={true}
                 isSelected={selectedCategoryId === category._id}
+                isPinned={pinnedIds.has(category._id as string)}
                 key={category._id as string}
                 onDelete={onDeleteCategory}
                 onEdit={startEditing}
                 onSelect={onSelectCategory}
+                onTogglePin={togglePin}
                 badgeStats={badgeCounts?.[category._id as string]}
               />
             ))}
+          </div>
+        )}
+
+        {/* Storage footer */}
+        {!isCollapsed && dbSize && (
+          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-t border-slate-200/60">
+            <CircleStackIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
+            <span className="text-[10px] text-slate-400 truncate">{dbSize}</span>
           </div>
         )}
       </div>
