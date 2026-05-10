@@ -89,14 +89,14 @@ const CategoryItem = React.memo<{
     return (
       <button
         className={`relative p-1.5 rounded-lg transition-all duration-150 ${
-          isSelected ? 'bg-slate-800' : 'hover:bg-black/[0.04]'
+          isSelected ? 'bg-[#1A1A1A]' : 'hover:bg-black/[0.04]'
         }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
         {category.image ? (
           <img
             alt={category.name}
-            className="h-7 w-7 rounded-md object-contain"
+            className="h-6 w-6 rounded-md object-contain"
             onError={e => {
               e.currentTarget.style.display = 'none';
               (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
@@ -104,7 +104,7 @@ const CategoryItem = React.memo<{
             src={`https://logo.clearbit.com/${category.image}`}
           />
         ) : null}
-        <div className={`h-7 w-7 rounded-md flex items-center justify-center text-white text-[10px] font-bold ${category.image ? 'hidden' : ''} ${getMonogramColor(category.name)}`}>
+        <div className={`h-6 w-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold ${category.image ? 'hidden' : ''} ${getMonogramColor(category.name)}`}>
           {getMonogram(category.name)}
         </div>
         {renderBadges()}
@@ -118,9 +118,9 @@ const CategoryItem = React.memo<{
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-[13.5px] transition-all duration-150 ${
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-[12.5px] transition-all duration-150 ${
           isSelected
-            ? 'bg-slate-800 text-white font-medium'
+            ? 'bg-[#1A1A1A] text-white font-medium'
             : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(category._id as string)}>
@@ -130,7 +130,7 @@ const CategoryItem = React.memo<{
           {category.image ? (
             <img
               alt={category.name}
-              className="h-6 w-6 rounded-md object-contain flex-shrink-0"
+              className="h-[18px] w-[18px] rounded-md object-contain flex-shrink-0"
               onError={e => {
                 e.currentTarget.style.display = 'none';
                 (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
@@ -138,7 +138,7 @@ const CategoryItem = React.memo<{
               src={`https://logo.clearbit.com/${category.image}`}
             />
           ) : null}
-          <div className={`h-6 w-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''} ${isSelected ? 'opacity-90' : ''} ${getMonogramColor(category.name)}`}>
+          <div className={`h-[18px] w-[18px] rounded-md flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''} ${isSelected ? 'opacity-90' : ''} ${getMonogramColor(category.name)}`}>
             {getMonogram(category.name)}
           </div>
           <span className="truncate">{category.name}</span>
@@ -575,9 +575,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
         {/* Storage footer */}
         {!isCollapsed && dbSize && (
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-t border-slate-200/60">
-            <CircleStackIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
-            <span className="text-[10px] text-slate-400 truncate">{dbSize}</span>
+          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-t border-slate-100/60">
+            <CircleStackIcon className="h-3 w-3 text-slate-300 flex-shrink-0" />
+            <span className="text-[10px] text-slate-300 truncate">{dbSize}</span>
           </div>
         )}
       </div>

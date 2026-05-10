@@ -10,7 +10,12 @@
       "Bash(node -e \"const {TableCellNode} = require\\('@lexical/table'\\); const proto = TableCellNode.prototype; console.log\\(Object.getOwnPropertyNames\\(proto\\).join\\('\\\\n'\\)\\)\")",
       "Bash(npm install:*)",
       "Bash(Get-ChildItem -Recurse -Path . -Include *note*,*page*,*table*,*editor* -File)",
-      "Bash(grep -E \"\\\\.tsx$\")"
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(git stash *)"
     ]
   }
 }

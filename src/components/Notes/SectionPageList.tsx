@@ -17,7 +17,6 @@ import {
 } from '@dnd-kit/core';
 import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {
-  CalendarIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -138,6 +137,7 @@ interface PageRowProps {
   onToggleExpand?: (id: string) => void;
   isChild?: boolean;
   sortable?: boolean;
+  darkMode?: boolean;
 }
 
 const PageRow = React.memo<PageRowProps>(
@@ -156,6 +156,7 @@ const PageRow = React.memo<PageRowProps>(
     onToggleExpand,
     isChild,
     sortable = true,
+    darkMode = false,
   }) => {
     const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
     const isInactive = !!page.isInactive;
@@ -167,18 +168,22 @@ const PageRow = React.memo<PageRowProps>(
     const inner = (
       <div
         className={`group relative flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-[12px] transition-all duration-150 ${
-          isInactive
+          darkMode
+            ? isSelected
+              ? 'bg-white/[0.07] text-white/90 font-semibold'
+              : 'text-white/55 hover:bg-white/[0.05] hover:text-white/80'
+            : isInactive
             ? isSelected
               ? 'bg-slate-200/50 text-slate-400 font-medium'
               : 'text-slate-300 hover:bg-black/[0.02]'
             : isSelected
-            ? 'bg-violet-50/30 text-slate-800 font-semibold'
+            ? 'bg-[#66CC00]/[0.08] text-slate-800 font-semibold'
             : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(page._id as string)}>
         {/* Active accent bar */}
         {isSelected && !isInactive && (
-          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-violet-500" />
+          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-[#66CC00]" />
         )}
         {/* Chevron / spacer */}
         {hasChildren ? (
@@ -208,9 +213,11 @@ const PageRow = React.memo<PageRowProps>(
         ) : null}
         <PageIcon
           className={`h-3.5 w-3.5 flex-shrink-0 ${page.image ? 'hidden' : ''} ${
-            isInactive ? 'text-slate-300' : isSelected ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-400'
+            darkMode
+              ? isSelected ? 'text-[#66CC00]' : 'text-white/30'
+              : isInactive ? 'text-slate-300' : isSelected ? 'text-[#66CC00]' : 'text-slate-500 group-hover:text-slate-400'
           }`}
-          style={isInactive ? undefined : iconStyle}
+          style={darkMode || isInactive ? undefined : iconStyle}
         />
 
         {/* Title + timestamp */}
@@ -219,7 +226,7 @@ const PageRow = React.memo<PageRowProps>(
             {page.title || 'Untitled'}
           </span>
           {!isChild && page.updatedAt && (
-            <span className="text-[9px] text-slate-400/70 leading-none mt-0.5 truncate">
+            <span className={`text-[9px] leading-none mt-0.5 truncate ${darkMode ? 'text-white/25' : 'text-slate-400/70'}`}>
               {formatTimeAgo(page.updatedAt)}
             </span>
           )}
@@ -232,7 +239,9 @@ const PageRow = React.memo<PageRowProps>(
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0">
           <button
             className={`rounded p-0.5 transition-colors ${
-              isInactive
+              darkMode
+                ? 'text-white/30 hover:bg-white/10 hover:text-white/70'
+                : isInactive
                 ? 'text-slate-400 hover:bg-slate-200 hover:text-green-600'
                 : 'text-slate-400 hover:bg-slate-200 hover:text-amber-600'
             }`}
@@ -244,7 +253,7 @@ const PageRow = React.memo<PageRowProps>(
             {isInactive ? <EyeIcon className="h-3 w-3" /> : <EyeSlashIcon className="h-3 w-3" />}
           </button>
           <button
-            className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
+            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
             onClick={e => {
               e.stopPropagation();
               onShowParentPicker(page._id as string);
@@ -253,7 +262,7 @@ const PageRow = React.memo<PageRowProps>(
             <Squares2X2Icon className="h-3 w-3" />
           </button>
           <button
-            className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
+            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
             onClick={e => {
               e.stopPropagation();
               onEdit(page);
@@ -262,7 +271,7 @@ const PageRow = React.memo<PageRowProps>(
             <PencilIcon className="h-3 w-3" />
           </button>
           <button
-            className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
+            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
             onClick={e => {
               e.stopPropagation();
               onMove(page);
@@ -271,7 +280,7 @@ const PageRow = React.memo<PageRowProps>(
             <FolderArrowDownIcon className="h-3 w-3" />
           </button>
           <button
-            className="rounded p-0.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-red-400' : 'text-slate-400 hover:bg-red-50 hover:text-red-600'}`}
             onClick={e => {
               e.stopPropagation();
               if (confirm('Delete this page?')) onDelete(page._id as string);
@@ -318,8 +327,6 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     isCollapsed,
     onToggleCollapse,
     categoryName,
-    categoryRecentPages,
-    onJumpToRecentPage,
   }) => {
     // ── Section edit state ────────────────────────────────────────────────────
     const [isAddingSection, setIsAddingSection] = useState(false);
@@ -474,10 +481,6 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       }
     }, [newPageTitle, newPageColor, newPageIcon, newPageImage, onAddPage]);
 
-    const handleAddToday = useCallback(() => {
-      const today = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
-      onAddPage(today, '#000000', 'Calendar', null);
-    }, [onAddPage]);
 
     const startEditingPage = useCallback((page: INotePage) => {
       setEditingPageId(page._id as string);
@@ -551,7 +554,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             return (
               <button
                 key={sec._id as string}
-                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-slate-800' : 'hover:bg-black/[0.04]'}`}
+                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-[#1A1A1A]' : 'hover:bg-black/[0.04]'}`}
                 onClick={() => onSelectSection(sec._id as string)}
                 title={sec.name}>
                 {sec.image ? (
@@ -575,16 +578,24 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     return (
       <div className="flex h-full flex-col relative">
         {/* Panel header */}
-        <div className="flex items-center justify-between px-3 pt-2.5 pb-1 flex-shrink-0">
-          <div>
+        <div className="flex items-center justify-between px-3 pt-2.5 pb-2 flex-shrink-0 border-b border-slate-200/40">
+          <div className="min-w-0 overflow-hidden">
             {categoryName && (
-              <p className="text-[9px] font-medium uppercase tracking-widest text-slate-400/70 truncate mb-0.5">{categoryName}</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400/60 truncate mb-0.5">{categoryName}</p>
             )}
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-400/80">
-              Sections{sections.length > 0 ? ` · ${sections.length}` : ''}
-            </h2>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-600">
+                {sections.length} section{sections.length !== 1 ? 's' : ''}
+              </span>
+              {(() => {
+                const totalUnread = Object.values(sectionBadgeCounts || {}).reduce((sum, b) => sum + (b?.todo?.count || 0), 0);
+                return totalUnread > 0 ? (
+                  <span className="text-[8px] font-bold bg-rose-500 text-white px-1 py-0.5 rounded-full leading-none">{totalUnread}</span>
+                ) : null;
+              })()}
+            </div>
           </div>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
               onClick={onToggleCollapse}
@@ -633,23 +644,6 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           </div>
         )}
 
-        {/* Recently opened strip */}
-        {categoryRecentPages && categoryRecentPages.length > 0 && (
-          <div className="px-3 pb-1.5 flex-shrink-0">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400/60 mb-1">Recently opened</p>
-            <div className="flex gap-1.5">
-              {categoryRecentPages.map(rp => (
-                <button
-                  key={rp.id}
-                  className="flex-1 min-w-0 rounded-lg bg-black/[0.03] hover:bg-black/[0.06] px-2 py-1.5 text-left transition-colors"
-                  onClick={() => onJumpToRecentPage?.(rp.sectionId, rp.id)}>
-                  <p className="text-[10px] font-medium text-slate-700 truncate">{rp.title}</p>
-                  <p className="text-[9px] text-slate-400 truncate">{rp.sectionName}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
@@ -737,10 +731,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <SortableItem id={sid}>
                           {/* ── Section row ───────────────────────────────── */}
                           <div
-                            className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-[13.5px] transition-all duration-150 ${
+                            className={`group relative flex cursor-pointer items-center justify-between px-2.5 py-2 text-[13px] transition-all duration-150 ${
                               isSelectedSec
-                                ? 'bg-slate-800 text-white font-medium'
-                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
+                                ? 'bg-[#1A1A1A] text-white font-medium rounded-t-lg'
+                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900 rounded-lg'
                             }`}
                             onClick={() => onSelectSection(sid)}>
                             <div className="flex items-center gap-2.5 overflow-hidden flex-1 min-w-0">
@@ -758,11 +752,19 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 />
                               )}
                               <span className="truncate">{section.name}</span>
-                              {/* Page count chip — in the active row */}
-                              {isSelectedSec && pages.length > 0 && (
-                                <span className="flex-shrink-0 text-[9px] font-medium text-white/50 bg-white/10 px-1.5 py-0.5 rounded-full tabular-nums">
-                                  {pages.length}
-                                </span>
+                              {/* Page count chip */}
+                              {isSelectedSec ? (
+                                pages.length > 0 && (
+                                  <span className="flex-shrink-0 text-[9px] font-medium text-white/50 bg-white/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                                    {pages.length}
+                                  </span>
+                                )
+                              ) : (
+                                (sectionBadgeCounts?.[sid]?.todo?.count ?? 0) > 0 && (
+                                  <span className="flex-shrink-0 text-[9px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full tabular-nums">
+                                    {sectionBadgeCounts?.[sid]?.todo?.count}
+                                  </span>
+                                )
                               )}
                             </div>
 
@@ -797,25 +799,8 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
-                          <div className="ml-5 mt-0.5 mb-1 border-l-2 border-slate-200 pl-2">
-                            {/* Pages sub-header */}
-                            <div className="flex items-center justify-between px-1.5 py-1 mb-0.5">
-                              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70">Pages</span>
-                              <div className="flex items-center gap-0.5">
-                                <button
-                                  className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
-                                  onClick={handleAddToday}
-                                  title="Add today's page">
-                                  <CalendarIcon className="h-3 w-3" />
-                                </button>
-                                <button
-                                  className="rounded p-0.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
-                                  onClick={() => setIsAddingPage(true)}
-                                  title="Add page">
-                                  <PlusIcon className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </div>
+                          <div className="bg-[#1A1A1A] rounded-b-lg pb-2 mb-0.5">
+                            <div className="ml-3 border-l border-white/[0.10] pl-2 pt-1.5">
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
@@ -850,7 +835,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             {loadingPages ? (
                               <div className="flex flex-col gap-1.5 py-1">
                                 {[1, 2, 3].map(i => (
-                                  <div key={i} className="h-6 rounded bg-slate-200/60 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
+                                  <div key={i} className="h-6 rounded bg-white/10 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
                                 ))}
                               </div>
                             ) : (
@@ -914,11 +899,12 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                                   isExpanded={isExpanded}
                                                   onToggleExpand={toggleParentExpanded}
                                                   sortable
+                                                  darkMode
                                                 />
                                               </li>
                                               {isExpanded && children.length > 0 && (
                                                 <li>
-                                                  <ul className="ml-3 space-y-0.5 border-l border-slate-100 pl-1">
+                                                  <ul className="ml-3 space-y-0.5 border-l border-white/10 pl-1">
                                                     {children.map(child => {
                                                       const cid = child._id as string;
                                                       if (editingPageId === cid) {
@@ -963,6 +949,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                                             badgeStat={pageBadgeCounts?.[cid]}
                                                             isChild
                                                             sortable={false}
+                                                            darkMode
                                                           />
                                                         </li>
                                                       );
@@ -979,13 +966,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 )}
                                 {!isAddingPage && (
                                   <button
-                                    className="w-full text-left px-2 py-1.5 text-[11px] text-slate-400 hover:text-violet-500 transition-colors"
+                                    className="w-full text-left px-2 py-1.5 text-[11px] text-white/30 hover:text-[#66CC00] transition-colors"
                                     onClick={() => setIsAddingPage(true)}>
                                     + New page
                                   </button>
                                 )}
                               </>
                             )}
+                            </div>
                           </div>
                         )}
                       </li>

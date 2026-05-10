@@ -32,6 +32,7 @@ import {
   DocumentMagnifyingGlassIcon,
   UserIcon,
   BoltIcon,
+  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -995,7 +996,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
               <div className="w-px h-5 bg-slate-100 mx-0 flex-shrink-0" />
 
-              {/* ── Workspace switcher + ⌘K command bar ── */}
+              {/* ── Workspace switcher + breadcrumb + ⌘K command bar ── */}
               <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden px-2">
                 {/* Workspace switcher */}
                 <button
@@ -1012,6 +1013,42 @@ const NotesLayout: React.FC = React.memo(() => {
                   <span className="font-semibold text-[13px] text-slate-700 group-hover:text-slate-900">Notes</span>
                   <ChevronDownIcon className="h-3 w-3 text-slate-300 flex-shrink-0" />
                 </button>
+
+                {/* Dynamic breadcrumb */}
+                {(currentCategory || currentSection || selectedPage) && (
+                  <>
+                    <div className="w-px h-4 bg-slate-200 flex-shrink-0" />
+                    <div className="flex items-center gap-1 overflow-hidden min-w-0 flex-shrink-0 max-w-[320px]">
+                      {currentCategory && (
+                        <button
+                          onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
+                          className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[90px]"
+                          title={currentCategory.name}>
+                          {currentCategory.name}
+                        </button>
+                      )}
+                      {currentSection && (
+                        <>
+                          <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                          <button
+                            onClick={() => setSelectedPageId(null)}
+                            className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[90px]"
+                            title={currentSection.name}>
+                            {currentSection.name}
+                          </button>
+                        </>
+                      )}
+                      {selectedPage && (
+                        <>
+                          <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
+                          <span className="text-[11px] text-slate-500 font-medium truncate max-w-[110px]" title={selectedPage.title}>
+                            {selectedPage.title || 'Untitled'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
 
                 <div className="w-px h-4 bg-slate-200 flex-shrink-0" />
 
@@ -1114,6 +1151,12 @@ const NotesLayout: React.FC = React.memo(() => {
                           </Link>
                         )}
                         <button
+                          onClick={() => { setIsProfileOpen(false); handleOpenSettings(); }}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-700 transition-colors w-full text-left">
+                          <Cog6ToothIcon className="h-4 w-4" />
+                          Badge Settings
+                        </button>
+                        <button
                           onClick={() => signOut()}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">
                           <ArrowLeftOnRectangleIcon className="h-4 w-4" />
@@ -1131,39 +1174,20 @@ const NotesLayout: React.FC = React.memo(() => {
           <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
             {/* ── Resource Rail — expandable icon palette, grouped by function ── */}
             {!isFocusMode && (
-              <div className={`flex flex-col py-3 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar gap-0.5 transition-all duration-200 ${isRailExpanded ? 'w-44 items-stretch px-1.5' : 'w-16 items-center'}`}>
-                {/* Toggle expand/collapse */}
-                <button
-                  onClick={() => setIsRailExpanded(v => !v)}
-                  title={isRailExpanded ? 'Collapse' : 'Expand'}
-                  className={`flex items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 mb-1 ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-10 h-8'}`}>
-                  <ChevronRightIcon className={`h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 ${isRailExpanded ? 'rotate-180' : ''}`} />
-                  {isRailExpanded && <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400/70 truncate">Collapse</span>}
-                </button>
+              <div className={`flex flex-col py-2 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar gap-0.5 transition-all duration-200 ${isRailExpanded ? 'w-44 items-stretch px-1.5' : 'w-14 items-center'}`}>
 
-                {/* ── AI tools ── */}
+                {/* ── AI tools (Chat → Executive) ── */}
                 <button
                   onClick={handleOpenAIChat}
                   title="AI Chat"
-                  className={`flex items-center rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
-                  <ChatBubbleLeftRightIcon className="h-[18px] w-[18px] flex-shrink-0" />
+                  className={`flex items-center rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  <ChatBubbleLeftRightIcon className="h-[15px] w-[15px] flex-shrink-0" />
                   {isRailExpanded && <span className="truncate text-left text-[12px]">AI Chat</span>}
                 </button>
                 {[
                   {icon: SparklesIcon, label: 'Rewrite', action: handleOpenRewrite},
                   {icon: BeakerIcon, label: 'Refiner', action: handleOpenRefiner},
                   {icon: UserIcon, label: 'Humanize', action: handleOpenHumanizer},
-                ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
-                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-                    {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
-                  </button>
-                ))}
-
-                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
-
-                {/* ── Document tools ── */}
-                {[
                   {icon: DocumentMagnifyingGlassIcon, label: 'Redline', action: handleOpenRedline},
                   {icon: BoltIcon, label: 'Truth Teller', action: handleOpenTruthTeller},
                   {icon: DocumentTextIcon, label: 'Form Fill', action: () => window.open('/pdf-autofill', '_blank')},
@@ -1171,22 +1195,21 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment},
                   {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
-                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
+                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
                     {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
 
-                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
+                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-6'}`} />
 
-                {/* ── Personal tools ── */}
-                {/* Calendar — small dot to flag upcoming events */}
+                {/* ── Data sources (Calendar → Bookmarks) ── */}
                 <button
                   onClick={() => setIsCalendarOpen(true)}
                   title="Calendar"
-                  className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
+                  className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
                   <div className="relative flex-shrink-0">
-                    <CalendarDaysIcon className="h-[18px] w-[18px]" />
+                    <CalendarDaysIcon className="h-[15px] w-[15px]" />
                     <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
                   </div>
                   {isRailExpanded && <span className="truncate text-left text-[12px]">Calendar</span>}
@@ -1197,48 +1220,19 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
                   {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
-                    <Icon className="h-[18px] w-[18px] flex-shrink-0" />
+                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                    <Icon className="h-[15px] w-[15px] flex-shrink-0" />
                     {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
 
-                {/* Push to bottom */}
+                {/* Expand/collapse toggle at the very bottom */}
                 <div className="flex-1" />
-                <div className={`h-px bg-slate-200/60 mb-1 ${isRailExpanded ? 'mx-1' : 'w-7'}`} />
-
-                {/* Settings */}
                 <button
-                  onClick={handleOpenSettings}
-                  title="Settings"
-                  className={`flex items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2.5 px-2 py-2 w-full' : 'justify-center w-10 h-9'}`}>
-                  <Cog6ToothIcon className="h-[18px] w-[18px] flex-shrink-0" />
-                  {isRailExpanded && <span className="truncate text-left text-[12px]">Settings</span>}
-                </button>
-
-                {/* Avatar — green presence dot + task badge */}
-                <button
-                  onClick={() => setIsProfileOpen(v => !v)}
-                  title={userName}
-                  className={`flex items-center rounded-lg hover:bg-slate-100 transition-all duration-150 mb-1 ${isRailExpanded ? 'gap-2.5 px-2 py-1.5 w-full' : 'justify-center w-10 h-9'}`}>
-                  <div className="relative flex-shrink-0">
-                    {session?.user?.image ? (
-                      <img src={session.user.image} alt="avatar" className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
-                        <span className="text-white text-[11px] font-bold">{userInitial}</span>
-                      </div>
-                    )}
-                    {/* Green presence dot */}
-                    <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-white translate-x-0.5 translate-y-0.5" />
-                    {/* Task badge */}
-                    {activeTaskCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-rose-500 px-0.5 text-[7px] font-bold text-white ring-1 ring-white">
-                        {activeTaskCount > 9 ? '9+' : activeTaskCount}
-                      </span>
-                    )}
-                  </div>
-                  {isRailExpanded && <span className="truncate text-left text-[12px] font-medium text-slate-600">{userName}</span>}
+                  onClick={() => setIsRailExpanded(v => !v)}
+                  title={isRailExpanded ? 'Collapse' : 'Expand'}
+                  className={`flex items-center rounded-lg text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-all duration-150 mt-1 ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  <ChevronRightIcon className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${isRailExpanded ? 'rotate-180' : ''}`} />
                 </button>
               </div>
             )}
@@ -1324,27 +1318,72 @@ const NotesLayout: React.FC = React.memo(() => {
                     onSave={handleSavePageContent}
                   />
                 </div>
-              ) : /* Section selected, no page: Pages overview */
+              ) : /* Section selected, no page: Enhanced section dashboard */
               selectedSectionId ? (
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
                   <div className="max-w-4xl mx-auto">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-violet-500 mb-1">
-                          {currentCategory?.name}
-                        </p>
-                        <h1 className="text-2xl font-bold text-slate-900">{currentSection?.name}</h1>
-                        <p className="text-sm text-slate-400 mt-0.5">
-                          {pages.length} page{pages.length !== 1 ? 's' : ''}
-                        </p>
+                    {/* Section header */}
+                    <div className="mb-8">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+                        {currentCategory?.name?.toUpperCase()} · SECTION
+                      </p>
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h1 className="text-[22px] font-bold text-slate-900 leading-tight">{currentSection?.name}</h1>
+                          <p className="text-[12px] text-slate-400 mt-1">
+                            {pages.length} page{pages.length !== 1 ? 's' : ''}
+                            {pages.length > 0 && pages[0].updatedAt && (
+                              <> · Last updated {formatTimeAgo(new Date(pages[0].updatedAt).getTime())}</>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 text-[12px] font-medium hover:bg-slate-50 transition-all">
+                            <ArrowUpTrayIcon className="h-3.5 w-3.5" /> Share
+                          </button>
+                          <button
+                            onClick={() => handleAddPage('New Page')}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1A1A1A] hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
+                            <DocumentPlusIcon className="h-3.5 w-3.5" /> New page
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleAddPage('New Page')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
-                        <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
-                      </button>
                     </div>
 
+                    {/* Stats strip */}
+                    <div className="grid grid-cols-4 gap-3 mb-8">
+                      {[
+                        {
+                          label: 'Pages',
+                          value: pages.length,
+                          type: 'number',
+                        },
+                        {
+                          label: 'Open Tasks',
+                          value: pages.reduce((sum, p) => sum + (badgeCounts.pages[p._id as string]?.todo?.count || 0), 0),
+                          type: 'number',
+                        },
+                        {
+                          label: 'Last Activity',
+                          value: pages.length > 0 && pages[0].updatedAt ? formatTimeAgo(new Date(pages[0].updatedAt).getTime()) : '—',
+                          type: 'text',
+                        },
+                        {
+                          label: 'Linked Items',
+                          value: 0,
+                          type: 'number',
+                        },
+                      ].map(stat => (
+                        <div key={stat.label} className="p-4 rounded-xl bg-slate-50 border border-slate-100/80">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">{stat.label}</p>
+                          <p className={`font-bold text-slate-900 ${stat.type === 'number' ? 'text-[22px] leading-none' : 'text-[13px]'}`}>
+                            {String(stat.value)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pages grid */}
                     {pages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
                         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
@@ -1353,39 +1392,54 @@ const NotesLayout: React.FC = React.memo(() => {
                         <p className="text-[13px] text-slate-400 font-medium">No pages yet. Create your first one.</p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
                         {pages.map(page => {
                           const badge = badgeCounts.pages[page._id as string];
                           return (
                             <button
                               key={page._id as string}
                               onClick={() => setSelectedPageId(page._id as string)}
-                              className="group text-left p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-200">
-                              <div className="w-8 h-8 rounded-xl bg-white border border-slate-100 flex items-center justify-center mb-3 group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors shadow-sm">
-                                <PencilSquareIcon className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
+                              className="group text-left p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-md transition-all duration-200">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:bg-[#1A1A1A] group-hover:border-[#1A1A1A] transition-colors">
+                                  <PencilSquareIcon className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-colors" />
+                                </div>
+                                {badge?.todo?.count > 0 && (
+                                  <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
+                                    {badge.todo.count}
+                                  </span>
+                                )}
                               </div>
-                              <p className="text-[12.5px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors truncate leading-tight mb-2">
+                              <p className="text-[12px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate leading-tight mb-1.5">
                                 {page.title || 'Untitled'}
                               </p>
-                              {badge?.todo?.count > 0 && (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-rose-500 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
-                                  <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
-                                  {badge.todo.count}
-                                </span>
+                              {page.updatedAt && (
+                                <p className="text-[10px] text-slate-400">
+                                  {formatTimeAgo(new Date(page.updatedAt).getTime())}
+                                </p>
                               )}
                             </button>
                           );
                         })}
                         <button
                           onClick={() => handleAddPage('New Page')}
-                          className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[110px]">
-                          <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
-                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">
-                            New Page
+                          className="group flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-transparent border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50/40 transition-all min-h-[100px]">
+                          <PlusCircleIcon className="h-5 w-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
+                          <span className="text-[11px] text-slate-400 group-hover:text-slate-500 transition-colors font-medium">
+                            New page
                           </span>
                         </button>
                       </div>
                     )}
+
+                    {/* Linked items */}
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Linked Items</p>
+                      <div className="rounded-2xl bg-slate-50 border border-slate-100 p-6 flex flex-col items-center justify-center gap-2">
+                        <p className="text-[12px] text-slate-400">No linked items yet</p>
+                        <p className="text-[11px] text-slate-300">Contracts, decks, and documents linked to this section will appear here</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : /* Category selected, no section: Sections overview */
