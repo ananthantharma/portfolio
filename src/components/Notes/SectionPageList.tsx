@@ -799,7 +799,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
-                          <div className="bg-[#1A1A1A] rounded-b-lg pb-2 mb-0.5">
+                          <div className="bg-[#1A1A1A] rounded-b-lg pb-2 mb-0.5 text-white">
                             <div className="ml-3 border-l border-white/[0.10] pl-2 pt-1.5">
 
                             {/* Add-page inline form */}

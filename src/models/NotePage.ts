@@ -24,6 +24,9 @@ export interface INotePage extends Document {
   isImportant: boolean;
   todoCount?: number;
   userEmail?: string;
+  description?: string;
+  isStarred?: boolean;
+  isPinned?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -84,6 +87,18 @@ const NotePageSchema: Schema = new Schema(
       default: false,
     },
     isImportant: {
+      type: Boolean,
+      default: false,
+    },
+    description: {
+      type: String,
+      default: '',
+    },
+    isStarred: {
+      type: Boolean,
+      default: false,
+    },
+    isPinned: {
       type: Boolean,
       default: false,
     },

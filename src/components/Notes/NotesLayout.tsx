@@ -10,7 +10,6 @@ import {
   FlagIcon,
   HomeIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
   PhotoIcon,
   CalendarDaysIcon,
   UsersIcon,
@@ -32,7 +31,6 @@ import {
   DocumentMagnifyingGlassIcon,
   UserIcon,
   BoltIcon,
-  ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -51,6 +49,7 @@ import ImageExtractionModal from './ImageExtractionModal';
 import NoteEditor from './NoteEditor';
 // import SearchModal from './SearchModal'; // Replaced by CommandPalette
 import SectionPageList from './SectionPageList';
+import SectionDashboard from './SectionDashboard';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
 import MovePageModal from './MovePageModal';
@@ -704,6 +703,20 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
+  const handleUpdatePage = useCallback(async (id: string, updates: Partial<INotePage>) => {
+    try {
+      const response = await axios.put(`/api/notes/pages/${id}`, updates);
+      setPages(prev => prev.map(p => (p._id === id ? response.data.data : p)));
+    } catch (error) {
+      console.error('Error updating page:', error);
+    }
+  }, []);
+
+  const handleOpenPageFromDashboard = useCallback((id: string, tabId?: string) => {
+    setSelectedPageId(id);
+    setTargetTabId(tabId);
+  }, []);
+
   const handleSavePageContent = useCallback(async (id: string, data: any) => {
     // data coming from NoteEditor is now the 'tabs' array
     // Do NOT swallow errors — let them propagate to NoteEditor so isDirty stays true
@@ -1318,130 +1331,18 @@ const NotesLayout: React.FC = React.memo(() => {
                     onSave={handleSavePageContent}
                   />
                 </div>
-              ) : /* Section selected, no page: Enhanced section dashboard */
+              ) : /* Section selected, no page: File-explorer dashboard */
               selectedSectionId ? (
-                <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
-                  <div className="max-w-4xl mx-auto">
-                    {/* Section header */}
-                    <div className="mb-8">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                        {currentCategory?.name?.toUpperCase()} · SECTION
-                      </p>
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h1 className="text-[22px] font-bold text-slate-900 leading-tight">{currentSection?.name}</h1>
-                          <p className="text-[12px] text-slate-400 mt-1">
-                            {pages.length} page{pages.length !== 1 ? 's' : ''}
-                            {pages.length > 0 && pages[0].updatedAt && (
-                              <> · Last updated {formatTimeAgo(new Date(pages[0].updatedAt).getTime())}</>
-                            )}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600 text-[12px] font-medium hover:bg-slate-50 transition-all">
-                            <ArrowUpTrayIcon className="h-3.5 w-3.5" /> Share
-                          </button>
-                          <button
-                            onClick={() => handleAddPage('New Page')}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1A1A1A] hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
-                            <DocumentPlusIcon className="h-3.5 w-3.5" /> New page
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats strip */}
-                    <div className="grid grid-cols-4 gap-3 mb-8">
-                      {[
-                        {
-                          label: 'Pages',
-                          value: pages.length,
-                          type: 'number',
-                        },
-                        {
-                          label: 'Open Tasks',
-                          value: pages.reduce((sum, p) => sum + (badgeCounts.pages[p._id as string]?.todo?.count || 0), 0),
-                          type: 'number',
-                        },
-                        {
-                          label: 'Last Activity',
-                          value: pages.length > 0 && pages[0].updatedAt ? formatTimeAgo(new Date(pages[0].updatedAt).getTime()) : '—',
-                          type: 'text',
-                        },
-                        {
-                          label: 'Linked Items',
-                          value: 0,
-                          type: 'number',
-                        },
-                      ].map(stat => (
-                        <div key={stat.label} className="p-4 rounded-xl bg-slate-50 border border-slate-100/80">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">{stat.label}</p>
-                          <p className={`font-bold text-slate-900 ${stat.type === 'number' ? 'text-[22px] leading-none' : 'text-[13px]'}`}>
-                            {String(stat.value)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Pages grid */}
-                    {pages.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
-                        <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
-                          <PencilSquareIcon className="h-7 w-7 text-slate-300" />
-                        </div>
-                        <p className="text-[13px] text-slate-400 font-medium">No pages yet. Create your first one.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
-                        {pages.map(page => {
-                          const badge = badgeCounts.pages[page._id as string];
-                          return (
-                            <button
-                              key={page._id as string}
-                              onClick={() => setSelectedPageId(page._id as string)}
-                              className="group text-left p-4 rounded-xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-slate-200 hover:shadow-md transition-all duration-200">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="w-7 h-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm group-hover:bg-[#1A1A1A] group-hover:border-[#1A1A1A] transition-colors">
-                                  <PencilSquareIcon className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-colors" />
-                                </div>
-                                {badge?.todo?.count > 0 && (
-                                  <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
-                                    {badge.todo.count}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[12px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate leading-tight mb-1.5">
-                                {page.title || 'Untitled'}
-                              </p>
-                              {page.updatedAt && (
-                                <p className="text-[10px] text-slate-400">
-                                  {formatTimeAgo(new Date(page.updatedAt).getTime())}
-                                </p>
-                              )}
-                            </button>
-                          );
-                        })}
-                        <button
-                          onClick={() => handleAddPage('New Page')}
-                          className="group flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-transparent border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50/40 transition-all min-h-[100px]">
-                          <PlusCircleIcon className="h-5 w-5 text-slate-300 group-hover:text-slate-400 transition-colors" />
-                          <span className="text-[11px] text-slate-400 group-hover:text-slate-500 transition-colors font-medium">
-                            New page
-                          </span>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Linked items */}
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Linked Items</p>
-                      <div className="rounded-2xl bg-slate-50 border border-slate-100 p-6 flex flex-col items-center justify-center gap-2">
-                        <p className="text-[12px] text-slate-400">No linked items yet</p>
-                        <p className="text-[11px] text-slate-300">Contracts, decks, and documents linked to this section will appear here</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <SectionDashboard
+                  pages={pages}
+                  loadingPages={loadingPages}
+                  currentSection={currentSection}
+                  currentCategory={currentCategory}
+                  badgeCounts={badgeCounts.pages}
+                  onOpenPage={handleOpenPageFromDashboard}
+                  onAddPage={title => handleAddPage(title)}
+                  onUpdatePage={handleUpdatePage}
+                />
               ) : /* Category selected, no section: Sections overview */
               selectedCategoryId ? (
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
