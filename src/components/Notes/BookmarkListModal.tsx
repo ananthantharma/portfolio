@@ -163,18 +163,29 @@ function BookmarkCard({
           placeholder="https://..."
           type="url"
         />
-        <input
-          value={editForm.category ?? ''}
-          onChange={e => setEditForm({...editForm, category: e.target.value})}
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
-          placeholder="Category"
-          list="edit-categories-list"
-        />
-        <datalist id="edit-categories-list">
+        <select
+          value={allCategories.includes(editForm.category ?? '') ? (editForm.category ?? '') : '__new__'}
+          onChange={e =>
+            setEditForm({...editForm, category: e.target.value === '__new__' ? '' : e.target.value})
+          }
+          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white text-gray-900">
           {allCategories.map(c => (
-            <option key={c} value={c} />
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
-        </datalist>
+          <option value="__new__">+ New category…</option>
+        </select>
+        {!allCategories.includes(editForm.category ?? '') && (
+          <input
+            autoFocus
+            value={editForm.category ?? ''}
+            onChange={e => setEditForm({...editForm, category: e.target.value})}
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+            placeholder="New category name"
+            type="text"
+          />
+        )}
         <textarea
           value={editForm.description ?? ''}
           onChange={e => setEditForm({...editForm, description: e.target.value})}
@@ -226,7 +237,7 @@ function BookmarkCard({
     <div className="relative flex-shrink-0" onClick={e => e.stopPropagation()}>
       <button
         onClick={() => setOpenMenuId(isMenuOpen ? null : bookmark._id)}
-        className="p-1.5 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+        className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
         <EllipsisVerticalIcon className="h-4 w-4" />
       </button>
       {isMenuOpen && (
