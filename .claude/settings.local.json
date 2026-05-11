@@ -15,7 +15,8 @@
       "Bash(Select-Object FullName, PSIsContainer)",
       "Bash(Sort-Object FullName)",
       "Bash(Format-Table -AutoSize)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(findstr -i bookmark)"
     ]
   }
 }
