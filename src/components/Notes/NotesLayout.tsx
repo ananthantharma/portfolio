@@ -1646,6 +1646,24 @@ const NotesLayout: React.FC = React.memo(() => {
           />
         )}
 
+        {/* ── Focus Mode Exit Button ── */}
+        {isFocusMode && (
+          <div className="fixed top-4 right-4 z-[9999]">
+            <div className="group relative flex items-center justify-center">
+              <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap">
+                Exit Focus Mode (Ctrl+\)
+                <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
+              </div>
+              <button
+                onClick={toggleFocusMode}
+                className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-white shadow-sm hover:shadow-md transition-all duration-150"
+                title="Exit Focus Mode (Ctrl+\)">
+                <ArrowsPointingInIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Floating Tasks Button (left) ── */}
         <div className="fixed bottom-8 left-8 z-[9998]">
           <div className="group relative flex items-center justify-center">

@@ -13,15 +13,24 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 // ─── Monogram helpers ─────────────────────────────────────────────────────────
 
-const MONOGRAM_COLORS = [
-  'bg-blue-500', 'bg-amber-500', 'bg-sky-500', 'bg-violet-500',
-  'bg-rose-500', 'bg-emerald-500', 'bg-orange-500', 'bg-indigo-500',
-  'bg-teal-500', 'bg-pink-500', 'bg-lime-600', 'bg-cyan-500',
+const PASTEL_PAIRS: [string, string][] = [
+  ['#EAF3DE', '#27500A'],
+  ['#EDF2FF', '#1E3A8A'],
+  ['#FFF7ED', '#7C2D12'],
+  ['#F5F3FF', '#4C1D95'],
+  ['#FFF1F2', '#881337'],
+  ['#ECFDF5', '#064E3B'],
+  ['#FFF9F0', '#7C3400'],
+  ['#EEF2FF', '#312E81'],
+  ['#F0FDFA', '#134E4A'],
+  ['#FDF4FF', '#581C87'],
+  ['#F7FEE7', '#365314'],
+  ['#ECFEFF', '#164E63'],
 ];
 
-function getMonogramColor(name: string): string {
+function getMonogramPastel(name: string): [string, string] {
   const hash = name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return MONOGRAM_COLORS[hash % MONOGRAM_COLORS.length];
+  return PASTEL_PAIRS[hash % PASTEL_PAIRS.length];
 }
 
 function getMonogram(name: string): string {
@@ -29,6 +38,8 @@ function getMonogram(name: string): string {
   if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
 }
+
+import {useSession} from 'next-auth/react';
 
 import {INoteCategory} from '@/models/NoteCategory';
 
@@ -86,10 +97,11 @@ const CategoryItem = React.memo<{
   };
 
   if (isCollapsed) {
+    const [monoBg, monoFg] = getMonogramPastel(category.name);
     return (
       <button
         className={`relative p-1.5 rounded-lg transition-all duration-150 ${
-          isSelected ? 'bg-[#1A1A1A]' : 'hover:bg-black/[0.04]'
+          isSelected ? 'bg-slate-100' : 'hover:bg-black/[0.04]'
         }`}
         onClick={() => onSelect(category._id as string)}
         title={category.name}>
@@ -104,7 +116,9 @@ const CategoryItem = React.memo<{
             src={`https://logo.clearbit.com/${category.image}`}
           />
         ) : null}
-        <div className={`h-6 w-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold ${category.image ? 'hidden' : ''} ${getMonogramColor(category.name)}`}>
+        <div
+          className={`h-6 w-6 rounded-md flex items-center justify-center text-[9px] font-bold ${category.image ? 'hidden' : ''}`}
+          style={{backgroundColor: monoBg, color: monoFg}}>
           {getMonogram(category.name)}
         </div>
         {renderBadges()}
@@ -115,13 +129,14 @@ const CategoryItem = React.memo<{
     );
   }
 
+  const [monoBg, monoFg] = getMonogramPastel(category.name);
   return (
     <SortableItem id={category._id as string}>
       <div
-        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-[12.5px] transition-all duration-150 ${
+        className={`group relative flex cursor-pointer items-center justify-between rounded-lg px-[10px] py-[7px] text-[12.5px] transition-all duration-150 ${
           isSelected
-            ? 'bg-[#1A1A1A] text-white font-medium'
-            : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
+            ? 'bg-slate-100/80 text-slate-900 font-semibold'
+            : 'text-slate-500 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(category._id as string)}>
 
@@ -138,7 +153,9 @@ const CategoryItem = React.memo<{
               src={`https://logo.clearbit.com/${category.image}`}
             />
           ) : null}
-          <div className={`h-[18px] w-[18px] rounded-md flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''} ${isSelected ? 'opacity-90' : ''} ${getMonogramColor(category.name)}`}>
+          <div
+            className={`h-[18px] w-[18px] rounded-md flex items-center justify-center text-[8px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''}`}
+            style={{backgroundColor: monoBg, color: monoFg}}>
             {getMonogram(category.name)}
           </div>
           <span className="truncate">{category.name}</span>
@@ -199,6 +216,16 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     dbSize,
   }) => {
     const [isAdding, setIsAdding] = useState(false);
+
+    const {data: session} = useSession();
+    const userName = useMemo(() => {
+      const n = (session?.user as any)?.name || session?.user?.email || '';
+      return n.split(' ')[0].split('@')[0];
+    }, [session]);
+    const userInitial = useMemo(() => {
+      const n = (session?.user as any)?.name || session?.user?.email || 'U';
+      return n.charAt(0).toUpperCase();
+    }, [session]);
 
     // ── Pinned notebooks (persisted) ──────────────────────────────────────────
     const [pinnedIds, setPinnedIds] = useState<Set<string>>(() => {
@@ -573,11 +600,25 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
           </div>
         )}
 
-        {/* Storage footer */}
-        {!isCollapsed && dbSize && (
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-t border-slate-100/60">
-            <CircleStackIcon className="h-3 w-3 text-slate-300 flex-shrink-0" />
-            <span className="text-[10px] text-slate-300 truncate">{dbSize}</span>
+        {/* User chip + storage footer */}
+        {!isCollapsed && (
+          <div className="flex-shrink-0 border-t border-slate-100/60">
+            <div className="flex items-center gap-2 px-3 py-2.5">
+              {session?.user?.image ? (
+                <img src={session.user.image} alt="avatar" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[9px] font-bold">{userInitial}</span>
+                </div>
+              )}
+              <span className="text-[11px] font-medium text-slate-600 truncate flex-1">{userName}</span>
+              {dbSize && (
+                <span className="flex items-center gap-1 text-[10px] text-slate-300 flex-shrink-0">
+                  <CircleStackIcon className="h-2.5 w-2.5" />
+                  {dbSize}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>

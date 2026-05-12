@@ -29,6 +29,7 @@ import {
   Squares2X2Icon,
   TrashIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
@@ -328,6 +329,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     onToggleCollapse,
     categoryName,
   }) => {
+    // ── Section search ────────────────────────────────────────────────────────
+    const [searchQuery, setSearchQuery] = useState('');
+
     // ── Section edit state ────────────────────────────────────────────────────
     const [isAddingSection, setIsAddingSection] = useState(false);
     const [newSecName, setNewSecName] = useState('');
@@ -384,6 +388,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       });
       return map;
     }, [pages]);
+
+    const filteredSections = useMemo(
+      () => searchQuery.trim() ? sections.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())) : sections,
+      [sections, searchQuery],
+    );
 
     const availableParents = useMemo(() => {
       if (!parentPickerFor) return [];
@@ -554,14 +563,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             return (
               <button
                 key={sec._id as string}
-                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-[#1A1A1A]' : 'hover:bg-black/[0.04]'}`}
+                className={`relative p-2 rounded-lg transition-all ${isSelected ? 'bg-slate-100' : 'hover:bg-black/[0.04]'}`}
                 onClick={() => onSelectSection(sec._id as string)}
                 title={sec.name}>
                 {sec.image ? (
                   <img alt={sec.name} className="h-5 w-5 object-contain" src={`https://logo.clearbit.com/${sec.image}`} />
                 ) : (
                   <SectionIcon
-                    className={`h-5 w-5 ${isSelected ? 'text-white' : 'text-slate-400'}`}
+                    className={`h-5 w-5 ${isSelected ? 'text-slate-700' : 'text-slate-400'}`}
                   />
                 )}
                 {sectionBadgeCounts?.[sec._id as string] && (
@@ -578,36 +587,46 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     return (
       <div className="flex h-full flex-col relative">
         {/* Panel header */}
-        <div className="flex items-center justify-between px-3 pt-2.5 pb-2 flex-shrink-0 border-b border-slate-200/40">
-          <div className="min-w-0 overflow-hidden">
-            {categoryName && (
-              <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400/60 truncate mb-0.5">{categoryName}</p>
-            )}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-slate-600">
-                {sections.length} section{sections.length !== 1 ? 's' : ''}
-              </span>
-              {(() => {
-                const totalUnread = Object.values(sectionBadgeCounts || {}).reduce((sum, b) => sum + (b?.todo?.count || 0), 0);
-                return totalUnread > 0 ? (
-                  <span className="text-[8px] font-bold bg-rose-500 text-white px-1 py-0.5 rounded-full leading-none">{totalUnread}</span>
-                ) : null;
-              })()}
+        <div className="flex-shrink-0 border-b border-slate-200/40">
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-2">
+            <div className="min-w-0 overflow-hidden">
+              {categoryName ? (
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70 truncate">{categoryName}</p>
+              ) : (
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70">Sections</p>
+              )}
+            </div>
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <button
+                className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
+                onClick={onToggleCollapse}
+                title="Collapse">
+                <ChevronLeftIcon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
+                onClick={() => setIsAddingSection(true)}
+                title="Add Section">
+                <PlusIcon className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            <button
-              className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
-              onClick={onToggleCollapse}
-              title="Collapse">
-              <ChevronLeftIcon className="h-3.5 w-3.5" />
-            </button>
-            <button
-              className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
-              onClick={() => setIsAddingSection(true)}
-              title="Add Section">
-              <PlusIcon className="h-3.5 w-3.5" />
-            </button>
+          {/* Search input */}
+          <div className="px-2 pb-2">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100/70 border border-slate-200/50">
+              <MagnifyingGlassIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
+              <input
+                className="flex-1 text-[11px] bg-transparent outline-none text-slate-600 placeholder-slate-400 min-w-0"
+                placeholder="Search sections..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="text-slate-300 hover:text-slate-500 flex-shrink-0">
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -686,9 +705,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             </div>
           ) : (
             <DndContext collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd} sensors={sensors}>
-              <SortableContext items={sections.map(s => s._id as string)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={filteredSections.map(s => s._id as string)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-0.5">
-                  {sections.map(section => {
+                  {filteredSections.map(section => {
                     const sid = section._id as string;
                     const isSelectedSec = selectedSectionId === sid;
                     const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
@@ -731,10 +750,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <SortableItem id={sid}>
                           {/* ── Section row ───────────────────────────────── */}
                           <div
-                            className={`group relative flex cursor-pointer items-center justify-between px-2.5 py-2 text-[13px] transition-all duration-150 ${
+                            className={`group relative flex cursor-pointer items-center justify-between px-2.5 py-2 text-[13px] transition-all duration-150 rounded-lg ${
                               isSelectedSec
-                                ? 'bg-[#1A1A1A] text-white font-medium rounded-t-lg'
-                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900 rounded-lg'
+                                ? 'bg-slate-100/80 text-slate-900 font-semibold'
+                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
                             }`}
                             onClick={() => onSelectSection(sid)}>
                             <div className="flex items-center gap-2.5 overflow-hidden flex-1 min-w-0">
@@ -748,14 +767,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 <img alt={section.name} className="h-4 w-4 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
                               ) : (
                                 <SectionIcon
-                                  className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-slate-300' : 'text-slate-400'}`}
+                                  className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-slate-600' : 'text-slate-400'}`}
                                 />
                               )}
                               <span className="truncate">{section.name}</span>
                               {/* Page count chip */}
                               {isSelectedSec ? (
                                 pages.length > 0 && (
-                                  <span className="flex-shrink-0 text-[9px] font-medium text-white/50 bg-white/10 px-1.5 py-0.5 rounded-full tabular-nums">
+                                  <span className="flex-shrink-0 text-[9px] font-medium text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-full tabular-nums">
                                     {pages.length}
                                   </span>
                                 )
@@ -799,8 +818,8 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
-                          <div className="bg-[#1A1A1A] rounded-b-lg pb-2 mb-0.5 text-white">
-                            <div className="ml-3 border-l border-white/[0.10] pl-2 pt-1.5">
+                          <div className="pb-1 mb-0.5">
+                            <div className="ml-3 border-l border-slate-200/70 pl-2 pt-1">
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
@@ -835,7 +854,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             {loadingPages ? (
                               <div className="flex flex-col gap-1.5 py-1">
                                 {[1, 2, 3].map(i => (
-                                  <div key={i} className="h-6 rounded bg-white/10 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
+                                  <div key={i} className="h-6 rounded bg-slate-100/80 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
                                 ))}
                               </div>
                             ) : (
@@ -899,12 +918,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                                   isExpanded={isExpanded}
                                                   onToggleExpand={toggleParentExpanded}
                                                   sortable
-                                                  darkMode
                                                 />
                                               </li>
                                               {isExpanded && children.length > 0 && (
                                                 <li>
-                                                  <ul className="ml-3 space-y-0.5 border-l border-white/10 pl-1">
+                                                  <ul className="ml-3 space-y-0.5 border-l border-slate-200/70 pl-1">
                                                     {children.map(child => {
                                                       const cid = child._id as string;
                                                       if (editingPageId === cid) {
@@ -949,7 +967,6 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                                             badgeStat={pageBadgeCounts?.[cid]}
                                                             isChild
                                                             sortable={false}
-                                                            darkMode
                                                           />
                                                         </li>
                                                       );
@@ -966,7 +983,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 )}
                                 {!isAddingPage && (
                                   <button
-                                    className="w-full text-left px-2 py-1.5 text-[11px] text-white/30 hover:text-[#66CC00] transition-colors"
+                                    className="w-full text-left px-2 py-1.5 text-[11px] text-slate-400 hover:text-[#66CC00] transition-colors"
                                     onClick={() => setIsAddingPage(true)}>
                                     + New page
                                   </button>
