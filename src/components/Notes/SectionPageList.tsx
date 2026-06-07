@@ -21,6 +21,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DocumentPlusIcon,
   EyeIcon,
   EyeSlashIcon,
   FolderArrowDownIcon,
@@ -587,42 +588,40 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     return (
       <div className="flex h-full flex-col relative">
         {/* Panel header */}
-        <div className="flex-shrink-0 border-b border-slate-200/40">
-          <div className="flex items-center justify-between px-3 pt-2.5 pb-2">
+        <div className="flex-shrink-0 border-b border-black/[0.06]">
+          <div className="flex items-center justify-between px-3 pt-3 pb-2">
             <div className="min-w-0 overflow-hidden">
-              {categoryName ? (
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70 truncate">{categoryName}</p>
-              ) : (
-                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400/70">Sections</p>
-              )}
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400/80 truncate">
+                {categoryName ?? 'Sections'}
+              </p>
             </div>
             <div className="flex items-center gap-0.5 flex-shrink-0">
               <button
-                className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
+                className="rounded-md p-1 text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-all"
                 onClick={onToggleCollapse}
                 title="Collapse">
                 <ChevronLeftIcon className="h-3.5 w-3.5" />
               </button>
               <button
-                className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all"
+                className="rounded-md p-1 text-violet-500 hover:bg-violet-50 hover:text-violet-700 transition-all"
                 onClick={() => setIsAddingSection(true)}
-                title="Add Section">
+                title="New Section">
                 <PlusIcon className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
           {/* Search input */}
-          <div className="px-2 pb-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100/70 border border-slate-200/50">
+          <div className="px-2 pb-2.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/[0.03] border border-black/[0.05]">
               <MagnifyingGlassIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
               <input
-                className="flex-1 text-[11px] bg-transparent outline-none text-slate-600 placeholder-slate-400 min-w-0"
-                placeholder="Search sections..."
+                className="flex-1 text-[11px] bg-transparent outline-none text-slate-600 placeholder-slate-400/70 min-w-0"
+                placeholder="Search sections…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-slate-300 hover:text-slate-500 flex-shrink-0">
+                <button onClick={() => setSearchQuery('')} className="text-slate-300 hover:text-slate-500 flex-shrink-0 transition-colors">
                   <XMarkIcon className="h-3 w-3" />
                 </button>
               )}
@@ -668,10 +667,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
           {/* Add-section inline form */}
           {isAddingSection && (
-            <div className="mb-2 rounded-xl border border-black/[0.06] bg-white p-3 shadow-lg z-20 relative">
+            <div className="mb-2 rounded-xl border border-violet-100 bg-white p-3 shadow-xl shadow-violet-500/5 ring-1 ring-violet-100/50 z-20 relative">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-400 mb-2">New Section</p>
               <input
                 autoFocus
-                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 placeholder-gray-400 text-gray-900 mb-3"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 placeholder-slate-300 text-slate-800 mb-3 transition-all"
                 onChange={e => setNewSecName(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleAddSection();
@@ -686,11 +686,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               </div>
               <ColorPicker onSelectColor={setNewSecColor} selectedColor={newSecColor} />
               <div className="flex justify-end gap-2 mt-3">
-                <button className="rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100" onClick={() => setIsAddingSection(false)}>
+                <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingSection(false)}>
                   Cancel
                 </button>
-                <button className="rounded-lg bg-indigo-600 px-3 py-1 text-xs text-white hover:bg-indigo-700 shadow-sm" onClick={handleAddSection}>
-                  Add
+                <button className="rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-violet-700 shadow-sm transition-colors" onClick={handleAddSection}>
+                  Add Section
                 </button>
               </div>
             </div>
@@ -715,10 +715,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                     if (editingSecId === sid) {
                       return (
                         <li key={sid}>
-                          <div className="rounded-xl border border-indigo-100 bg-white p-3 shadow-md ring-1 ring-indigo-50 z-20 relative">
+                          <div className="rounded-xl border border-violet-100 bg-white p-3 shadow-xl shadow-violet-500/5 ring-1 ring-violet-50 z-20 relative">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-violet-400 mb-2">Rename Section</p>
                             <input
                               autoFocus
-                              className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900 mb-3"
+                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-800 mb-3 transition-all"
                               onChange={e => setEditSecName(e.target.value)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter') handleRenameSection();
@@ -733,10 +734,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             </div>
                             <ColorPicker onSelectColor={setEditSecColor} selectedColor={editSecColor} />
                             <div className="flex justify-end gap-2 mt-3">
-                              <button className="rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100" onClick={() => setEditingSecId(null)}>
+                              <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setEditingSecId(null)}>
                                 Cancel
                               </button>
-                              <button className="rounded-lg bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700" onClick={handleRenameSection}>
+                              <button className="rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-violet-700 shadow-sm transition-colors" onClick={handleRenameSection}>
                                 Save
                               </button>
                             </div>
@@ -750,31 +751,34 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <SortableItem id={sid}>
                           {/* ── Section row ───────────────────────────────── */}
                           <div
-                            className={`group relative flex cursor-pointer items-center justify-between px-2.5 py-2 text-[13px] transition-all duration-150 rounded-lg ${
+                            className={`group relative flex cursor-pointer items-center justify-between px-2 py-1.5 text-[12.5px] transition-all duration-150 rounded-lg ${
                               isSelectedSec
-                                ? 'bg-slate-100/80 text-slate-900 font-semibold'
-                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
+                                ? 'bg-violet-50/80 text-violet-900 font-semibold ring-1 ring-inset ring-violet-100'
+                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-800'
                             }`}
                             onClick={() => onSelectSection(sid)}>
-                            <div className="flex items-center gap-2.5 overflow-hidden flex-1 min-w-0">
+                            {/* Active left border */}
+                            {isSelectedSec && <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-violet-500" />}
+                            <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0 pl-1.5">
                               {/* Expand chevron */}
-                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-slate-400' : 'text-slate-300'}`}>
+                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-violet-400' : 'text-slate-300'}`}>
                                 {isSelectedSec
                                   ? <ChevronDownIcon className="h-3 w-3" />
                                   : <ChevronRightIcon className="h-3 w-3" />}
                               </span>
                               {section.image ? (
-                                <img alt={section.name} className="h-4 w-4 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
+                                <img alt={section.name} className="h-3.5 w-3.5 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
                               ) : (
                                 <SectionIcon
-                                  className={`h-4 w-4 flex-shrink-0 ${isSelectedSec ? 'text-slate-600' : 'text-slate-400'}`}
+                                  className={`h-3.5 w-3.5 flex-shrink-0 ${isSelectedSec ? 'text-violet-600' : 'text-slate-400'}`}
+                                  style={section.color && section.color !== '#000000' ? {color: section.color} : undefined}
                                 />
                               )}
-                              <span className="truncate">{section.name}</span>
-                              {/* Page count chip */}
+                              <span className="truncate leading-snug">{section.name}</span>
+                              {/* Count chip */}
                               {isSelectedSec ? (
                                 pages.length > 0 && (
-                                  <span className="flex-shrink-0 text-[9px] font-medium text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded-full tabular-nums">
+                                  <span className="flex-shrink-0 text-[9px] font-semibold text-violet-500 bg-violet-100 px-1.5 py-0.5 rounded-full tabular-nums">
                                     {pages.length}
                                   </span>
                                 )
@@ -794,6 +798,16 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                             {/* Section actions */}
                             <div className="hidden group-hover:flex items-center gap-0.5 ml-1 flex-shrink-0">
+                              <button
+                                className="rounded p-1 text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  onSelectSection(sid);
+                                  setIsAddingPage(true);
+                                }}
+                                title="New page in this section">
+                                <DocumentPlusIcon className="h-3 w-3" />
+                              </button>
                               <button
                                 className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
                                 onClick={e => {
@@ -819,18 +833,19 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
                           <div className="pb-1 mb-0.5">
-                            <div className="ml-3 border-l border-slate-200/70 pl-2 pt-1">
+                            <div className="ml-3 border-l border-violet-100 pl-2 pt-1">
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
-                              <div className="mb-1.5 rounded-xl border border-black/[0.06] bg-white p-2.5 shadow-lg">
+                              <div className="mb-1.5 rounded-xl border border-violet-100 bg-white p-2.5 shadow-lg shadow-violet-500/5 ring-1 ring-violet-50">
+                                <p className="text-[9px] font-bold uppercase tracking-wider text-violet-400 mb-2">New Page</p>
                                 <div className="flex items-center gap-2 mb-2">
                                   <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
                                   <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
                                 </div>
                                 <input
                                   autoFocus
-                                  className="w-full rounded-lg border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900 mb-2"
+                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:outline-none text-slate-800 mb-2 transition-all"
                                   onChange={e => setNewPageTitle(e.target.value)}
                                   onKeyDown={e => {
                                     if (e.key === 'Enter') handleAddPage();
@@ -839,12 +854,12 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   placeholder="Page title"
                                   value={newPageTitle}
                                 />
-                                <div className="flex justify-end gap-1">
-                                  <button className="text-gray-500 hover:text-red-600" onClick={() => setIsAddingPage(false)}>
-                                    <XMarkIcon className="h-4 w-4" />
+                                <div className="flex justify-end gap-1.5">
+                                  <button className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingPage(false)}>
+                                    Cancel
                                   </button>
-                                  <button className="text-indigo-500 hover:text-green-600" onClick={handleAddPage}>
-                                    <CheckIcon className="h-4 w-4" />
+                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-sm" onClick={handleAddPage}>
+                                    Add Page
                                   </button>
                                 </div>
                               </div>
@@ -983,9 +998,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 )}
                                 {!isAddingPage && (
                                   <button
-                                    className="w-full text-left px-2 py-1.5 text-[11px] text-slate-400 hover:text-[#66CC00] transition-colors"
+                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:text-violet-600 hover:bg-violet-50/60 rounded-md transition-all"
                                     onClick={() => setIsAddingPage(true)}>
-                                    + New page
+                                    <PlusIcon className="h-3 w-3 flex-shrink-0" />
+                                    New page
                                   </button>
                                 )}
                               </>

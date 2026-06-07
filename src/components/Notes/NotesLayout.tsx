@@ -58,6 +58,7 @@ import {BadgeSettingsProvider} from './BadgeSettingsContext';
 import {BadgeSettingsModal} from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
+import {ICON_options} from './IconPicker';
 import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 
@@ -1347,17 +1348,18 @@ const NotesLayout: React.FC = React.memo(() => {
               selectedCategoryId ? (
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
                   <div className="max-w-3xl mx-auto">
-                    <div className="flex items-center justify-between mb-8">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-8">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Notebook</p>
-                        <h1 className="text-2xl font-bold text-slate-900">{currentCategory?.name}</h1>
-                        <p className="text-sm text-slate-400 mt-0.5">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1.5">Notebook</p>
+                        <h1 className="text-2xl font-bold text-slate-900 leading-tight">{currentCategory?.name}</h1>
+                        <p className="text-[12px] text-slate-400 mt-1">
                           {sections.length} section{sections.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                       <button
                         onClick={() => handleAddSection('New Section')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-violet-500/20 active:scale-[0.98]">
                         <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
                       </button>
                     </div>
@@ -1367,40 +1369,59 @@ const NotesLayout: React.FC = React.memo(() => {
                         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
                           <BookmarkIcon className="h-7 w-7 text-slate-300" />
                         </div>
-                        <p className="text-[13px] text-slate-400 font-medium">
-                          No sections yet. Create your first one.
-                        </p>
+                        <p className="text-[13px] text-slate-400 font-medium">No sections yet. Create your first one.</p>
+                        <button
+                          onClick={() => handleAddSection('New Section')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-violet-500/20">
+                          <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
+                        </button>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         {sections.map(section => {
                           const badge = badgeCounts.sections[section._id as string];
+                          const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+                          const iconColor = section.color && section.color !== '#000000' ? section.color : '#8B5CF6';
                           return (
                             <button
                               key={section._id as string}
                               onClick={() => handleSelectSection(section._id as string)}
-                              className="group text-left p-5 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white hover:border-violet-300 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-200">
-                              <div className="flex items-start justify-between mb-4">
-                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center group-hover:bg-violet-500 group-hover:border-violet-500 transition-colors shadow-sm">
-                                  <BookmarkIcon className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
+                              className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/8 transition-all duration-200 active:scale-[0.98]">
+                              <div className="flex items-start justify-between mb-3.5">
+                                <div
+                                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+                                  style={{
+                                    backgroundColor: `${iconColor}18`,
+                                    border: `1px solid ${iconColor}30`,
+                                  }}>
+                                  {section.image ? (
+                                    <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
+                                  ) : (
+                                    <SectionIcon className="h-4 w-4" style={{color: iconColor}} />
+                                  )}
                                 </div>
                                 {badge?.todo?.count > 0 && (
-                                  <span className="text-[10px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-semibold">
+                                  <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-bold tabular-nums">
                                     {badge.todo.count}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[13px] font-semibold text-slate-700 group-hover:text-violet-600 transition-colors">
+                              <p className="text-[13px] font-semibold text-slate-700 group-hover:text-violet-700 transition-colors leading-snug">
                                 {section.name}
+                              </p>
+                              <p className="text-[11px] text-slate-400 mt-0.5 group-hover:text-violet-400 transition-colors">
+                                Open section →
                               </p>
                             </button>
                           );
                         })}
                         <button
                           onClick={() => handleAddSection('New Section')}
-                          className="group flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-400 hover:bg-violet-50/30 transition-all min-h-[120px]">
-                          <PlusCircleIcon className="h-6 w-6 text-slate-300 group-hover:text-violet-500 transition-colors" />
-                          <span className="text-[11px] text-slate-400 group-hover:text-violet-500 transition-colors font-medium">
+                          className="group flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-300 hover:bg-violet-50/40 transition-all min-h-[110px] active:scale-[0.98]">
+                          <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
+                            <PlusCircleIcon className="h-4 w-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+                          </div>
+                          <span className="text-[11px] text-slate-400 group-hover:text-violet-600 transition-colors font-medium">
                             New Section
                           </span>
                         </button>
