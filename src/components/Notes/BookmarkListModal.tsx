@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, useMemo} from 'react';
+import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import {Dialog, Transition} from '@headlessui/react';
 import {
   XMarkIcon,
@@ -11,6 +11,7 @@ import {
   EllipsisVerticalIcon,
   PencilIcon,
   CheckIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 import {StarIcon} from '@heroicons/react/24/solid';
 import axios from 'axios';
@@ -20,7 +21,9 @@ interface IBookmark {
   url: string;
   title: string;
   description: string;
+  notes?: string;
   category: string;
+  tags?: string[];
   added_timestamp?: string;
   icon?: string;
 }
@@ -99,6 +102,108 @@ function savePinnedIds(ids: Set<string>): void {
   } catch {}
 }
 
+// ── TagPills ───────────────────────────────────────────────────────────────
+
+function TagPills({
+  tags,
+  selectedTag,
+  onTagClick,
+  small = false,
+}: {
+  tags: string[];
+  selectedTag: string | null;
+  onTagClick: (tag: string) => void;
+  small?: boolean;
+}) {
+  if (!tags.length) return null;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tags.map(tag => (
+        <button
+          key={tag}
+          onClick={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            onTagClick(tag);
+          }}
+          className={`px-2 py-0.5 rounded-full border text-xs font-medium transition-colors ${
+            small ? 'text-[10px] px-1.5' : ''
+          } ${
+            selectedTag === tag
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+          }`}>
+          {tag}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── TagInput ───────────────────────────────────────────────────────────────
+
+function TagInput({
+  tags,
+  onChange,
+}: {
+  tags: string[];
+  onChange: (tags: string[]) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [inputVal, setInputVal] = useState('');
+
+  const addTag = (raw: string) => {
+    const trimmed = raw.trim().replace(/,+$/, '');
+    if (trimmed && !tags.includes(trimmed)) {
+      onChange([...tags, trimmed]);
+    }
+    setInputVal('');
+  };
+
+  const removeTag = (tag: string) => onChange(tags.filter(t => t !== tag));
+
+  return (
+    <div
+      className="w-full min-h-[38px] flex flex-wrap gap-1.5 items-center border border-gray-200 rounded-lg px-3 py-2 cursor-text focus-within:ring-2 focus-within:ring-gray-900"
+      onClick={() => inputRef.current?.focus()}>
+      {tags.map(tag => (
+        <span
+          key={tag}
+          className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full border border-indigo-200">
+          {tag}
+          <button
+            type="button"
+            onClick={e => {
+              e.stopPropagation();
+              removeTag(tag);
+            }}
+            className="text-indigo-400 hover:text-indigo-700">
+            <XMarkIcon className="h-3 w-3" />
+          </button>
+        </span>
+      ))}
+      <input
+        ref={inputRef}
+        value={inputVal}
+        onChange={e => setInputVal(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTag(inputVal);
+          } else if (e.key === 'Backspace' && !inputVal && tags.length) {
+            removeTag(tags[tags.length - 1]);
+          }
+        }}
+        onBlur={() => {
+          if (inputVal.trim()) addTag(inputVal);
+        }}
+        placeholder={tags.length ? '' : 'Add tags (press Enter or comma)'}
+        className="flex-1 min-w-[120px] text-sm outline-none bg-transparent text-gray-900 placeholder:text-gray-400"
+      />
+    </div>
+  );
+}
+
 // ── BookmarkCard ───────────────────────────────────────────────────────────
 
 interface CardProps {
@@ -114,8 +219,12 @@ interface CardProps {
   onPin: (id: string) => void;
   onEdit: (b: IBookmark) => void;
   onDelete: (id: string) => void;
+  onCopyLink: (id: string, url: string) => void;
+  copiedId: string | null;
   viewMode: 'grid' | 'list';
   allCategories: string[];
+  selectedTag: string | null;
+  onTagClick: (tag: string) => void;
 }
 
 function BookmarkCard({
@@ -131,19 +240,25 @@ function BookmarkCard({
   onPin,
   onEdit,
   onDelete,
+  onCopyLink,
+  copiedId,
   viewMode,
   allCategories,
+  selectedTag,
+  onTagClick,
 }: CardProps) {
   const source = getSourceBadge(bookmark.url);
   const domain = getCleanDomain(bookmark.url);
   const relTime = getRelativeTime(bookmark.added_timestamp);
   const isMenuOpen = openMenuId === bookmark._id;
+  const isCopied = copiedId === bookmark._id;
 
   const hasDescription =
     !!bookmark.description?.trim() &&
     bookmark.description.trim().toLowerCase() !== bookmark.title.trim().toLowerCase();
 
   const href = bookmark.url.startsWith('http') ? bookmark.url : `https://${bookmark.url}`;
+  const tags = bookmark.tags ?? [];
 
   // ── Edit form ────────────────────────────────────────────────────────────
   if (isEditing) {
@@ -193,6 +308,10 @@ function BookmarkCard({
           placeholder="Description (optional)"
           rows={2}
         />
+        <TagInput
+          tags={editForm.tags ?? []}
+          onChange={newTags => setEditForm({...editForm, tags: newTags})}
+        />
         <div className="flex gap-2 pt-1">
           <button
             onClick={saveEdit}
@@ -232,6 +351,20 @@ function BookmarkCard({
     </div>
   );
 
+  // ── Copy button ──────────────────────────────────────────────────────────
+  const copyButton = (
+    <button
+      onClick={e => {
+        e.preventDefault();
+        e.stopPropagation();
+        onCopyLink(bookmark._id, bookmark.url);
+      }}
+      title="Copy link"
+      className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0">
+      {isCopied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <ClipboardDocumentIcon className="h-4 w-4" />}
+    </button>
+  );
+
   // ── Context menu ─────────────────────────────────────────────────────────
   const menu = (
     <div className="relative flex-shrink-0" onClick={e => e.stopPropagation()}>
@@ -250,6 +383,15 @@ function BookmarkCard({
             className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
             <StarIcon className="h-4 w-4 text-amber-400" />
             {isPinned ? 'Unpin' : 'Pin'}
+          </button>
+          <button
+            onClick={() => {
+              onCopyLink(bookmark._id, bookmark.url);
+              setOpenMenuId(null);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+            <ClipboardDocumentIcon className="h-4 w-4 text-gray-400" />
+            Copy link
           </button>
           <button
             onClick={() => onEdit(bookmark)}
@@ -272,24 +414,35 @@ function BookmarkCard({
   if (viewMode === 'list') {
     return (
       <div
-        className={`group relative flex items-center gap-3 px-4 py-3 bg-white border rounded-xl hover:shadow-sm transition-all ${
+        className={`group relative flex items-start gap-3 px-4 py-3 bg-white border rounded-xl hover:shadow-sm transition-all ${
           isPinned ? 'border-l-4 border-l-green-500 border-gray-200' : 'border-gray-200 hover:border-gray-300'
         }`}>
-        {sourceTile}
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 min-w-0 text-sm font-semibold text-gray-900 hover:text-blue-600 truncate transition-colors">
-          {bookmark.title}
-        </a>
-        <span className="text-xs text-gray-400 flex-shrink-0 hidden sm:block">{domain}</span>
-        <span className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex-shrink-0 mt-0.5">{sourceTile}</div>
+        <div className="flex-1 min-w-0">
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-sm font-semibold text-gray-900 hover:text-blue-600 truncate transition-colors">
+            {bookmark.title}
+          </a>
+          {bookmark.notes?.trim() && (
+            <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">{bookmark.notes}</p>
+          )}
+          {tags.length > 0 && (
+            <div className="mt-1.5">
+              <TagPills tags={tags} selectedTag={selectedTag} onTagClick={onTagClick} small />
+            </div>
+          )}
+        </div>
+        <span className="text-xs text-gray-400 flex-shrink-0 hidden sm:block self-center">{domain}</span>
+        <span className="flex items-center gap-1 flex-shrink-0 self-center">
           <span className={`w-2 h-2 rounded-full ${getCategoryDotColor(bookmark.category)}`} />
           <span className="text-xs text-gray-500 hidden sm:block">{bookmark.category}</span>
         </span>
-        {relTime && <span className="text-xs text-gray-400 flex-shrink-0 hidden md:block">{relTime}</span>}
-        {menu}
+        {relTime && <span className="text-xs text-gray-400 flex-shrink-0 hidden md:block self-center">{relTime}</span>}
+        <div className="self-center">{copyButton}</div>
+        <div className="self-center">{menu}</div>
       </div>
     );
   }
@@ -302,7 +455,10 @@ function BookmarkCard({
       }`}>
       <div className="flex items-start justify-between mb-3">
         {sourceTile}
-        {menu}
+        <div className="flex items-center gap-0.5">
+          {copyButton}
+          {menu}
+        </div>
       </div>
 
       <a
@@ -316,6 +472,12 @@ function BookmarkCard({
       {hasDescription && <p className="text-xs text-gray-500 line-clamp-2 mb-1">{bookmark.description}</p>}
 
       <p className="text-xs text-gray-400 truncate mb-auto">{domain}</p>
+
+      {tags.length > 0 && (
+        <div className="mt-2">
+          <TagPills tags={tags} selectedTag={selectedTag} onTagClick={onTagClick} />
+        </div>
+      )}
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
         <span className="flex items-center gap-1.5">
@@ -335,6 +497,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'alpha' | 'recent'>('alpha');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [pinnedIds, setPinnedIds] = useState<Set<string>>(loadPinnedIds);
@@ -342,6 +505,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<IBookmark>>({});
   const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const togglePin = useCallback((id: string) => {
     setPinnedIds(prev => {
@@ -351,6 +515,14 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
       savePinnedIds(next);
       return next;
     });
+  }, []);
+
+  const handleCopyLink = useCallback((id: string, url: string) => {
+    const href = url.startsWith('http') ? url : `https://${url}`;
+    navigator.clipboard.writeText(href).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(() => {});
   }, []);
 
   const allCategories = useMemo(
@@ -365,6 +537,21 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
     });
     return counts;
   }, [bookmarks]);
+
+  // Tags available in the selected category (for the sub-filter row)
+  const availableTagsForCategory = useMemo(() => {
+    if (selectedCategory === 'All') return [];
+    const tags = new Set<string>();
+    bookmarks
+      .filter(b => b.category === selectedCategory)
+      .forEach(b => (b.tags ?? []).forEach(t => tags.add(t)));
+    return [...tags].sort();
+  }, [bookmarks, selectedCategory]);
+
+  // Reset tag filter when category changes
+  useEffect(() => {
+    setSelectedTag(null);
+  }, [selectedCategory]);
 
   const fetchBookmarks = useCallback(async () => {
     setLoading(true);
@@ -389,6 +576,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
       url: 'https://',
       description: '',
       category: selectedCategory === 'All' ? 'Other' : selectedCategory,
+      tags: [],
     };
     try {
       const res = await axios.post('/api/bookmarks', draft);
@@ -425,7 +613,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
 
   const startEdit = useCallback((bookmark: IBookmark) => {
     setEditingId(bookmark._id);
-    setEditForm({...bookmark});
+    setEditForm({...bookmark, tags: bookmark.tags ?? []});
     setOpenMenuId(null);
   }, []);
 
@@ -437,6 +625,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
         url: editForm.url,
         description: editForm.description,
         category: editForm.category,
+        tags: editForm.tags ?? [],
       });
       setBookmarks(prev => prev.map(b => (b._id === editingId ? ({...b, ...editForm} as IBookmark) : b)));
       setEditingId(null);
@@ -460,13 +649,15 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
   const filteredBookmarks = useMemo(() => {
     let result = bookmarks.filter(b => {
       const matchCat = selectedCategory === 'All' || b.category === selectedCategory;
+      const matchTag = !selectedTag || (b.tags ?? []).includes(selectedTag);
       const q = searchQuery.toLowerCase();
       const matchSearch =
         !q ||
         (b.title ?? '').toLowerCase().includes(q) ||
         (b.url ?? '').toLowerCase().includes(q) ||
-        (b.description ?? '').toLowerCase().includes(q);
-      return matchCat && matchSearch;
+        (b.description ?? '').toLowerCase().includes(q) ||
+        (b.tags ?? []).some(t => t.toLowerCase().includes(q));
+      return matchCat && matchTag && matchSearch;
     });
 
     if (sortBy === 'alpha') {
@@ -480,7 +671,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
     }
 
     return result;
-  }, [bookmarks, selectedCategory, searchQuery, sortBy]);
+  }, [bookmarks, selectedCategory, selectedTag, searchQuery, sortBy]);
 
   const pinnedBookmarks = filteredBookmarks.filter(b => pinnedIds.has(b._id));
   const unpinnedBookmarks = filteredBookmarks.filter(b => !pinnedIds.has(b._id));
@@ -501,8 +692,12 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
     onPin: togglePin,
     onEdit: startEdit,
     onDelete: handleDelete,
+    onCopyLink: handleCopyLink,
+    copiedId,
     viewMode,
     allCategories,
+    selectedTag,
+    onTagClick: (tag: string) => setSelectedTag(prev => (prev === tag ? null : tag)),
   });
 
   return (
@@ -551,6 +746,9 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                       </Dialog.Title>
                       <p className="text-xs text-gray-500">
                         {filteredBookmarks.length} link{filteredBookmarks.length !== 1 ? 's' : ''}
+                        {selectedTag && (
+                          <span className="ml-1 text-indigo-600">· tagged "{selectedTag}"</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -608,7 +806,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                   </div>
                 </div>
 
-                {/* ── Filter chips + search ── */}
+                {/* ── Category filter chips + search ── */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-6 py-3 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
                   <div className="flex items-center gap-2 flex-wrap flex-1">
                     <button
@@ -656,6 +854,38 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                     />
                   </div>
                 </div>
+
+                {/* ── Tag sub-filter row (shows when a category is selected and has tags) ── */}
+                {selectedCategory !== 'All' && availableTagsForCategory.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap px-6 py-2 border-b border-gray-100 bg-indigo-50/40 flex-shrink-0">
+                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Tags</span>
+                    {availableTagsForCategory.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedTag(prev => (prev === tag ? null : tag));
+                        }}
+                        className={`px-2.5 py-0.5 text-xs font-medium rounded-full border transition-all ${
+                          selectedTag === tag
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50'
+                        }`}>
+                        {tag}
+                      </button>
+                    ))}
+                    {selectedTag && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedTag(null);
+                        }}
+                        className="text-xs text-gray-400 hover:text-gray-600 underline ml-1">
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* ── Content ── */}
                 <div className="flex-1 overflow-auto p-6">

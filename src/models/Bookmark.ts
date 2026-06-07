@@ -6,6 +6,7 @@ export interface IBookmark extends Document {
   description: string;
   notes?: string;
   category: string;
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,11 +18,12 @@ const BookmarkSchema = new Schema<IBookmark>(
     description: {type: String, required: true},
     notes: {type: String, default: ''},
     category: {type: String, required: true, default: 'Other'},
+    tags: {type: [String], default: []},
   },
   {timestamps: true},
 );
 
 // Optional text index for search
-BookmarkSchema.index({description: 'text', notes: 'text', url: 'text', category: 'text'});
+BookmarkSchema.index({description: 'text', notes: 'text', url: 'text', category: 'text', tags: 'text'});
 
 export default (mongoose.models.Bookmark as Model<IBookmark>) || mongoose.model<IBookmark>('Bookmark', BookmarkSchema);

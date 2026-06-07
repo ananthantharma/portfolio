@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const bookmarks = await collection.find({userEmail: session.user.email}).sort({category: 1, title: 1}).toArray();
       res.status(200).json({bookmarks});
     } else if (req.method === 'POST') {
-      const {title, url, category, description} = req.body;
+      const {title, url, category, description, tags} = req.body;
 
       if (!title || typeof url !== 'string' || !category) {
         return res.status(400).json({error: 'Missing required fields'});
@@ -45,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         url,
         category,
         description: description || '',
+        tags: Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string' && t.trim()) : [],
         path: [category],
         added_timestamp: Math.floor(Date.now() / 1000).toString(),
         icon: hostname ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64` : '',

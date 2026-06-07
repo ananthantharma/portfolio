@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'PUT') {
       // Update bookmark - Ensure owned by user
-      const {title, url, category, description} = req.body;
+      const {title, url, category, description, tags} = req.body;
 
       let hostname = '';
       if (url && (url.startsWith('http://') || url.startsWith('https://')) && url.length > 8) {
@@ -45,6 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         url,
         category,
         description,
+        tags: Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string' && t.trim()) : [],
         updated_timestamp: Math.floor(Date.now() / 1000).toString(),
       };
 
