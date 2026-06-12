@@ -27,8 +27,8 @@ export async function GET() {
     const [categories, sections, importantPages, flaggedPages, activeToDos] = await Promise.all([
       NoteCategory.find({userEmail}).sort({order: 1}),
       NoteSection.find({userEmail}).select('_id categoryId'),
-      NotePage.find({userEmail, isImportant: true}).select('sectionId'),
-      NotePage.find({userEmail, isFlagged: true}).select('sectionId'),
+      NotePage.find({userEmail, isImportant: true}).select('sectionId categoryId'),
+      NotePage.find({userEmail, isFlagged: true}).select('sectionId categoryId'),
       ToDo.find({userEmail, isCompleted: false, sourcePageId: {$ne: null}}).select('sourcePageId'),
     ]);
 
@@ -41,25 +41,32 @@ export async function GET() {
     // Fetch todo pages now that we have activeToDos (depends on previous batch)
     const todoPageIds = [...new Set(activeToDos.map(t => t.sourcePageId?.toString() || ''))].filter(id => id);
     const todoPages = todoPageIds.length
-      ? await NotePage.find({_id: {$in: todoPageIds}, userEmail}).select('sectionId')
+      ? await NotePage.find({_id: {$in: todoPageIds}, userEmail}).select('sectionId categoryId')
       : [];
+
+    // Resolve a page's category: via its section, or directly (notebook-root pages have no section)
+    const resolveCategoryId = (page: {sectionId?: unknown; categoryId?: unknown}): string | undefined => {
+      const secId = page.sectionId?.toString();
+      if (secId) return sectionToCategoryMap[secId];
+      return page.categoryId?.toString();
+    };
 
     // Aggregate counts per category
     const categoryImportantCounts: Record<string, number> = {};
     importantPages.forEach(page => {
-      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      const catId = resolveCategoryId(page);
       if (catId) categoryImportantCounts[catId] = (categoryImportantCounts[catId] || 0) + 1;
     });
 
     const categoryFlaggedCounts: Record<string, number> = {};
     flaggedPages.forEach(page => {
-      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      const catId = resolveCategoryId(page);
       if (catId) categoryFlaggedCounts[catId] = (categoryFlaggedCounts[catId] || 0) + 1;
     });
 
     const categoryToDoCounts: Record<string, number> = {};
     todoPages.forEach(page => {
-      const catId = sectionToCategoryMap[page.sectionId.toString()];
+      const catId = resolveCategoryId(page);
       if (catId) categoryToDoCounts[catId] = (categoryToDoCounts[catId] || 0) + 1;
     });
 
