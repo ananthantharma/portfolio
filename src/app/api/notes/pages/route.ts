@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 
   const {searchParams} = new URL(request.url);
   const sectionId = searchParams.get('sectionId');
+  const categoryId = searchParams.get('categoryId');
   const isFlagged = searchParams.get('isFlagged') === 'true';
   const isImportant = searchParams.get('isImportant') === 'true';
   const search = searchParams.get('search');
@@ -99,6 +100,7 @@ export async function GET(request: Request) {
         query.$or = [
           {title: searchRegex},
           {sectionId: {$in: matchedSectionIds}},
+          {categoryId: {$in: matchedCategoryIds}}, // category-level (sectionless) pages
           {content: searchRegex},
           {'tabs.title': searchRegex},
           {'tabs.content': searchRegex},
@@ -110,12 +112,22 @@ export async function GET(request: Request) {
       query.$or = [{isImportant: true}, {'tabs.isImportant': true}];
     } else if (sectionId) {
       query.sectionId = sectionId;
+    } else if (categoryId) {
+      // Pages living directly under a category (no section)
+      query.categoryId = categoryId;
+      query.sectionId = null;
     }
 
-    const pages = await NotePage.find(query).sort({order: 1}).populate({
-      path: 'sectionId',
-      select: 'categoryId name', // Populate categoryId to allow full navigation
-    });
+    const pages = await NotePage.find(query)
+      .sort({order: 1})
+      .populate({
+        path: 'sectionId',
+        select: 'categoryId name', // Populate categoryId to allow full navigation
+      })
+      .populate({
+        path: 'categoryId',
+        select: 'name', // For category-level pages
+      });
 
     // Aggregate active To-Do counts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,9 +169,15 @@ export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json();
-    const count = await NotePage.countDocuments({sectionId: body.sectionId});
+    // A page can be created inside a section OR directly under a category
+    const scope = body.sectionId
+      ? {sectionId: body.sectionId}
+      : {categoryId: body.categoryId, sectionId: null};
+    const count = await NotePage.countDocuments({userEmail: session.user.email, ...scope});
     const page = await NotePage.create({
       ...body,
+      sectionId: body.sectionId || null,
+      categoryId: body.sectionId ? null : body.categoryId || null,
       userEmail: session.user.email,
       order: count,
       image: body.image || null,

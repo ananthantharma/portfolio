@@ -42,22 +42,23 @@ export async function GET(request: Request) {
       ? await NotePage.find({_id: {$in: todoPageIds}, userEmail: session.user.email}).select('sectionId')
       : [];
 
+    // Note: pages can live directly under a category (sectionId === null) — skip those here
     const sectionImportantCounts: Record<string, number> = {};
     importantPages.forEach(page => {
-      const secId = page.sectionId.toString();
-      sectionImportantCounts[secId] = (sectionImportantCounts[secId] || 0) + 1;
+      const secId = page.sectionId?.toString();
+      if (secId) sectionImportantCounts[secId] = (sectionImportantCounts[secId] || 0) + 1;
     });
 
     const sectionFlaggedCounts: Record<string, number> = {};
     flaggedPages.forEach(page => {
-      const secId = page.sectionId.toString();
-      sectionFlaggedCounts[secId] = (sectionFlaggedCounts[secId] || 0) + 1;
+      const secId = page.sectionId?.toString();
+      if (secId) sectionFlaggedCounts[secId] = (sectionFlaggedCounts[secId] || 0) + 1;
     });
 
     const sectionToDoCounts: Record<string, number> = {};
     todoPages.forEach(page => {
-      const secId = page.sectionId.toString();
-      sectionToDoCounts[secId] = (sectionToDoCounts[secId] || 0) + 1;
+      const secId = page.sectionId?.toString();
+      if (secId) sectionToDoCounts[secId] = (sectionToDoCounts[secId] || 0) + 1;
     });
 
     const sectionsWithCount = sections.map(sec => ({

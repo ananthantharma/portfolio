@@ -61,12 +61,13 @@ export async function GET(_req: Request) {
           as: 'section',
         },
       },
-      {$unwind: '$section'},
+      // Keep pages that live directly under a category (no section)
+      {$unwind: {path: '$section', preserveNullAndEmptyArrays: true}},
       {
         $group: {
           _id: '$page._id',
           sectionId: {$first: '$section._id'},
-          categoryId: {$first: '$section.categoryId'},
+          categoryId: {$first: {$ifNull: ['$section.categoryId', '$page.categoryId']}},
           count: {$sum: 1},
           minDate: {$min: '$dueDate'},
         },
@@ -85,8 +86,8 @@ export async function GET(_req: Request) {
     // Loop through aggregated pages (todoStats is now an array of page summaries)
     todoStats.forEach((page: any) => {
       const pageId = page._id.toString();
-      const sectionId = page.sectionId.toString();
-      const categoryId = page.categoryId.toString();
+      const sectionId = page.sectionId?.toString(); // null for category-level pages
+      const categoryId = page.categoryId?.toString();
 
       const minDays = updateMinDays(null, page.minDate);
 
@@ -96,16 +97,20 @@ export async function GET(_req: Request) {
       pStats.todo.minDays = minDays; // For a single page group, minDate is absolute min
 
       // Update Section
-      const sStats = getStats(counts.sections, sectionId);
-      sStats.todo.count += page.count;
-      sStats.todo.minDays = sStats.todo.minDays === null ? minDays : Math.min(sStats.todo.minDays, minDays ?? 9999);
-      if (sStats.todo.minDays === 9999 && minDays === null) sStats.todo.minDays = null; // Revert if both null
+      if (sectionId) {
+        const sStats = getStats(counts.sections, sectionId);
+        sStats.todo.count += page.count;
+        sStats.todo.minDays = sStats.todo.minDays === null ? minDays : Math.min(sStats.todo.minDays, minDays ?? 9999);
+        if (sStats.todo.minDays === 9999 && minDays === null) sStats.todo.minDays = null; // Revert if both null
+      }
 
       // Update Category
-      const cStats = getStats(counts.categories, categoryId);
-      cStats.todo.count += page.count;
-      cStats.todo.minDays = cStats.todo.minDays === null ? minDays : Math.min(cStats.todo.minDays, minDays ?? 9999);
-      if (cStats.todo.minDays === 9999 && minDays === null) cStats.todo.minDays = null;
+      if (categoryId) {
+        const cStats = getStats(counts.categories, categoryId);
+        cStats.todo.count += page.count;
+        cStats.todo.minDays = cStats.todo.minDays === null ? minDays : Math.min(cStats.todo.minDays, minDays ?? 9999);
+        if (cStats.todo.minDays === 9999 && minDays === null) cStats.todo.minDays = null;
+      }
     });
 
     // 2. Aggregate Important/Flagged Tabs
@@ -126,12 +131,12 @@ export async function GET(_req: Request) {
           as: 'section',
         },
       },
-      {$unwind: '$section'},
+      {$unwind: {path: '$section', preserveNullAndEmptyArrays: true}},
       {
         $project: {
           pageId: '$_id',
           sectionId: '$section._id',
-          categoryId: '$section.categoryId',
+          categoryId: {$ifNull: ['$section.categoryId', '$categoryId']},
           isImportant: {$cond: [{$eq: ['$tabs.isImportant', true]}, 1, 0]},
           isFlagged: {$cond: [{$eq: ['$tabs.isFlagged', true]}, 1, 0]},
         },
@@ -142,13 +147,13 @@ export async function GET(_req: Request) {
     tabStats.forEach(item => {
       if (item.isImportant) {
         getStats(counts.pages, item.pageId).important += item.isImportant;
-        getStats(counts.sections, item.sectionId).important += item.isImportant;
-        getStats(counts.categories, item.categoryId).important += item.isImportant;
+        if (item.sectionId) getStats(counts.sections, item.sectionId).important += item.isImportant;
+        if (item.categoryId) getStats(counts.categories, item.categoryId).important += item.isImportant;
       }
       if (item.isFlagged) {
         getStats(counts.pages, item.pageId).flagged += item.isFlagged;
-        getStats(counts.sections, item.sectionId).flagged += item.isFlagged;
-        getStats(counts.categories, item.categoryId).flagged += item.isFlagged;
+        if (item.sectionId) getStats(counts.sections, item.sectionId).flagged += item.isFlagged;
+        if (item.categoryId) getStats(counts.categories, item.categoryId).flagged += item.isFlagged;
       }
     });
 

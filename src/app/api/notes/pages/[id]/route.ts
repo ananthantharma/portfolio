@@ -31,6 +31,12 @@ export async function PUT(request: Request, {params}: {params: {id: string}}) {
   await dbConnect();
   try {
     const body = await request.json();
+    // Normalize move semantics: a page belongs to EITHER a section OR a category root
+    if (body.sectionId) {
+      body.categoryId = null;
+    } else if (body.categoryId) {
+      body.sectionId = null;
+    }
     const page = await NotePage.findByIdAndUpdate(params.id, body, {
       new: true,
       runValidators: true,

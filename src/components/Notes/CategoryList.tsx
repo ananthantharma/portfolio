@@ -366,7 +366,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             {!isCollapsed && (
               <button
-                className={`rounded-md p-1 transition-all duration-150 ${sortAlpha ? 'text-violet-500 bg-violet-50' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'}`}
+                className={`rounded-md p-1 transition-all duration-150 ${sortAlpha ? 'text-indigo-500 bg-indigo-50' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'}`}
                 onClick={() => setSortAlpha(v => !v)}
                 title="Sort alphabetically">
                 <ArrowsUpDownIcon className="h-3.5 w-3.5" />

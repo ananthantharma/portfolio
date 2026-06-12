@@ -169,7 +169,7 @@ const PageCard = React.memo<PageCardProps>(
                   }}
                   placeholder="Add a description..."
                   rows={2}
-                  className="w-full text-[12px] text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 resize-none focus:outline-none focus:border-violet-400 min-h-[52px] leading-relaxed"
+                  className="w-full text-[12px] text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 resize-none focus:outline-none focus:border-indigo-400 min-h-[52px] leading-relaxed"
                 />
               ) : (
                 <p
@@ -230,7 +230,7 @@ const PageCard = React.memo<PageCardProps>(
               className={`p-1.5 rounded-lg transition-colors ${
                 isPinned
                   ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
-                  : 'text-slate-200 hover:text-violet-500 hover:bg-violet-50'
+                  : 'text-slate-200 hover:text-indigo-500 hover:bg-indigo-50'
               }`}>
               <MapPinIcon className="h-3.5 w-3.5" />
             </button>
@@ -272,7 +272,7 @@ const PageCard = React.memo<PageCardProps>(
                     {tab.isImportant && (
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
                     )}
-                    <span className="text-[11px] text-slate-400 group-hover/tab:text-violet-500 transition-colors flex-shrink-0 font-medium">
+                    <span className="text-[11px] text-slate-400 group-hover/tab:text-indigo-500 transition-colors flex-shrink-0 font-medium">
                       Open →
                     </span>
                   </div>

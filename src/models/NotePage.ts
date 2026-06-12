@@ -17,7 +17,8 @@ export interface INotePage extends Document {
   color?: string;
   icon?: string;
   image?: string | null;
-  sectionId: mongoose.Types.ObjectId;
+  sectionId?: mongoose.Types.ObjectId | null;
+  categoryId?: mongoose.Types.ObjectId | null; // Set when the page lives directly under a category (no section)
   parentPageId?: mongoose.Types.ObjectId | string | null;
   isInactive?: boolean;
   isFlagged: boolean;
@@ -71,7 +72,13 @@ const NotePageSchema: Schema = new Schema(
     sectionId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'NoteSection',
-      required: true,
+      default: null,
+    },
+    // When set (and sectionId is null), the page lives directly under a category
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'NoteCategory',
+      default: null,
     },
     parentPageId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -112,8 +119,18 @@ const NotePageSchema: Schema = new Schema(
   },
 );
 
+// A page must belong to either a section or directly to a category
+NotePageSchema.pre('validate', function (next) {
+  if (!this.sectionId && !this.categoryId) {
+    next(new Error('A page must belong to a section or a category'));
+    return;
+  }
+  next();
+});
+
 // Compound indexes for the access patterns used in every request
 NotePageSchema.index({userEmail: 1, sectionId: 1, order: 1}); // sidebar page list (primary query)
+NotePageSchema.index({userEmail: 1, categoryId: 1, order: 1}); // category-level (sectionless) pages
 NotePageSchema.index({userEmail: 1, isImportant: 1});          // badge counting: important
 NotePageSchema.index({userEmail: 1, isFlagged: 1});            // badge counting: flagged
 

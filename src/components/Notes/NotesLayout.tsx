@@ -72,12 +72,15 @@ const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
   const [sections, setSections] = useState<INoteSection[]>([]);
   const [pages, setPages] = useState<INotePage[]>([]);
+  // Pages that live directly under the selected category (no section)
+  const [categoryPages, setCategoryPages] = useState<INotePage[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [targetTabId, setTargetTabId] = useState<string | undefined>(undefined);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
+  const [loadingCategoryPages, setLoadingCategoryPages] = useState(false);
 
   // Sidebar visibility states
   const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
@@ -235,11 +238,13 @@ const NotesLayout: React.FC = React.memo(() => {
   // ── Client-side caches — switching between sections/categories is instant ────
   const sectionsCache = useRef<Record<string, INoteSection[]>>({});
   const pagesCache = useRef<Record<string, INotePage[]>>({});
+  const categoryPagesCache = useRef<Record<string, INotePage[]>>({});
   // Tracks which sectionId the current `pages` state actually belongs to.
   // Only used for cache-sync — prevents writing stale data when selectedSectionId
   // changes before the new fetch resolves.
   const pagesBelongToSection = useRef<string | null>(null);
   const sectionsBelongToCategory = useRef<string | null>(null);
+  const categoryPagesBelongToCategory = useRef<string | null>(null);
 
   const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -304,19 +309,42 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
+  // Fetch pages that live directly under a category (no section)
+  const fetchCategoryPages = useCallback(async (categoryId: string) => {
+    if (categoryPagesCache.current[categoryId]) {
+      categoryPagesBelongToCategory.current = categoryId;
+      setCategoryPages(categoryPagesCache.current[categoryId]);
+      return;
+    }
+    setLoadingCategoryPages(true);
+    try {
+      const response = await axios.get(`/api/notes/pages?categoryId=${categoryId}`);
+      const data = response.data.data;
+      categoryPagesCache.current[categoryId] = data;
+      categoryPagesBelongToCategory.current = categoryId;
+      setCategoryPages(data);
+    } catch (error) {
+      console.error('Error fetching category pages:', error);
+    } finally {
+      setLoadingCategoryPages(false);
+    }
+  }, []);
+
   // Fetch categories on mount
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Fetch sections when category changes
+  // Fetch sections + direct pages when category changes
   useEffect(() => {
     if (selectedCategoryId) {
       fetchSections(selectedCategoryId);
+      fetchCategoryPages(selectedCategoryId);
     } else {
       setSections([]);
+      setCategoryPages([]);
     }
-  }, [selectedCategoryId, fetchSections]);
+  }, [selectedCategoryId, fetchSections, fetchCategoryPages]);
 
   // Keep caches in sync after mutations so re-navigation is instant.
   // Only write when the state's owner ref matches the current selection —
@@ -335,6 +363,13 @@ const NotesLayout: React.FC = React.memo(() => {
       sectionsCache.current[cid] = sections;
     }
   }, [sections, selectedCategoryId]);
+
+  useEffect(() => {
+    const cid = categoryPagesBelongToCategory.current;
+    if (cid && cid === selectedCategoryId) {
+      categoryPagesCache.current[cid] = categoryPages;
+    }
+  }, [categoryPages, selectedCategoryId]);
 
   // Active Task Count Logic
   const [activeTaskCount, setActiveTaskCount] = useState(0);
@@ -449,6 +484,15 @@ const NotesLayout: React.FC = React.memo(() => {
       }
     } else {
       const sectionObj = task.sectionId as unknown as INoteSection;
+      // Category-level page (lives directly under a notebook, no section)
+      if (!sectionObj && extendedTask.categoryId) {
+        const catId = extendedTask.categoryId._id || extendedTask.categoryId;
+        setSelectedCategoryId(catId as string);
+        setSelectedSectionId(null);
+        setTargetTabId(tabId);
+        setSelectedPageId(task._id as string);
+        return;
+      }
       if (!sectionObj || !sectionObj.categoryId) {
         alert('Cannot locate note: Missing section info.');
         return;
@@ -593,6 +637,28 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
+  // Create a page directly under the selected category (no section needed)
+  const handleAddCategoryPage = useCallback(
+    async (title: string, color?: string, icon?: string, image?: string | null) => {
+      if (!selectedCategoryId) return;
+      try {
+        const response = await axios.post('/api/notes/pages', {
+          title,
+          color,
+          icon,
+          image,
+          categoryId: selectedCategoryId,
+        });
+        setCategoryPages(prev => [response.data.data, ...prev]);
+        setSelectedSectionId(null);
+        setSelectedPageId(response.data.data._id as string);
+      } catch (error) {
+        console.error('Error adding category page:', error);
+      }
+    },
+    [selectedCategoryId],
+  );
+
   const handleQuickNote = useCallback(async () => {
     try {
       // 1. Fetch/Create 'Other Notes' Category
@@ -629,16 +695,22 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, [categories, selectedCategoryId]);
 
+  // Applies an update to a page wherever it currently lives (section list or category root list)
+  const applyPageUpdate = useCallback((updated: INotePage) => {
+    setPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
+    setCategoryPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
+  }, []);
+
   const handleRenamePage = useCallback(
     async (id: string, title: string, color?: string, icon?: string, image?: string | null) => {
       try {
         const response = await axios.put(`/api/notes/pages/${id}`, {title, color, icon, image});
-        setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
+        applyPageUpdate(response.data.data);
       } catch (error) {
         console.error('Error renaming page:', error);
       }
     },
-    [],
+    [applyPageUpdate],
   );
 
   const handleDeletePage = useCallback(
@@ -646,6 +718,7 @@ const NotesLayout: React.FC = React.memo(() => {
       try {
         await axios.delete(`/api/notes/pages/${id}`);
         setPages(prev => prev.filter(page => page._id !== id));
+        setCategoryPages(prev => prev.filter(page => page._id !== id));
         if (selectedPageId === id) setSelectedPageId(null);
       } catch (error) {
         console.error('Error deleting page:', error);
@@ -669,61 +742,96 @@ const NotesLayout: React.FC = React.memo(() => {
     }>
   >([]);
 
+  /**
+   * Move a page to a new destination — either a section (dest.sectionId set)
+   * or directly under a category root (dest.sectionId === null).
+   */
   const handleMovePage = useCallback(
-    async (pageId: string, destSectionId: string) => {
+    async (pageId: string, dest: {sectionId: string | null; categoryId: string}) => {
       try {
-        await axios.put(`/api/notes/pages/${pageId}`, {sectionId: destSectionId});
-        if (selectedSectionId && destSectionId !== selectedSectionId) {
-          setPages(prev => prev.filter(p => p._id !== pageId));
-          if (selectedPageId === pageId) setSelectedPageId(null);
+        await axios.put(`/api/notes/pages/${pageId}`, {
+          sectionId: dest.sectionId,
+          categoryId: dest.sectionId ? null : dest.categoryId,
+        });
+
+        const movedToCurrentSection = !!dest.sectionId && dest.sectionId === selectedSectionId;
+        const movedToCurrentCategoryRoot = !dest.sectionId && dest.categoryId === selectedCategoryId;
+
+        // Remove from any list it no longer belongs to
+        if (!movedToCurrentSection) setPages(prev => prev.filter(p => p._id !== pageId));
+        if (!movedToCurrentCategoryRoot) setCategoryPages(prev => prev.filter(p => p._id !== pageId));
+        if (!movedToCurrentSection && !movedToCurrentCategoryRoot && selectedPageId === pageId) {
+          setSelectedPageId(null);
         }
+
+        // Invalidate destination caches so the page appears when navigating there
+        if (dest.sectionId) {
+          delete pagesCache.current[dest.sectionId];
+          if (movedToCurrentSection) fetchPages(dest.sectionId);
+        } else {
+          delete categoryPagesCache.current[dest.categoryId];
+          if (movedToCurrentCategoryRoot) fetchCategoryPages(dest.categoryId);
+        }
+
         setSelectedPageToMove(null);
       } catch (error) {
         console.error('Error moving page:', error);
         alert('Failed to move page.');
       }
     },
-    [selectedSectionId, selectedPageId],
+    [selectedSectionId, selectedCategoryId, selectedPageId, fetchPages, fetchCategoryPages],
   );
 
-  const handleTogglePageInactive = useCallback(async (id: string, isInactive: boolean) => {
-    try {
-      const response = await axios.put(`/api/notes/pages/${id}`, {isInactive});
-      setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
-    } catch (error) {
-      console.error('Error toggling page inactive:', error);
-    }
-  }, []);
+  const handleTogglePageInactive = useCallback(
+    async (id: string, isInactive: boolean) => {
+      try {
+        const response = await axios.put(`/api/notes/pages/${id}`, {isInactive});
+        applyPageUpdate(response.data.data);
+      } catch (error) {
+        console.error('Error toggling page inactive:', error);
+      }
+    },
+    [applyPageUpdate],
+  );
 
-  const handleSetParentPage = useCallback(async (pageId: string, parentPageId: string | null) => {
-    try {
-      const response = await axios.put(`/api/notes/pages/${pageId}`, {parentPageId});
-      setPages(prev => prev.map(page => (page._id === pageId ? response.data.data : page)));
-    } catch (error) {
-      console.error('Error setting parent page:', error);
-    }
-  }, []);
+  const handleSetParentPage = useCallback(
+    async (pageId: string, parentPageId: string | null) => {
+      try {
+        const response = await axios.put(`/api/notes/pages/${pageId}`, {parentPageId});
+        applyPageUpdate(response.data.data);
+      } catch (error) {
+        console.error('Error setting parent page:', error);
+      }
+    },
+    [applyPageUpdate],
+  );
 
-  const handleUpdatePage = useCallback(async (id: string, updates: Partial<INotePage>) => {
-    try {
-      const response = await axios.put(`/api/notes/pages/${id}`, updates);
-      setPages(prev => prev.map(p => (p._id === id ? response.data.data : p)));
-    } catch (error) {
-      console.error('Error updating page:', error);
-    }
-  }, []);
+  const handleUpdatePage = useCallback(
+    async (id: string, updates: Partial<INotePage>) => {
+      try {
+        const response = await axios.put(`/api/notes/pages/${id}`, updates);
+        applyPageUpdate(response.data.data);
+      } catch (error) {
+        console.error('Error updating page:', error);
+      }
+    },
+    [applyPageUpdate],
+  );
 
   const handleOpenPageFromDashboard = useCallback((id: string, tabId?: string) => {
     setSelectedPageId(id);
     setTargetTabId(tabId);
   }, []);
 
-  const handleSavePageContent = useCallback(async (id: string, data: any) => {
-    // data coming from NoteEditor is now the 'tabs' array
-    // Do NOT swallow errors — let them propagate to NoteEditor so isDirty stays true
-    const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
-    setPages(prev => prev.map(page => (page._id === id ? response.data.data : page)));
-  }, []);
+  const handleSavePageContent = useCallback(
+    async (id: string, data: any) => {
+      // data coming from NoteEditor is now the 'tabs' array
+      // Do NOT swallow errors — let them propagate to NoteEditor so isDirty stays true
+      const response = await axios.put(`/api/notes/pages/${id}`, {tabs: data});
+      applyPageUpdate(response.data.data);
+    },
+    [applyPageUpdate],
+  );
 
   const handleReorderPages = useCallback(
     async (newOrder: INotePage[]) => {
@@ -740,7 +848,27 @@ const NotesLayout: React.FC = React.memo(() => {
     [selectedSectionId],
   );
 
-  const selectedPage = pages.find(p => p._id === selectedPageId) || null;
+  // Reorder pages that live at the category root
+  const handleReorderCategoryPages = useCallback(
+    async (newOrder: INotePage[]) => {
+      setCategoryPages(newOrder);
+      try {
+        await axios.put('/api/notes/pages/reorder', {
+          items: newOrder.map((page, index) => ({id: page._id, order: index})),
+        });
+      } catch (error) {
+        console.error('Error reordering category pages:', error);
+        if (selectedCategoryId) {
+          delete categoryPagesCache.current[selectedCategoryId];
+          fetchCategoryPages(selectedCategoryId);
+        }
+      }
+    },
+    [selectedCategoryId, fetchCategoryPages],
+  );
+
+  const selectedPage =
+    pages.find(p => p._id === selectedPageId) || categoryPages.find(p => p._id === selectedPageId) || null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
 
@@ -754,13 +882,19 @@ const NotesLayout: React.FC = React.memo(() => {
     }
   }, []);
 
-  // Track page visits for the dashboard
+  // Track page visits for the dashboard (works for section pages and category-root pages)
   useEffect(() => {
-    if (!selectedPageId || !selectedCategoryId || !selectedSectionId) return;
-    const page = pages.find(p => p._id === selectedPageId);
+    if (!selectedPageId || !selectedCategoryId) return;
     const cat = categories.find(c => c._id === selectedCategoryId);
-    const sec = sections.find(s => s._id === selectedSectionId);
-    if (!page || !cat || !sec) return;
+    if (!cat) return;
+
+    const sectionPage = selectedSectionId ? pages.find(p => p._id === selectedPageId) : undefined;
+    const categoryPage = categoryPages.find(p => p._id === selectedPageId);
+    const page = sectionPage || categoryPage;
+    if (!page) return;
+
+    const sec = sectionPage ? sections.find(s => s._id === selectedSectionId) : undefined;
+
     setRecentPages(prev => {
       const filtered = prev.filter(p => p.id !== selectedPageId);
       const updated = [
@@ -769,8 +903,8 @@ const NotesLayout: React.FC = React.memo(() => {
           title: page.title || 'Untitled',
           categoryId: selectedCategoryId,
           categoryName: cat.name,
-          sectionId: selectedSectionId,
-          sectionName: sec.name,
+          sectionId: sec ? (selectedSectionId as string) : '',
+          sectionName: sec ? sec.name : '',
           timestamp: Date.now(),
         },
         ...filtered,
@@ -783,7 +917,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleJumpToRecentPage = useCallback((rp: {id: string; categoryId: string; sectionId: string}) => {
     setSelectedCategoryId(rp.categoryId);
     setTimeout(() => {
-      setSelectedSectionId(rp.sectionId);
+      setSelectedSectionId(rp.sectionId || null);
       setTimeout(() => setSelectedPageId(rp.id), 150);
     }, 150);
   }, []);
@@ -797,7 +931,7 @@ const NotesLayout: React.FC = React.memo(() => {
   );
 
   const handleJumpToRecentInSection = useCallback((sectionId: string, pageId: string) => {
-    setSelectedSectionId(sectionId);
+    setSelectedSectionId(sectionId || null);
     setTimeout(() => setSelectedPageId(pageId), 150);
   }, []);
 
@@ -944,12 +1078,14 @@ const NotesLayout: React.FC = React.memo(() => {
     setIsFocusMode(prev => !prev);
   }, []);
 
-  // Create Page handler for CommandPalette
+  // Create Page handler for CommandPalette — works inside a section OR directly in a category
   const handleCreatePageFromPalette = useCallback(() => {
     if (selectedSectionId) {
       handleAddPage('New Page');
+    } else if (selectedCategoryId) {
+      handleAddCategoryPage('New Page');
     }
-  }, [selectedSectionId, handleAddPage]);
+  }, [selectedSectionId, selectedCategoryId, handleAddPage, handleAddCategoryPage]);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -964,15 +1100,16 @@ const NotesLayout: React.FC = React.memo(() => {
         e.preventDefault();
         setIsFocusMode(prev => !prev);
       }
-      // Ctrl+N / Cmd+N — New Page
-      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && selectedSectionId) {
+      // Ctrl+N / Cmd+N — New Page (in current section, or directly in current notebook)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n' && (selectedSectionId || selectedCategoryId)) {
         e.preventDefault();
-        handleAddPage('New Page');
+        if (selectedSectionId) handleAddPage('New Page');
+        else handleAddCategoryPage('New Page');
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [selectedSectionId, handleAddPage]);
+  }, [selectedSectionId, selectedCategoryId, handleAddPage, handleAddCategoryPage]);
 
   // Calculate total important and flagged counts
   const totalImportant = useMemo(() => {
@@ -986,11 +1123,11 @@ const NotesLayout: React.FC = React.memo(() => {
   return (
     <BadgeSettingsProvider>
       <div
-        className="relative flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-violet-50/30 text-slate-900"
+        className="relative flex h-screen w-full overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-indigo-50/30 text-slate-900"
         style={{fontFamily: '"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'}}>
         {/* Background — subtle radial wash */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-[15%] -left-[10%] h-[50%] w-[50%] rounded-full bg-violet-100/30 blur-[120px]" />
+          <div className="absolute -top-[15%] -left-[10%] h-[50%] w-[50%] rounded-full bg-indigo-100/30 blur-[120px]" />
           <div className="absolute top-[30%] -right-[8%] h-[40%] w-[40%] rounded-full bg-blue-50/40 blur-[100px]" />
         </div>
 
@@ -1021,7 +1158,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   }}
                   className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors group"
                   title="Notes home">
-                  <div className="w-5 h-5 rounded-md bg-violet-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 rounded-md bg-indigo-500 flex items-center justify-center flex-shrink-0">
                     <HomeIcon className="h-3 w-3 text-white" />
                   </div>
                   <span className="font-semibold text-[13px] text-slate-700 group-hover:text-slate-900">Notes</span>
@@ -1099,7 +1236,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 <button
                   onClick={handleQuickNote}
                   title="Quick Note"
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-all duration-150">
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150">
                   <DocumentPlusIcon className="h-4 w-4" />
                 </button>
 
@@ -1159,8 +1296,8 @@ const NotesLayout: React.FC = React.memo(() => {
                           <Link
                             href="/admin"
                             onClick={() => setIsProfileOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors">
-                            <ShieldCheckIcon className="h-4 w-4 text-violet-500" />
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            <ShieldCheckIcon className="h-4 w-4 text-indigo-500" />
                             Admin Portal
                           </Link>
                         )}
@@ -1273,7 +1410,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 />
                 {!isCategoryCollapsed && (
                   <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 transition-colors z-50"
                     onMouseDown={e => startResizing(e, 'category')}
                   />
                 )}
@@ -1310,10 +1447,20 @@ const NotesLayout: React.FC = React.memo(() => {
                   categoryName={currentCategory?.name}
                   categoryRecentPages={categoryRecentPages}
                   onJumpToRecentPage={handleJumpToRecentInSection}
+                  categoryPages={categoryPages}
+                  loadingCategoryPages={loadingCategoryPages}
+                  onAddCategoryPage={handleAddCategoryPage}
+                  onReorderCategoryPages={handleReorderCategoryPages}
+                  onMovePageTo={handleMovePage}
+                  selectedCategoryId={selectedCategoryId}
+                  onSelectCategoryPage={id => {
+                    setSelectedSectionId(null);
+                    setSelectedPageId(id);
+                  }}
                 />
                 {!isSectionCollapsed && (
                   <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-violet-400/40 transition-colors z-50"
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-indigo-400/40 transition-colors z-50"
                     onMouseDown={e => startResizing(e, 'section')}
                   />
                 )}
@@ -1349,82 +1496,161 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className="h-full overflow-y-auto custom-scrollbar px-8 py-10">
                   <div className="max-w-3xl mx-auto">
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-8">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-1.5">Notebook</p>
-                        <h1 className="text-2xl font-bold text-slate-900 leading-tight">{currentCategory?.name}</h1>
+                    <div className="flex items-start justify-between mb-8 gap-4">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-indigo-400 mb-1.5">Notebook</p>
+                        <h1 className="text-2xl font-bold text-slate-900 leading-tight truncate">{currentCategory?.name}</h1>
                         <p className="text-[12px] text-slate-400 mt-1">
                           {sections.length} section{sections.length !== 1 ? 's' : ''}
+                          {' · '}
+                          {categoryPages.length} loose page{categoryPages.length !== 1 ? 's' : ''}
                         </p>
                       </div>
-                      <button
-                        onClick={() => handleAddSection('New Section')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-violet-500/20 active:scale-[0.98]">
-                        <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
-                      </button>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleAddCategoryPage('New Page')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98]"
+                          title="Create a page directly in this notebook — no section needed">
+                          <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
+                        </button>
+                        <button
+                          onClick={() => handleAddSection('New Section')}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm active:scale-[0.98]">
+                          <PlusCircleIcon className="h-3.5 w-3.5 text-slate-400" /> New Section
+                        </button>
+                      </div>
                     </div>
 
-                    {sections.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-24 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
+                    {/* ── Direct pages (live at the notebook root) ── */}
+                    {(categoryPages.length > 0 || loadingCategoryPages) && (
+                      <div className="mb-10">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-3">Pages</p>
+                        {loadingCategoryPages ? (
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                            {[1, 2, 3].map(i => (
+                              <div key={i} className="h-[88px] rounded-2xl bg-slate-100/80 animate-pulse" />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                            {categoryPages.map(page => {
+                              const pid = page._id as string;
+                              const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
+                              const pageColor = page.color && page.color !== '#000000' ? page.color : '#6366F1';
+                              const pBadge = badgeCounts.pages[pid];
+                              return (
+                                <button
+                                  key={pid}
+                                  onClick={() => {
+                                    setSelectedSectionId(null);
+                                    setSelectedPageId(pid);
+                                  }}
+                                  className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div
+                                      className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+                                      style={{backgroundColor: `${pageColor}14`, border: `1px solid ${pageColor}28`}}>
+                                      <PageIcon className="h-4 w-4" style={{color: pageColor}} />
+                                    </div>
+                                    {(pBadge?.todo?.count ?? 0) > 0 && (
+                                      <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-bold tabular-nums">
+                                        {pBadge.todo.count}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[13px] font-semibold text-slate-700 group-hover:text-indigo-700 transition-colors leading-snug truncate">
+                                    {page.title || 'Untitled'}
+                                  </p>
+                                  <p className="text-[11px] text-slate-400 mt-0.5">
+                                    {page.updatedAt ? formatTimeAgo(new Date(page.updatedAt).getTime()) : 'Open page →'}
+                                  </p>
+                                </button>
+                              );
+                            })}
+                            <button
+                              onClick={() => handleAddCategoryPage('New Page')}
+                              className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[88px] active:scale-[0.98]">
+                              <DocumentPlusIcon className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                              <span className="text-[11px] text-slate-400 group-hover:text-indigo-600 transition-colors font-medium">New Page</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── Sections ── */}
+                    {sections.length === 0 && categoryPages.length === 0 && !loadingCategoryPages ? (
+                      <div className="flex flex-col items-center justify-center py-20 gap-4 rounded-3xl bg-slate-50/50 border border-dashed border-slate-200">
                         <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
                           <BookmarkIcon className="h-7 w-7 text-slate-300" />
                         </div>
-                        <p className="text-[13px] text-slate-400 font-medium">No sections yet. Create your first one.</p>
-                        <button
-                          onClick={() => handleAddSection('New Section')}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-violet-500/20">
-                          <PlusCircleIcon className="h-3.5 w-3.5" /> New Section
-                        </button>
+                        <p className="text-[13px] text-slate-400 font-medium">This notebook is empty.</p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleAddCategoryPage('New Page')}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20">
+                            <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
+                          </button>
+                          <button
+                            onClick={() => handleAddSection('New Section')}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm">
+                            <PlusCircleIcon className="h-3.5 w-3.5 text-slate-400" /> New Section
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-slate-300">Pages can live directly in a notebook — sections are optional.</p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        {sections.map(section => {
-                          const badge = badgeCounts.sections[section._id as string];
-                          const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
-                          const iconColor = section.color && section.color !== '#000000' ? section.color : '#8B5CF6';
-                          return (
-                            <button
-                              key={section._id as string}
-                              onClick={() => handleSelectSection(section._id as string)}
-                              className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-500/8 transition-all duration-200 active:scale-[0.98]">
-                              <div className="flex items-start justify-between mb-3.5">
-                                <div
-                                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
-                                  style={{
-                                    backgroundColor: `${iconColor}18`,
-                                    border: `1px solid ${iconColor}30`,
-                                  }}>
-                                  {section.image ? (
-                                    <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
-                                  ) : (
-                                    <SectionIcon className="h-4 w-4" style={{color: iconColor}} />
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-3">Sections</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                          {sections.map(section => {
+                            const badge = badgeCounts.sections[section._id as string];
+                            const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+                            const iconColor = section.color && section.color !== '#000000' ? section.color : '#6366F1';
+                            return (
+                              <button
+                                key={section._id as string}
+                                onClick={() => handleSelectSection(section._id as string)}
+                                className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]">
+                                <div className="flex items-start justify-between mb-3.5">
+                                  <div
+                                    className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
+                                    style={{
+                                      backgroundColor: `${iconColor}18`,
+                                      border: `1px solid ${iconColor}30`,
+                                    }}>
+                                    {section.image ? (
+                                      <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
+                                    ) : (
+                                      <SectionIcon className="h-4 w-4" style={{color: iconColor}} />
+                                    )}
+                                  </div>
+                                  {badge?.todo?.count > 0 && (
+                                    <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-bold tabular-nums">
+                                      {badge.todo.count}
+                                    </span>
                                   )}
                                 </div>
-                                {badge?.todo?.count > 0 && (
-                                  <span className="text-[9px] bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full font-bold tabular-nums">
-                                    {badge.todo.count}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[13px] font-semibold text-slate-700 group-hover:text-violet-700 transition-colors leading-snug">
-                                {section.name}
-                              </p>
-                              <p className="text-[11px] text-slate-400 mt-0.5 group-hover:text-violet-400 transition-colors">
-                                Open section →
-                              </p>
-                            </button>
-                          );
-                        })}
-                        <button
-                          onClick={() => handleAddSection('New Section')}
-                          className="group flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-violet-300 hover:bg-violet-50/40 transition-all min-h-[110px] active:scale-[0.98]">
-                          <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
-                            <PlusCircleIcon className="h-4 w-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
-                          </div>
-                          <span className="text-[11px] text-slate-400 group-hover:text-violet-600 transition-colors font-medium">
-                            New Section
-                          </span>
-                        </button>
+                                <p className="text-[13px] font-semibold text-slate-700 group-hover:text-indigo-700 transition-colors leading-snug">
+                                  {section.name}
+                                </p>
+                                <p className="text-[11px] text-slate-400 mt-0.5 group-hover:text-indigo-400 transition-colors">
+                                  Open section →
+                                </p>
+                              </button>
+                            );
+                          })}
+                          <button
+                            onClick={() => handleAddSection('New Section')}
+                            className="group flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[110px] active:scale-[0.98]">
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
+                              <PlusCircleIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                            </div>
+                            <span className="text-[11px] text-slate-400 group-hover:text-indigo-600 transition-colors font-medium">
+                              New Section
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1453,7 +1679,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
                     {/* Bento Grid — Stats + Recent */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-                      <div className="group p-6 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300">
+                      <div className="group p-6 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Notebooks</p>
                         <div className="flex items-baseline gap-2">
                           <p
@@ -1467,7 +1693,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
                       <button
                         onClick={handleOpenToDoList}
-                        className="group text-left p-6 rounded-[2.5rem] bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
+                        className="group text-left p-6 rounded-3xl bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
                         {activeTaskCount > 0 && (
                           <span className="absolute top-4 right-6 h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
                         )}
@@ -1483,7 +1709,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
                       <button
                         onClick={handleOpenKeyTasks}
-                        className="group text-left p-6 rounded-[2.5rem] bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
+                        className="group text-left p-6 rounded-3xl bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/60 mb-3">
                           Flagged
                         </p>
@@ -1496,7 +1722,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
                       <button
                         onClick={handleOpenImportant}
-                        className="group text-left p-6 rounded-[2.5rem] bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
+                        className="group text-left p-6 rounded-3xl bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/60 mb-3">
                           Important
                         </p>
@@ -1642,7 +1868,7 @@ const NotesLayout: React.FC = React.memo(() => {
           onClose={handleCloseSearch}
           fetchItems={fetchSearchResults}
           onSelectTask={handleJumpToTask}
-          onCreatePage={selectedSectionId ? handleCreatePageFromPalette : undefined}
+          onCreatePage={selectedSectionId || selectedCategoryId ? handleCreatePageFromPalette : undefined}
           currentPageContent={selectedPage?.tabs?.[0]?.content || ''}
           currentPageTitle={selectedPage?.title || ''}
         />
@@ -1663,7 +1889,17 @@ const NotesLayout: React.FC = React.memo(() => {
             onMove={handleMovePage}
             categories={categories}
             pageId={selectedPageToMove._id as string}
-            currentSectionId={selectedSectionId as string}
+            pageTitle={selectedPageToMove.title}
+            currentSectionId={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((selectedPageToMove.sectionId as any)?._id || selectedPageToMove.sectionId || null) as string | null
+            }
+            currentCategoryId={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((selectedPageToMove.categoryId as any)?._id ||
+                selectedPageToMove.categoryId ||
+                selectedCategoryId) as string | null
+            }
           />
         )}
 

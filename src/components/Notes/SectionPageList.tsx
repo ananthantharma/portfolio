@@ -10,8 +10,10 @@ import {
   closestCenter,
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   KeyboardSensor,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -25,6 +27,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   FolderArrowDownIcon,
+  InboxIcon,
   PencilIcon,
   PlusIcon,
   Squares2X2Icon,
@@ -80,6 +83,16 @@ export interface SectionPageListProps {
   categoryName?: string;
   categoryRecentPages?: Array<{id: string; title: string; sectionId: string; sectionName: string; timestamp: number}>;
   onJumpToRecentPage?: (sectionId: string, pageId: string) => void;
+
+  // Category-level pages (live directly under the notebook, no section)
+  categoryPages: INotePage[];
+  loadingCategoryPages: boolean;
+  onAddCategoryPage: (title: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onReorderCategoryPages: (newOrder: INotePage[]) => void;
+  onMovePageTo: (pageId: string, dest: {sectionId: string | null; categoryId: string}) => void;
+  selectedCategoryId: string | null;
+  /** Select a notebook-root page (also clears any section selection) */
+  onSelectCategoryPage: (id: string) => void;
 }
 
 // ─── Badge pill (section-level — shows count) ─────────────────────────────────
@@ -140,6 +153,10 @@ interface PageRowProps {
   isChild?: boolean;
   sortable?: boolean;
   darkMode?: boolean;
+  /** dnd-kit id (prefixed) — defaults to the raw page id */
+  dndId?: string;
+  /** Hide the "group under parent" action (not applicable to notebook-root pages) */
+  hideGroupAction?: boolean;
 }
 
 const PageRow = React.memo<PageRowProps>(
@@ -159,6 +176,8 @@ const PageRow = React.memo<PageRowProps>(
     isChild,
     sortable = true,
     darkMode = false,
+    dndId,
+    hideGroupAction = false,
   }) => {
     const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
     const isInactive = !!page.isInactive;
@@ -179,13 +198,13 @@ const PageRow = React.memo<PageRowProps>(
               ? 'bg-slate-200/50 text-slate-400 font-medium'
               : 'text-slate-300 hover:bg-black/[0.02]'
             : isSelected
-            ? 'bg-[#66CC00]/[0.08] text-slate-800 font-semibold'
+            ? 'bg-indigo-50 text-slate-900 font-semibold ring-1 ring-inset ring-indigo-100'
             : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(page._id as string)}>
         {/* Active accent bar */}
         {isSelected && !isInactive && (
-          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-[#66CC00]" />
+          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-indigo-500" />
         )}
         {/* Chevron / spacer */}
         {hasChildren ? (
@@ -216,8 +235,8 @@ const PageRow = React.memo<PageRowProps>(
         <PageIcon
           className={`h-3.5 w-3.5 flex-shrink-0 ${page.image ? 'hidden' : ''} ${
             darkMode
-              ? isSelected ? 'text-[#66CC00]' : 'text-white/30'
-              : isInactive ? 'text-slate-300' : isSelected ? 'text-[#66CC00]' : 'text-slate-500 group-hover:text-slate-400'
+              ? isSelected ? 'text-indigo-300' : 'text-white/30'
+              : isInactive ? 'text-slate-300' : isSelected ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-400'
           }`}
           style={darkMode || isInactive ? undefined : iconStyle}
         />
@@ -254,15 +273,17 @@ const PageRow = React.memo<PageRowProps>(
             title={isInactive ? 'Mark active' : 'Mark inactive'}>
             {isInactive ? <EyeIcon className="h-3 w-3" /> : <EyeSlashIcon className="h-3 w-3" />}
           </button>
-          <button
-            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
-            onClick={e => {
-              e.stopPropagation();
-              onShowParentPicker(page._id as string);
-            }}
-            title="Group under parent">
-            <Squares2X2Icon className="h-3 w-3" />
-          </button>
+          {!hideGroupAction && (
+            <button
+              className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
+              onClick={e => {
+                e.stopPropagation();
+                onShowParentPicker(page._id as string);
+              }}
+              title="Group under parent">
+              <Squares2X2Icon className="h-3 w-3" />
+            </button>
+          )}
           <button
             className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
             onClick={e => {
@@ -295,11 +316,18 @@ const PageRow = React.memo<PageRowProps>(
     );
 
     if (!sortable) return inner;
-    return <SortableItem id={page._id as string}>{inner}</SortableItem>;
+    return <SortableItem id={dndId ?? (page._id as string)}>{inner}</SortableItem>;
   },
 );
 
 PageRow.displayName = 'PageRow';
+
+// ─── Notebook-root drop zone (pages without a section live here) ──────────────
+
+function CategoryRootDrop({children}: {children: (isOver: boolean) => React.ReactNode}) {
+  const {setNodeRef, isOver} = useDroppable({id: 'catroot'});
+  return <div ref={setNodeRef}>{children(isOver)}</div>;
+}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -329,6 +357,13 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     isCollapsed,
     onToggleCollapse,
     categoryName,
+    categoryPages,
+    loadingCategoryPages,
+    onAddCategoryPage,
+    onReorderCategoryPages,
+    onMovePageTo,
+    selectedCategoryId,
+    onSelectCategoryPage,
   }) => {
     // ── Section search ────────────────────────────────────────────────────────
     const [searchQuery, setSearchQuery] = useState('');
@@ -345,6 +380,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     const [editSecColor, setEditSecColor] = useState('#000000');
     const [editSecIcon, setEditSecIcon] = useState('Folder');
     const [editSecImage, setEditSecImage] = useState<string | null>(null);
+
+    // ── Category-root page state ──────────────────────────────────────────────
+    const [isAddingCatPage, setIsAddingCatPage] = useState(false);
+    const [newCatPageTitle, setNewCatPageTitle] = useState('');
 
     // ── Page edit state ───────────────────────────────────────────────────────
     const [isAddingPage, setIsAddingPage] = useState(false);
@@ -404,39 +443,101 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       });
     }, [parentPickerFor, rootPages, childrenMap]);
 
-    // ── DnD ──────────────────────────────────────────────────────────────────
+    // ── DnD (single context: section reorder, page reorder, cross-container moves) ──
     const sensors = useSensors(
       useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
       useSensor(KeyboardSensor, {coordinateGetter: sortableKeyboardCoordinates}),
     );
 
-    const handleSectionDragEnd = useCallback(
-      (event: DragEndEvent) => {
-        const {active, over} = event;
-        if (over && active.id !== over.id) {
-          const oldIdx = sections.findIndex(s => s._id === active.id);
-          const newIdx = sections.findIndex(s => s._id === over.id);
-          if (oldIdx !== -1 && newIdx !== -1) {
-            onReorderSections(arrayMove(sections, oldIdx, newIdx));
-          }
+    // dnd ids are prefixed to tell items apart: "sec:<id>", "page:<id>", "cpage:<id>", "catroot"
+    const parseDndId = useCallback((raw: string): {type: 'sec' | 'page' | 'cpage' | 'catroot'; id: string} => {
+      if (raw === 'catroot') return {type: 'catroot', id: ''};
+      const i = raw.indexOf(':');
+      return {type: raw.slice(0, i) as 'sec' | 'page' | 'cpage', id: raw.slice(i + 1)};
+    }, []);
+
+    // Highlight target while dragging a page over a section row
+    const [dropTargetSec, setDropTargetSec] = useState<string | null>(null);
+
+    const handleDragOver = useCallback(
+      (event: DragOverEvent) => {
+        const a = parseDndId(String(event.active.id));
+        const o = event.over ? parseDndId(String(event.over.id)) : null;
+        if ((a.type === 'page' || a.type === 'cpage') && o?.type === 'sec') {
+          setDropTargetSec(o.id);
+        } else {
+          setDropTargetSec(null);
         }
       },
-      [sections, onReorderSections],
+      [parseDndId],
     );
 
-    const handlePageDragEnd = useCallback(
+    const handleDragEnd = useCallback(
       (event: DragEndEvent) => {
+        setDropTargetSec(null);
         const {active, over} = event;
-        if (over && active.id !== over.id) {
-          const oldIdx = rootPages.findIndex(p => p._id === active.id);
-          const newIdx = rootPages.findIndex(p => p._id === over.id);
-          if (oldIdx !== -1 && newIdx !== -1) {
-            const reorderedRoots = arrayMove(rootPages, oldIdx, newIdx);
-            onReorderPages([...reorderedRoots, ...pages.filter(p => !!p.parentPageId)]);
+        if (!over || active.id === over.id) return;
+
+        const a = parseDndId(String(active.id));
+        const o = parseDndId(String(over.id));
+
+        // 1. Section reorder
+        if (a.type === 'sec' && o.type === 'sec') {
+          const oldIdx = sections.findIndex(s => s._id === a.id);
+          const newIdx = sections.findIndex(s => s._id === o.id);
+          if (oldIdx !== -1 && newIdx !== -1) onReorderSections(arrayMove(sections, oldIdx, newIdx));
+          return;
+        }
+
+        // 2. Section-page interactions
+        if (a.type === 'page') {
+          if (o.type === 'page') {
+            // Reorder within the selected section
+            const oldIdx = rootPages.findIndex(p => p._id === a.id);
+            const newIdx = rootPages.findIndex(p => p._id === o.id);
+            if (oldIdx !== -1 && newIdx !== -1) {
+              const reorderedRoots = arrayMove(rootPages, oldIdx, newIdx);
+              onReorderPages([...reorderedRoots, ...pages.filter(p => !!p.parentPageId)]);
+            }
+          } else if (o.type === 'sec' && o.id !== selectedSectionId && selectedCategoryId) {
+            // Drop onto another section → move it there
+            onMovePageTo(a.id, {sectionId: o.id, categoryId: selectedCategoryId});
+          } else if ((o.type === 'catroot' || o.type === 'cpage') && selectedCategoryId) {
+            // Drop onto the notebook root → page now lives directly under the category
+            onMovePageTo(a.id, {sectionId: null, categoryId: selectedCategoryId});
           }
+          return;
+        }
+
+        // 3. Category-root page interactions
+        if (a.type === 'cpage') {
+          if (o.type === 'cpage') {
+            const oldIdx = categoryPages.findIndex(p => p._id === a.id);
+            const newIdx = categoryPages.findIndex(p => p._id === o.id);
+            if (oldIdx !== -1 && newIdx !== -1) onReorderCategoryPages(arrayMove(categoryPages, oldIdx, newIdx));
+          } else if (o.type === 'sec' && selectedCategoryId) {
+            // Drop onto a section → move it inside
+            onMovePageTo(a.id, {sectionId: o.id, categoryId: selectedCategoryId});
+          } else if (o.type === 'page' && selectedSectionId && selectedCategoryId) {
+            // Dropped among the open section's pages → move into that section
+            onMovePageTo(a.id, {sectionId: selectedSectionId, categoryId: selectedCategoryId});
+          }
+          return;
         }
       },
-      [rootPages, pages, onReorderPages],
+      [
+        parseDndId,
+        sections,
+        rootPages,
+        pages,
+        categoryPages,
+        selectedSectionId,
+        selectedCategoryId,
+        onReorderSections,
+        onReorderPages,
+        onReorderCategoryPages,
+        onMovePageTo,
+      ],
     );
 
     // ── Section callbacks ─────────────────────────────────────────────────────
@@ -519,6 +620,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       },
       [editingPageId],
     );
+
+    const handleAddCatPage = useCallback(() => {
+      if (newCatPageTitle.trim()) {
+        onAddCategoryPage(newCatPageTitle);
+        setNewCatPageTitle('');
+        setIsAddingCatPage(false);
+      }
+    }, [newCatPageTitle, onAddCategoryPage]);
 
     const handleSetParent = useCallback(
       async (pageId: string, parentPageId: string | null) => {
@@ -603,7 +712,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <ChevronLeftIcon className="h-3.5 w-3.5" />
               </button>
               <button
-                className="rounded-md p-1 text-violet-500 hover:bg-violet-50 hover:text-violet-700 transition-all"
+                className="rounded-md p-1 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-all"
                 onClick={() => setIsAddingSection(true)}
                 title="New Section">
                 <PlusIcon className="h-3.5 w-3.5" />
@@ -649,7 +758,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               {availableParents.map(p => (
                 <li key={p._id as string}>
                   <button
-                    className="w-full text-left rounded-lg px-2.5 py-1.5 text-[12px] text-slate-700 hover:bg-violet-50 hover:text-violet-700"
+                    className="w-full text-left rounded-lg px-2.5 py-1.5 text-[12px] text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
                     onClick={() => handleSetParent(parentPickerFor, p._id as string)}>
                     {p.title || 'Untitled'}
                   </button>
@@ -663,15 +772,162 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
         )}
 
 
-        {/* Scrollable list */}
+        {/* Scrollable list — single DndContext powers section reorder, page reorder,
+            and dragging pages onto sections / the notebook root */}
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragCancel={() => setDropTargetSec(null)}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          sensors={sensors}>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+          {/* ── Notebook-root pages (no section needed) ── */}
+          <CategoryRootDrop>
+            {isOver => (
+              <div
+                className={`mb-2 rounded-xl p-1 transition-all duration-150 ${
+                  isOver
+                    ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300'
+                    : 'bg-black/[0.015] ring-1 ring-inset ring-black/[0.04]'
+                }`}>
+                <div className="flex items-center justify-between px-1.5 py-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <InboxIcon className="h-3 w-3 flex-shrink-0 text-indigo-400" />
+                    <span className="truncate text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">
+                      Pages
+                    </span>
+                    {categoryPages.length > 0 && (
+                      <span className="flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-slate-400">
+                        {categoryPages.length}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="rounded-md p-0.5 text-slate-300 transition-all hover:bg-indigo-50 hover:text-indigo-500"
+                    onClick={() => setIsAddingCatPage(true)}
+                    title="New page (no section)">
+                    <PlusIcon className="h-3 w-3" />
+                  </button>
+                </div>
+
+                {/* Add page directly to the notebook */}
+                {isAddingCatPage && (
+                  <div className="mx-1 mb-1.5 rounded-lg border border-indigo-100 bg-white p-2 shadow-sm">
+                    <input
+                      autoFocus
+                      className="mb-1.5 w-full rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-800 outline-none transition-all placeholder-slate-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      onChange={e => setNewCatPageTitle(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleAddCatPage();
+                        if (e.key === 'Escape') setIsAddingCatPage(false);
+                        e.stopPropagation();
+                      }}
+                      placeholder="Page title"
+                      value={newCatPageTitle}
+                    />
+                    <div className="flex justify-end gap-1.5">
+                      <button
+                        className="rounded-md px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                        onClick={() => setIsAddingCatPage(false)}>
+                        Cancel
+                      </button>
+                      <button
+                        className="rounded-md bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                        onClick={handleAddCatPage}>
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {loadingCategoryPages ? (
+                  <div className="flex flex-col gap-1 px-1 pb-1">
+                    {[1, 2].map(i => (
+                      <div className="h-6 animate-pulse rounded bg-slate-100/80" key={i} />
+                    ))}
+                  </div>
+                ) : categoryPages.length > 0 ? (
+                  <SortableContext
+                    items={categoryPages.map(p => `cpage:${p._id as string}`)}
+                    strategy={verticalListSortingStrategy}>
+                    <ul className="space-y-0.5 px-0.5 pb-0.5">
+                      {categoryPages.map(page => {
+                        const pid = page._id as string;
+                        if (editingPageId === pid) {
+                          return (
+                            <li className="p-1" key={pid}>
+                              <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+                                <div className="flex items-center gap-2">
+                                  <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
+                                  <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
+                                </div>
+                                <input
+                                  autoFocus
+                                  className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] text-gray-900 focus:border-indigo-500 focus:outline-none"
+                                  onChange={e => setEditPageTitle(e.target.value)}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') handleRenamePage();
+                                    if (e.key === 'Escape') setEditingPageId(null);
+                                    e.stopPropagation();
+                                  }}
+                                  onPointerDown={e => e.stopPropagation()}
+                                  value={editPageTitle}
+                                />
+                                <div className="flex justify-end gap-1">
+                                  <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                                    <XMarkIcon className="h-4 w-4" />
+                                  </button>
+                                  <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                                    <CheckIcon className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        }
+                        return (
+                          <li key={pid}>
+                            <PageRow
+                              badgeStat={pageBadgeCounts?.[pid]}
+                              dndId={`cpage:${pid}`}
+                              hideGroupAction
+                              isChild
+                              isSelected={selectedPageId === pid}
+                              onDelete={onDeletePage}
+                              onEdit={startEditingPage}
+                              onMove={onMovePage}
+                              onSelect={onSelectCategoryPage}
+                              onShowParentPicker={() => {}}
+                              onToggleInactive={onToggleInactive}
+                              page={page}
+                              sortable
+                            />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </SortableContext>
+                ) : (
+                  !isAddingCatPage && (
+                    <p className="px-1.5 pb-1.5 text-[10px] leading-snug text-slate-300">
+                      {isOver ? 'Drop to move here' : 'Pages without a section. Click + or drop a page here.'}
+                    </p>
+                  )
+                )}
+              </div>
+            )}
+          </CategoryRootDrop>
+
+          {/* Sections label */}
+          <p className="mb-1 mt-1 px-1.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">Sections</p>
+
           {/* Add-section inline form */}
           {isAddingSection && (
-            <div className="mb-2 rounded-xl border border-violet-100 bg-white p-3 shadow-xl shadow-violet-500/5 ring-1 ring-violet-100/50 z-20 relative">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-400 mb-2">New Section</p>
+            <div className="mb-2 rounded-xl border border-indigo-100 bg-white p-3 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-100/50 z-20 relative">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-400 mb-2">New Section</p>
               <input
                 autoFocus
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 placeholder-slate-300 text-slate-800 mb-3 transition-all"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 placeholder-slate-300 text-slate-800 mb-3 transition-all"
                 onChange={e => setNewSecName(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleAddSection();
@@ -689,7 +945,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingSection(false)}>
                   Cancel
                 </button>
-                <button className="rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-violet-700 shadow-sm transition-colors" onClick={handleAddSection}>
+                <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors" onClick={handleAddSection}>
                   Add Section
                 </button>
               </div>
@@ -704,8 +960,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               ))}
             </div>
           ) : (
-            <DndContext collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd} sensors={sensors}>
-              <SortableContext items={filteredSections.map(s => s._id as string)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={filteredSections.map(s => `sec:${s._id as string}`)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-0.5">
                   {filteredSections.map(section => {
                     const sid = section._id as string;
@@ -715,11 +970,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                     if (editingSecId === sid) {
                       return (
                         <li key={sid}>
-                          <div className="rounded-xl border border-violet-100 bg-white p-3 shadow-xl shadow-violet-500/5 ring-1 ring-violet-50 z-20 relative">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-violet-400 mb-2">Rename Section</p>
+                          <div className="rounded-xl border border-indigo-100 bg-white p-3 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-50 z-20 relative">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Rename Section</p>
                             <input
                               autoFocus
-                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-800 mb-3 transition-all"
+                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-slate-800 mb-3 transition-all"
                               onChange={e => setEditSecName(e.target.value)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter') handleRenameSection();
@@ -737,7 +992,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                               <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setEditingSecId(null)}>
                                 Cancel
                               </button>
-                              <button className="rounded-lg bg-violet-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-violet-700 shadow-sm transition-colors" onClick={handleRenameSection}>
+                              <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors" onClick={handleRenameSection}>
                                 Save
                               </button>
                             </div>
@@ -746,22 +1001,25 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                       );
                     }
 
+                    const isDropTarget = dropTargetSec === sid;
                     return (
                       <li key={sid}>
-                        <SortableItem id={sid}>
+                        <SortableItem id={`sec:${sid}`}>
                           {/* ── Section row ───────────────────────────────── */}
                           <div
                             className={`group relative flex cursor-pointer items-center justify-between px-2 py-1.5 text-[12.5px] transition-all duration-150 rounded-lg ${
-                              isSelectedSec
-                                ? 'bg-violet-50/80 text-violet-900 font-semibold ring-1 ring-inset ring-violet-100'
+                              isDropTarget
+                                ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300 text-indigo-800'
+                                : isSelectedSec
+                                ? 'bg-indigo-50/80 text-indigo-900 font-semibold ring-1 ring-inset ring-indigo-100'
                                 : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-800'
                             }`}
                             onClick={() => onSelectSection(sid)}>
                             {/* Active left border */}
-                            {isSelectedSec && <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-violet-500" />}
+                            {isSelectedSec && <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-indigo-500" />}
                             <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0 pl-1.5">
                               {/* Expand chevron */}
-                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-violet-400' : 'text-slate-300'}`}>
+                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-indigo-400' : 'text-slate-300'}`}>
                                 {isSelectedSec
                                   ? <ChevronDownIcon className="h-3 w-3" />
                                   : <ChevronRightIcon className="h-3 w-3" />}
@@ -770,7 +1028,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 <img alt={section.name} className="h-3.5 w-3.5 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
                               ) : (
                                 <SectionIcon
-                                  className={`h-3.5 w-3.5 flex-shrink-0 ${isSelectedSec ? 'text-violet-600' : 'text-slate-400'}`}
+                                  className={`h-3.5 w-3.5 flex-shrink-0 ${isSelectedSec ? 'text-indigo-600' : 'text-slate-400'}`}
                                   style={section.color && section.color !== '#000000' ? {color: section.color} : undefined}
                                 />
                               )}
@@ -778,7 +1036,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                               {/* Count chip */}
                               {isSelectedSec ? (
                                 pages.length > 0 && (
-                                  <span className="flex-shrink-0 text-[9px] font-semibold text-violet-500 bg-violet-100 px-1.5 py-0.5 rounded-full tabular-nums">
+                                  <span className="flex-shrink-0 text-[9px] font-semibold text-indigo-500 bg-indigo-100 px-1.5 py-0.5 rounded-full tabular-nums">
                                     {pages.length}
                                   </span>
                                 )
@@ -799,7 +1057,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             {/* Section actions */}
                             <div className="hidden group-hover:flex items-center gap-0.5 ml-1 flex-shrink-0">
                               <button
-                                className="rounded p-1 text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+                                className="rounded p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                                 onClick={e => {
                                   e.stopPropagation();
                                   onSelectSection(sid);
@@ -833,19 +1091,19 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         {/* ── Pages sub-list (only under selected section) ── */}
                         {isSelectedSec && (
                           <div className="pb-1 mb-0.5">
-                            <div className="ml-3 border-l border-violet-100 pl-2 pt-1">
+                            <div className="ml-3 border-l border-indigo-100 pl-2 pt-1">
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
-                              <div className="mb-1.5 rounded-xl border border-violet-100 bg-white p-2.5 shadow-lg shadow-violet-500/5 ring-1 ring-violet-50">
-                                <p className="text-[9px] font-bold uppercase tracking-wider text-violet-400 mb-2">New Page</p>
+                              <div className="mb-1.5 rounded-xl border border-indigo-100 bg-white p-2.5 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-50">
+                                <p className="text-[9px] font-bold uppercase tracking-wider text-indigo-400 mb-2">New Page</p>
                                 <div className="flex items-center gap-2 mb-2">
                                   <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
                                   <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
                                 </div>
                                 <input
                                   autoFocus
-                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:outline-none text-slate-800 mb-2 transition-all"
+                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none text-slate-800 mb-2 transition-all"
                                   onChange={e => setNewPageTitle(e.target.value)}
                                   onKeyDown={e => {
                                     if (e.key === 'Enter') handleAddPage();
@@ -858,7 +1116,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   <button className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingPage(false)}>
                                     Cancel
                                   </button>
-                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-violet-600 text-white hover:bg-violet-700 transition-colors shadow-sm" onClick={handleAddPage}>
+                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm" onClick={handleAddPage}>
                                     Add Page
                                   </button>
                                 </div>
@@ -875,8 +1133,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             ) : (
                               <>
                                 {rootPages.length > 0 && (
-                                  <DndContext collisionDetection={closestCenter} onDragEnd={handlePageDragEnd} sensors={sensors}>
-                                    <SortableContext items={rootPages.map(p => p._id as string)} strategy={verticalListSortingStrategy}>
+                                    <SortableContext items={rootPages.map(p => `page:${p._id as string}`)} strategy={verticalListSortingStrategy}>
                                       <ul className="space-y-0.5">
                                         {rootPages.map(page => {
                                           const pid = page._id as string;
@@ -933,6 +1190,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                                   isExpanded={isExpanded}
                                                   onToggleExpand={toggleParentExpanded}
                                                   sortable
+                                                  dndId={`page:${pid}`}
                                                 />
                                               </li>
                                               {isExpanded && children.length > 0 && (
@@ -994,11 +1252,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                         })}
                                       </ul>
                                     </SortableContext>
-                                  </DndContext>
                                 )}
                                 {!isAddingPage && (
                                   <button
-                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:text-violet-600 hover:bg-violet-50/60 rounded-md transition-all"
+                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/60 rounded-md transition-all"
                                     onClick={() => setIsAddingPage(true)}>
                                     <PlusIcon className="h-3 w-3 flex-shrink-0" />
                                     New page
@@ -1014,9 +1271,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                   })}
                 </ul>
               </SortableContext>
-            </DndContext>
           )}
         </div>
+        </DndContext>
       </div>
     );
   },
