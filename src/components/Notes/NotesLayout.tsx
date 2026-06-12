@@ -1875,7 +1875,11 @@ const NotesLayout: React.FC = React.memo(() => {
         <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
         <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
-        <AudioRecorderModal isOpen={isAudioRecorderOpen} onClose={() => setIsAudioRecorderOpen(false)} />
+        <AudioRecorderModal
+          isOpen={isAudioRecorderOpen}
+          onClose={() => setIsAudioRecorderOpen(false)}
+          onOpen={() => setIsAudioRecorderOpen(true)}
+        />
         <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
         {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
         {isRedlineOpen && <ContractRedlineAnalyzer onClose={handleCloseRedline} />}
