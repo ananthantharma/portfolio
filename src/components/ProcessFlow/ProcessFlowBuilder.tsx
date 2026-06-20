@@ -133,6 +133,12 @@ const CSS = `
 }
 #pfb-legend .leg-lbl:hover{border-bottom-color:#ccc}
 #pfb-legend .leg-lbl:focus{border-bottom-color:#66CC00}
+#pfb-legend .leg-remove{
+  background:none;border:none;color:#bbb;cursor:pointer;font-size:14px;
+  padding:0 0 0 2px;line-height:1;flex-shrink:0;opacity:0;transition:opacity .1s;
+}
+#pfb-legend .leg-item:hover .leg-remove{opacity:1}
+#pfb-legend .leg-remove:hover{color:#b91c1c!important;background:none!important}
 /* Overlay panels */
 .pfb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:9999}
 .pfb-panel{
@@ -213,6 +219,11 @@ const HTML = `
       <button id="fit">Fit</button>
     </div>
     <div class="grp">
+      <label>Canvas</label>
+      <input type="color" id="canvasBgPicker" value="#ffffff" title="Canvas background colour"
+        style="height:28px;width:34px;padding:2px;border-radius:5px;border:none;cursor:pointer;background:none">
+    </div>
+    <div class="grp">
       <button class="ghost" id="legendBtn" title="Toggle colour legend">🗓 Legend</button>
       <button class="ghost" id="saveLocal" title="Save to browser">💾 Save</button>
       <button class="ghost" id="loadLocal" title="Load saved flow">📂 Load</button>
@@ -263,9 +274,11 @@ export default function ProcessFlowBuilder() {
     type LegendState = {
       visible: boolean; x: number; y: number; layout: 'V' | 'H';
       labels: Record<string, string>;
+      hidden: string[];
     };
     type AppState = {
       nodes: Node[]; edges: Edge[]; dir: string; wrap: number; legend: LegendState;
+      canvasBg: string;
     };
 
     // ── Constants ──────────────────────────────────────────────────────────
@@ -292,10 +305,11 @@ export default function ProcessFlowBuilder() {
     const defaultLegend = (): LegendState => ({
       visible: false, x: 20, y: 20, layout: 'V',
       labels: Object.fromEntries(THEMES.map(t => [t.k, t.name])),
+      hidden: [],
     });
 
     // ── State ──────────────────────────────────────────────────────────────
-    let state: AppState = {nodes: [], edges: [], dir: 'TB', wrap: 4, legend: defaultLegend()};
+    let state: AppState = {nodes: [], edges: [], dir: 'TB', wrap: 4, legend: defaultLegend(), canvasBg: '#ffffff'};
     let sel: string | null = null;
     let idc = 1;
     let edgeId = 1;
@@ -713,11 +727,16 @@ export default function ProcessFlowBuilder() {
       leg.style.left=state.legend.x+'px';
       leg.style.top=state.legend.y+'px';
 
-      const items=THEMES.map(t=>{
+      const hidden = state.legend.hidden || [];
+      const hasHidden = hidden.length > 0;
+      const visibleThemes = THEMES.filter(t => !hidden.includes(t.k));
+
+      const items=visibleThemes.map(t=>{
         const label=state.legend.labels[t.k]||t.name;
         return `<div class="leg-item" style="${isH?'display:inline-flex;margin-right:12px;margin-bottom:4px;':'margin-bottom:5px;'}align-items:center;gap:7px">
           <div class="leg-swatch" style="background:${SWATCH[t.k]}"></div>
           <span class="leg-lbl" contenteditable="true" data-theme="${t.k}" spellcheck="false">${label}</span>
+          <button class="leg-remove" data-remove="${t.k}" title="Remove from legend">×</button>
         </div>`;
       }).join('');
 
@@ -727,9 +746,10 @@ export default function ProcessFlowBuilder() {
           <div style="display:flex;gap:4px">
             <button class="leg-lay-btn${!isH?' active':''}" data-lay="V">V</button>
             <button class="leg-lay-btn${isH?' active':''}" data-lay="H">H</button>
+            ${hasHidden ? `<button class="leg-lay-btn" data-restore="1" title="Restore ${hidden.length} hidden colour${hidden.length>1?'s':''}">↺</button>` : ''}
           </div>
         </div>
-        <div style="${isH?'display:flex;flex-wrap:wrap;':''}padding:2px 0">${items}</div>`;
+        <div style="${isH?'display:flex;flex-wrap:wrap;':''}padding:2px 0">${items||'<div style="font-size:11px;color:#aaa;padding:4px 0">All colours hidden — click ↺ to restore</div>'}</div>`;
 
       // Layout toggle buttons
       (leg as HTMLElement).querySelectorAll('[data-lay]').forEach(btn=>{
@@ -738,6 +758,27 @@ export default function ProcessFlowBuilder() {
           state.legend.layout=(btn as HTMLElement).dataset.lay as 'V'|'H';
           renderLegend();
         });
+      });
+
+      // Restore all hidden colours
+      const restoreBtn=(leg as HTMLElement).querySelector('[data-restore]');
+      if (restoreBtn) {
+        restoreBtn.addEventListener('mousedown', e=>{
+          e.stopPropagation();
+          state.legend.hidden=[];
+          renderLegend();
+        });
+      }
+
+      // Remove individual colour from legend
+      (leg as HTMLElement).querySelectorAll('[data-remove]').forEach(btn=>{
+        (btn as HTMLElement).addEventListener('mousedown', e=>{
+          e.stopPropagation();
+          const theme=(btn as HTMLElement).dataset.remove!;
+          state.legend.hidden=[...hidden, theme];
+          renderLegend();
+        });
+        (btn as HTMLElement).addEventListener('click', e=>e.stopPropagation());
       });
 
       // Editable labels
@@ -1020,6 +1061,13 @@ export default function ProcessFlowBuilder() {
       renderLegend();
     };
 
+    // Canvas background colour
+    const bgPicker=document.getElementById('canvasBgPicker') as HTMLInputElement;
+    bgPicker.oninput=e=>{
+      state.canvasBg=(e.target as HTMLInputElement).value;
+      cw.style.background=state.canvasBg;
+    };
+
     (document.getElementById('dir') as HTMLSelectElement).onchange=e=>{
       state.dir=(e.target as HTMLSelectElement).value;
     };
@@ -1036,7 +1084,7 @@ export default function ProcessFlowBuilder() {
       if(confirm('Clear the whole canvas?')){
         [...canvas.querySelectorAll('.node')].forEach(el=>el.remove());
         document.getElementById('pfb-legend')?.remove();
-        state={nodes:[],edges:[],dir:state.dir,wrap:state.wrap,legend:defaultLegend()};
+        state={nodes:[],edges:[],dir:state.dir,wrap:state.wrap,legend:defaultLegend(),canvasBg:state.canvasBg};
         sel=null; idc=1; edgeId=1; render();
       }
     };
@@ -1051,9 +1099,14 @@ export default function ProcessFlowBuilder() {
     function loadState(loaded: AppState) {
       [...canvas.querySelectorAll('.node')].forEach(el=>el.remove());
       document.getElementById('pfb-legend')?.remove();
-      state={...loaded, legend: loaded.legend||defaultLegend()};
+      const leg=loaded.legend||defaultLegend();
+      if (!leg.hidden) leg.hidden=[];
+      state={...loaded, legend: leg, canvasBg: loaded.canvasBg||'#ffffff'};
       idc=state.nodes.length?Math.max(...state.nodes.map(n=>+n.id.replace('n','')))+1:1;
       edgeId=state.edges.length?Math.max(...state.edges.map(e=>+e.id.replace('e','')))+1:1;
+      // Apply canvas bg
+      cw.style.background=state.canvasBg;
+      (document.getElementById('canvasBgPicker') as HTMLInputElement).value=state.canvasBg;
       sel=null; render(); fit();
     }
 
@@ -1130,6 +1183,8 @@ export default function ProcessFlowBuilder() {
     }
 
     seed(); render(); applyZoom();
+    // Apply initial canvas background
+    cw.style.background = state.canvasBg;
 
     // ── Cleanup ────────────────────────────────────────────────────────────
     return ()=>{
