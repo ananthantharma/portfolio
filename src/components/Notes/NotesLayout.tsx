@@ -31,6 +31,7 @@ import {
   DocumentMagnifyingGlassIcon,
   UserIcon,
   BoltIcon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -1376,6 +1377,18 @@ const NotesLayout: React.FC = React.memo(() => {
                     {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
                 ))}
+
+                <div className={`h-px bg-slate-200/60 my-1 ${isRailExpanded ? 'mx-1' : 'w-6'}`} />
+
+                {/* ── Process Flow Builder ── */}
+                <button
+                  onClick={() => window.open('/process-flow', '_blank')}
+                  title="Process Flow Builder"
+                  className={`flex items-center rounded-lg transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}
+                  style={{color: '#0C2721', background: isRailExpanded ? 'rgba(102,204,0,0.10)' : undefined}}>
+                  <RectangleGroupIcon className="h-[15px] w-[15px] flex-shrink-0" style={{color: '#3a7d1e'}} />
+                  {isRailExpanded && <span className="truncate text-left text-[12px] font-medium" style={{color: '#2a5c12'}}>Process Flow</span>}
+                </button>
 
                 {/* Expand/collapse toggle at the very bottom */}
                 <div className="flex-1" />
