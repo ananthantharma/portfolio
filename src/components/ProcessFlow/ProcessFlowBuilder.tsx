@@ -118,7 +118,13 @@ const CSS = `
 #pfb-legend:active{cursor:grabbing}
 #pfb-legend .leg-hdr{
   font-weight:700;font-size:11px;color:#0C2721;letter-spacing:.5px;
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;
+  max-height:0;overflow:hidden;opacity:0;
+  transition:max-height .2s ease,opacity .15s ease,margin-bottom .2s ease;
+  margin-bottom:0;
+}
+#pfb-legend:hover .leg-hdr{
+  max-height:40px;opacity:1;margin-bottom:8px;
 }
 #pfb-legend .leg-lay-btn{
   background:#eee;color:#555;border:none;border-radius:4px;
