@@ -73,7 +73,7 @@ const CSS = `
 #pfb-root kbd{background:#eceae3;border-radius:4px;padding:1px 5px;font-size:10.5px;font-family:inherit}
 #pfb-root .row2{display:flex;gap:8px}
 #pfb-root .row2>*{flex:1}
-#pfb-root svg.edges path.hit{pointer-events:stroke;cursor:pointer}
+#pfb-root svg.edges path.hit{pointer-events:stroke;cursor:move}
 #pfb-root svg.edges .edge-grp:hover path.vis{filter:brightness(.7)}
 #pfb-root .edge-grp.esel path.vis{filter:none}
 #pfb-root .lasso{position:absolute;border:1.5px dashed #66CC00;background:rgba(102,204,0,.07);pointer-events:none;z-index:9}
@@ -121,6 +121,28 @@ const CSS = `
 .hier-root-badge{font-size:9px;background:#66CC00;color:#0C2721;border-radius:3px;padding:1px 4px;font-weight:700;margin-left:auto}
 .hier-right{flex:1;display:flex;flex-direction:column;gap:8px}
 .hier-tip{font-size:11px;color:#888;line-height:1.5;margin:0}
+#pfb-root button:disabled{opacity:.4;cursor:default}
+#pfb-root button:disabled:hover{background:#fff}
+/* Word-style outline editor */
+.ol-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ol-toolbar button{background:#eceae3;color:#333;border:none;border-radius:7px;padding:7px 11px;font-size:12.5px;cursor:pointer;font-family:-apple-system,sans-serif;font-weight:500;display:flex;align-items:center;gap:4px}
+.ol-toolbar button:hover{background:#dcdad3}
+.ol-toolbar button:disabled{opacity:.4;cursor:default;background:#eceae3}
+.ol-rows{border:1px solid #e3e6e1;border-radius:9px;max-height:340px;overflow-y:auto;padding:6px;background:#fafafa}
+.ol-row{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:7px;cursor:pointer;border:1.5px solid transparent}
+.ol-row.sel{background:#fff;border-color:#66CC00;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.ol-row:hover{background:#fff}
+.ol-bullet{width:7px;height:7px;border-radius:50%;background:#9aa099;flex-shrink:0}
+.ol-sw{width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(0,0,0,.18);cursor:pointer;flex-shrink:0;position:relative}
+.ol-title{flex:1;border:none;background:none;font-size:13.5px;font-family:-apple-system,sans-serif;color:#1b2420;outline:none;padding:3px 2px;min-width:40px;border-bottom:1.5px solid transparent}
+.ol-title:focus{border-bottom-color:#66CC00}
+.ol-pop{position:absolute;top:24px;left:0;background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px;display:flex;gap:4px;z-index:10003;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.ol-pop-sw{width:22px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent}
+.ol-pop-sw:hover{border-color:#0C2721}
+.ol-hint{font-size:11px;color:#888;margin:10px 0 0;line-height:1.6}
+.ol-hint kbd{background:#eceae3;border-radius:4px;padding:1px 5px;font-size:10px;font-family:-apple-system,sans-serif}
+.ol-arrange{display:flex;align-items:center;gap:7px;font-size:12px;color:#444;margin-top:10px;font-family:-apple-system,sans-serif;cursor:pointer;user-select:none}
+.ol-empty{padding:24px;text-align:center;color:#9aa099;font-size:12.5px}
 `;
 
 const HTML = `
@@ -132,7 +154,11 @@ const HTML = `
     <div class="grp">
       <label>Add</label>
       <button class="accent" id="addNode">+ Box</button>
-      <button class="ghost" id="hierarchyBtn" title="Build diagram from text hierarchy">📋 Hierarchy</button>
+      <button class="ghost" id="hierarchyBtn" title="Edit the flow as a Word-style outline">📝 Outline</button>
+    </div>
+    <div class="grp">
+      <button class="ghost" id="undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+      <button class="ghost" id="redo" title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
     </div>
     <div class="grp">
       <label>Layout</label>
@@ -196,6 +222,7 @@ export default function ProcessFlowBuilder() {
       id: string; from: string; to: string;
       fromSide: string|null; toSide: string|null;
       label: string; color?: string; style?: string;
+      midX?: number; midY?: number; // manual route offset (middle segment position)
     };
     type LegendState = {
       visible: boolean; x: number; y: number; layout: 'V'|'H';
@@ -310,6 +337,47 @@ export default function ProcessFlowBuilder() {
       sizeCanvas();
     }
 
+    // ── Undo / Redo history ────────────────────────────────────────────────
+    const history: string[] = [];
+    const redo: string[] = [];
+    const HISTORY_CAP = 80;
+    function snapshot(){
+      history.push(JSON.stringify(state));
+      if (history.length>HISTORY_CAP) history.shift();
+      redo.length=0;
+      updateUndoBtns();
+    }
+    function updateUndoBtns(){
+      const u=document.getElementById('undo') as HTMLButtonElement|null;
+      const r=document.getElementById('redo') as HTMLButtonElement|null;
+      if (u) u.disabled=history.length===0;
+      if (r) r.disabled=redo.length===0;
+    }
+    function applyState(obj: AppState){
+      nodeEls.forEach(el=>el.remove());nodeEls.clear();
+      document.getElementById('pfb-legend')?.remove();
+      const leg=obj.legend||defaultLegend();if(!leg.hidden)leg.hidden=[];
+      state={...obj,legend:leg,canvasBg:obj.canvasBg||'#ffffff'};
+      idc = state.nodes.length?Math.max(...state.nodes.map(n=>{const m=n.id.match(/\d+$/);return m?+m[0]:0;}))+1:1;
+      edgeId = state.edges.length?Math.max(...state.edges.map(e=>{const m=e.id.match(/\d+$/);return m?+m[0]:0;}))+1:1;
+      cw.style.background=state.canvasBg;
+      (document.getElementById('canvasBgPicker') as HTMLInputElement).value=state.canvasBg;
+      selNodes.clear();selEdge=null;
+      render();
+    }
+    function undo(){
+      if (!history.length) return;
+      redo.push(JSON.stringify(state));
+      applyState(JSON.parse(history.pop()!));
+      updateUndoBtns();
+    }
+    function redoAction(){
+      if (!redo.length) return;
+      history.push(JSON.stringify(state));
+      applyState(JSON.parse(redo.pop()!));
+      updateUndoBtns();
+    }
+
     // ── Geometry ───────────────────────────────────────────────────────────
     function port(n: Node, side: string){
       const {x,y,w,h}=n;
@@ -329,17 +397,14 @@ export default function ProcessFlowBuilder() {
       if (s==='l') return {x:p.x-o,y:p.y};
       return {x:p.x+o,y:p.y};
     }
-    function orthPath(p1:{x:number;y:number},s1:string,p2:{x:number;y:number},s2:string){
+    function orthPath(p1:{x:number;y:number},s1:string,p2:{x:number;y:number},s2:string,ovX?:number,ovY?:number){
       const off=22,e1=stub(p1,s1,off),e2=stub(p2,s2,off);
-      const mx=(e1.x+e2.x)/2,my=(e1.y+e2.y)/2;
+      const mx=ovX!=null?ovX:(e1.x+e2.x)/2,my=ovY!=null?ovY:(e1.y+e2.y)/2;
       let pts=[p1,e1];
       if (s1==='b'||s1==='t') pts.push({x:e1.x,y:my},{x:e2.x,y:my});
       else                     pts.push({x:mx,y:e1.y},{x:mx,y:e2.y});
       pts.push(e2,p2);
       return 'M'+pts.map(p=>p.x+','+p.y).join(' L');
-    }
-    function midOf(p1:{x:number;y:number},p2:{x:number;y:number}){
-      return {x:(p1.x+p2.x)/2,y:(p1.y+p2.y)/2};
     }
 
     // ── Parse path segments (for crossing detection) ───────────────────────
@@ -421,7 +486,7 @@ export default function ProcessFlowBuilder() {
         let sA=e.fromSide,sB=e.toSide;
         if (!sA||!sB){const s=autoSides(a,b);sA=s[0];sB=s[1];}
         const p1=port(a,sA!),p2=port(b,sB!);
-        const d=orthPath(p1,sA!,p2,sB!);
+        const d=orthPath(p1,sA!,p2,sB!,e.midX,e.midY);
         const isSel=selEdge===e.id;
         const ec=isSel?'#66CC00':(e.color||'#5a6159');
         pathData.push({d,color:ec,order});
@@ -429,13 +494,20 @@ export default function ProcessFlowBuilder() {
         const sw=e.style==='thick'?'4':'2';
         const da=e.style==='dashed'?'8 4':e.style==='dotted'?'2 4':'';
 
+        // ── Geometry of the middle segment (for handle + label placement) ──
+        const off=22,m1=stub(p1,sA!,off),m2=stub(p2,sB!,off);
+        const vertFirst=sA==='b'||sA==='t';
+        const segY=e.midY!=null?e.midY:(m1.y+m2.y)/2;
+        const segX=e.midX!=null?e.midX:(m1.x+m2.x)/2;
+        const handle={x:vertFirst?(m1.x+m2.x)/2:segX, y:vertFirst?segY:(m1.y+m2.y)/2};
+
         const g=document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('class','edge-grp'+(isSel?' esel':''));
         const hit=document.createElementNS('http://www.w3.org/2000/svg','path');
         hit.setAttribute('d',d);hit.setAttribute('fill','none');
         hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','14');
         hit.setAttribute('class','hit');
-        hit.addEventListener('click',ev=>{ev.stopPropagation();selEdge=e.id;selNodes.clear();render();});
+        hit.addEventListener('mousedown',ev=>startEdgeDrag(e,sA!,ev as MouseEvent));
         const pth=document.createElementNS('http://www.w3.org/2000/svg','path');
         pth.setAttribute('d',d);pth.setAttribute('fill','none');
         pth.setAttribute('stroke',ec);pth.setAttribute('stroke-width',sw);
@@ -443,8 +515,19 @@ export default function ProcessFlowBuilder() {
         if (da) pth.setAttribute('stroke-dasharray',da);
         g.appendChild(hit);g.appendChild(pth);
 
+        // Drag handle (only on the selected edge) to make the line obviously movable
+        if (isSel){
+          const h=document.createElementNS('http://www.w3.org/2000/svg','circle');
+          h.setAttribute('cx',String(handle.x));h.setAttribute('cy',String(handle.y));
+          h.setAttribute('r','6');h.setAttribute('fill','#fff');
+          h.setAttribute('stroke','#66CC00');h.setAttribute('stroke-width','2.5');
+          (h as unknown as SVGElement).style.cursor='move';
+          h.addEventListener('mousedown',ev=>startEdgeDrag(e,sA!,ev as MouseEvent));
+          g.appendChild(h);
+        }
+
         if (e.label){
-          const mid=midOf(p1,p2);const tw=e.label.length*6.6+12;
+          const mid=handle;const tw=e.label.length*6.6+12;
           const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
           r.setAttribute('x',String(mid.x-tw/2));r.setAttribute('y',String(mid.y-9));
           r.setAttribute('width',String(tw));r.setAttribute('height','18');r.setAttribute('rx','5');
@@ -500,6 +583,7 @@ export default function ProcessFlowBuilder() {
           });
           let moved=false;
           function mv(e: MouseEvent){
+            if(!moved){snapshot();}
             moved=true;
             const dx=Math.round((e.clientX-sx)/zoom/10)*10;
             const dy=Math.round((e.clientY-sy)/zoom/10)*10;
@@ -540,11 +624,45 @@ export default function ProcessFlowBuilder() {
         if (tgt&&tgt.id!==n.id){
           const portEl=document.elementFromPoint(e.clientX,e.clientY) as HTMLElement;
           const toSide=portEl?.classList.contains('port')?portEl.dataset.d!:'t';
+          snapshot();
           state.edges.push({id:'e'+edgeId++,from:n.id,to:tgt.id,fromSide:side,toSide,label:''});
           render();
         }
       }
       document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+    }
+
+    // ── Drag an edge to manually route it (move its middle segment) ────────
+    function startEdgeDrag(e: Edge, sA: string, ev: MouseEvent){
+      ev.stopPropagation();ev.preventDefault();
+      const startX=ev.clientX,startY=ev.clientY;
+      const vertFirst=sA==='b'||sA==='t';
+      let dragged=false;
+      function mv(me: MouseEvent){
+        if (!dragged && Math.abs(me.clientX-startX)+Math.abs(me.clientY-startY)<4) return;
+        if (!dragged){
+          snapshot();
+          dragged=true;
+          // Pin sides so the route stays stable while dragging
+          if (!e.fromSide||!e.toSide){
+            const a=state.nodes.find(n=>n.id===e.from),b=state.nodes.find(n=>n.id===e.to);
+            if (a&&b){const s=autoSides(a,b);e.fromSide=s[0];e.toSide=s[1];}
+          }
+        }
+        const r=canvas.getBoundingClientRect();
+        const cx=(me.clientX-r.left)/zoom,cy=(me.clientY-r.top)/zoom;
+        if (vertFirst) e.midY=Math.round(cy/10)*10;
+        else           e.midX=Math.round(cx/10)*10;
+        drawEdges();
+      }
+      function up(){
+        document.removeEventListener('mousemove',mv);
+        document.removeEventListener('mouseup',up);
+        if (!dragged){selEdge=e.id;selNodes.clear();render();}
+        else sizeCanvas();
+      }
+      document.addEventListener('mousemove',mv);
+      document.addEventListener('mouseup',up);
     }
 
     // ── Lasso selection ────────────────────────────────────────────────────
@@ -598,6 +716,7 @@ export default function ProcessFlowBuilder() {
       }
       if (selNodes.size===0){
         ins.innerHTML=`<div class="empty">Click a box to edit it.<br>Drag a green dot → another box to connect.<br><br>
+          <b>Drag any line</b> to move its route and lay it out neatly.<br><br>
           <b>Shift+click</b> or <b>drag on empty space</b> to select multiple.<br>
           <kbd>Del</kbd> removes selected items.</div>`;
         return;
@@ -613,12 +732,14 @@ export default function ProcessFlowBuilder() {
           const s=document.createElement('div');
           s.className='sw';s.style.background=SWATCH[t.k];s.title=t.name;
           s.onclick=()=>{
+            snapshot();
             selNodes.forEach(id=>{const nd=state.nodes.find(n=>n.id===id);if(nd)nd.theme=t.k;});
             render();
           };
           sw.appendChild(s);
         });
         (document.getElementById('mdelAll') as HTMLButtonElement).onclick=()=>{
+          snapshot();
           [...selNodes].forEach(id=>delNodeQuiet(id));
           selNodes.clear();render();
         };
@@ -662,7 +783,7 @@ export default function ProcessFlowBuilder() {
         const s=document.createElement('div');
         s.className='sw'+(n.theme===t.k?' on':'');
         s.style.background=SWATCH[t.k];s.title=t.name;
-        s.onclick=()=>{n.theme=t.k;render();};
+        s.onclick=()=>{snapshot();n.theme=t.k;render();};
         swrap.appendChild(s);
       });
       const bwrap=document.getElementById('badges') as HTMLElement;
@@ -673,17 +794,25 @@ export default function ProcessFlowBuilder() {
         if (n.badge===b.v) s.style.borderColor='var(--dg)';
         s.textContent=b.v||'∅';s.title=b.name;
         if (!b.v){s.style.fontSize='12px';s.style.color='#999';}
-        s.onclick=()=>{n.badge=b.v;render();};
+        s.onclick=()=>{snapshot();n.badge=b.v;render();};
         bwrap.appendChild(s);
       });
-      (document.getElementById('f-title') as HTMLTextAreaElement).oninput=e=>{n.title=(e.target as HTMLTextAreaElement).value;nodeEl(n);drawEdges();};
-      (document.getElementById('f-sub') as HTMLTextAreaElement).oninput=e=>{n.sub=(e.target as HTMLTextAreaElement).value;nodeEl(n);drawEdges();sizeCanvas();};
-      (document.getElementById('f-font') as HTMLSelectElement).onchange=e=>{n.font=(e.target as HTMLSelectElement).value;nodeEl(n);};
-      (document.getElementById('f-border') as HTMLInputElement).oninput=e=>{n.border=(e.target as HTMLInputElement).value;nodeEl(n);};
-      (document.getElementById('borderReset') as HTMLButtonElement).onclick=()=>{n.border='';render();};
-      (document.getElementById('f-shape') as HTMLSelectElement).onchange=e=>{n.shape=(e.target as HTMLSelectElement).value;render();};
-      (document.getElementById('f-w') as HTMLInputElement).oninput=e=>{n.w=+(e.target as HTMLInputElement).value||210;nodeEl(n);drawEdges();sizeCanvas();};
-      (document.getElementById('delNode') as HTMLButtonElement).onclick=()=>{delNodeQuiet(n.id);selNodes.clear();render();};
+      const fTitle=document.getElementById('f-title') as HTMLTextAreaElement;
+      fTitle.onfocus=()=>snapshot();
+      fTitle.oninput=e=>{n.title=(e.target as HTMLTextAreaElement).value;nodeEl(n);drawEdges();};
+      const fSub=document.getElementById('f-sub') as HTMLTextAreaElement;
+      fSub.onfocus=()=>snapshot();
+      fSub.oninput=e=>{n.sub=(e.target as HTMLTextAreaElement).value;nodeEl(n);drawEdges();sizeCanvas();};
+      (document.getElementById('f-font') as HTMLSelectElement).onchange=e=>{snapshot();n.font=(e.target as HTMLSelectElement).value;nodeEl(n);};
+      const fBorder=document.getElementById('f-border') as HTMLInputElement;
+      fBorder.onfocus=()=>snapshot();
+      fBorder.oninput=e=>{n.border=(e.target as HTMLInputElement).value;nodeEl(n);};
+      (document.getElementById('borderReset') as HTMLButtonElement).onclick=()=>{snapshot();n.border='';render();};
+      (document.getElementById('f-shape') as HTMLSelectElement).onchange=e=>{snapshot();n.shape=(e.target as HTMLSelectElement).value;render();};
+      const fW=document.getElementById('f-w') as HTMLInputElement;
+      fW.onfocus=()=>snapshot();
+      fW.oninput=e=>{n.w=+(e.target as HTMLInputElement).value||210;nodeEl(n);drawEdges();sizeCanvas();};
+      (document.getElementById('delNode') as HTMLButtonElement).onclick=()=>{snapshot();delNodeQuiet(n.id);selNodes.clear();render();};
     }
 
     function inspectEdge(e: Edge){
@@ -705,13 +834,19 @@ export default function ProcessFlowBuilder() {
             <option value="thick"${e.style==='thick'?' selected':''}>Thick</option>
           </select>
         </div>
+        <button id="resetRoute" style="width:100%;margin-top:6px;background:#eceae3;color:#555">Reset route (auto)</button>
         <button class="del" id="delEdge" style="width:100%;margin-top:6px">Delete connection</button>
       </div>`;
-      (document.getElementById('e-lbl') as HTMLInputElement).oninput=ev=>{e.label=(ev.target as HTMLInputElement).value;drawEdges();};
-      (document.getElementById('e-color') as HTMLInputElement).oninput=ev=>{e.color=(ev.target as HTMLInputElement).value;drawEdges();};
-      (document.getElementById('e-colorReset') as HTMLButtonElement).onclick=()=>{e.color=undefined;drawEdges();(document.getElementById('e-color') as HTMLInputElement).value='#5a6159';};
-      (document.getElementById('e-style') as HTMLSelectElement).onchange=ev=>{e.style=(ev.target as HTMLSelectElement).value;drawEdges();};
-      (document.getElementById('delEdge') as HTMLButtonElement).onclick=()=>{state.edges=state.edges.filter(x=>x.id!==e.id);selEdge=null;render();};
+      (document.getElementById('resetRoute') as HTMLButtonElement).onclick=()=>{snapshot();e.midX=undefined;e.midY=undefined;drawEdges();};
+      const eLbl=document.getElementById('e-lbl') as HTMLInputElement;
+      eLbl.onfocus=()=>snapshot();
+      eLbl.oninput=ev=>{e.label=(ev.target as HTMLInputElement).value;drawEdges();};
+      const eColor=document.getElementById('e-color') as HTMLInputElement;
+      eColor.onfocus=()=>snapshot();
+      eColor.oninput=ev=>{e.color=(ev.target as HTMLInputElement).value;drawEdges();};
+      (document.getElementById('e-colorReset') as HTMLButtonElement).onclick=()=>{snapshot();e.color=undefined;drawEdges();(document.getElementById('e-color') as HTMLInputElement).value='#5a6159';};
+      (document.getElementById('e-style') as HTMLSelectElement).onchange=ev=>{snapshot();e.style=(ev.target as HTMLSelectElement).value;drawEdges();};
+      (document.getElementById('delEdge') as HTMLButtonElement).onclick=()=>{snapshot();state.edges=state.edges.filter(x=>x.id!==e.id);selEdge=null;render();};
     }
 
     function esc(s: string){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -722,10 +857,18 @@ export default function ProcessFlowBuilder() {
       const el=nodeEls.get(id);el?.remove();nodeEls.delete(id);
     }
 
-    // Delete key
+    // Delete key + undo/redo shortcuts
     const keyHandler=(e: KeyboardEvent)=>{
-      if ((e.key==='Delete'||e.key==='Backspace')&&(selNodes.size||selEdge)&&
-          !/INPUT|TEXTAREA|SELECT/.test((document.activeElement as HTMLElement).tagName)){
+      const ae=document.activeElement as HTMLElement;
+      const typing=ae&&(/INPUT|TEXTAREA|SELECT/.test(ae.tagName)||ae.isContentEditable);
+      const meta=e.ctrlKey||e.metaKey;
+      // Let the browser handle native text undo while typing in a field
+      if (meta&&(e.key==='z'||e.key==='Z')&&!typing){
+        e.preventDefault(); if (e.shiftKey) redoAction(); else undo(); return;
+      }
+      if (meta&&(e.key==='y'||e.key==='Y')&&!typing){e.preventDefault();redoAction();return;}
+      if ((e.key==='Delete'||e.key==='Backspace')&&(selNodes.size||selEdge)&&!typing){
+        snapshot();
         if (selEdge){state.edges=state.edges.filter(x=>x.id!==selEdge);selEdge=null;}
         [...selNodes].forEach(id=>delNodeQuiet(id));
         selNodes.clear();render();
@@ -764,13 +907,13 @@ export default function ProcessFlowBuilder() {
         </div>
         <div style="${isH?'display:flex;flex-wrap:wrap;':''}padding:2px 0">${items||'<div style="font-size:11px;color:#aaa;padding:4px 0">All hidden — click ↺</div>'}</div>`;
       leg.querySelectorAll('[data-lay]').forEach(btn=>{
-        (btn as HTMLElement).addEventListener('mousedown',e=>{e.stopPropagation();state.legend.layout=(btn as HTMLElement).dataset.lay as 'V'|'H';renderLegend();});
+        (btn as HTMLElement).addEventListener('mousedown',e=>{e.stopPropagation();snapshot();state.legend.layout=(btn as HTMLElement).dataset.lay as 'V'|'H';renderLegend();});
       });
       const rb=leg.querySelector('[data-restore]');
-      if (rb) rb.addEventListener('mousedown',e=>{e.stopPropagation();state.legend.hidden=[];renderLegend();});
+      if (rb) rb.addEventListener('mousedown',e=>{e.stopPropagation();snapshot();state.legend.hidden=[];renderLegend();});
       leg.querySelectorAll('[data-remove]').forEach(btn=>{
         (btn as HTMLElement).addEventListener('mousedown',e=>{
-          e.stopPropagation();
+          e.stopPropagation();snapshot();
           state.legend.hidden=[...hidden,(btn as HTMLElement).dataset.remove!];
           renderLegend();
         });
@@ -778,6 +921,7 @@ export default function ProcessFlowBuilder() {
       });
       leg.querySelectorAll('.leg-lbl').forEach(lbl=>{
         const theme=(lbl as HTMLElement).dataset.theme!;
+        (lbl as HTMLElement).addEventListener('focus',()=>snapshot());
         (lbl as HTMLElement).addEventListener('blur',()=>{state.legend.labels[theme]=(lbl as HTMLElement).textContent?.trim()||theme;});
         (lbl as HTMLElement).addEventListener('mousedown',e=>e.stopPropagation());
         (lbl as HTMLElement).addEventListener('click',e=>e.stopPropagation());
@@ -789,136 +933,196 @@ export default function ProcessFlowBuilder() {
         const t=ev.target as HTMLElement;
         if (t.isContentEditable||t.tagName==='BUTTON') return;
         ev.stopPropagation();sx=ev.clientX;sy=ev.clientY;ox=state.legend.x;oy=state.legend.y;
-        function mv(e: MouseEvent){state.legend.x=Math.round(ox+(e.clientX-sx)/zoom);state.legend.y=Math.round(oy+(e.clientY-sy)/zoom);leg.style.left=state.legend.x+'px';leg.style.top=state.legend.y+'px';}
+        let snapped=false;
+        function mv(e: MouseEvent){if(!snapped){snapshot();snapped=true;}state.legend.x=Math.round(ox+(e.clientX-sx)/zoom);state.legend.y=Math.round(oy+(e.clientY-sy)/zoom);leg.style.left=state.legend.x+'px';leg.style.top=state.legend.y+'px';}
         function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}
         document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
       });
     }
 
-    // ── Hierarchy modal (improved: shows existing nodes) ───────────────────
-    function showHierarchyModal(){
-      const overlay=document.createElement('div');overlay.className='pfb-overlay';document.body.appendChild(overlay);
-      const panel=document.createElement('div');panel.className='pfb-panel';document.body.appendChild(panel);
+    // ── Word-style outline editor (two-way) ────────────────────────────────
+    type OutRow={rid:string;title:string;theme:string;level:number;nodeId:string|null};
+    let outRid=1;
 
-      // Current canvas nodes for reference
-      const existingNodes=state.nodes.map(n=>n);
-      const selRootId = selNodes.size===1?[...selNodes][0]:null;
+    // Build an editable outline from the current diagram (tree from edges)
+    function diagramToOutline(): OutRow[]{
+      const rows: OutRow[]=[];
+      const outMap: Record<string,string[]>={};
+      const indeg: Record<string,number>={};
+      state.nodes.forEach(n=>{outMap[n.id]=[];indeg[n.id]=0;});
+      state.edges.forEach(e=>{if(outMap[e.from]&&indeg[e.to]!=null){outMap[e.from].push(e.to);indeg[e.to]++;}});
+      const horiz=state.dir==='LR';
+      const pos=(id:string)=>state.nodes.find(n=>n.id===id)!;
+      const byPos=(a:string,b:string)=>{
+        const na=pos(a),nb=pos(b);
+        return horiz?((na.x-nb.x)||(na.y-nb.y)):((na.y-nb.y)||(na.x-nb.x));
+      };
+      Object.keys(outMap).forEach(k=>outMap[k].sort(byPos));
+      const visited=new Set<string>();
+      const dfs=(id:string,level:number)=>{
+        if(visited.has(id))return;
+        visited.add(id);
+        const n=pos(id);
+        rows.push({rid:'r'+outRid++,title:n.title,theme:n.theme,level,nodeId:n.id});
+        outMap[id].forEach(c=>dfs(c,level+1));
+      };
+      state.nodes.filter(n=>indeg[n.id]===0).sort((a,b)=>byPos(a.id,b.id)).forEach(r=>dfs(r.id,0));
+      state.nodes.forEach(n=>{if(!visited.has(n.id))dfs(n.id,0);}); // leftover (cycles)
+      return rows;
+    }
+
+    // Rebuild the diagram from an outline (reusing nodes/edges where possible)
+    function applyOutline(rows: OutRow[], arrange: boolean){
+      snapshot();
+      const rowNode: Record<string,Node>={};
+      const usedIds=new Set<string>();
+      let newCount=0;
+      rows.forEach(r=>{
+        const title=r.title.trim()||'Step';
+        let n=r.nodeId?state.nodes.find(x=>x.id===r.nodeId):undefined;
+        if(n){n.title=title;n.theme=r.theme;}
+        else{
+          n={id:'n'+idc++,x:80+newCount*28,y:80+newCount*22,w:210,h:74,title,sub:'',theme:r.theme,shape:'rect',badge:'',border:'',font:''};
+          newCount++;
+        }
+        rowNode[r.rid]=n;usedIds.add(n.id);
+      });
+      const newNodes=rows.map(r=>rowNode[r.rid]);
+      // Structural edges from outline nesting, reusing existing edge styling
+      const exMap: Record<string,Edge>={};
+      state.edges.forEach(e=>{exMap[e.from+'>'+e.to]=e;});
+      const newEdges: Edge[]=[];
+      const keys=new Set<string>();
+      for(let i=0;i<rows.length;i++){
+        const lvl=rows[i].level;if(lvl===0)continue;
+        for(let j=i-1;j>=0;j--){
+          if(rows[j].level===lvl-1){
+            const from=rowNode[rows[j].rid].id,to=rowNode[rows[i].rid].id,key=from+'>'+to;
+            if(!keys.has(key)){newEdges.push(exMap[key]||{id:'e'+edgeId++,from,to,fromSide:null,toSide:null,label:''});keys.add(key);}
+            break;
+          }
+          if(rows[j].level<lvl-1)break;
+        }
+      }
+      // Preserve any non-structural cross-links between surviving nodes
+      state.edges.forEach(e=>{
+        if(!usedIds.has(e.from)||!usedIds.has(e.to))return;
+        const key=e.from+'>'+e.to;if(keys.has(key))return;
+        newEdges.push(e);keys.add(key);
+      });
+      nodeEls.forEach((el,id)=>{if(!usedIds.has(id)){el.remove();nodeEls.delete(id);}});
+      state.nodes=newNodes;state.edges=newEdges;
+      selNodes.clear();selEdge=null;
+      if(arrange)autoLayout();else{render();fit();}
+    }
+
+    function showOutlineModal(){
+      const overlay=document.createElement('div');overlay.className='pfb-overlay';document.body.appendChild(overlay);
+      const panel=document.createElement('div');panel.className='pfb-panel';panel.style.maxWidth='560px';document.body.appendChild(panel);
+
+      let rows=diagramToOutline();
+      if(!rows.length) rows=[{rid:'r'+outRid++,title:'New step',theme:'blue',level:0,nodeId:null}];
+      let sel=0;
 
       panel.innerHTML=`
-        <h3>📋 Build from Hierarchy</h3>
-        <div class="hier-split">
-          <div class="hier-left">
-            <div class="hier-left-hdr">Canvas nodes</div>
-            <div id="hier-existing">
-              ${existingNodes.length
-                ? existingNodes.map(n=>`
-                  <div class="hier-node-row" data-nid="${n.id}">
-                    <div class="hier-node-swatch" style="background:${SWATCH[n.theme]||'#dbe9f8'}"></div>
-                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(n.title)}">${esc(n.title)}</span>
-                    ${n.id===selRootId?'<span class="hier-root-badge">ROOT</span>':''}
-                  </div>`).join('')
-                : '<div style="padding:10px;font-size:11.5px;color:#aaa">No boxes yet</div>'}
-            </div>
-          </div>
-          <div class="hier-right">
-            <p class="hier-tip">Type your hierarchy below. Indent with 2 spaces or a tab. Optionally click a canvas node on the left to attach new items to it as children.</p>
-            <div style="font-size:11.5px;color:#555;margin-bottom:4px">
-              Attach to:
-              <span id="hier-root-label" style="font-weight:600;color:#0C2721">${selRootId?esc(existingNodes.find(n=>n.id===selRootId)?.title||''):'(none — creates standalone)'}</span>
-              ${selRootId?`<button id="hier-clear-root" style="background:none;border:none;color:#b91c1c;cursor:pointer;font-size:11px;padding:0 4px">× clear</button>`:''}
-            </div>
-            <textarea id="pfb-hier-text" rows="10" placeholder="Start
-  Step A
-    Sub-step 1
-    Sub-step 2
-  Step B
-End"></textarea>
-          </div>
+        <h3>📝 Hierarchical Outline</h3>
+        <p>Edit your flow like a Word outline. Indenting a row makes it a child of the row above it. Applying rebuilds the diagram.</p>
+        <div class="ol-toolbar">
+          <button data-act="outdent" title="Outdent (Shift+Tab)">⇤ Outdent</button>
+          <button data-act="indent" title="Indent (Tab)">⇥ Indent</button>
+          <button data-act="up" title="Move up (Alt+↑)">↑ Up</button>
+          <button data-act="down" title="Move down (Alt+↓)">↓ Down</button>
+          <button data-act="add" title="Add row (Enter)">+ Row</button>
+          <button data-act="del" title="Delete row">× Delete</button>
         </div>
+        <div class="ol-rows" id="ol-rows"></div>
+        <p class="ol-hint"><kbd>Tab</kbd>/<kbd>Shift+Tab</kbd> indent · <kbd>Alt+↑/↓</kbd> move · <kbd>Enter</kbd> new row · click the colour chip to recolour</p>
+        <label class="ol-arrange"><input type="checkbox" id="ol-arrange" checked> Re-arrange layout after applying</label>
         <div class="pfb-btn-row">
-          <button class="pfb-btn-primary" id="pfb-hier-build">Build Flow →</button>
-          <button class="pfb-cancel" id="pfb-hier-append" style="background:#e8f5d4;color:#0C2721">+ Append to canvas</button>
-          <button class="pfb-cancel" id="pfb-hier-cancel">Cancel</button>
+          <button class="pfb-btn-primary" id="ol-apply">Apply to diagram →</button>
+          <button class="pfb-cancel" id="ol-cancel">Cancel</button>
         </div>`;
-      document.body.appendChild(panel);
 
-      let attachRootId: string|null = selRootId;
+      const rowsWrap=panel.querySelector('#ol-rows') as HTMLElement;
 
-      // Click existing node to set root
-      panel.querySelectorAll('.hier-node-row').forEach(row=>{
-        (row as HTMLElement).addEventListener('click',()=>{
-          const nid=(row as HTMLElement).dataset.nid!;
-          attachRootId=nid;
-          const nd=existingNodes.find(n=>n.id===nid);
-          (panel.querySelector('#hier-root-label') as HTMLElement).textContent=nd?.title||nid;
-          panel.querySelectorAll('.hier-root-badge').forEach(b=>b.remove());
-          const badge=document.createElement('span');badge.className='hier-root-badge';badge.textContent='ROOT';
-          row.appendChild(badge);
+      const normalize=()=>rows.forEach((r,i)=>{r.level=i===0?0:Math.max(0,Math.min(r.level,rows[i-1].level+1));});
+      const markSel=()=>[...rowsWrap.children].forEach((c,i)=>c.classList.toggle('sel',i===sel));
+
+      function openPalette(anchor: HTMLElement, i: number){
+        panel.querySelectorAll('.ol-pop').forEach(p=>p.remove());
+        const pop=document.createElement('div');pop.className='ol-pop';
+        THEMES.forEach(t=>{
+          const s=document.createElement('div');s.className='ol-pop-sw';s.style.background=SWATCH[t.k];s.title=t.name;
+          s.addEventListener('click',ev=>{ev.stopPropagation();rows[i].theme=t.k;pop.remove();renderRows(false);});
+          pop.appendChild(s);
         });
-      });
+        anchor.appendChild(pop);
+        const closer=(ev: MouseEvent)=>{if(!pop.contains(ev.target as Node)){pop.remove();document.removeEventListener('mousedown',closer,true);}};
+        setTimeout(()=>document.addEventListener('mousedown',closer,true),0);
+      }
 
-      const clearRootBtn=panel.querySelector('#hier-clear-root');
-      if (clearRootBtn) clearRootBtn.addEventListener('click',()=>{
-        attachRootId=null;
-        (panel.querySelector('#hier-root-label') as HTMLElement).textContent='(none — creates standalone)';
-        panel.querySelectorAll('.hier-root-badge').forEach(b=>b.remove());
+      function renderRows(focusInput=true){
+        normalize();
+        rowsWrap.innerHTML = rows.length? '' : '<div class="ol-empty">No rows. Click “+ Row”.</div>';
+        rows.forEach((r,i)=>{
+          const row=document.createElement('div');
+          row.className='ol-row'+(i===sel?' sel':'');
+          row.style.marginLeft=(r.level*22)+'px';
+          row.innerHTML=`<span class="ol-bullet"></span>`+
+            `<span class="ol-sw" data-sw style="background:${SWATCH[r.theme]||'#dbe9f8'}" title="Colour"></span>`+
+            `<input class="ol-title" value="${esc(r.title)}" placeholder="Untitled step">`;
+          row.addEventListener('mousedown',ev=>{
+            if((ev.target as HTMLElement).closest('[data-sw]')||(ev.target as HTMLElement).tagName==='INPUT')return;
+            sel=i;markSel();
+          });
+          const sw=row.querySelector('[data-sw]') as HTMLElement;
+          sw.addEventListener('click',ev=>{ev.stopPropagation();sel=i;markSel();openPalette(sw,i);});
+          const inp=row.querySelector('.ol-title') as HTMLInputElement;
+          inp.addEventListener('focus',()=>{sel=i;markSel();});
+          inp.addEventListener('input',()=>{rows[i].title=inp.value;});
+          inp.addEventListener('keydown',ev=>onRowKey(ev,i));
+          rowsWrap.appendChild(row);
+        });
+        if(focusInput){
+          const inp=rowsWrap.children[sel]?.querySelector('.ol-title') as HTMLInputElement|undefined;
+          if(inp){inp.focus();const v=inp.value;inp.value='';inp.value=v;}
+        }
+      }
+
+      const act=(a: string)=>{
+        if(!rows.length)return;
+        if(a==='indent'){if(sel>0)rows[sel].level=Math.min(rows[sel].level+1,rows[sel-1].level+1);}
+        else if(a==='outdent'){rows[sel].level=Math.max(0,rows[sel].level-1);}
+        else if(a==='up'){if(sel>0){[rows[sel-1],rows[sel]]=[rows[sel],rows[sel-1]];sel--;}}
+        else if(a==='down'){if(sel<rows.length-1){[rows[sel+1],rows[sel]]=[rows[sel],rows[sel+1]];sel++;}}
+        else if(a==='add'){const lvl=rows[sel]?rows[sel].level:0;rows.splice(sel+1,0,{rid:'r'+outRid++,title:'',theme:'blue',level:lvl,nodeId:null});sel++;}
+        else if(a==='del'){if(rows.length>1){rows.splice(sel,1);sel=Math.max(0,sel-1);}}
+        renderRows();
+      };
+
+      function onRowKey(ev: KeyboardEvent, i: number){
+        sel=i;
+        if(ev.key==='Tab'){ev.preventDefault();act(ev.shiftKey?'outdent':'indent');}
+        else if(ev.key==='Enter'){ev.preventDefault();act('add');}
+        else if(ev.altKey&&ev.key==='ArrowUp'){ev.preventDefault();act('up');}
+        else if(ev.altKey&&ev.key==='ArrowDown'){ev.preventDefault();act('down');}
+        else if(ev.key==='Backspace'&&rows[i].title===''&&rows.length>1){ev.preventDefault();act('del');}
+      }
+
+      panel.querySelectorAll('.ol-toolbar [data-act]').forEach(b=>{
+        (b as HTMLElement).addEventListener('click',()=>act((b as HTMLElement).dataset.act!));
       });
 
       const close=()=>{panel.remove();overlay.remove();};
       overlay.addEventListener('click',close);
-      (panel.querySelector('#pfb-hier-cancel') as HTMLButtonElement).onclick=close;
-      (panel.querySelector('#pfb-hier-build') as HTMLButtonElement).onclick=()=>{
-        const text=(panel.querySelector('#pfb-hier-text') as HTMLTextAreaElement).value;
-        if (!text.trim()) return;
-        // Clear canvas first, then build
-        nodeEls.forEach(el=>el.remove());nodeEls.clear();
-        state.nodes=[];state.edges=[];idc=1;edgeId=1;
-        buildFromHierarchy(text,null);
+      (panel.querySelector('#ol-cancel') as HTMLButtonElement).onclick=close;
+      (panel.querySelector('#ol-apply') as HTMLButtonElement).onclick=()=>{
+        const arrange=(panel.querySelector('#ol-arrange') as HTMLInputElement).checked;
+        applyOutline(rows,arrange);
         close();
       };
-      (panel.querySelector('#pfb-hier-append') as HTMLButtonElement).onclick=()=>{
-        const text=(panel.querySelector('#pfb-hier-text') as HTMLTextAreaElement).value;
-        if (!text.trim()) return;
-        buildFromHierarchy(text,attachRootId);
-        close();
-      };
-      setTimeout(()=>(panel.querySelector('#pfb-hier-text') as HTMLTextAreaElement).focus(),50);
-    }
 
-    function buildFromHierarchy(text: string, rootId: string|null){
-      const lines=text.split('\n').filter(l=>l.trimEnd().length>0);
-      if (!lines.length) return;
-      let unit=2;
-      for (const l of lines){
-        if (l[0]==='\t'){unit=1;break;}
-        const sp=l.match(/^( +)/)?.[1]?.length||0;
-        if (sp>0){unit=sp;break;}
-      }
-      const LTHEMES=['start','blue','green','grey','amber','purple','red'];
-      const created:{id:string;level:number}[]=[];
-      // If attaching to existing root, treat it as level -1
-      if (rootId) created.push({id:rootId,level:-1});
-      lines.forEach(raw=>{
-        const expanded=raw.replace(/\t/g,' '.repeat(unit));
-        const sp=expanded.match(/^( *)/)?.[1]?.length||0;
-        const level=Math.floor(sp/unit);
-        const title=expanded.trim().replace(/^[-*•]\s*/,'')||'Step';
-        const theme=LTHEMES[Math.min(level,LTHEMES.length-1)];
-        const n=makeNode({title,theme});
-        created.push({id:n.id,level});
-      });
-      for (let i=rootId?1:1;i<created.length;i++){
-        const lvl=created[i].level;
-        for (let j=i-1;j>=0;j--){
-          if (created[j].level===lvl-1){
-            state.edges.push({id:'e'+edgeId++,from:created[j].id,to:created[i].id,fromSide:null,toSide:null,label:''});
-            break;
-          }
-          if (created[j].level<lvl-1) break;
-        }
-      }
-      selNodes.clear();selEdge=null;
-      autoLayout();
+      renderRows();
     }
 
     // ── Auto layout ────────────────────────────────────────────────────────
@@ -950,7 +1154,7 @@ End"></textarea>
         mainPos+=maxMain+(dir==='TB'?gapMain:gapMain+30);
       });
       applyChainWrap(dir,wrap);
-      state.edges.forEach(e=>{e.fromSide=null;e.toSide=null;});
+      state.edges.forEach(e=>{e.fromSide=null;e.toSide=null;e.midX=undefined;e.midY=undefined;});
       render();fit();
     }
     function applyChainWrap(dir: string,wrap: number){
@@ -1004,8 +1208,8 @@ End"></textarea>
         else if(e.style==='dotted')x.setLineDash([2,4]);
         else x.setLineDash([]);
         x.beginPath();x.moveTo(p1.x,p1.y);
-        if(s==='b'||s==='t'){const my=(e1.y+e2.y)/2;x.lineTo(e1.x,e1.y);x.lineTo(e1.x,my);x.lineTo(e2.x,my);x.lineTo(e2.x,e2.y);}
-        else{const mx=(e1.x+e2.x)/2;x.lineTo(e1.x,e1.y);x.lineTo(mx,e1.y);x.lineTo(mx,e2.y);x.lineTo(e2.x,e2.y);}
+        if(s==='b'||s==='t'){const my=e.midY!=null?e.midY:(e1.y+e2.y)/2;x.lineTo(e1.x,e1.y);x.lineTo(e1.x,my);x.lineTo(e2.x,my);x.lineTo(e2.x,e2.y);}
+        else{const mx=e.midX!=null?e.midX:(e1.x+e2.x)/2;x.lineTo(e1.x,e1.y);x.lineTo(mx,e1.y);x.lineTo(mx,e2.y);x.lineTo(e2.x,e2.y);}
         x.lineTo(p2.x,p2.y);x.stroke();x.setLineDash([]);
         const ang=Math.atan2(p2.y-e2.y,p2.x-e2.x);
         x.beginPath();x.moveTo(p2.x,p2.y);
@@ -1043,9 +1247,12 @@ End"></textarea>
     (document.getElementById('zoomIn') as HTMLButtonElement).onclick=()=>{zoom=Math.min(2,zoom+.1);applyZoom();};
     (document.getElementById('zoomOut') as HTMLButtonElement).onclick=()=>{zoom=Math.max(.2,zoom-.1);applyZoom();};
     (document.getElementById('fit') as HTMLButtonElement).onclick=fit;
-    (document.getElementById('autoLayout') as HTMLButtonElement).onclick=autoLayout;
+    (document.getElementById('autoLayout') as HTMLButtonElement).onclick=()=>{snapshot();autoLayout();};
+    (document.getElementById('undo') as HTMLButtonElement).onclick=undo;
+    (document.getElementById('redo') as HTMLButtonElement).onclick=redoAction;
 
     (document.getElementById('addNode') as HTMLButtonElement).onclick=()=>{
+      snapshot();
       const rect=cw.getBoundingClientRect();
       const cx=Math.max(20,Math.round((cw.scrollLeft+rect.width/2)/zoom-105));
       const cy=Math.max(20,Math.round((cw.scrollTop+rect.height/2)/zoom-37));
@@ -1056,7 +1263,7 @@ End"></textarea>
       cw.scrollTo({left:Math.max(0,(n.x*zoom)-rect.width/2+105),top:Math.max(0,(n.y*zoom)-rect.height/2+37),behavior:'smooth'});
     };
 
-    (document.getElementById('hierarchyBtn') as HTMLButtonElement).onclick=showHierarchyModal;
+    (document.getElementById('hierarchyBtn') as HTMLButtonElement).onclick=showOutlineModal;
 
     (document.getElementById('legendBtn') as HTMLButtonElement).onclick=()=>{
       state.legend.visible=!state.legend.visible;
@@ -1065,6 +1272,7 @@ End"></textarea>
     };
 
     const bgPicker=document.getElementById('canvasBgPicker') as HTMLInputElement;
+    bgPicker.onfocus=()=>snapshot();
     bgPicker.oninput=e=>{state.canvasBg=(e.target as HTMLInputElement).value;cw.style.background=state.canvasBg;};
 
     (document.getElementById('dir') as HTMLSelectElement).onchange=e=>{state.dir=(e.target as HTMLSelectElement).value;};
@@ -1077,6 +1285,7 @@ End"></textarea>
     (document.getElementById('wrapCustom') as HTMLInputElement).oninput=e=>{state.wrap=+(e.target as HTMLInputElement).value||0;};
     (document.getElementById('clear') as HTMLButtonElement).onclick=()=>{
       if(confirm('Clear the whole canvas?')){
+        snapshot();
         nodeEls.forEach(el=>el.remove());nodeEls.clear();
         document.getElementById('pfb-legend')?.remove();
         state={nodes:[],edges:[],dir:state.dir,wrap:state.wrap,legend:defaultLegend(),canvasBg:state.canvasBg};
@@ -1089,24 +1298,8 @@ End"></textarea>
     const PFB_PREFIX='pfb_flow_';
     function stateToSave(){return {...state,legend:state.legend||defaultLegend()};}
     function loadState(loaded: AppState){
-      nodeEls.forEach(el=>el.remove());nodeEls.clear();
-      document.getElementById('pfb-legend')?.remove();
-      const leg=loaded.legend||defaultLegend();
-      if (!leg.hidden) leg.hidden=[];
-      state={...loaded,legend:leg,canvasBg:loaded.canvasBg||'#ffffff'};
-      // Robust ID counter reset
-      if (state.nodes.length){
-        const maxN=Math.max(...state.nodes.map(n=>{const m=n.id.match(/\d+$/);return m?+m[0]:0;}));
-        idc=maxN+1;
-      } else {idc=1;}
-      if (state.edges.length){
-        const maxE=Math.max(...state.edges.map(e=>{const m=e.id.match(/\d+$/);return m?+m[0]:0;}));
-        edgeId=maxE+1;
-      } else {edgeId=1;}
-      cw.style.background=state.canvasBg;
-      (document.getElementById('canvasBgPicker') as HTMLInputElement).value=state.canvasBg;
-      selNodes.clear();selEdge=null;
-      render();fit();
+      applyState(loaded);
+      fit();
     }
 
     (document.getElementById('saveLocal') as HTMLButtonElement).onclick=()=>{
@@ -1135,7 +1328,7 @@ End"></textarea>
           const btn=(e.target as HTMLElement).closest('[data-del]');
           if(btn){const name=(btn as HTMLElement).dataset.del!;if(confirm(`Delete "${name}"?`)){localStorage.removeItem(PFB_PREFIX+name);(item as HTMLElement).remove();}return;}
           const saved=localStorage.getItem(PFB_PREFIX+(item as HTMLElement).dataset.name!);
-          if(saved){try{loadState(JSON.parse(saved));close();}catch{alert('Could not load.');}}
+          if(saved){try{snapshot();loadState(JSON.parse(saved));close();}catch{alert('Could not load.');}}
         });
       });
     };
@@ -1147,7 +1340,7 @@ End"></textarea>
       const inp=document.createElement('input');inp.type='file';inp.accept='.json';
       inp.onchange=()=>{
         const f=inp.files![0];const r=new FileReader();
-        r.onload=()=>{try{loadState(JSON.parse(r.result as string));}catch{alert('Could not read file.');}};
+        r.onload=()=>{try{snapshot();loadState(JSON.parse(r.result as string));}catch{alert('Could not read file.');}};
         r.readAsText(f);
       };
       inp.click();
