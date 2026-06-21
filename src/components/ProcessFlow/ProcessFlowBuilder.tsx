@@ -1057,7 +1057,7 @@ export default function ProcessFlowBuilder() {
           pop.appendChild(s);
         });
         anchor.appendChild(pop);
-        const closer=(ev: MouseEvent)=>{if(!pop.contains(ev.target as Node)){pop.remove();document.removeEventListener('mousedown',closer,true);}};
+        const closer=(ev: MouseEvent)=>{if(!pop.contains(ev.target as HTMLElement)){pop.remove();document.removeEventListener('mousedown',closer,true);}};
         setTimeout(()=>document.addEventListener('mousedown',closer,true),0);
       }
 
