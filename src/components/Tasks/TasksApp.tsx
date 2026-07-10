@@ -10,11 +10,13 @@ import {
   Flame,
   Grid2x2,
   Loader2,
+  Plus,
   Rows3,
   Search,
   Send,
   Sparkles,
   Timer,
+  Trash2,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -27,6 +29,7 @@ import BoardView from './BoardView';
 import DetailDrawer from './DetailDrawer';
 import ListView from './ListView';
 import MatrixView from './MatrixView';
+import NewTaskModal from './NewTaskModal';
 import {
   daysUntil,
   formatDue,
@@ -34,6 +37,7 @@ import {
   parseQuickAdd,
   PRIORITY_META,
   smartCompare,
+  startOfDay,
   Status,
   Task,
   ViewMode,
@@ -51,14 +55,17 @@ export default function TasksApp() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<ViewMode>('list');
+  const [view, setView] = useState<ViewMode>('board');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [quickAdd, setQuickAdd] = useState('');
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<Task['priority'] | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [newTaskStatus, setNewTaskStatus] = useState<Status>('todo');
   const quickAddRef = useRef<HTMLInputElement>(null);
 
   // Auth guard
@@ -85,15 +92,22 @@ export default function TasksApp() {
       .finally(() => setLoading(false));
   }, [authStatus]);
 
-  // "/" focuses quick add
+  // Keyboard shortcuts: "/" quick add · "n" new task · 1/2/3 switch views
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const typing = ['INPUT', 'TEXTAREA'].includes(target.tagName) || target.isContentEditable;
-      if (e.key === '/' && !typing) {
+      const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
+      if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '/') {
         e.preventDefault();
         quickAddRef.current?.focus();
-      }
+      } else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setNewTaskStatus('todo');
+        setNewTaskOpen(true);
+      } else if (e.key === '1') setView('list');
+      else if (e.key === '2') setView('board');
+      else if (e.key === '3') setView('matrix');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -155,6 +169,33 @@ export default function TasksApp() {
     }
   }, []);
 
+  /** Inline "+ Add" composer inside a board column. */
+  const quickCreateInColumn = useCallback(async (title: string, status: Status) => {
+    const created = await api.create({title, status, isCompleted: status === 'done', priority: 'None'});
+    setTasks(prev => [created, ...prev]);
+  }, []);
+
+  /** Bump an overdue/active task to tomorrow 5pm. */
+  const snoozeTask = useCallback(
+    (task: Task) => {
+      const d = startOfDay(new Date());
+      d.setDate(d.getDate() + 1);
+      d.setHours(17, 0, 0, 0);
+      patchTask(task._id, {dueDate: d.toISOString()});
+    },
+    [patchTask],
+  );
+
+  const clearCompleted = useCallback(async () => {
+    const doomed = tasks.filter(t => t.isCompleted);
+    if (doomed.length === 0) return;
+    if (!window.confirm(`Delete all ${doomed.length} completed task${doomed.length === 1 ? '' : 's'}? This cannot be undone.`))
+      return;
+    setTasks(prev => prev.filter(t => !t.isCompleted));
+    setSelectedId(prev => (prev && doomed.some(t => t._id === prev) ? null : prev));
+    await Promise.allSettled(doomed.map(t => api.remove(t._id)));
+  }, [tasks]);
+
   const parsed = useMemo(() => (quickAdd.trim() ? parseQuickAdd(quickAdd) : null), [quickAdd]);
 
   const submitQuickAdd = async () => {
@@ -186,6 +227,12 @@ export default function TasksApp() {
     return [...s].sort();
   }, [tasks]);
 
+  const allCategories = useMemo(() => {
+    const s = new Set<string>();
+    tasks.forEach(t => t.category && s.add(t.category));
+    return [...s].sort();
+  }, [tasks]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return tasks.filter(t => {
@@ -193,9 +240,10 @@ export default function TasksApp() {
         return false;
       if (priorityFilter && t.priority !== priorityFilter) return false;
       if (tagFilter && !(t.tags || []).includes(tagFilter)) return false;
+      if (categoryFilter && t.category !== categoryFilter) return false;
       return true;
     });
-  }, [tasks, search, priorityFilter, tagFilter]);
+  }, [tasks, search, priorityFilter, tagFilter, categoryFilter]);
 
   const active = useMemo(() => filtered.filter(t => !t.isCompleted).sort(smartCompare), [filtered]);
   const completed = useMemo(
@@ -214,7 +262,12 @@ export default function TasksApp() {
     const weekAgo = Date.now() - 7 * 86400000;
     const doneThisWeek = tasks.filter(t => t.isCompleted && new Date(t.updatedAt).getTime() > weekAgo).length;
     const focusMin = dueToday.reduce((n, t) => n + (t.estimatedTime || 0), 0);
-    return {overdue, today: dueToday.length, doneThisWeek, focusMin};
+    // Daily momentum: completed today vs (completed today + still due today)
+    const todayStart = startOfDay(new Date()).getTime();
+    const doneToday = tasks.filter(t => t.isCompleted && new Date(t.updatedAt).getTime() >= todayStart).length;
+    const dayTotal = doneToday + dueToday.length;
+    const dayProgress = dayTotal > 0 ? doneToday / dayTotal : 1;
+    return {overdue, today: dueToday.length, doneThisWeek, focusMin, doneToday, dayProgress, dayTotal};
   }, [tasks]);
 
   const selectedTask = selectedId ? tasks.find(t => t._id === selectedId) || null : null;
@@ -229,7 +282,12 @@ export default function TasksApp() {
   if (authStatus === 'unauthenticated') return null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#f4f4f0] font-sans text-slate-800 antialiased">
+    <div
+      className="flex h-screen w-full overflow-hidden bg-[#f4f4f0] font-sans text-slate-800 antialiased"
+      style={{
+        backgroundImage: 'radial-gradient(circle, rgba(15,23,42,0.055) 1px, transparent 1px)',
+        backgroundSize: '22px 22px',
+      }}>
       <div className="flex min-w-0 flex-1 flex-col">
         {/* ── Header ── */}
         <header className="shrink-0 border-b border-slate-200/70 bg-white/70 backdrop-blur-md">
@@ -248,6 +306,36 @@ export default function TasksApp() {
 
             {/* Stats */}
             <div className="ml-auto hidden items-center gap-2 md:flex">
+              {/* Daily momentum ring */}
+              {stats.dayTotal > 0 && (
+                <div
+                  className="flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 ring-1 ring-inset ring-slate-200"
+                  title={`${stats.doneToday} of ${stats.dayTotal} tasks for today completed`}>
+                  <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" fill="none" r="9" stroke="#e2e8f0" strokeWidth="3.5" />
+                    <circle
+                      cx="12"
+                      cy="12"
+                      fill="none"
+                      r="9"
+                      stroke="url(#ringGrad)"
+                      strokeDasharray={`${stats.dayProgress * 56.5} 56.5`}
+                      strokeLinecap="round"
+                      strokeWidth="3.5"
+                    />
+                    <defs>
+                      <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#f43f5e" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="leading-none">
+                    <p className="text-[12px] font-bold text-slate-700">{Math.round(stats.dayProgress * 100)}%</p>
+                    <p className="text-[9.5px] text-slate-400">today</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1.5 ring-1 ring-inset ring-rose-100">
                 <CalendarClock className="h-3.5 w-3.5 text-rose-500" />
                 <span className="text-[12px] font-bold text-rose-700">{stats.overdue}</span>
@@ -271,11 +359,22 @@ export default function TasksApp() {
                 <span className="text-[11px] text-emerald-400">done this wk</span>
               </div>
               <Link
-                className="ml-2 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700"
+                className="ml-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700"
                 href="/anomaly">
                 Notes ↗
               </Link>
             </div>
+
+            {/* New task */}
+            <button
+              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-md transition-all hover:-translate-y-px hover:shadow-lg"
+              onClick={() => {
+                setNewTaskStatus('todo');
+                setNewTaskOpen(true);
+              }}
+              title="New task (N)">
+              <Plus className="h-4 w-4" /> New task
+            </button>
           </div>
 
           {/* ── Quick add ── */}
@@ -386,15 +485,52 @@ export default function TasksApp() {
               </select>
             )}
 
-            {view === 'list' && (
+            {allCategories.length > 0 && (
+              <select
+                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-500 outline-none"
+                onChange={e => setCategoryFilter(e.target.value || null)}
+                value={categoryFilter || ''}>
+                <option value="">All categories</option>
+                {allCategories.map(c => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {(priorityFilter || tagFilter || categoryFilter || search) && (
               <button
-                className={`ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                  showCompleted ? 'bg-emerald-50 text-emerald-600' : 'text-slate-400 hover:text-slate-600'
-                }`}
-                onClick={() => setShowCompleted(v => !v)}>
-                {showCompleted ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                Completed
+                className="rounded-lg px-2 py-1.5 text-[11px] font-semibold text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline"
+                onClick={() => {
+                  setPriorityFilter(null);
+                  setTagFilter(null);
+                  setCategoryFilter(null);
+                  setSearch('');
+                }}>
+                Clear filters
               </button>
+            )}
+
+            {view === 'list' && (
+              <div className="ml-auto flex items-center gap-1">
+                {showCompleted && completed.length > 0 && (
+                  <button
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    onClick={clearCompleted}
+                    title="Delete all completed tasks">
+                    <Trash2 className="h-3.5 w-3.5" /> Clear done
+                  </button>
+                )}
+                <button
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
+                    showCompleted ? 'bg-emerald-50 text-emerald-600' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+                  onClick={() => setShowCompleted(v => !v)}>
+                  {showCompleted ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                  Completed
+                </button>
+              </div>
             )}
           </div>
         </header>
@@ -411,6 +547,7 @@ export default function TasksApp() {
             <ListView
               completed={completed}
               onOpen={t => setSelectedId(t._id)}
+              onSnooze={snoozeTask}
               onToggleComplete={toggleComplete}
               selectedId={selectedId}
               showCompleted={showCompleted}
@@ -418,8 +555,14 @@ export default function TasksApp() {
             />
           ) : view === 'board' ? (
             <BoardView
+              onAddTask={s => {
+                setNewTaskStatus(s);
+                setNewTaskOpen(true);
+              }}
               onOpen={t => setSelectedId(t._id)}
+              onQuickCreate={quickCreateInColumn}
               onSetStatus={setStatus}
+              onSnooze={snoozeTask}
               onToggleComplete={toggleComplete}
               selectedId={selectedId}
               tasks={filtered}
@@ -427,6 +570,7 @@ export default function TasksApp() {
           ) : (
             <MatrixView
               onOpen={t => setSelectedId(t._id)}
+              onSnooze={snoozeTask}
               onToggleComplete={toggleComplete}
               selectedId={selectedId}
               tasks={active}
@@ -443,6 +587,18 @@ export default function TasksApp() {
           onDuplicate={duplicateTask}
           onPatch={patchTask}
           task={selectedTask}
+        />
+      )}
+
+      {/* ── New task modal ── */}
+      {newTaskOpen && (
+        <NewTaskModal
+          defaultStatus={newTaskStatus}
+          onClose={() => setNewTaskOpen(false)}
+          onCreated={task => {
+            setTasks(prev => [task, ...prev]);
+            setSelectedId(task._id);
+          }}
         />
       )}
     </div>

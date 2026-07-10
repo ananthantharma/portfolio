@@ -181,20 +181,41 @@ export default function DetailDrawer({task, onClose, onPatch, onDelete, onDuplic
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <div className="flex items-start gap-3">
+            <label className="mt-1.5 w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
               Due
             </label>
-            <input
-              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400"
-              onChange={e => {
-                if (!e.target.value) return;
-                const d = new Date(`${e.target.value}T17:00:00`);
-                onPatch(task._id, {dueDate: d.toISOString()});
-              }}
-              type="date"
-              value={toDateInputValue(task.dueDate)}
-            />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <input
+                className="w-fit rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400"
+                onChange={e => {
+                  if (!e.target.value) return;
+                  const d = new Date(`${e.target.value}T17:00:00`);
+                  onPatch(task._id, {dueDate: d.toISOString()});
+                }}
+                type="date"
+                value={toDateInputValue(task.dueDate)}
+              />
+              <div className="flex gap-1">
+                {[
+                  {label: 'Today', days: 0},
+                  {label: 'Tomorrow', days: 1},
+                  {label: '+1 week', days: 7},
+                ].map(p => (
+                  <button
+                    className="rounded-md bg-slate-100 px-2 py-1 text-[10.5px] font-semibold text-slate-500 transition-colors hover:bg-orange-100 hover:text-orange-700"
+                    key={p.label}
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + p.days);
+                      d.setHours(17, 0, 0, 0);
+                      onPatch(task._id, {dueDate: d.toISOString()});
+                    }}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

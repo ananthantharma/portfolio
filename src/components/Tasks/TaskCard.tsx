@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {CalendarDays, CheckCircle2, Circle, ListChecks, Paperclip, StickyNote, Timer} from 'lucide-react';
+import {AlarmClockPlus, CalendarDays, CheckCircle2, Circle, ListChecks, Paperclip, StickyNote, Timer} from 'lucide-react';
 import React from 'react';
 
 import {daysUntil, formatDue, formatMinutes, PRIORITY_META, subtaskProgress, Task} from './types';
@@ -12,9 +12,10 @@ interface TaskCardProps {
   selected: boolean;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
+  onSnooze?: (task: Task) => void;
 }
 
-export default function TaskCard({task, compact, selected, onOpen, onToggleComplete}: TaskCardProps) {
+export default function TaskCard({task, compact, selected, onOpen, onToggleComplete, onSnooze}: TaskCardProps) {
   const done = task.isCompleted;
   const d = daysUntil(task.dueDate);
   const overdue = !done && d !== null && d < 0;
@@ -97,6 +98,19 @@ export default function TaskCard({task, compact, selected, onOpen, onToggleCompl
             </div>
           )}
         </div>
+
+        {/* Hover: snooze to tomorrow */}
+        {onSnooze && !done && (
+          <button
+            className="absolute right-2 top-2 hidden rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 group-hover:block"
+            onClick={e => {
+              e.stopPropagation();
+              onSnooze(task);
+            }}
+            title="Push to tomorrow">
+            <AlarmClockPlus className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

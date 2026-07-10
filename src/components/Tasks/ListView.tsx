@@ -14,6 +14,7 @@ interface ListViewProps {
   selectedId: string | null;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
+  onSnooze?: (task: Task) => void;
 }
 
 const GROUP_TONES: Record<string, string> = {
@@ -25,7 +26,15 @@ const GROUP_TONES: Record<string, string> = {
   none: 'text-slate-400',
 };
 
-export default function ListView({tasks, completed, showCompleted, selectedId, onOpen, onToggleComplete}: ListViewProps) {
+export default function ListView({
+  tasks,
+  completed,
+  showCompleted,
+  selectedId,
+  onOpen,
+  onToggleComplete,
+  onSnooze,
+}: ListViewProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const toggleGroup = (key: string) =>
@@ -75,6 +84,7 @@ export default function ListView({tasks, completed, showCompleted, selectedId, o
                   <TaskCard
                     key={task._id}
                     onOpen={onOpen}
+                    onSnooze={onSnooze}
                     onToggleComplete={onToggleComplete}
                     selected={task._id === selectedId}
                     task={task}

@@ -11,6 +11,7 @@ interface MatrixViewProps {
   selectedId: string | null;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
+  onSnooze?: (task: Task) => void;
 }
 
 // Eisenhower classification: urgent = overdue or due within 2 days; important = High/Medium priority
@@ -31,7 +32,7 @@ const QUADRANTS: {key: ReturnType<typeof quadrantOf>; title: string; hint: strin
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500'},
 ];
 
-export default function MatrixView({tasks, selectedId, onOpen, onToggleComplete}: MatrixViewProps) {
+export default function MatrixView({tasks, selectedId, onOpen, onToggleComplete, onSnooze}: MatrixViewProps) {
   return (
     <div className="grid h-full grid-cols-1 gap-4 overflow-y-auto px-6 pb-6 pt-4 md:grid-cols-2 md:grid-rows-2 md:overflow-hidden">
       {QUADRANTS.map(q => {
@@ -51,6 +52,7 @@ export default function MatrixView({tasks, selectedId, onOpen, onToggleComplete}
                   compact
                   key={task._id}
                   onOpen={onOpen}
+                  onSnooze={onSnooze}
                   onToggleComplete={onToggleComplete}
                   selected={task._id === selectedId}
                   task={task}
