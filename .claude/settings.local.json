@@ -16,7 +16,11 @@
       "Bash(Sort-Object FullName)",
       "Bash(Format-Table -AutoSize)",
       "Bash(git stash *)",
-      "Bash(findstr -i bookmark)"
+      "Bash(findstr -i bookmark)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts\\)\\)\")",
+      "Bash(grep -iE \"error|anomaly|compiled\" \"/c/Users/anant/.claude/projects/C--Users-anant-OneDrive-Desktop-Coding---Gemini-My-Portfolio-Website-main/129d80e9-42f4-4cf4-a021-83b3000a47ec/tool-results/mcp-Claude_Preview-preview_logs-1783653135826.txt\" | tail -20)",
+      "Bash(iconv -f UTF-16LE -t UTF-8 .env.local)",
+      "Bash(node -e ' *)"
     ]
   }
 }

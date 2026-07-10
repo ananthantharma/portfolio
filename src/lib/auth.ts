@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 import clientPromise from './mongodb';
 
-const ADMIN_EMAIL = 'lankanprinze@gmail.com';
+export const ADMIN_EMAIL = 'lankanprinze@gmail.com';
 
 /**
  * Emails that always receive full access with no manual approval needed.
