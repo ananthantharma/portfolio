@@ -18,7 +18,7 @@ export interface Page {
   content?: string; // legacy single-body field, migrated into tabs on first save
   tabs: Tab[];
   color?: string;
-  icon?: string;
+  icon?: string; // lucide icon key, see icons.ts
   // populated ({_id, name, categoryId}) or plain id depending on the endpoint
   sectionId?: unknown;
   categoryId?: unknown;

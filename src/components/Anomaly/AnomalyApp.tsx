@@ -8,6 +8,7 @@ import {api} from './api';
 import CommandPalette from './CommandPalette';
 import EditorPanel from './EditorPanel';
 import HomeView from './HomeView';
+import MovePageModal from './MovePageModal';
 import PageList from './PageList';
 import Sidebar from './Sidebar';
 import {idOf, Notebook, Page, Section, View} from './types';
@@ -29,6 +30,7 @@ export default function AnomalyApp() {
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [movingPage, setMovingPage] = useState<Page | null>(null);
   const restored = useRef(false);
 
   // ── Persistence ──────────────────────────────────────────────────────────────
@@ -183,6 +185,26 @@ export default function AnomalyApp() {
     }
   };
 
+  const reorderNotebooks = async (newOrder: Notebook[]) => {
+    setNotebooks(newOrder);
+    try {
+      await api.notebooks.reorder(newOrder.map(n => n._id));
+    } catch (err) {
+      console.error('Failed to reorder notebooks', err);
+      loadNotebooks();
+    }
+  };
+
+  const reorderSections = async (notebookId: string, newOrder: Section[]) => {
+    setSectionsByNotebook(prev => ({...prev, [notebookId]: newOrder}));
+    try {
+      await api.sections.reorder(newOrder.map(s => s._id));
+    } catch (err) {
+      console.error('Failed to reorder sections', err);
+      loadSections(notebookId);
+    }
+  };
+
   const createSection = async (notebookId: string, name: string) => {
     try {
       const sec = await api.sections.create(notebookId, name);
@@ -244,6 +266,32 @@ export default function AnomalyApp() {
       if (selectedPageId === page._id) setSelectedPageId(null);
     } catch (err) {
       alert(`Could not delete page: ${err instanceof Error ? err.message : err}`);
+    }
+  };
+
+  const reorderPages = async (newOrder: Page[]) => {
+    setPages(newOrder);
+    try {
+      await api.pages.reorder(newOrder.map(p => p._id));
+    } catch (err) {
+      console.error('Failed to reorder pages', err);
+    }
+  };
+
+  const movePage = async (pageId: string, dest: {sectionId: string | null; categoryId: string}) => {
+    try {
+      await api.pages.update(pageId, {sectionId: dest.sectionId, categoryId: dest.sectionId ? null : dest.categoryId});
+      const staysInView =
+        (view.kind === 'section' && dest.sectionId === view.sectionId) ||
+        (view.kind === 'notebook' && !dest.sectionId && dest.categoryId === view.notebookId);
+      if (!staysInView) {
+        setPages(prev => prev.filter(p => p._id !== pageId));
+        if (selectedPageId === pageId) setSelectedPageId(null);
+      }
+      loadNotebooks();
+      setMovingPage(null);
+    } catch (err) {
+      alert(`Could not move page: ${err instanceof Error ? err.message : err}`);
     }
   };
 
@@ -331,6 +379,8 @@ export default function AnomalyApp() {
           onOpenPalette={() => setPaletteOpen(true)}
           onRenameNotebook={renameNotebook}
           onRenameSection={renameSection}
+          onReorderNotebooks={reorderNotebooks}
+          onReorderSections={reorderSections}
           onSelectView={setView}
           onToggleExpand={toggleExpand}
           sectionsByNotebook={sectionsByNotebook}
@@ -351,10 +401,13 @@ export default function AnomalyApp() {
           loading={pagesLoading}
           onCreate={createPage}
           onDelete={deletePageFromList}
+          onReorder={reorderPages}
+          onRequestMove={setMovingPage}
           onSelect={p => setSelectedPageId(p._id)}
           onTogglePin={togglePin}
           pages={pages}
           selectedPageId={selectedPageId}
+          showLocation={view.kind === 'important' || view.kind === 'flagged'}
           subtitle={listMeta.subtitle}
           title={listMeta.title}
         />
@@ -375,6 +428,7 @@ export default function AnomalyApp() {
             key={selectedPageId}
             onDeleted={onPageDeleted}
             onMetaChange={onPageMetaChange}
+            onRequestMove={setMovingPage}
             pageId={selectedPageId}
           />
         ) : (
@@ -393,6 +447,9 @@ export default function AnomalyApp() {
       </main>
 
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} onOpenPage={openPage} />}
+      {movingPage && (
+        <MovePageModal notebooks={notebooks} onClose={() => setMovingPage(null)} onMove={movePage} page={movingPage} />
+      )}
     </div>
   );
 }

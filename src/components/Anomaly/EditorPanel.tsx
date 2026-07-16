@@ -1,12 +1,13 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {AlertCircle, Check, ChevronRight, Cloud, Flag, Loader2, Pin, Plus, Star, Trash2, X} from 'lucide-react';
+import {AlertCircle, Check, ChevronRight, Cloud, Flag, FolderInput, Loader2, Pin, Plus, Star, Trash2, X} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import RichTextEditor from '@/components/Notes/RichTextEditor';
 
 import {api} from './api';
+import IconPicker from './IconPicker';
 import {normalizeTabs, Page, Tab, timeAgo} from './types';
 
 type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error';
@@ -16,9 +17,10 @@ interface EditorPanelProps {
   crumbs: string[]; // e.g. ["Work", "Meetings"]
   onMetaChange: (page: Page) => void;
   onDeleted: (pageId: string) => void;
+  onRequestMove?: (page: Page) => void;
 }
 
-export default function EditorPanel({pageId, crumbs, onMetaChange, onDeleted}: EditorPanelProps) {
+export default function EditorPanel({pageId, crumbs, onMetaChange, onDeleted, onRequestMove}: EditorPanelProps) {
   const [page, setPage] = useState<Page | null>(null);
   const [title, setTitle] = useState('');
   const [tabs, setTabs] = useState<Tab[]>([]);
@@ -124,6 +126,18 @@ export default function EditorPanel({pageId, crumbs, onMetaChange, onDeleted}: E
     }
   };
 
+  const updateAppearance = async (patch: {icon?: string; color?: string}) => {
+    if (!page) return;
+    setPage({...page, ...patch});
+    try {
+      const updated = await api.pages.update(pageId, patch);
+      setPage(prev => (prev ? {...prev, icon: updated.icon, color: updated.color} : prev));
+      onMetaChange(updated);
+    } catch (err) {
+      console.error('Failed to update page appearance', err);
+    }
+  };
+
   const deletePage = async () => {
     if (!window.confirm(`Delete "${title || 'Untitled'}"? This cannot be undone.`)) return;
     try {
@@ -218,6 +232,7 @@ export default function EditorPanel({pageId, crumbs, onMetaChange, onDeleted}: E
         </div>
 
         <div className="mt-2 flex items-center gap-3">
+          <IconPicker color={page.color} icon={page.icon} onChange={updateAppearance} />
           <input
             className="min-w-0 flex-1 bg-transparent text-[26px] font-bold tracking-tight text-white placeholder-white/20 outline-none"
             onChange={e => {
@@ -239,6 +254,17 @@ export default function EditorPanel({pageId, crumbs, onMetaChange, onDeleted}: E
                 {btn.icon}
               </button>
             ))}
+            {onRequestMove && (
+              <>
+                <div className="mx-0.5 h-4 w-px bg-white/[0.08]" />
+                <button
+                  className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.08] hover:text-violet-300"
+                  onClick={() => onRequestMove(page)}
+                  title="Move to another notebook/section">
+                  <FolderInput className="h-4 w-4" />
+                </button>
+              </>
+            )}
             <div className="mx-0.5 h-4 w-px bg-white/[0.08]" />
             <button
               className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/[0.08] hover:text-rose-400"

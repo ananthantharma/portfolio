@@ -15,6 +15,9 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body.data as T;
 }
 
+/** The reorder endpoints only use array position — `{id}` per item is all they need. */
+const orderedItems = (ids: string[]) => ids.map(id => ({id}));
+
 export const api = {
   notebooks: {
     list: () => request<Notebook[]>('/api/notes/categories'),
@@ -23,6 +26,8 @@ export const api = {
     update: (id: string, patch: Partial<Notebook>) =>
       request<Notebook>(`/api/notes/categories/${id}`, {method: 'PUT', body: JSON.stringify(patch)}),
     remove: (id: string) => request<unknown>(`/api/notes/categories/${id}`, {method: 'DELETE'}),
+    reorder: (ids: string[]) =>
+      request<unknown>('/api/notes/categories/reorder', {method: 'PUT', body: JSON.stringify({items: orderedItems(ids)})}),
   },
 
   sections: {
@@ -32,6 +37,8 @@ export const api = {
     update: (id: string, patch: Partial<Section>) =>
       request<Section>(`/api/notes/sections/${id}`, {method: 'PUT', body: JSON.stringify(patch)}),
     remove: (id: string) => request<unknown>(`/api/notes/sections/${id}`, {method: 'DELETE'}),
+    reorder: (ids: string[]) =>
+      request<unknown>('/api/notes/sections/reorder', {method: 'PUT', body: JSON.stringify({items: orderedItems(ids)})}),
   },
 
   pages: {
@@ -47,5 +54,7 @@ export const api = {
     update: (id: string, patch: Record<string, unknown>) =>
       request<Page>(`/api/notes/pages/${id}`, {method: 'PUT', body: JSON.stringify(patch)}),
     remove: (id: string) => request<unknown>(`/api/notes/pages/${id}`, {method: 'DELETE'}),
+    reorder: (ids: string[]) =>
+      request<unknown>('/api/notes/pages/reorder', {method: 'PUT', body: JSON.stringify({items: orderedItems(ids)})}),
   },
 };

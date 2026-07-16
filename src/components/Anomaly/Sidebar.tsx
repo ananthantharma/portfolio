@@ -1,12 +1,16 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
+import {DndContext, DragEndEvent, PointerSensor, useSensor, useSensors} from '@dnd-kit/core';
+import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
 import {
   BookOpen,
   ChevronDown,
   ChevronRight,
   Flag,
   FolderPlus,
+  GripVertical,
   Home,
   LogOut,
   PanelLeftClose,
@@ -79,6 +83,88 @@ function CountBadge({count, tone}: {count?: number; tone: 'todo' | 'flag'}) {
   );
 }
 
+// ── Section row (draggable within its notebook) ──────────────────────────────
+interface SectionRowProps {
+  section: Section;
+  notebookId: string;
+  active: boolean;
+  renaming: boolean;
+  draggable: boolean;
+  onSelect: () => void;
+  onStartRename: () => void;
+  onCommitRename: (name: string) => void;
+  onCancelRename: () => void;
+  onDelete: () => void;
+}
+
+function SectionRow({
+  section,
+  active,
+  renaming,
+  draggable,
+  onSelect,
+  onStartRename,
+  onCommitRename,
+  onCancelRename,
+  onDelete,
+}: SectionRowProps) {
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
+    id: section._id,
+    disabled: !draggable,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  if (renaming) {
+    return <InlineInput initial={section.name} onCancel={onCancelRename} onCommit={onCommitRename} placeholder="Section name…" />;
+  }
+
+  return (
+    <div
+      className={`group flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition-colors ${
+        active ? 'bg-violet-500/15 ring-1 ring-inset ring-violet-400/20' : 'hover:bg-white/[0.04]'
+      }`}
+      ref={setNodeRef}
+      style={style}>
+      {draggable && (
+        <button
+          className="shrink-0 cursor-grab touch-none text-white/0 transition-colors group-hover:text-white/25 hover:!text-white/60 active:cursor-grabbing"
+          title="Drag to reorder"
+          {...attributes}
+          {...listeners}>
+          <GripVertical className="h-3 w-3" />
+        </button>
+      )}
+      <button className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={onSelect} title={section.name}>
+        <BookOpen className={`h-3.5 w-3.5 shrink-0 ${active ? 'text-violet-300' : 'text-white/25'}`} />
+        <span
+          className={`truncate text-[12.5px] ${
+            active ? 'font-medium text-violet-100' : 'text-white/55 group-hover:text-white/85'
+          }`}>
+          {section.name}
+        </span>
+      </button>
+      <CountBadge count={section.todoCount} tone="todo" />
+      <CountBadge count={section.flaggedCount} tone="flag" />
+      <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
+        <button
+          className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-white/80"
+          onClick={onStartRename}
+          title="Rename">
+          <Pencil className="h-3 w-3" />
+        </button>
+        <button className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-rose-400" onClick={onDelete} title="Delete section">
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface SidebarProps {
   notebooks: Notebook[];
   sectionsByNotebook: Record<string, Section[]>;
@@ -92,6 +178,8 @@ interface SidebarProps {
   onCreateSection: (notebookId: string, name: string) => void;
   onRenameSection: (id: string, name: string) => void;
   onDeleteSection: (notebookId: string, id: string) => void;
+  onReorderNotebooks: (newOrder: Notebook[]) => void;
+  onReorderSections: (notebookId: string, newOrder: Section[]) => void;
   onOpenPalette: () => void;
   onCollapse: () => void;
 }
@@ -110,6 +198,8 @@ export default function Sidebar(props: SidebarProps) {
     onCreateSection,
     onRenameSection,
     onDeleteSection,
+    onReorderNotebooks,
+    onReorderSections,
     onOpenPalette,
     onCollapse,
   } = props;
@@ -118,6 +208,7 @@ export default function Sidebar(props: SidebarProps) {
   const [creatingNotebook, setCreatingNotebook] = useState(false);
   const [creatingSectionFor, setCreatingSectionFor] = useState<string | null>(null);
   const [renaming, setRenaming] = useState<{type: 'notebook' | 'section'; id: string} | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 4}}));
 
   const totalImportant = notebooks.reduce((n, c) => n + (c.importantCount || 0), 0);
   const totalFlagged = notebooks.reduce((n, c) => n + (c.flaggedCount || 0), 0);
@@ -127,6 +218,24 @@ export default function Sidebar(props: SidebarProps) {
     {key: 'important', label: 'Important', icon: <Star className="h-4 w-4" />, badge: totalImportant},
     {key: 'flagged', label: 'Flagged', icon: <Flag className="h-4 w-4" />, badge: totalFlagged},
   ];
+
+  const handleNotebookDragEnd = (e: DragEndEvent) => {
+    const {active, over} = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = notebooks.findIndex(n => n._id === active.id);
+    const newIndex = notebooks.findIndex(n => n._id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    onReorderNotebooks(arrayMove(notebooks, oldIndex, newIndex));
+  };
+
+  const handleSectionDragEnd = (notebookId: string, sections: Section[]) => (e: DragEndEvent) => {
+    const {active, over} = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex(s => s._id === active.id);
+    const newIndex = sections.findIndex(s => s._id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    onReorderSections(notebookId, arrayMove(sections, oldIndex, newIndex));
+  };
 
   return (
     <aside className="flex h-full w-[268px] shrink-0 flex-col border-r border-white/[0.06] bg-white/[0.02]">
@@ -216,154 +325,78 @@ export default function Sidebar(props: SidebarProps) {
           </button>
         )}
 
-        {notebooks.map(nb => {
-          const isExpanded = expanded.has(nb._id);
-          const isActive = view.kind === 'notebook' && view.notebookId === nb._id;
-          const sections = sectionsByNotebook[nb._id] || [];
-          const isRenaming = renaming?.type === 'notebook' && renaming.id === nb._id;
+        <DndContext onDragEnd={handleNotebookDragEnd} sensors={sensors}>
+          <SortableContext items={notebooks.map(n => n._id)} strategy={verticalListSortingStrategy}>
+            {notebooks.map(nb => {
+              const isExpanded = expanded.has(nb._id);
+              const isActive = view.kind === 'notebook' && view.notebookId === nb._id;
+              const sections = sectionsByNotebook[nb._id] || [];
+              const isRenaming = renaming?.type === 'notebook' && renaming.id === nb._id;
 
-          return (
-            <div className="mb-0.5" key={nb._id}>
-              {isRenaming ? (
-                <InlineInput
-                  initial={nb.name}
-                  onCancel={() => setRenaming(null)}
-                  onCommit={name => {
+              return (
+                <NotebookRow
+                  isActive={isActive}
+                  isExpanded={isExpanded}
+                  isRenaming={isRenaming}
+                  key={nb._id}
+                  notebook={nb}
+                  onCancelRename={() => setRenaming(null)}
+                  onCommitRename={name => {
                     onRenameNotebook(nb._id, name);
                     setRenaming(null);
                   }}
-                  placeholder="Notebook name…"
-                />
-              ) : (
-                <div
-                  className={`group flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 transition-colors ${
-                    isActive ? 'bg-white/[0.07]' : 'hover:bg-white/[0.04]'
-                  }`}>
-                  <button
-                    className="rounded p-0.5 text-white/30 hover:bg-white/[0.08] hover:text-white/70"
-                    onClick={() => onToggleExpand(nb._id)}
-                    title={isExpanded ? 'Collapse' : 'Expand sections'}>
-                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                  </button>
-                  <button
-                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                    onClick={() => onSelectView({kind: 'notebook', notebookId: nb._id})}
-                    title={nb.name}>
-                    <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{backgroundColor: accentOf(nb.color)}}
-                    />
-                    <span
-                      className={`truncate text-[13px] font-medium ${
-                        isActive ? 'text-white' : 'text-white/70 group-hover:text-white/90'
-                      }`}>
-                      {nb.name}
-                    </span>
-                  </button>
-                  <CountBadge count={nb.todoCount} tone="todo" />
-                  <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
-                    <button
-                      className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-cyan-300"
-                      onClick={() => {
-                        setCreatingSectionFor(nb._id);
-                        if (!isExpanded) onToggleExpand(nb._id);
-                      }}
-                      title="New section">
-                      <FolderPlus className="h-3 w-3" />
-                    </button>
-                    <button
-                      className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-white/80"
-                      onClick={() => setRenaming({type: 'notebook', id: nb._id})}
-                      title="Rename">
-                      <Pencil className="h-3 w-3" />
-                    </button>
-                    <button
-                      className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-rose-400"
-                      onClick={() => onDeleteNotebook(nb._id)}
-                      title="Delete notebook">
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Sections */}
-              {isExpanded && (
-                <div className="ml-4 border-l border-white/[0.06] pl-1.5">
-                  {creatingSectionFor === nb._id && (
-                    <InlineInput
-                      onCancel={() => setCreatingSectionFor(null)}
-                      onCommit={name => {
-                        onCreateSection(nb._id, name);
-                        setCreatingSectionFor(null);
-                      }}
-                      placeholder="Section name…"
-                    />
-                  )}
-                  {sections.map(sec => {
-                    const secActive = view.kind === 'section' && view.sectionId === sec._id;
-                    const secRenaming = renaming?.type === 'section' && renaming.id === sec._id;
-                    if (secRenaming) {
-                      return (
+                  onDelete={() => onDeleteNotebook(nb._id)}
+                  onSelect={() => onSelectView({kind: 'notebook', notebookId: nb._id})}
+                  onStartCreateSection={() => {
+                    setCreatingSectionFor(nb._id);
+                    if (!isExpanded) onToggleExpand(nb._id);
+                  }}
+                  onStartRename={() => setRenaming({type: 'notebook', id: nb._id})}
+                  onToggleExpand={() => onToggleExpand(nb._id)}>
+                  {isExpanded && (
+                    <div className="ml-4 border-l border-white/[0.06] pl-1.5">
+                      {creatingSectionFor === nb._id && (
                         <InlineInput
-                          initial={sec.name}
-                          key={sec._id}
-                          onCancel={() => setRenaming(null)}
+                          onCancel={() => setCreatingSectionFor(null)}
                           onCommit={name => {
-                            onRenameSection(sec._id, name);
-                            setRenaming(null);
+                            onCreateSection(nb._id, name);
+                            setCreatingSectionFor(null);
                           }}
                           placeholder="Section name…"
                         />
-                      );
-                    }
-                    return (
-                      <div
-                        className={`group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors ${
-                          secActive ? 'bg-violet-500/15 ring-1 ring-inset ring-violet-400/20' : 'hover:bg-white/[0.04]'
-                        }`}
-                        key={sec._id}>
-                        <button
-                          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                          onClick={() => onSelectView({kind: 'section', notebookId: nb._id, sectionId: sec._id})}
-                          title={sec.name}>
-                          <BookOpen
-                            className={`h-3.5 w-3.5 shrink-0 ${secActive ? 'text-violet-300' : 'text-white/25'}`}
-                          />
-                          <span
-                            className={`truncate text-[12.5px] ${
-                              secActive ? 'font-medium text-violet-100' : 'text-white/55 group-hover:text-white/85'
-                            }`}>
-                            {sec.name}
-                          </span>
-                        </button>
-                        <CountBadge count={sec.todoCount} tone="todo" />
-                        <CountBadge count={sec.flaggedCount} tone="flag" />
-                        <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
-                          <button
-                            className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-white/80"
-                            onClick={() => setRenaming({type: 'section', id: sec._id})}
-                            title="Rename">
-                            <Pencil className="h-3 w-3" />
-                          </button>
-                          <button
-                            className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-rose-400"
-                            onClick={() => onDeleteSection(nb._id, sec._id)}
-                            title="Delete section">
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {sections.length === 0 && creatingSectionFor !== nb._id && (
-                    <p className="px-2 py-1.5 text-[11px] italic text-white/20">No sections yet</p>
+                      )}
+                      <DndContext onDragEnd={handleSectionDragEnd(nb._id, sections)} sensors={sensors}>
+                        <SortableContext items={sections.map(s => s._id)} strategy={verticalListSortingStrategy}>
+                          {sections.map(sec => (
+                            <SectionRow
+                              active={view.kind === 'section' && view.sectionId === sec._id}
+                              draggable={sections.length > 1}
+                              key={sec._id}
+                              notebookId={nb._id}
+                              onCancelRename={() => setRenaming(null)}
+                              onCommitRename={name => {
+                                onRenameSection(sec._id, name);
+                                setRenaming(null);
+                              }}
+                              onDelete={() => onDeleteSection(nb._id, sec._id)}
+                              onSelect={() => onSelectView({kind: 'section', notebookId: nb._id, sectionId: sec._id})}
+                              onStartRename={() => setRenaming({type: 'section', id: sec._id})}
+                              renaming={renaming?.type === 'section' && renaming.id === sec._id}
+                              section={sec}
+                            />
+                          ))}
+                        </SortableContext>
+                      </DndContext>
+                      {sections.length === 0 && creatingSectionFor !== nb._id && (
+                        <p className="px-2 py-1.5 text-[11px] italic text-white/20">No sections yet</p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                </NotebookRow>
+              );
+            })}
+          </SortableContext>
+        </DndContext>
       </div>
 
       {/* Footer: user + escape hatches */}
@@ -398,5 +431,96 @@ export default function Sidebar(props: SidebarProps) {
         </div>
       </div>
     </aside>
+  );
+}
+
+// ── Notebook row (draggable at the top level) ────────────────────────────────
+interface NotebookRowProps {
+  notebook: Notebook;
+  isActive: boolean;
+  isExpanded: boolean;
+  isRenaming: boolean;
+  onToggleExpand: () => void;
+  onSelect: () => void;
+  onStartCreateSection: () => void;
+  onStartRename: () => void;
+  onCommitRename: (name: string) => void;
+  onCancelRename: () => void;
+  onDelete: () => void;
+  children?: React.ReactNode;
+}
+
+function NotebookRow({
+  notebook,
+  isActive,
+  isExpanded,
+  isRenaming,
+  onToggleExpand,
+  onSelect,
+  onStartCreateSection,
+  onStartRename,
+  onCommitRename,
+  onCancelRename,
+  onDelete,
+  children,
+}: NotebookRowProps) {
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: notebook._id});
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <div className="mb-0.5" ref={setNodeRef} style={style}>
+      {isRenaming ? (
+        <InlineInput initial={notebook.name} onCancel={onCancelRename} onCommit={onCommitRename} placeholder="Notebook name…" />
+      ) : (
+        <div
+          className={`group flex items-center gap-1 rounded-lg px-1.5 py-1.5 transition-colors ${
+            isActive ? 'bg-white/[0.07]' : 'hover:bg-white/[0.04]'
+          }`}>
+          <button
+            className="shrink-0 cursor-grab touch-none rounded p-0.5 text-white/0 transition-colors group-hover:text-white/25 hover:!text-white/60 active:cursor-grabbing"
+            title="Drag to reorder"
+            {...attributes}
+            {...listeners}>
+            <GripVertical className="h-3.5 w-3.5" />
+          </button>
+          <button
+            className="rounded p-0.5 text-white/30 hover:bg-white/[0.08] hover:text-white/70"
+            onClick={onToggleExpand}
+            title={isExpanded ? 'Collapse' : 'Expand sections'}>
+            {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+          </button>
+          <button className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={onSelect} title={notebook.name}>
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{backgroundColor: accentOf(notebook.color)}} />
+            <span
+              className={`truncate text-[13px] font-medium ${
+                isActive ? 'text-white' : 'text-white/70 group-hover:text-white/90'
+              }`}>
+              {notebook.name}
+            </span>
+          </button>
+          <CountBadge count={notebook.todoCount} tone="todo" />
+          <div className="hidden shrink-0 items-center gap-0.5 group-hover:flex">
+            <button
+              className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-cyan-300"
+              onClick={onStartCreateSection}
+              title="New section">
+              <FolderPlus className="h-3 w-3" />
+            </button>
+            <button className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-white/80" onClick={onStartRename} title="Rename">
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button className="rounded p-1 text-white/30 hover:bg-white/[0.08] hover:text-rose-400" onClick={onDelete} title="Delete notebook">
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+      )}
+      {children}
+    </div>
   );
 }
