@@ -5,9 +5,11 @@ import {FileText, PanelLeftOpen} from 'lucide-react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {api} from './api';
+import BookmarksModal from './BookmarksModal';
 import CommandPalette from './CommandPalette';
 import EditorPanel from './EditorPanel';
 import HomeView from './HomeView';
+import InAppBrowser from './InAppBrowser';
 import MovePageModal from './MovePageModal';
 import PageList from './PageList';
 import Sidebar from './Sidebar';
@@ -31,6 +33,8 @@ export default function AnomalyApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [movingPage, setMovingPage] = useState<Page | null>(null);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [browserTarget, setBrowserTarget] = useState<{url: string; title: string} | null>(null);
   const restored = useRef(false);
 
   // ── Persistence ──────────────────────────────────────────────────────────────
@@ -134,6 +138,27 @@ export default function AnomalyApp() {
       }
       return next;
     });
+  };
+
+  const expandAllNotebooks = () => {
+    setExpanded(new Set(notebooks.map(n => n._id)));
+    notebooks.forEach(n => {
+      if (!sectionsByNotebook[n._id]) loadSections(n._id);
+    });
+  };
+
+  const collapseAllNotebooks = () => setExpanded(new Set());
+
+  /** Jump to a section/notebook match from the Command Palette's title-only search. */
+  const openSectionOrNotebook = (notebookId: string, sectionId: string | null) => {
+    setSelectedPageId(null);
+    if (sectionId) {
+      setViewState({kind: 'section', notebookId, sectionId});
+      setExpanded(prev => new Set(prev).add(notebookId));
+      if (!sectionsByNotebook[notebookId]) loadSections(notebookId);
+    } else {
+      setViewState({kind: 'notebook', notebookId});
+    }
   };
 
   /** Open a page coming from search / recents — resolve its notebook/section first. */
@@ -372,10 +397,13 @@ export default function AnomalyApp() {
           expanded={expanded}
           notebooks={notebooks}
           onCollapse={() => setSidebarOpen(false)}
+          onCollapseAll={collapseAllNotebooks}
           onCreateNotebook={createNotebook}
           onCreateSection={createSection}
           onDeleteNotebook={deleteNotebook}
           onDeleteSection={deleteSection}
+          onExpandAll={expandAllNotebooks}
+          onOpenBookmarks={() => setBookmarksOpen(true)}
           onOpenPalette={() => setPaletteOpen(true)}
           onRenameNotebook={renameNotebook}
           onRenameSection={renameSection}
@@ -446,9 +474,20 @@ export default function AnomalyApp() {
         )}
       </main>
 
-      {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} onOpenPage={openPage} />}
+      {paletteOpen && (
+        <CommandPalette onClose={() => setPaletteOpen(false)} onOpenPage={openPage} onOpenSection={openSectionOrNotebook} />
+      )}
       {movingPage && (
         <MovePageModal notebooks={notebooks} onClose={() => setMovingPage(null)} onMove={movePage} page={movingPage} />
+      )}
+      {bookmarksOpen && (
+        <BookmarksModal
+          onClose={() => setBookmarksOpen(false)}
+          onOpenUrl={(url, title) => setBrowserTarget({url, title})}
+        />
+      )}
+      {browserTarget && (
+        <InAppBrowser onClose={() => setBrowserTarget(null)} title={browserTarget.title} url={browserTarget.url} />
       )}
     </div>
   );

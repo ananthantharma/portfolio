@@ -48,6 +48,11 @@ export const api = {
     important: () => request<Page[]>('/api/notes/pages?isImportant=true'),
     flagged: () => request<Page[]>('/api/notes/pages?isFlagged=true'),
     search: (q: string) => request<Page[]>(`/api/notes/pages?search=${encodeURIComponent(q)}`),
+    /** Titles only — matches page titles, section names, and notebook names (no body content). */
+    searchTitles: (q: string) =>
+      request<Page[]>(
+        `/api/notes/pages?search=${encodeURIComponent(q)}&searchPageTitlesOnly=true&searchSectionNamesOnly=true`,
+      ),
     get: (id: string) => request<Page>(`/api/notes/pages/${id}`),
     create: (payload: Record<string, unknown>) =>
       request<Page>('/api/notes/pages', {method: 'POST', body: JSON.stringify(payload)}),

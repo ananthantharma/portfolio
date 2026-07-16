@@ -36,6 +36,14 @@ export interface IToDo extends Document {
     size: number;
   }[];
   userEmail?: string;
+  isArchived?: boolean;
+  isTemplate?: boolean;
+  recurrence?: {
+    freq: 'none' | 'daily' | 'weekly' | 'monthly' | 'weekdays';
+    interval?: number;
+  } | null;
+  blockedBy?: string[];
+  actualMinutes?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,7 +77,7 @@ const ToDoSchema = new Schema<IToDo>(
       enum: ['red', 'blue', 'green', null],
       default: null,
     },
-    isMinimized: {type: Boolean, default: true},
+    isMinimized: {type: Boolean, default: false},
     order: {type: Number, default: 0},
     subtasks: [
       {
@@ -96,6 +104,14 @@ const ToDoSchema = new Schema<IToDo>(
         size: {type: Number, required: true},
       },
     ],
+    isArchived: {type: Boolean, default: false},
+    isTemplate: {type: Boolean, default: false},
+    recurrence: {
+      freq: {type: String, enum: ['none', 'daily', 'weekly', 'monthly', 'weekdays'], default: 'none'},
+      interval: {type: Number, default: 1},
+    },
+    blockedBy: [{type: Schema.Types.ObjectId, ref: 'ToDo'}],
+    actualMinutes: {type: Number, default: 0},
   },
   {timestamps: true},
 );

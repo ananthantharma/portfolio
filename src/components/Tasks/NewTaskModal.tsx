@@ -1,11 +1,11 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {CalendarDays, CheckCircle2, Circle, Loader2, Plus, Sparkles, Tag, Timer, X} from 'lucide-react';
+import {CalendarDays, CheckCircle2, Circle, Loader2, Plus, Repeat, Sparkles, Tag, Timer, X} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
 import {api} from './api';
-import {PRIORITY_META, startOfDay, Status, STATUSES, Task} from './types';
+import {PRIORITY_META, RECURRENCE_META, RecurrenceFreq, startOfDay, Status, STATUSES, Task} from './types';
 
 interface NewTaskModalProps {
   defaultStatus?: Status;
@@ -33,6 +33,7 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
   const [priority, setPriority] = useState<Task['priority']>('None');
   const [status, setStatus] = useState<Status>(defaultStatus);
   const [dueDate, setDueDate] = useState<string>(''); // yyyy-mm-dd
+  const [recurrence, setRecurrence] = useState<RecurrenceFreq>('none');
   const [category, setCategory] = useState('');
   const [estimate, setEstimate] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -83,6 +84,7 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
         ...(category.trim() ? {category: category.trim()} : {}),
         ...(notes.trim() ? {notes: notes.trim()} : {}),
         ...(estimate && Number(estimate) > 0 ? {estimatedTime: Number(estimate)} : {}),
+        ...(recurrence !== 'none' ? {recurrence: {freq: recurrence, interval: 1}} : {}),
         tags,
         subtasks: subtasks.map(s => ({title: s, isCompleted: false})),
       });
@@ -98,7 +100,7 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
     <div
       className="fixed inset-0 z-[200] flex items-start justify-center bg-slate-900/40 px-4 pt-[10vh] backdrop-blur-[2px]"
       onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-lg animate-scale-in overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
+      <div className="w-full max-w-lg animate-scale-in overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Header */}
         <div className="flex items-center gap-2.5 border-b border-slate-100 bg-gradient-to-r from-orange-50 to-rose-50 px-5 py-3.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow-sm">
@@ -214,6 +216,24 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
                   value={estimate}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Recurrence */}
+          <div className="mt-3">
+            <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Repeats</label>
+            <div className="mt-1 flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 focus-within:border-orange-400">
+              <Repeat className="h-3.5 w-3.5 text-slate-300" />
+              <select
+                className="w-full bg-transparent text-[12.5px] text-slate-700 outline-none"
+                onChange={e => setRecurrence(e.target.value as RecurrenceFreq)}
+                value={recurrence}>
+                {(Object.keys(RECURRENCE_META) as RecurrenceFreq[]).map(f => (
+                  <option key={f} value={f}>
+                    {RECURRENCE_META[f]}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

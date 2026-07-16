@@ -15,6 +15,13 @@ export interface Attachment {
   size: number;
 }
 
+export type RecurrenceFreq = 'none' | 'daily' | 'weekly' | 'monthly' | 'weekdays';
+
+export interface Recurrence {
+  freq: RecurrenceFreq;
+  interval?: number;
+}
+
 export interface Task {
   _id: string;
   title: string;
@@ -32,11 +39,19 @@ export interface Task {
   tabName?: string;
   order?: number;
   aiGenerated?: boolean;
+  isArchived?: boolean;
+  isTemplate?: boolean;
+  recurrence?: Recurrence | null;
+  blockedBy?: string[];
+  actualMinutes?: number;
+  hasNeonBorder?: boolean;
+  neonColor?: 'red' | 'blue' | 'green' | null;
+  isMinimized?: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type ViewMode = 'list' | 'board' | 'matrix';
+export type ViewMode = 'list' | 'board' | 'matrix' | 'calendar' | 'insights';
 export type Status = 'todo' | 'in-progress' | 'done';
 
 export const STATUSES: {key: Status; label: string}[] = [
@@ -218,4 +233,228 @@ export function parseQuickAdd(input: string): ParsedQuickAdd {
 
   out.title = text.replace(/\s+/g, ' ').trim();
   return out;
+}
+
+// ── Recurrence ────────────────────────────────────────────────────────────────
+
+export const RECURRENCE_META: Record<RecurrenceFreq, string> = {
+  none: 'Does not repeat',
+  daily: 'Repeats daily',
+  weekly: 'Repeats weekly',
+  monthly: 'Repeats monthly',
+  weekdays: 'Repeats on weekdays',
+};
+
+/** The next due date after completing a recurring task, or null if it doesn't repeat. */
+export function nextOccurrence(task: Task): string | null {
+  const freq = task.recurrence?.freq;
+  if (!freq || freq === 'none' || !task.dueDate) return null;
+  const interval = Math.max(1, task.recurrence?.interval || 1);
+  const d = new Date(task.dueDate);
+  if (freq === 'daily') d.setDate(d.getDate() + interval);
+  else if (freq === 'weekly') d.setDate(d.getDate() + 7 * interval);
+  else if (freq === 'monthly') d.setMonth(d.getMonth() + interval);
+  else if (freq === 'weekdays') {
+    let added = 0;
+    while (added < interval) {
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+    }
+  }
+  return d.toISOString();
+}
+
+// ── Sorting ───────────────────────────────────────────────────────────────────
+
+export type SortMode = 'smart' | 'due' | 'priority' | 'created' | 'alpha' | 'manual';
+
+export const SORT_MODES: {key: SortMode; label: string}[] = [
+  {key: 'smart', label: 'Smart'},
+  {key: 'due', label: 'Due date'},
+  {key: 'priority', label: 'Priority'},
+  {key: 'created', label: 'Date created'},
+  {key: 'alpha', label: 'Alphabetical'},
+  {key: 'manual', label: 'Manual order'},
+];
+
+export function compareBy(mode: SortMode): (a: Task, b: Task) => number {
+  switch (mode) {
+    case 'due': {
+      return (a, b) => {
+        const da = daysUntil(a.dueDate);
+        const db = daysUntil(b.dueDate);
+        if (da === db) return 0;
+        if (da === null) return 1;
+        if (db === null) return -1;
+        return da - db;
+      };
+    }
+    case 'priority':
+      return (a, b) => PRIORITY_META[b.priority].weight - PRIORITY_META[a.priority].weight;
+    case 'created':
+      return (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    case 'alpha':
+      return (a, b) => a.title.localeCompare(b.title);
+    case 'manual':
+      return (a, b) => (a.order ?? 0) - (b.order ?? 0);
+    case 'smart':
+    default:
+      return smartCompare;
+  }
+}
+
+// ── Tag colors ────────────────────────────────────────────────────────────────
+
+const TAG_COLORS = ['#8b5cf6', '#0ea5e9', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1', '#14b8a6'];
+
+/** Deterministic color per tag/category name so recurring labels stay visually consistent. */
+export function colorForLabel(label: string): string {
+  let hash = 0;
+  for (let i = 0; i < label.length; i++) hash = (hash * 31 + label.charCodeAt(i)) >>> 0;
+  return TAG_COLORS[hash % TAG_COLORS.length];
+}
+
+// ── Staleness ─────────────────────────────────────────────────────────────────
+
+/** Days since a task was last touched — surfaces tasks quietly rotting in the backlog. */
+export function staleDays(task: Task): number {
+  return Math.floor((Date.now() - new Date(task.updatedAt).getTime()) / 86400000);
+}
+
+// ── Dependencies / blocking ───────────────────────────────────────────────────
+
+export function isBlocked(task: Task, allTasks: Task[]): boolean {
+  if (!task.blockedBy?.length) return false;
+  const byId = new Map(allTasks.map(t => [t._id, t]));
+  return task.blockedBy.some(id => {
+    const blocker = byId.get(id);
+    return blocker ? !blocker.isCompleted : false;
+  });
+}
+
+// ── Pin / highlight (repurposes the existing hasNeonBorder + neonColor fields) ─
+
+export const NEON_COLORS: {key: NonNullable<Task['neonColor']>; label: string; ring: string; dot: string}[] = [
+  {key: 'red', label: 'Red', ring: 'ring-rose-400', dot: 'bg-rose-500'},
+  {key: 'blue', label: 'Blue', ring: 'ring-sky-400', dot: 'bg-sky-500'},
+  {key: 'green', label: 'Green', ring: 'ring-emerald-400', dot: 'bg-emerald-500'},
+];
+
+export function isPinned(task: Task): boolean {
+  return !!task.hasNeonBorder;
+}
+
+// ── Streak ────────────────────────────────────────────────────────────────────
+
+/** Consecutive days (ending yesterday or today) with zero overdue/backlog left over. */
+export function completionStreak(tasks: Task[]): number {
+  const doneDates = new Set(
+    tasks.filter(t => t.isCompleted).map(t => startOfDay(new Date(t.updatedAt)).getTime()),
+  );
+  let streak = 0;
+  const cursor = startOfDay(new Date());
+  while (doneDates.has(cursor.getTime())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+// ── Saved smart views ─────────────────────────────────────────────────────────
+
+export interface SavedView {
+  id: string;
+  name: string;
+  search: string;
+  priority: Task['priority'] | null;
+  tag: string | null;
+  category: string | null;
+}
+
+// ── Export / import ───────────────────────────────────────────────────────────
+
+function csvEscape(value: string): string {
+  if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
+
+export function tasksToCsv(tasks: Task[]): string {
+  const header = ['title', 'status', 'priority', 'dueDate', 'category', 'tags', 'notes', 'estimatedTime'];
+  const rows = tasks.map(t =>
+    [
+      t.title,
+      statusOf(t),
+      t.priority,
+      t.dueDate || '',
+      t.category || '',
+      (t.tags || []).join('|'),
+      t.notes || '',
+      String(t.estimatedTime || ''),
+    ]
+      .map(csvEscape)
+      .join(','),
+  );
+  return [header.join(','), ...rows].join('\n');
+}
+
+function splitCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"' && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else if (c === '"') {
+        inQuotes = false;
+      } else {
+        cur += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      out.push(cur);
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+export interface ImportedTask {
+  title: string;
+  status?: string;
+  priority?: Task['priority'];
+  dueDate?: string;
+  category?: string;
+  tags?: string[];
+  notes?: string;
+  estimatedTime?: number;
+}
+
+export function parseTasksCsv(text: string): ImportedTask[] {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (lines.length < 2) return [];
+  const header = splitCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+  return lines.slice(1).map(line => {
+    const cells = splitCsvLine(line);
+    const get = (key: string) => cells[header.indexOf(key)] || '';
+    const priority = get('priority');
+    return {
+      title: get('title'),
+      status: get('status') || 'todo',
+      priority: (['High', 'Medium', 'Low', 'None'] as const).includes(priority as Task['priority'])
+        ? (priority as Task['priority'])
+        : 'None',
+      dueDate: get('duedate') || undefined,
+      category: get('category') || undefined,
+      tags: get('tags') ? get('tags').split('|').filter(Boolean) : [],
+      notes: get('notes') || undefined,
+      estimatedTime: get('estimatedtime') ? Number(get('estimatedtime')) : undefined,
+    };
+  });
 }

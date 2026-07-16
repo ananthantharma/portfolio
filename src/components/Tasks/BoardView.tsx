@@ -27,6 +27,7 @@ interface BoardViewProps {
   onSnooze?: (task: Task) => void;
   onQuickCreate: (title: string, status: Status) => Promise<void>;
   onAddTask: (status: Status) => void; // opens the full New Task modal
+  onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }
 
 const COLUMN_TONES: Record<Status, {header: string; ring: string; bar: string; count: string}> = {
@@ -41,18 +42,21 @@ function DraggableCard({
   onOpen,
   onToggleComplete,
   onSnooze,
+  onContextMenu,
 }: {
   task: Task;
   selected: boolean;
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
   onSnooze?: (t: Task) => void;
+  onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
   const {attributes, listeners, setNodeRef, isDragging} = useDraggable({id: task._id});
   return (
     <div className={isDragging ? 'opacity-30' : ''} ref={setNodeRef} {...listeners} {...attributes}>
       <TaskCard
         compact
+        onContextMenu={onContextMenu}
         onOpen={onOpen}
         onSnooze={onSnooze}
         onToggleComplete={onToggleComplete}
@@ -130,6 +134,7 @@ function Column({
   onSnooze,
   onQuickCreate,
   onAddTask,
+  onContextMenu,
 }: {
   status: Status;
   label: string;
@@ -140,12 +145,13 @@ function Column({
   onSnooze?: (t: Task) => void;
   onQuickCreate: (title: string, status: Status) => Promise<void>;
   onAddTask: (status: Status) => void;
+  onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
   const {setNodeRef, isOver} = useDroppable({id: status});
   const tone = COLUMN_TONES[status];
   return (
     <div
-      className={`flex h-full min-h-0 w-[330px] shrink-0 flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100/70 backdrop-blur-sm transition-all ${
+      className={`flex h-full min-h-0 w-[330px] shrink-0 flex-col overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100/70 backdrop-blur-sm transition-all dark:border-slate-700 dark:bg-slate-800/60 ${
         isOver ? `ring-2 ${tone.ring} scale-[1.01]` : ''
       }`}
       ref={setNodeRef}>
@@ -153,11 +159,11 @@ function Column({
       <div className={`h-1 w-full ${tone.bar}`} />
       <div className="flex items-center gap-2 px-4 pb-2 pt-3">
         <h3 className={`text-[12px] font-bold uppercase tracking-wider ${tone.header}`}>{label}</h3>
-        <span className={`rounded-full bg-white px-2 py-0.5 text-[10px] font-bold shadow-sm ${tone.count}`}>
+        <span className={`rounded-full bg-white px-2 py-0.5 text-[10px] font-bold shadow-sm ${tone.count} dark:bg-slate-700`}>
           {tasks.length}
         </span>
         <button
-          className="ml-auto rounded-lg p-1 text-slate-300 transition-colors hover:bg-white hover:text-orange-500"
+          className="ml-auto rounded-lg p-1 text-slate-300 transition-colors hover:bg-white hover:text-orange-500 dark:hover:bg-slate-700"
           onClick={() => onAddTask(status)}
           title={`New task in ${label} (full form)`}>
           <Plus className="h-4 w-4" />
@@ -167,6 +173,7 @@ function Column({
         {tasks.map(task => (
           <DraggableCard
             key={task._id}
+            onContextMenu={onContextMenu}
             onOpen={onOpen}
             onSnooze={onSnooze}
             onToggleComplete={onToggleComplete}
@@ -175,7 +182,7 @@ function Column({
           />
         ))}
         {tasks.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-[11px] text-slate-400">
+          <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-[11px] text-slate-400 dark:border-slate-600">
             Drop tasks here
           </div>
         )}
@@ -196,6 +203,7 @@ export default function BoardView({
   onSnooze,
   onQuickCreate,
   onAddTask,
+  onContextMenu,
 }: BoardViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   // distance: 6 lets plain clicks pass through to onOpen instead of starting a drag
@@ -221,6 +229,7 @@ export default function BoardView({
             key={col.key}
             label={col.label}
             onAddTask={onAddTask}
+            onContextMenu={onContextMenu}
             onOpen={onOpen}
             onQuickCreate={onQuickCreate}
             onSnooze={onSnooze}

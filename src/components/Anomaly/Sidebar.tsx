@@ -5,9 +5,12 @@ import {DndContext, DragEndEvent, PointerSensor, useSensor, useSensors} from '@d
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 import {
+  Bookmark,
   BookOpen,
   ChevronDown,
   ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Flag,
   FolderPlus,
   GripVertical,
@@ -180,6 +183,9 @@ interface SidebarProps {
   onDeleteSection: (notebookId: string, id: string) => void;
   onReorderNotebooks: (newOrder: Notebook[]) => void;
   onReorderSections: (notebookId: string, newOrder: Section[]) => void;
+  onExpandAll: () => void;
+  onCollapseAll: () => void;
+  onOpenBookmarks: () => void;
   onOpenPalette: () => void;
   onCollapse: () => void;
 }
@@ -200,6 +206,9 @@ export default function Sidebar(props: SidebarProps) {
     onDeleteSection,
     onReorderNotebooks,
     onReorderSections,
+    onExpandAll,
+    onCollapseAll,
+    onOpenBookmarks,
     onOpenPalette,
     onCollapse,
   } = props;
@@ -292,17 +301,37 @@ export default function Sidebar(props: SidebarProps) {
             </button>
           );
         })}
+        <button
+          className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/90"
+          onClick={onOpenBookmarks}>
+          <Bookmark className="h-4 w-4 text-white/35" />
+          Bookmarks
+        </button>
       </nav>
 
       {/* Notebooks */}
       <div className="mt-4 flex items-center justify-between px-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/30">Notebooks</p>
-        <button
-          className="rounded-md p-1 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-violet-300"
-          onClick={() => setCreatingNotebook(true)}
-          title="New notebook">
-          <Plus className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            className="rounded-md p-1 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-violet-300"
+            onClick={onExpandAll}
+            title="Expand all notebooks">
+            <ChevronsUpDown className="h-3.5 w-3.5" />
+          </button>
+          <button
+            className="rounded-md p-1 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-violet-300"
+            onClick={onCollapseAll}
+            title="Collapse all notebooks">
+            <ChevronsDownUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            className="rounded-md p-1 text-white/30 transition-colors hover:bg-white/[0.06] hover:text-violet-300"
+            onClick={() => setCreatingNotebook(true)}
+            title="New notebook">
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-1 flex-1 overflow-y-auto px-2 pb-2 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.12)_transparent]">

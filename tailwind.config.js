@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-undef
 module.exports = {
+  darkMode: 'class',
   content: ['./src/**/*.{js,ts,jsx,tsx,css,scss}'],
   theme: {
     extend: {
@@ -121,6 +122,10 @@ module.exports = {
           '0%, 100%': { opacity: '1' },
           '50%':      { opacity: '0.5' },
         },
+        'confetti-fall': {
+          '0%':   { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateY(var(--confetti-y, 220px)) rotate(var(--confetti-r, 540deg))', opacity: '0' },
+        },
       },
       animation: {
         shimmer:     'shimmer 1.6s linear infinite',
@@ -129,6 +134,7 @@ module.exports = {
         'fade-in':   'fade-in 0.15s ease-out',
         'scale-in':  'scale-in 0.15s ease-out',
         'pulse-soft':'pulse-soft 2s ease-in-out infinite',
+        'confetti-fall': 'confetti-fall 900ms cubic-bezier(0.2,0.8,0.4,1) forwards',
       },
 
       screens: {
