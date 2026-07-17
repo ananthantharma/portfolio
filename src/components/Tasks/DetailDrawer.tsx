@@ -7,23 +7,29 @@ import {
   CheckCircle2,
   Circle,
   Copy,
-  ExternalLink,
   FileText,
-  Paperclip,
+  ImagePlus,
+  Loader2,
+  Maximize2,
   Pin,
   Plus,
   Repeat,
   Tag,
   Trash2,
+  Wand2,
   X,
 } from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
+import {suggestSubtasks} from './aiSubtasks';
+import AttachmentGallery, {PasteHint} from './AttachmentGallery';
+import {attachmentFromPaste} from './pasteImage';
 import {isPinned, NEON_COLORS, PRIORITY_META, RECURRENCE_META, RecurrenceFreq, Status, STATUSES, statusOf, Task} from './types';
 
 interface DetailDrawerProps {
   task: Task;
   onClose: () => void;
+  onExpand: (task: Task) => void;
   onPatch: (id: string, patch: Record<string, unknown>) => void; // optimistic save
   onDelete: (task: Task) => void;
   onDuplicate: (task: Task) => void;
@@ -42,6 +48,7 @@ function toDateInputValue(iso?: string): string {
 export default function DetailDrawer({
   task,
   onClose,
+  onExpand,
   onPatch,
   onDelete,
   onDuplicate,
@@ -53,6 +60,7 @@ export default function DetailDrawer({
   const [category, setCategory] = useState(task.category || '');
   const [newTag, setNewTag] = useState('');
   const [newSubtask, setNewSubtask] = useState('');
+  const [suggesting, setSuggesting] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   // Re-sync local fields when a different task is opened
@@ -112,6 +120,38 @@ export default function DetailDrawer({
     setNewTag('');
   };
 
+  const runAiSubtasks = async () => {
+    if (!task.title.trim() || suggesting) return;
+    setSuggesting(true);
+    try {
+      const suggestions = await suggestSubtasks(task.title, task.notes);
+      const existing = new Set(subtasks.map(s => s.title.toLowerCase()));
+      const fresh = suggestions.filter(s => !existing.has(s.toLowerCase()));
+      onPatch(task._id, {subtasks: [...subtasks, ...fresh.map(s => ({title: s, isCompleted: false}))]});
+    } catch (err) {
+      alert(`Could not generate subtasks: ${err instanceof Error ? err.message : err}`);
+    } finally {
+      setSuggesting(false);
+    }
+  };
+
+  const attachments = task.attachments || [];
+
+  const onPasteAttachment = async (e: React.ClipboardEvent) => {
+    try {
+      const att = await attachmentFromPaste(e);
+      if (!att) return;
+      e.preventDefault();
+      onPatch(task._id, {attachments: [...attachments, att]});
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Could not paste that image.');
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    onPatch(task._id, {attachments: attachments.filter((_, i) => i !== index)});
+  };
+
   const sourceTitle =
     task.sourcePageId && typeof task.sourcePageId === 'object' ? task.sourcePageId.title : null;
   const pinned = isPinned(task);
@@ -134,6 +174,12 @@ export default function DetailDrawer({
           )}
         </button>
         <div className="ml-auto flex items-center gap-0.5">
+          <button
+            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            onClick={() => onExpand(task)}
+            title="Open in full window">
+            <Maximize2 className="h-4 w-4" />
+          </button>
           <button
             className={`rounded-lg p-1.5 transition-colors ${
               pinned ? 'text-cyan-500' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700'
@@ -175,7 +221,7 @@ export default function DetailDrawer({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]">
+      <div className="flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]" onPaste={onPasteAttachment}>
         {/* Title */}
         <textarea
           className="w-full resize-none bg-transparent text-[17px] font-bold leading-snug text-slate-900 outline-none placeholder:text-slate-300"
@@ -349,9 +395,19 @@ export default function DetailDrawer({
 
         {/* Subtasks */}
         <div className="mt-6">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Subtasks {subtasks.length > 0 && `· ${subtasks.filter(s => s.isCompleted).length}/${subtasks.length}`}
-          </h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Subtasks {subtasks.length > 0 && `· ${subtasks.filter(s => s.isCompleted).length}/${subtasks.length}`}
+            </h4>
+            <button
+              className="ml-auto flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-[10.5px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-40 dark:bg-indigo-500/10 dark:text-indigo-300"
+              disabled={!task.title.trim() || suggesting}
+              onClick={runAiSubtasks}
+              title="Ask Gemini to break this task into subtasks">
+              {suggesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+              AI suggest
+            </button>
+          </div>
           <div className="mt-2 space-y-1">
             {subtasks.map((sub, i) => (
               <div className="group flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-slate-50" key={i}>
@@ -403,29 +459,17 @@ export default function DetailDrawer({
           />
         </div>
 
-        {/* Attachments (read-only) */}
-        {(task.attachments?.length || 0) > 0 && (
-          <div className="mt-6">
+        {/* Attachments */}
+        <div className="mt-6">
+          <div className="flex items-center gap-2">
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Attachments</h4>
-            <div className="mt-2 space-y-1.5">
-              {task.attachments!.map((att, i) => (
-                <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-[12px] text-slate-600" key={i}>
-                  <Paperclip className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                  <span className="min-w-0 flex-1 truncate">{att.name}</span>
-                  {att.webViewLink && (
-                    <a
-                      className="text-slate-400 hover:text-orange-600"
-                      href={att.webViewLink}
-                      rel="noreferrer"
-                      target="_blank">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
+            <ImagePlus className="h-3 w-3 text-slate-300" />
           </div>
-        )}
+          <div className="mt-2 space-y-2">
+            <AttachmentGallery attachments={attachments} compact onRemove={removeAttachment} />
+            <PasteHint />
+          </div>
+        </div>
 
         {/* Source note */}
         {sourceTitle && (

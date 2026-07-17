@@ -53,8 +53,8 @@ import {ExtractedTask} from './emailParse';
 import InsightsView from './InsightsView';
 import ListView from './ListView';
 import MatrixView, {Quadrant} from './MatrixView';
-import NewTaskModal from './NewTaskModal';
 import SavedViewsBar from './SavedViewsBar';
+import TaskWindow from './TaskWindow';
 import TemplatesModal from './TemplatesModal';
 import {
   compareBy,
@@ -115,6 +115,7 @@ export default function TasksApp() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<ViewMode>('board');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [quickAdd, setQuickAdd] = useState('');
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
@@ -534,6 +535,7 @@ export default function TasksApp() {
     const t = contextMenu.task;
     return [
       {label: 'Open', onSelect: () => setSelectedId(t._id)},
+      {label: 'Open in full window', onSelect: () => setExpandedTaskId(t._id)},
       {label: t.isCompleted ? 'Mark as not done' : 'Mark as done', onSelect: () => toggleComplete(t)},
       {label: 'Duplicate', onSelect: () => duplicateTask(t)},
       {label: isPinned(t) ? 'Unpin' : 'Pin / highlight', onSelect: () => patchTask(t._id, {hasNeonBorder: !isPinned(t), neonColor: t.neonColor || 'blue'})},
@@ -813,6 +815,7 @@ export default function TasksApp() {
   }, [stats.dayTotal, stats.dayProgress, triggerConfetti]);
 
   const selectedTask = selectedId ? tasks.find(t => t._id === selectedId) || null : null;
+  const expandedTask = expandedTaskId ? tasks.find(t => t._id === expandedTaskId) || null : null;
   const canSaveView = !!(search || priorityFilter || tagFilter || categoryFilter);
 
   if (authStatus === 'loading') {
@@ -847,7 +850,7 @@ export default function TasksApp() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow-md">
                     <Flame className="h-4 w-4" />
                   </span>
-                  Mission Control
+                  Ananthan&apos;s Tasks
                   {focusMode && (
                     <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:bg-violet-500/15 dark:text-violet-300">
                       Focus
@@ -1017,7 +1020,7 @@ export default function TasksApp() {
                     className="flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-300 dark:text-white"
                     onChange={e => setQuickAdd(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitQuickAdd()}
-                    placeholder='Add a task…  try: "Send PO review !high #procurement @work tomorrow ~1h"  ( / to focus )'
+                    placeholder="Add a task…"
                     ref={quickAddRef}
                     value={quickAdd}
                   />
@@ -1333,22 +1336,23 @@ export default function TasksApp() {
           </div>
         </div>
 
-        {/* ── Detail drawer ── */}
+        {/* ── Detail drawer (sidebar — the default way to view/edit a task) ── */}
         {selectedTask && (
           <DetailDrawer
             onArchive={archiveTask}
             onClose={() => setSelectedId(null)}
             onDelete={deleteTask}
             onDuplicate={duplicateTask}
+            onExpand={t => setExpandedTaskId(t._id)}
             onPatch={patchTask}
             onSaveAsTemplate={saveAsTemplate}
             task={selectedTask}
           />
         )}
 
-        {/* ── New task modal ── */}
+        {/* ── New task window (large, in-browser) ── */}
         {newTaskOpen && (
-          <NewTaskModal
+          <TaskWindow
             defaultStatus={newTaskStatus}
             onClose={() => {
               setNewTaskOpen(false);
@@ -1360,6 +1364,19 @@ export default function TasksApp() {
               setEmailPrefill(null);
             }}
             prefill={emailPrefill}
+          />
+        )}
+
+        {/* ── Existing task opened in the large window (optional, via the drawer's expand button) ── */}
+        {expandedTask && (
+          <TaskWindow
+            onArchive={archiveTask}
+            onClose={() => setExpandedTaskId(null)}
+            onDelete={deleteTask}
+            onDuplicate={duplicateTask}
+            onPatch={patchTask}
+            onSaveAsTemplate={saveAsTemplate}
+            task={expandedTask}
           />
         )}
 

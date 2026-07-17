@@ -1,4 +1,4 @@
-// Client-side types + helpers for the Mission Control task app (/tasks).
+// Client-side types + helpers for Ananthan's Tasks app (/tasks).
 // Mirrors the ToDo mongoose model without importing mongoose into the client.
 
 export interface Subtask {
@@ -10,6 +10,7 @@ export interface Subtask {
 export interface Attachment {
   name: string;
   type: string;
+  data?: string; // base64 data URL — set for pasted images and local file uploads
   webViewLink?: string;
   storageType?: 'local' | 'drive' | 'blob';
   size: number;
