@@ -15,7 +15,6 @@ interface ListViewProps {
   completed: Task[]; // completed tasks (shown collapsed at bottom)
   showCompleted: boolean;
   selectedId: string | null;
-  allTasks: Task[];
   sortMode: SortMode;
   bulkMode: boolean;
   bulkSelected: Set<string>;
@@ -63,7 +62,6 @@ export default function ListView({
   completed,
   showCompleted,
   selectedId,
-  allTasks,
   sortMode,
   bulkMode,
   bulkSelected,
@@ -91,7 +89,6 @@ export default function ListView({
 
   const card = (task: Task) => (
     <TaskCard
-      allTasks={allTasks}
       bulkMode={bulkMode}
       bulkSelected={bulkSelected.has(task._id)}
       key={task._id}

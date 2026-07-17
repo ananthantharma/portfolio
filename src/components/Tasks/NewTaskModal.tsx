@@ -1,14 +1,16 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {CalendarDays, CheckCircle2, Circle, Loader2, Plus, Repeat, Sparkles, Tag, Timer, X} from 'lucide-react';
+import {CalendarDays, CheckCircle2, Circle, Loader2, Plus, Repeat, Sparkles, Tag, X} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
 import {api} from './api';
+import {ExtractedTask} from './emailParse';
 import {PRIORITY_META, RECURRENCE_META, RecurrenceFreq, startOfDay, Status, STATUSES, Task} from './types';
 
 interface NewTaskModalProps {
   defaultStatus?: Status;
+  prefill?: ExtractedTask | null;
   onClose: () => void;
   onCreated: (task: Task) => void;
 }
@@ -27,15 +29,14 @@ function isoForDaysAhead(days: number): string {
   return d.toISOString();
 }
 
-export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated}: NewTaskModalProps) {
-  const [title, setTitle] = useState('');
-  const [notes, setNotes] = useState('');
-  const [priority, setPriority] = useState<Task['priority']>('None');
+export default function NewTaskModal({defaultStatus = 'todo', prefill, onClose, onCreated}: NewTaskModalProps) {
+  const [title, setTitle] = useState(prefill?.title || '');
+  const [notes, setNotes] = useState(prefill?.notes || '');
+  const [priority, setPriority] = useState<Task['priority']>(prefill?.priority || 'None');
   const [status, setStatus] = useState<Status>(defaultStatus);
-  const [dueDate, setDueDate] = useState<string>(''); // yyyy-mm-dd
+  const [dueDate, setDueDate] = useState<string>(prefill?.dueDate ? prefill.dueDate.slice(0, 10) : ''); // yyyy-mm-dd
   const [recurrence, setRecurrence] = useState<RecurrenceFreq>('none');
-  const [category, setCategory] = useState('');
-  const [estimate, setEstimate] = useState('');
+  const [category, setCategory] = useState(prefill?.category || '');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [subtasks, setSubtasks] = useState<string[]>([]);
@@ -83,7 +84,6 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
         ...(dueDate ? {dueDate: new Date(`${dueDate}T17:00:00`).toISOString()} : {}),
         ...(category.trim() ? {category: category.trim()} : {}),
         ...(notes.trim() ? {notes: notes.trim()} : {}),
-        ...(estimate && Number(estimate) > 0 ? {estimatedTime: Number(estimate)} : {}),
         ...(recurrence !== 'none' ? {recurrence: {freq: recurrence, interval: 1}} : {}),
         tags,
         subtasks: subtasks.map(s => ({title: s, isCompleted: false})),
@@ -102,13 +102,18 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
       onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="w-full max-w-lg animate-scale-in overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Header */}
-        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-gradient-to-r from-orange-50 to-rose-50 px-5 py-3.5">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 bg-gradient-to-r from-orange-50 to-rose-50 px-5 py-3.5 dark:border-slate-700 dark:from-orange-500/10 dark:to-rose-500/10">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow-sm">
             <Sparkles className="h-3.5 w-3.5" />
           </span>
-          <h2 className="text-[15px] font-bold text-slate-800">New task</h2>
+          <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">New task</h2>
+          {prefill && (
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+              Filled by AI
+            </span>
+          )}
           <button
-            className="ml-auto rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-slate-700"
+            className="ml-auto rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={onClose}
             title="Close (Esc)">
             <X className="h-4 w-4" />
@@ -192,31 +197,15 @@ export default function NewTaskModal({defaultStatus = 'todo', onClose, onCreated
             </div>
           </div>
 
-          {/* Category + Estimate */}
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Category</label>
-              <input
-                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400"
-                onChange={e => setCategory(e.target.value)}
-                placeholder="e.g. Work"
-                value={category}
-              />
-            </div>
-            <div>
-              <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Estimate (min)</label>
-              <div className="mt-1 flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 focus-within:border-orange-400">
-                <Timer className="h-3.5 w-3.5 text-slate-300" />
-                <input
-                  className="w-full bg-transparent text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300"
-                  min={0}
-                  onChange={e => setEstimate(e.target.value)}
-                  placeholder="30"
-                  type="number"
-                  value={estimate}
-                />
-              </div>
-            </div>
+          {/* Category */}
+          <div className="mt-3">
+            <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Category</label>
+            <input
+              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400"
+              onChange={e => setCategory(e.target.value)}
+              placeholder="e.g. Work"
+              value={category}
+            />
           </div>
 
           {/* Recurrence */}

@@ -9,87 +9,26 @@ import {
   Copy,
   ExternalLink,
   FileText,
-  Lock,
   Paperclip,
-  Pause,
   Pin,
-  Play,
   Plus,
   Repeat,
-  RotateCcw,
   Tag,
   Trash2,
   X,
 } from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
-import {
-  formatMinutes,
-  isPinned,
-  NEON_COLORS,
-  PRIORITY_META,
-  RECURRENCE_META,
-  RecurrenceFreq,
-  Status,
-  STATUSES,
-  statusOf,
-  Task,
-} from './types';
+import {isPinned, NEON_COLORS, PRIORITY_META, RECURRENCE_META, RecurrenceFreq, Status, STATUSES, statusOf, Task} from './types';
 
 interface DetailDrawerProps {
   task: Task;
-  allTasks: Task[];
   onClose: () => void;
   onPatch: (id: string, patch: Record<string, unknown>) => void; // optimistic save
   onDelete: (task: Task) => void;
   onDuplicate: (task: Task) => void;
   onArchive: (task: Task) => void;
   onSaveAsTemplate: (task: Task) => void;
-}
-
-/** Simple stopwatch that logs elapsed minutes into task.actualMinutes on stop. */
-function FocusTimer({task, onPatch}: {task: Task; onPatch: (id: string, patch: Record<string, unknown>) => void}) {
-  const [running, setRunning] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(() => setSeconds(s => s + 1), 1000);
-    return () => clearInterval(id);
-  }, [running]);
-
-  const stopAndLog = () => {
-    setRunning(false);
-    const minutes = Math.round(seconds / 60);
-    if (minutes > 0) onPatch(task._id, {actualMinutes: (task.actualMinutes || 0) + minutes});
-    setSeconds(0);
-  };
-
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-  const ss = String(seconds % 60).padStart(2, '0');
-
-  return (
-    <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-700/40">
-      <span className="font-mono text-[13px] font-bold tabular-nums text-slate-700 dark:text-slate-200">
-        {mm}:{ss}
-      </span>
-      <button
-        className={`ml-auto rounded-lg p-1.5 transition-colors ${
-          running ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'
-        }`}
-        onClick={() => setRunning(r => !r)}
-        title={running ? 'Pause' : 'Start focus timer'}>
-        {running ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-      </button>
-      <button
-        className="rounded-lg bg-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-300"
-        disabled={seconds === 0}
-        onClick={stopAndLog}
-        title="Log time to task">
-        <RotateCcw className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
 }
 
 function toDateInputValue(iso?: string): string {
@@ -102,7 +41,6 @@ function toDateInputValue(iso?: string): string {
 
 export default function DetailDrawer({
   task,
-  allTasks,
   onClose,
   onPatch,
   onDelete,
@@ -177,8 +115,6 @@ export default function DetailDrawer({
   const sourceTitle =
     task.sourcePageId && typeof task.sourcePageId === 'object' ? task.sourcePageId.title : null;
   const pinned = isPinned(task);
-  const blockers = allTasks.filter(t => (task.blockedBy || []).includes(t._id));
-  const blockedActive = blockers.some(t => !t.isCompleted);
 
   return (
     <aside className="flex h-full w-[380px] shrink-0 animate-slide-up flex-col border-l border-slate-200 bg-white shadow-[-8px_0_30px_-15px_rgba(0,0,0,0.1)] dark:border-slate-700 dark:bg-slate-800">
@@ -272,13 +208,6 @@ export default function DetailDrawer({
             </button>
           ))}
         </div>
-
-        {blockedActive && (
-          <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-            <Lock className="h-3 w-3" /> Blocked by {blockers.filter(b => !b.isCompleted).length} unfinished task
-            {blockers.filter(b => !b.isCompleted).length === 1 ? '' : 's'}
-          </div>
-        )}
 
         {pinned && (
           <div className="mt-2 flex items-center gap-1.5 px-1">
@@ -386,73 +315,6 @@ export default function DetailDrawer({
               placeholder="e.g. Work"
               value={category}
             />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Estimate
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                className="w-20 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400"
-                min={0}
-                onChange={e => onPatch(task._id, {estimatedTime: Number(e.target.value) || 0})}
-                type="number"
-                value={task.estimatedTime || ''}
-              />
-              <span className="text-[11px] text-slate-400">
-                min {task.estimatedTime ? `(${formatMinutes(task.estimatedTime)})` : ''}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Focus timer
-            </label>
-            <div className="flex-1">
-              <FocusTimer onPatch={onPatch} task={task} />
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <label className="mt-1.5 w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Blocked by
-            </label>
-            <div className="flex flex-1 flex-wrap items-center gap-1.5">
-              {blockers.map(b => (
-                <span
-                  className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium ${
-                    b.isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'
-                  }`}
-                  key={b._id}>
-                  <Lock className="h-2.5 w-2.5" />
-                  {b.title}
-                  <button
-                    className="text-slate-300 hover:text-rose-500"
-                    onClick={() => onPatch(task._id, {blockedBy: (task.blockedBy || []).filter(id => id !== b._id)})}>
-                    <X className="h-2.5 w-2.5" />
-                  </button>
-                </span>
-              ))}
-              <select
-                className="rounded-lg border border-dashed border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-700"
-                onChange={e => {
-                  const id = e.target.value;
-                  if (id) onPatch(task._id, {blockedBy: [...(task.blockedBy || []), id]});
-                  e.target.value = '';
-                }}
-                value="">
-                <option value="">+ add blocker…</option>
-                {allTasks
-                  .filter(t => t._id !== task._id && !t.isTemplate && !(task.blockedBy || []).includes(t._id))
-                  .map(t => (
-                    <option key={t._id} value={t._id}>
-                      {t.title}
-                    </option>
-                  ))}
-              </select>
-            </div>
           </div>
 
           {/* Tags */}

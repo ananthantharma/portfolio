@@ -9,7 +9,6 @@ import {
   ChevronUp,
   Circle,
   ListChecks,
-  Lock,
   Paperclip,
   Repeat,
   StickyNote,
@@ -17,25 +16,12 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import {
-  colorForLabel,
-  daysUntil,
-  formatDue,
-  formatMinutes,
-  isBlocked,
-  isPinned,
-  NEON_COLORS,
-  PRIORITY_META,
-  staleDays,
-  subtaskProgress,
-  Task,
-} from './types';
+import {colorForLabel, daysUntil, formatDue, formatMinutes, isPinned, NEON_COLORS, PRIORITY_META, staleDays, subtaskProgress, Task} from './types';
 
 interface TaskCardProps {
   task: Task;
   compact?: boolean;
   selected: boolean;
-  allTasks?: Task[];
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
   onSnooze?: (task: Task) => void;
@@ -50,7 +36,6 @@ export default function TaskCard({
   task,
   compact,
   selected,
-  allTasks,
   onOpen,
   onToggleComplete,
   onSnooze,
@@ -68,7 +53,6 @@ export default function TaskCard({
   const prio = PRIORITY_META[task.priority];
   const pinned = isPinned(task);
   const neon = NEON_COLORS.find(n => n.key === task.neonColor);
-  const blocked = allTasks ? isBlocked(task, allTasks) : false;
   const stale = !done && staleDays(task) >= 14;
 
   const handleClick = () => {
@@ -165,11 +149,6 @@ export default function TaskCard({
                 <Repeat className="h-3 w-3 shrink-0 text-violet-400" />
               </span>
             )}
-            {blocked && (
-              <span title="Blocked by another task">
-                <Lock className="h-3 w-3 shrink-0 text-slate-400" />
-              </span>
-            )}
           </div>
 
           {/* Meta row */}
@@ -189,9 +168,7 @@ export default function TaskCard({
             )}
             {task.estimatedTime ? (
               <span className="flex items-center gap-1">
-                <Timer className="h-3 w-3" />
-                {formatMinutes(task.estimatedTime)}
-                {(task.actualMinutes || 0) > 0 && ` (${formatMinutes(task.actualMinutes)} logged)`}
+                <Timer className="h-3 w-3" /> {formatMinutes(task.estimatedTime)}
               </span>
             ) : null}
             {task.notes && <StickyNote className="h-3 w-3" />}

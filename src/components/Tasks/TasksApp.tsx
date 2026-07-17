@@ -17,6 +17,7 @@ import {
   Grid2x2,
   ListTodo as InsightsIcon,
   Loader2,
+  Mail,
   Mic,
   MicOff,
   Moon,
@@ -47,9 +48,11 @@ import CommandPalette from './CommandPalette';
 import ConfettiBurst from './ConfettiBurst';
 import ContextMenu, {ContextMenuItem} from './ContextMenu';
 import DetailDrawer from './DetailDrawer';
+import EmailDropModal from './EmailDropModal';
+import {ExtractedTask} from './emailParse';
 import InsightsView from './InsightsView';
 import ListView from './ListView';
-import MatrixView from './MatrixView';
+import MatrixView, {Quadrant} from './MatrixView';
 import NewTaskModal from './NewTaskModal';
 import SavedViewsBar from './SavedViewsBar';
 import TemplatesModal from './TemplatesModal';
@@ -143,9 +146,14 @@ export default function TasksApp() {
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [listening, setListening] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [emailDropOpen, setEmailDropOpen] = useState(false);
+  const [emailDropFile, setEmailDropFile] = useState<File | null>(null);
+  const [emailPrefill, setEmailPrefill] = useState<ExtractedTask | null>(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
   const dayCelebratedRef = useRef(false);
   const recognitionRef = useRef<{stop: () => void} | null>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
+  const dragCounterRef = useRef(0);
 
   const flash = useCallback((msg: string) => {
     setFlashMessage(msg);
@@ -217,6 +225,7 @@ export default function TasksApp() {
         quickAddRef.current?.focus();
       } else if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
+        setEmailPrefill(null);
         setNewTaskStatus('todo');
         setNewTaskOpen(true);
       } else if (e.key.toLowerCase() === 'b') {
@@ -424,6 +433,57 @@ export default function TasksApp() {
     (task: Task) => patchTask(task._id, {isMinimized: !task.isMinimized}),
     [patchTask],
   );
+
+  const openNewTask = useCallback((s: Status, prefillData: ExtractedTask | null = null) => {
+    setNewTaskStatus(s);
+    setEmailPrefill(prefillData);
+    setNewTaskOpen(true);
+  }, []);
+
+  /** Matrix drag-and-drop: dropping into a quadrant sets the priority/due-date pair that defines it. */
+  const moveToQuadrant = useCallback(
+    (task: Task, quadrant: Quadrant) => {
+      const urgentDue = () => {
+        const d = startOfDay(new Date());
+        d.setHours(17, 0, 0, 0);
+        return d.toISOString();
+      };
+      const CANON: Record<Quadrant, {priority: Task['priority']; dueDate: string | null}> = {
+        do: {priority: 'High', dueDate: urgentDue()},
+        schedule: {priority: 'Medium', dueDate: null},
+        delegate: {priority: 'Low', dueDate: urgentDue()},
+        someday: {priority: 'None', dueDate: null},
+      };
+      patchTask(task._id, CANON[quadrant]);
+    },
+    [patchTask],
+  );
+
+  // ── Drag a file (e.g. an Outlook message) anywhere onto the app ────────────
+  const onRootDragEnter = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    dragCounterRef.current++;
+    setIsDraggingFile(true);
+  };
+  const onRootDragOver = (e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+  };
+  const onRootDragLeave = () => {
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+    if (dragCounterRef.current === 0) setIsDraggingFile(false);
+  };
+  const onRootDrop = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDraggingFile(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setEmailDropFile(file);
+      setEmailDropOpen(true);
+    }
+  };
 
   // ── Bulk selection ───────────────────────────────────────────────────────────
   const bulkToggle = useCallback((task: Task) => {
@@ -768,6 +828,10 @@ export default function TasksApp() {
     <div className={isDark ? 'dark' : ''}>
       <div
         className="flex h-screen w-full overflow-hidden bg-[#f4f4f0] font-sans text-slate-800 antialiased dark:bg-slate-900 dark:text-slate-100"
+        onDragEnter={onRootDragEnter}
+        onDragLeave={onRootDragLeave}
+        onDragOver={onRootDragOver}
+        onDrop={onRootDrop}
         style={{
           backgroundImage: isDark
             ? undefined
@@ -927,13 +991,18 @@ export default function TasksApp() {
                 />
               </div>
 
+              {/* Task from email */}
+              <button
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-[12.5px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
+                onClick={() => setEmailDropOpen(true)}
+                title="Drag an Outlook message anywhere onto this window, or click to paste one">
+                <Mail className="h-4 w-4" /> Task from email
+              </button>
+
               {/* New task */}
               <button
                 className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-md transition-all hover:-translate-y-px hover:shadow-lg"
-                onClick={() => {
-                  setNewTaskStatus('todo');
-                  setNewTaskOpen(true);
-                }}
+                onClick={() => openNewTask('todo')}
                 title="New task (N)">
                 <Plus className="h-4 w-4" /> New task
               </button>
@@ -1139,6 +1208,15 @@ export default function TasksApp() {
 
             {/* Quick filter chips + saved views */}
             <div className="flex flex-wrap items-center gap-1.5 px-6 pb-3">
+              <button
+                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                  quickFilter === null
+                    ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400'
+                }`}
+                onClick={() => setQuickFilter(null)}>
+                All
+              </button>
               {(
                 [
                   {key: 'myday', label: 'My day'},
@@ -1154,7 +1232,7 @@ export default function TasksApp() {
                       : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400'
                   }`}
                   key={qf.key}
-                  onClick={() => setQuickFilter(prev => (prev === qf.key ? null : qf.key))}>
+                  onClick={() => setQuickFilter(qf.key)}>
                   {qf.label}
                 </button>
               ))}
@@ -1210,7 +1288,6 @@ export default function TasksApp() {
               </div>
             ) : view === 'list' ? (
               <ListView
-                allTasks={liveTasks}
                 bulkMode={bulkMode}
                 bulkSelected={bulkSelected}
                 completed={completed}
@@ -1228,10 +1305,7 @@ export default function TasksApp() {
               />
             ) : view === 'board' ? (
               <BoardView
-                onAddTask={s => {
-                  setNewTaskStatus(s);
-                  setNewTaskOpen(true);
-                }}
+                onAddTask={s => openNewTask(s)}
                 onContextMenu={openContextMenu}
                 onOpen={t => setSelectedId(t._id)}
                 onQuickCreate={quickCreateInColumn}
@@ -1244,6 +1318,7 @@ export default function TasksApp() {
             ) : view === 'matrix' ? (
               <MatrixView
                 onContextMenu={openContextMenu}
+                onMoveToQuadrant={moveToQuadrant}
                 onOpen={t => setSelectedId(t._id)}
                 onSnooze={snoozeTask}
                 onToggleComplete={toggleComplete}
@@ -1261,7 +1336,6 @@ export default function TasksApp() {
         {/* ── Detail drawer ── */}
         {selectedTask && (
           <DetailDrawer
-            allTasks={liveTasks}
             onArchive={archiveTask}
             onClose={() => setSelectedId(null)}
             onDelete={deleteTask}
@@ -1276,22 +1350,48 @@ export default function TasksApp() {
         {newTaskOpen && (
           <NewTaskModal
             defaultStatus={newTaskStatus}
-            onClose={() => setNewTaskOpen(false)}
+            onClose={() => {
+              setNewTaskOpen(false);
+              setEmailPrefill(null);
+            }}
             onCreated={task => {
               setTasks(prev => [task, ...prev]);
               setSelectedId(task._id);
+              setEmailPrefill(null);
+            }}
+            prefill={emailPrefill}
+          />
+        )}
+
+        {emailDropOpen && (
+          <EmailDropModal
+            initialFile={emailDropFile}
+            onClose={() => {
+              setEmailDropOpen(false);
+              setEmailDropFile(null);
+            }}
+            onExtracted={data => {
+              setEmailDropFile(null);
+              openNewTask('todo', data);
             }}
           />
+        )}
+
+        {isDraggingFile && !emailDropOpen && (
+          <div className="pointer-events-none fixed inset-0 z-[290] flex items-center justify-center bg-indigo-900/30 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-indigo-300 bg-white/90 px-10 py-8 text-center shadow-2xl dark:bg-slate-800/90">
+              <Mail className="h-8 w-8 text-indigo-500" />
+              <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200">Drop to create a task from this email</p>
+              <p className="text-[11.5px] text-slate-400">Gemini will pull out the title, priority, and due date</p>
+            </div>
+          </div>
         )}
 
         {paletteOpen && (
           <CommandPalette
             isDark={isDark}
             onClose={() => setPaletteOpen(false)}
-            onNewTask={() => {
-              setNewTaskStatus('todo');
-              setNewTaskOpen(true);
-            }}
+            onNewTask={() => openNewTask('todo')}
             onOpenTask={t => setSelectedId(t._id)}
             onSetView={setView}
             onToggleDark={() => setIsDark(v => !v)}
