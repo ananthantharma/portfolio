@@ -18,14 +18,11 @@ import {
   ListTodo as InsightsIcon,
   Loader2,
   Mail,
-  Mic,
-  MicOff,
   Moon,
   MoreHorizontal,
   Plus,
   Rows3,
   Search,
-  Send,
   Sparkles,
   Square,
   Sun,
@@ -40,9 +37,12 @@ import {useRouter} from 'next/navigation';
 import {useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
+import InAppBrowser from '@/components/Anomaly/InAppBrowser';
+
 import {api} from './api';
 import ArchiveView from './ArchiveView';
 import BoardView from './BoardView';
+import BookmarksModal from './BookmarksModal';
 import CalendarView from './CalendarView';
 import CommandPalette from './CommandPalette';
 import ConfettiBurst from './ConfettiBurst';
@@ -59,12 +59,10 @@ import TemplatesModal from './TemplatesModal';
 import {
   compareBy,
   daysUntil,
-  formatDue,
   formatMinutes,
   ImportedTask,
   isPinned,
   nextOccurrence,
-  parseQuickAdd,
   parseTasksCsv,
   PRIORITY_META,
   SavedView,
@@ -116,8 +114,6 @@ export default function TasksApp() {
   const [view, setView] = useState<ViewMode>('board');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
-  const [quickAdd, setQuickAdd] = useState('');
-  const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<Task['priority'] | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
@@ -127,7 +123,6 @@ export default function TasksApp() {
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [newTaskStatus, setNewTaskStatus] = useState<Status>('todo');
   const [sortMode, setSortMode] = useState<SortMode>('smart');
-  const quickAddRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── New-feature state ───────────────────────────────────────────────────────
@@ -145,14 +140,14 @@ export default function TasksApp() {
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const [activeSavedViewId, setActiveSavedViewId] = useState<string | null>(null);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
-  const [listening, setListening] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [emailDropOpen, setEmailDropOpen] = useState(false);
   const [emailDropFile, setEmailDropFile] = useState<File | null>(null);
   const [emailPrefill, setEmailPrefill] = useState<ExtractedTask | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [browserTarget, setBrowserTarget] = useState<{url: string; title: string} | null>(null);
   const dayCelebratedRef = useRef(false);
-  const recognitionRef = useRef<{stop: () => void} | null>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const dragCounterRef = useRef(0);
 
@@ -210,7 +205,7 @@ export default function TasksApp() {
       .finally(() => setLoading(false));
   }, [authStatus]);
 
-  // Keyboard shortcuts: "/" quick add · "n" new task · "b" bulk mode · Ctrl+K palette · 1-5 switch views
+  // Keyboard shortcuts: "n" new task · "b" bulk mode · Ctrl+K palette · 1-5 switch views
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -221,10 +216,7 @@ export default function TasksApp() {
         return;
       }
       if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === '/') {
-        e.preventDefault();
-        quickAddRef.current?.focus();
-      } else if (e.key.toLowerCase() === 'n') {
+      if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setEmailPrefill(null);
         setNewTaskStatus('todo');
@@ -544,59 +536,6 @@ export default function TasksApp() {
       {label: 'Delete', onSelect: () => deleteTask(t), danger: true, divider: true},
     ];
   }, [contextMenu, toggleComplete, duplicateTask, patchTask, snoozeTask, archiveTask, deleteTask]);
-
-  const parsed = useMemo(() => (quickAdd.trim() ? parseQuickAdd(quickAdd) : null), [quickAdd]);
-
-  const submitQuickAdd = async () => {
-    if (!parsed || !parsed.title || creating) return;
-    setCreating(true);
-    try {
-      const created = await api.create({
-        title: parsed.title,
-        priority: parsed.priority,
-        ...(parsed.dueDate ? {dueDate: parsed.dueDate} : {}),
-        ...(parsed.category ? {category: parsed.category} : {}),
-        tags: parsed.tags,
-        ...(parsed.estimatedTime ? {estimatedTime: parsed.estimatedTime} : {}),
-        status: 'todo',
-      });
-      setTasks(prev => [created, ...prev]);
-      setQuickAdd('');
-    } catch (err) {
-      alert(`Could not create task: ${err instanceof Error ? err.message : err}`);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  // ── Voice quick-add ──────────────────────────────────────────────────────────
-  const toggleVoice = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Voice input is not supported in this browser.');
-      return;
-    }
-    if (listening) {
-      recognitionRef.current?.stop();
-      return;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rec = new SpeechRecognition();
-    rec.lang = 'en-US';
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      const text = e.results[0][0].transcript as string;
-      setQuickAdd(prev => (prev ? `${prev} ${text}` : text));
-    };
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
-    rec.start();
-    recognitionRef.current = rec;
-    setListening(true);
-  };
 
   // ── Reminders (Notification API) ────────────────────────────────────────────
   const enableNotifications = async () => {
@@ -994,6 +933,14 @@ export default function TasksApp() {
                 />
               </div>
 
+              {/* Bookmarks */}
+              <button
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                onClick={() => setBookmarksOpen(true)}
+                title="Bookmarks">
+                <BookmarkIcon className="h-4 w-4" /> Bookmarks
+              </button>
+
               {/* Task from email */}
               <button
                 className="flex shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-[12.5px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
@@ -1009,63 +956,6 @@ export default function TasksApp() {
                 title="New task (N)">
                 <Plus className="h-4 w-4" /> New task
               </button>
-            </div>
-
-            {/* ── Quick add ── */}
-            <div className="px-6 pb-3 pt-3">
-              <div className="relative">
-                <div className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 bg-white px-4 py-2.5 shadow-sm transition-colors focus-within:border-orange-400 dark:border-slate-600 dark:bg-slate-700">
-                  <Send className={`h-4 w-4 ${quickAdd ? 'text-orange-500' : 'text-slate-300'}`} />
-                  <input
-                    className="flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-300 dark:text-white"
-                    onChange={e => setQuickAdd(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && submitQuickAdd()}
-                    placeholder="Add a task…"
-                    ref={quickAddRef}
-                    value={quickAdd}
-                  />
-                  {creating && <Loader2 className="h-4 w-4 animate-spin text-orange-400" />}
-                  <button
-                    className={`shrink-0 rounded-lg p-1.5 transition-colors ${
-                      listening ? 'bg-rose-100 text-rose-600' : 'text-slate-300 hover:text-slate-500'
-                    }`}
-                    onClick={toggleVoice}
-                    title="Voice quick-add"
-                    type="button">
-                    {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  </button>
-                </div>
-                {/* Live parse preview */}
-                {parsed && parsed.title && (
-                  <div className="absolute left-4 top-full z-10 mt-1 flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] shadow-lg dark:border-slate-600 dark:bg-slate-700">
-                    <span className="font-semibold text-slate-700 dark:text-slate-100">{parsed.title}</span>
-                    {parsed.priority !== 'None' && (
-                      <span className={`rounded-md px-1.5 py-0.5 ring-1 ring-inset ${PRIORITY_META[parsed.priority].chip}`}>
-                        {parsed.priority}
-                      </span>
-                    )}
-                    {parsed.dueDate && (
-                      <span className="rounded-md bg-orange-50 px-1.5 py-0.5 text-orange-600 ring-1 ring-inset ring-orange-100">
-                        {formatDue(parsed.dueDate)}
-                      </span>
-                    )}
-                    {parsed.category && (
-                      <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-indigo-600">@{parsed.category}</span>
-                    )}
-                    {parsed.tags.map(t => (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-slate-500" key={t}>
-                        #{t}
-                      </span>
-                    ))}
-                    {parsed.estimatedTime && (
-                      <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-slate-500">
-                        ~{formatMinutes(parsed.estimatedTime)}
-                      </span>
-                    )}
-                    <span className="text-slate-300">· Enter to add</span>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* ── View switcher + filters ── */}
@@ -1428,6 +1318,17 @@ export default function TasksApp() {
 
         {archiveOpen && (
           <ArchiveView onClose={() => setArchiveOpen(false)} onPurge={purgeTask} onRestore={restoreTask} tasks={archived} />
+        )}
+
+        {bookmarksOpen && (
+          <BookmarksModal
+            onClose={() => setBookmarksOpen(false)}
+            onOpenUrl={(url, title) => setBrowserTarget({url, title})}
+          />
+        )}
+
+        {browserTarget && (
+          <InAppBrowser onClose={() => setBrowserTarget(null)} title={browserTarget.title} url={browserTarget.url} />
         )}
 
         {contextMenu && (

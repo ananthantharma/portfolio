@@ -4,26 +4,30 @@
 import {
   Archive,
   Bookmark,
+  CalendarDays,
   CheckCircle2,
   Circle,
   Copy,
   FileText,
-  ImagePlus,
+  Flag,
+  ListChecks,
   Loader2,
   Maximize2,
+  Paperclip,
   Pin,
   Plus,
   Repeat,
+  Sparkles,
   Tag,
   Trash2,
-  Wand2,
   X,
 } from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
 
-import {suggestSubtasks} from './aiSubtasks';
+import {planTask} from './aiSubtasks';
 import AttachmentGallery, {PasteHint} from './AttachmentGallery';
 import {attachmentFromPaste} from './pasteImage';
+import PropertyCard from './PropertyCard';
 import {isPinned, NEON_COLORS, PRIORITY_META, RECURRENCE_META, RecurrenceFreq, Status, STATUSES, statusOf, Task} from './types';
 
 interface DetailDrawerProps {
@@ -60,7 +64,7 @@ export default function DetailDrawer({
   const [category, setCategory] = useState(task.category || '');
   const [newTag, setNewTag] = useState('');
   const [newSubtask, setNewSubtask] = useState('');
-  const [suggesting, setSuggesting] = useState(false);
+  const [planning, setPlanning] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
   // Re-sync local fields when a different task is opened
@@ -83,6 +87,7 @@ export default function DetailDrawer({
   const status = statusOf(task);
   const subtasks = task.subtasks || [];
   const tags = task.tags || [];
+  const subDone = subtasks.filter(s => s.isCompleted).length;
 
   const commitTitle = () => {
     const t = title.trim();
@@ -120,18 +125,23 @@ export default function DetailDrawer({
     setNewTag('');
   };
 
-  const runAiSubtasks = async () => {
-    if (!task.title.trim() || suggesting) return;
-    setSuggesting(true);
+  const runAiPlan = async () => {
+    if (!task.title.trim() || planning) return;
+    setPlanning(true);
     try {
-      const suggestions = await suggestSubtasks(task.title, task.notes);
+      const plan = await planTask(task.title, task.notes);
       const existing = new Set(subtasks.map(s => s.title.toLowerCase()));
-      const fresh = suggestions.filter(s => !existing.has(s.toLowerCase()));
-      onPatch(task._id, {subtasks: [...subtasks, ...fresh.map(s => ({title: s, isCompleted: false}))]});
+      const fresh = plan.subtasks.filter(s => !existing.has(s.toLowerCase()));
+      const patch: Record<string, unknown> = {subtasks: [...subtasks, ...fresh.map(s => ({title: s, isCompleted: false}))]};
+      if (plan.summary) {
+        patch.notes = plan.summary;
+        setNotes(plan.summary);
+      }
+      onPatch(task._id, patch);
     } catch (err) {
-      alert(`Could not generate subtasks: ${err instanceof Error ? err.message : err}`);
+      alert(`Could not plan this task: ${err instanceof Error ? err.message : err}`);
     } finally {
-      setSuggesting(false);
+      setPlanning(false);
     }
   };
 
@@ -155,33 +165,34 @@ export default function DetailDrawer({
   const sourceTitle =
     task.sourcePageId && typeof task.sourcePageId === 'object' ? task.sourcePageId.title : null;
   const pinned = isPinned(task);
+  const prio = PRIORITY_META[task.priority];
 
   return (
-    <aside className="flex h-full w-[380px] shrink-0 animate-slide-up flex-col border-l border-slate-200 bg-white shadow-[-8px_0_30px_-15px_rgba(0,0,0,0.1)] dark:border-slate-700 dark:bg-slate-800">
+    <aside className="relative flex h-full w-[400px] shrink-0 animate-slide-up flex-col overflow-hidden border-l border-slate-200 bg-white shadow-[-8px_0_30px_-15px_rgba(0,0,0,0.15)] dark:border-slate-700 dark:bg-slate-800">
+      {/* Accent bar */}
+      <span className={`absolute inset-x-0 top-0 h-1 ${prio.dot} ${task.priority === 'None' ? 'opacity-0' : ''}`} />
+
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-700">
+      <div className="flex items-center gap-1 border-b border-slate-100 px-3.5 py-3 dark:border-slate-700">
         <button
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12px] font-semibold text-slate-500 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[12px] font-semibold transition-colors ${
+            task.isCompleted
+              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
+              : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+          }`}
           onClick={() => onPatch(task._id, {isCompleted: !task.isCompleted, status: task.isCompleted ? 'todo' : 'done'})}>
-          {task.isCompleted ? (
-            <>
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Completed
-            </>
-          ) : (
-            <>
-              <Circle className="h-4 w-4" /> Mark done
-            </>
-          )}
+          {task.isCompleted ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+          {task.isCompleted ? 'Completed' : 'Mark done'}
         </button>
         <div className="ml-auto flex items-center gap-0.5">
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onExpand(task)}
             title="Open in full window">
             <Maximize2 className="h-4 w-4" />
           </button>
           <button
-            className={`rounded-lg p-1.5 transition-colors ${
+            className={`rounded-xl p-1.5 transition-colors ${
               pinned ? 'text-cyan-500' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700'
             }`}
             onClick={() => onPatch(task._id, {hasNeonBorder: !pinned, neonColor: pinned ? null : task.neonColor || 'blue'})}
@@ -189,31 +200,32 @@ export default function DetailDrawer({
             <Pin className="h-4 w-4 rotate-45" />
           </button>
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onSaveAsTemplate(task)}
             title="Save as template">
             <Bookmark className="h-4 w-4" />
           </button>
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onDuplicate(task)}
             title="Duplicate task">
             <Copy className="h-4 w-4" />
           </button>
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
             onClick={() => onArchive(task)}
             title="Archive task">
             <Archive className="h-4 w-4" />
           </button>
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
             onClick={() => onDelete(task)}
             title="Delete permanently">
             <Trash2 className="h-4 w-4" />
           </button>
+          <div className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-600" />
           <button
-            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={onClose}
             title="Close (Esc)">
             <X className="h-4 w-4" />
@@ -221,10 +233,10 @@ export default function DetailDrawer({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]" onPaste={onPasteAttachment}>
+      <div className="flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]" onPaste={onPasteAttachment}>
         {/* Title */}
         <textarea
-          className="w-full resize-none bg-transparent text-[17px] font-bold leading-snug text-slate-900 outline-none placeholder:text-slate-300"
+          className="w-full resize-none bg-transparent text-[19px] font-bold leading-snug tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-white"
           onBlur={commitTitle}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => {
@@ -240,10 +252,10 @@ export default function DetailDrawer({
         />
 
         {/* Status segmented */}
-        <div className="mt-2 flex rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
+        <div className="mt-3 flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-700">
           {STATUSES.map(s => (
             <button
-              className={`flex-1 rounded-lg py-1.5 text-[11.5px] font-semibold transition-all ${
+              className={`flex-1 rounded-xl py-1.5 text-[11.5px] font-semibold transition-all ${
                 status === s.key
                   ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
                   : 'text-slate-400 hover:text-slate-600'
@@ -256,8 +268,10 @@ export default function DetailDrawer({
         </div>
 
         {pinned && (
-          <div className="mt-2 flex items-center gap-1.5 px-1">
-            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-slate-400">Highlight</span>
+          <div className="mt-3 flex items-center gap-1.5 rounded-xl bg-cyan-50/70 px-3 py-2 dark:bg-cyan-500/10">
+            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-cyan-700 dark:text-cyan-300">
+              Highlight
+            </span>
             {NEON_COLORS.map(c => (
               <button
                 className={`h-4 w-4 rounded-full ${c.dot} ${task.neonColor === c.key ? 'ring-2 ring-offset-1' : ''}`}
@@ -269,17 +283,26 @@ export default function DetailDrawer({
           </div>
         )}
 
+        {/* AI plan */}
+        <button
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm shadow-indigo-500/20 transition-all hover:shadow-md disabled:opacity-40"
+          disabled={!task.title.trim() || planning}
+          onClick={runAiPlan}
+          title="Ask Gemini to write a summary and a full subtask checklist">
+          {planning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {planning ? 'Thinking…' : 'AI: Summarize & plan'}
+        </button>
+
         {/* Properties */}
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Priority
-            </label>
-            <div className="flex gap-1">
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <PropertyCard icon={<Flag className="h-3 w-3" />} label="Priority">
+            <div className="flex flex-wrap gap-1">
               {(['High', 'Medium', 'Low', 'None'] as const).map(p => (
                 <button
                   className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset transition-all ${
-                    task.priority === p ? PRIORITY_META[p].chip : 'bg-white text-slate-400 ring-slate-200 hover:ring-slate-300'
+                    task.priority === p
+                      ? PRIORITY_META[p].chip
+                      : 'bg-white text-slate-400 ring-slate-200 hover:ring-slate-300 dark:bg-slate-800 dark:ring-slate-600'
                   }`}
                   key={p}
                   onClick={() => onPatch(task._id, {priority: p})}>
@@ -287,36 +310,25 @@ export default function DetailDrawer({
                 </button>
               ))}
             </div>
-          </div>
+          </PropertyCard>
 
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Repeats
-            </label>
-            <div className="flex items-center gap-1.5">
-              <Repeat className="h-3.5 w-3.5 text-slate-300" />
-              <select
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-                onChange={e =>
-                  onPatch(task._id, {recurrence: {freq: e.target.value as RecurrenceFreq, interval: 1}})
-                }
-                value={task.recurrence?.freq || 'none'}>
-                {(Object.keys(RECURRENCE_META) as RecurrenceFreq[]).map(f => (
-                  <option key={f} value={f}>
-                    {RECURRENCE_META[f]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <PropertyCard icon={<Repeat className="h-3 w-3" />} label="Repeats">
+            <select
+              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+              onChange={e => onPatch(task._id, {recurrence: {freq: e.target.value as RecurrenceFreq, interval: 1}})}
+              value={task.recurrence?.freq || 'none'}>
+              {(Object.keys(RECURRENCE_META) as RecurrenceFreq[]).map(f => (
+                <option key={f} value={f}>
+                  {RECURRENCE_META[f]}
+                </option>
+              ))}
+            </select>
+          </PropertyCard>
 
-          <div className="flex items-start gap-3">
-            <label className="mt-1.5 w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Due
-            </label>
-            <div className="flex flex-1 flex-col gap-1.5">
+          <PropertyCard className="col-span-2" icon={<CalendarDays className="h-3 w-3" />} label="Due date">
+            <div className="flex flex-wrap items-center gap-1.5">
               <input
-                className="w-fit rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400"
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 onChange={e => {
                   if (!e.target.value) return;
                   const d = new Date(`${e.target.value}T17:00:00`);
@@ -325,53 +337,41 @@ export default function DetailDrawer({
                 type="date"
                 value={toDateInputValue(task.dueDate)}
               />
-              <div className="flex gap-1">
-                {[
-                  {label: 'Today', days: 0},
-                  {label: 'Tomorrow', days: 1},
-                  {label: '+1 week', days: 7},
-                ].map(p => (
-                  <button
-                    className="rounded-md bg-slate-100 px-2 py-1 text-[10.5px] font-semibold text-slate-500 transition-colors hover:bg-orange-100 hover:text-orange-700"
-                    key={p.label}
-                    onClick={() => {
-                      const d = new Date();
-                      d.setDate(d.getDate() + p.days);
-                      d.setHours(17, 0, 0, 0);
-                      onPatch(task._id, {dueDate: d.toISOString()});
-                    }}>
-                    {p.label}
-                  </button>
-                ))}
-              </div>
+              {[
+                {label: 'Today', days: 0},
+                {label: 'Tomorrow', days: 1},
+                {label: '+1 week', days: 7},
+              ].map(p => (
+                <button
+                  className="rounded-lg bg-white px-2 py-1.5 text-[10.5px] font-semibold text-slate-500 shadow-sm transition-colors hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-800"
+                  key={p.label}
+                  onClick={() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() + p.days);
+                    d.setHours(17, 0, 0, 0);
+                    onPatch(task._id, {dueDate: d.toISOString()});
+                  }}>
+                  {p.label}
+                </button>
+              ))}
             </div>
-          </div>
+          </PropertyCard>
 
-          <div className="flex items-center gap-3">
-            <label className="w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Category
-            </label>
+          <PropertyCard className="col-span-2" icon={<Tag className="h-3 w-3" />} label="Category & tags">
             <input
-              className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400"
+              className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
               onBlur={() => {
                 if ((category || '') !== (task.category || '')) onPatch(task._id, {category});
               }}
               onChange={e => setCategory(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-              placeholder="e.g. Work"
+              placeholder="Category, e.g. Work"
               value={category}
             />
-          </div>
-
-          {/* Tags */}
-          <div className="flex items-start gap-3">
-            <label className="mt-1.5 w-20 shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              Tags
-            </label>
-            <div className="flex flex-1 flex-wrap items-center gap-1.5">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {tags.map(tag => (
                 <span
-                  className="group flex items-center gap-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600"
+                  className="group flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-[11px] font-medium text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
                   key={tag}>
                   <Tag className="h-2.5 w-2.5 text-slate-400" />
                   {tag}
@@ -383,34 +383,38 @@ export default function DetailDrawer({
                 </span>
               ))}
               <input
-                className="w-20 rounded-lg border border-dashed border-slate-200 px-2 py-1 text-[11px] outline-none placeholder:text-slate-300 focus:border-orange-400"
+                className="w-20 rounded-lg border border-dashed border-slate-300 bg-transparent px-2 py-1 text-[11px] outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600"
                 onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addTag()}
                 placeholder="+ tag"
                 value={newTag}
               />
             </div>
-          </div>
+          </PropertyCard>
         </div>
 
         {/* Subtasks */}
-        <div className="mt-6">
+        <div className="mt-5">
           <div className="flex items-center gap-2">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Subtasks {subtasks.length > 0 && `· ${subtasks.filter(s => s.isCompleted).length}/${subtasks.length}`}
-            </h4>
-            <button
-              className="ml-auto flex items-center gap-1 rounded-lg bg-indigo-50 px-2 py-1 text-[10.5px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-40 dark:bg-indigo-500/10 dark:text-indigo-300"
-              disabled={!task.title.trim() || suggesting}
-              onClick={runAiSubtasks}
-              title="Ask Gemini to break this task into subtasks">
-              {suggesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-              AI suggest
-            </button>
+            <ListChecks className="h-3.5 w-3.5 text-slate-400" />
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Subtasks</h4>
+            {subtasks.length > 0 && (
+              <span className="text-[10.5px] font-semibold text-slate-400">
+                {subDone}/{subtasks.length}
+              </span>
+            )}
           </div>
-          <div className="mt-2 space-y-1">
+          {subtasks.length > 0 && (
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+              <div
+                className={`h-full rounded-full transition-all ${subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+                style={{width: `${(subDone / subtasks.length) * 100}%`}}
+              />
+            </div>
+          )}
+          <div className="mt-2.5 space-y-0.5">
             {subtasks.map((sub, i) => (
-              <div className="group flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-slate-50" key={i}>
+              <div className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40" key={i}>
                 <button className="shrink-0" onClick={() => toggleSubtask(i)}>
                   {sub.isCompleted ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -420,7 +424,7 @@ export default function DetailDrawer({
                 </button>
                 <span
                   className={`flex-1 text-[13px] ${
-                    sub.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'
+                    sub.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'
                   }`}>
                   {sub.title}
                 </span>
@@ -431,10 +435,10 @@ export default function DetailDrawer({
                 </button>
               </div>
             ))}
-            <div className="flex items-center gap-2 px-1 pt-1">
+            <div className="flex items-center gap-2 px-1.5 pt-1">
               <Plus className="h-4 w-4 text-slate-300" />
               <input
-                className="flex-1 bg-transparent text-[13px] text-slate-700 outline-none placeholder:text-slate-300"
+                className="flex-1 bg-transparent text-[13px] text-slate-700 outline-none placeholder:text-slate-300 dark:text-white"
                 onChange={e => setNewSubtask(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addSubtask()}
                 placeholder="Add a subtask and press Enter"
@@ -445,25 +449,28 @@ export default function DetailDrawer({
         </div>
 
         {/* Notes */}
-        <div className="mt-6">
-          <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notes</h4>
+        <div className="mt-5">
+          <div className="flex items-center gap-2">
+            <FileText className="h-3.5 w-3.5 text-slate-400" />
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notes</h4>
+          </div>
           <textarea
-            className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-[13px] leading-relaxed text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400 focus:bg-white"
+            className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/50 p-3.5 text-[13px] leading-relaxed text-slate-700 outline-none placeholder:text-slate-300 focus:border-indigo-400 focus:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-200"
             onBlur={() => {
               if ((notes || '') !== (task.notes || '')) onPatch(task._id, {notes});
             }}
             onChange={e => setNotes(e.target.value)}
-            placeholder="Details, links, context…"
+            placeholder="Details, links, context… or click AI: Summarize & plan above"
             rows={5}
             value={notes}
           />
         </div>
 
         {/* Attachments */}
-        <div className="mt-6">
+        <div className="mt-5">
           <div className="flex items-center gap-2">
+            <Paperclip className="h-3.5 w-3.5 text-slate-400" />
             <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Attachments</h4>
-            <ImagePlus className="h-3 w-3 text-slate-300" />
           </div>
           <div className="mt-2 space-y-2">
             <AttachmentGallery attachments={attachments} compact onRemove={removeAttachment} />
@@ -473,7 +480,7 @@ export default function DetailDrawer({
 
         {/* Source note */}
         {sourceTitle && (
-          <div className="mt-6 flex items-center gap-2 rounded-xl bg-indigo-50/70 px-3 py-2.5 text-[12px] text-indigo-700">
+          <div className="mt-5 flex items-center gap-2 rounded-2xl bg-indigo-50/70 px-3.5 py-2.5 text-[12px] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
             <FileText className="h-4 w-4 shrink-0" />
             <span className="min-w-0 truncate">
               From note: <strong>{sourceTitle}</strong>
@@ -482,7 +489,7 @@ export default function DetailDrawer({
           </div>
         )}
 
-        <p className="mt-6 pb-2 text-[10.5px] text-slate-300">
+        <p className="mt-5 pb-2 text-[10.5px] text-slate-300 dark:text-slate-600">
           Created {new Date(task.createdAt).toLocaleDateString()} · Updated{' '}
           {new Date(task.updatedAt).toLocaleDateString()}
         </p>
