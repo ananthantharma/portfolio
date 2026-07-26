@@ -7,6 +7,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Circle,
+  Clock,
   Copy,
   Flag,
   ListChecks,
@@ -287,16 +288,20 @@ export default function TaskWindow({
       onPaste={onPasteAttachment}>
       <div className="relative flex h-[90vh] w-[min(97vw,1180px)] animate-scale-in flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Accent bar */}
-        <span className={`absolute inset-x-0 top-0 h-1 ${prio.dot} ${priority === 'None' ? 'opacity-0' : ''}`} />
+        <span
+          className={`absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r ${prio.gradient} ${
+            priority === 'None' ? 'opacity-0' : ''
+          }`}
+        />
 
         {/* Header */}
-        <div className="flex shrink-0 items-center gap-2.5 border-b border-slate-100 px-6 py-3.5 dark:border-slate-700">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-sm">
+        <div className="flex shrink-0 items-center gap-2.5 border-b border-slate-100 bg-white/80 px-6 py-3.5 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/80">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow-sm shadow-orange-500/25">
             <Sparkles className="h-4 w-4" />
           </span>
           <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">{isEdit ? 'Edit task' : 'New task'}</h2>
           {prefill && !isEdit && (
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
               Filled by AI
             </span>
           )}
@@ -304,10 +309,10 @@ export default function TaskWindow({
             {isEdit && task && (
               <>
                 <button
-                  className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[12px] font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold shadow-sm transition-all ${
                     task.isCompleted
-                      ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
-                      : 'text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+                      ? 'bg-emerald-500 text-white shadow-emerald-500/25 hover:bg-emerald-600'
+                      : 'bg-slate-100 text-slate-500 shadow-none hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
                   }`}
                   onClick={() => commit({isCompleted: !task.isCompleted, status: task.isCompleted ? 'todo' : 'done'})}>
                   {task.isCompleted ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
@@ -315,7 +320,7 @@ export default function TaskWindow({
                 </button>
                 <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-600" />
                 <button
-                  className={`rounded-xl p-1.5 transition-colors ${
+                  className={`rounded-full p-1.5 transition-colors ${
                     pinned ? 'text-cyan-500' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                   onClick={togglePin}
@@ -324,7 +329,7 @@ export default function TaskWindow({
                 </button>
                 {onSaveAsTemplate && (
                   <button
-                    className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                    className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
                     onClick={() => onSaveAsTemplate(task)}
                     title="Save as template">
                     <Bookmark className="h-4 w-4" />
@@ -332,7 +337,7 @@ export default function TaskWindow({
                 )}
                 {onDuplicate && (
                   <button
-                    className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                    className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
                     onClick={() => onDuplicate(task)}
                     title="Duplicate task">
                     <Copy className="h-4 w-4" />
@@ -340,7 +345,7 @@ export default function TaskWindow({
                 )}
                 {onArchive && (
                   <button
-                    className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
+                    className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
                     onClick={() => {
                       onArchive(task);
                       onClose();
@@ -351,7 +356,7 @@ export default function TaskWindow({
                 )}
                 {onDelete && (
                   <button
-                    className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                    className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
                     onClick={() => {
                       onDelete(task);
                       onClose();
@@ -364,7 +369,7 @@ export default function TaskWindow({
               </>
             )}
             <button
-              className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
               onClick={onClose}
               title="Close (Esc)">
               <X className="h-4 w-4" />
@@ -394,7 +399,7 @@ export default function TaskWindow({
             />
 
             <button
-              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm shadow-indigo-500/20 transition-all hover:shadow-md disabled:opacity-40"
+              className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm shadow-orange-500/25 transition-all hover:shadow-md hover:shadow-orange-500/30 disabled:opacity-40"
               disabled={!title.trim() || planning}
               onClick={runAiPlan}
               title="Ask Gemini to write a summary and a full subtask checklist">
@@ -405,7 +410,7 @@ export default function TaskWindow({
             <div>
               <div className="flex items-center gap-2">
                 <ListChecks className="h-3.5 w-3.5 text-slate-400" />
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Subtasks</h4>
+                <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Subtasks</h4>
                 {subtasks.length > 0 && (
                   <span className="text-[10.5px] font-semibold text-slate-400">
                     {subDone}/{subtasks.length}
@@ -413,10 +418,10 @@ export default function TaskWindow({
                 )}
               </div>
               {subtasks.length > 0 && (
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'
+                    className={`h-full rounded-full bg-gradient-to-r transition-all duration-300 ${
+                      subDone === subtasks.length ? 'from-emerald-400 to-emerald-500' : 'from-orange-400 to-rose-400'
                     }`}
                     style={{width: `${(subDone / subtasks.length) * 100}%`}}
                   />
@@ -425,13 +430,13 @@ export default function TaskWindow({
               <div className="mt-2.5 space-y-0.5">
                 {subtasks.map((sub, i) => (
                   <div
-                    className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                    className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40"
                     key={i}>
                     <button className="shrink-0" onClick={() => toggleSubtask(i)}>
                       {sub.isCompleted ? (
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                       ) : (
-                        <Circle className="h-4 w-4 text-slate-300 hover:text-slate-400" />
+                        <Circle className="h-4 w-4 text-slate-300 hover:text-orange-400" />
                       )}
                     </button>
                     <span
@@ -461,9 +466,9 @@ export default function TaskWindow({
             </div>
 
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notes</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Notes</h4>
               <textarea
-                className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/50 p-3.5 text-[13px] leading-relaxed text-slate-700 outline-none placeholder:text-slate-300 focus:border-indigo-400 focus:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-200"
+                className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/60 p-3.5 text-[13px] leading-relaxed text-slate-700 outline-none transition-colors placeholder:text-slate-300 focus:border-orange-400 focus:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-200"
                 onBlur={commitNotes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Details, links, context… or use AI: Summarize & plan above"
@@ -475,7 +480,7 @@ export default function TaskWindow({
             <div>
               <div className="flex items-center gap-2">
                 <Paperclip className="h-3.5 w-3.5 text-slate-400" />
-                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Attachments</h4>
+                <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Attachments</h4>
               </div>
               <div className="mt-2 space-y-2">
                 <AttachmentGallery attachments={attachments} onRemove={removeAttachment} />
@@ -488,14 +493,18 @@ export default function TaskWindow({
 
           {/* Right column — grouped properties */}
           <div className="space-y-3">
-            <PropertyCard icon={<CheckCircle2 className="h-3 w-3" />} label="Status">
-              <div className="flex rounded-xl bg-white p-1 shadow-sm dark:bg-slate-800">
+            <PropertyCard icon={<CheckCircle2 className="h-3 w-3" />} label="Status" tint="emerald">
+              <div className="flex rounded-xl bg-slate-100 p-1 dark:bg-slate-700/60">
                 {STATUSES.map(s => (
                   <button
                     className={`flex-1 rounded-lg py-1.5 text-[11px] font-semibold transition-all ${
                       status === s.key
-                        ? 'bg-slate-800 text-white dark:bg-slate-600'
-                        : 'text-slate-400 hover:text-slate-600'
+                        ? s.key === 'done'
+                          ? 'bg-white text-emerald-600 shadow-sm dark:bg-slate-600 dark:text-emerald-300'
+                          : s.key === 'in-progress'
+                          ? 'bg-white text-amber-600 shadow-sm dark:bg-slate-600 dark:text-amber-300'
+                          : 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     key={s.key}
                     onClick={() => changeStatus(s.key)}>
@@ -506,7 +515,7 @@ export default function TaskWindow({
             </PropertyCard>
 
             {pinned && (
-              <PropertyCard icon={<Pin className="h-3 w-3 rotate-45" />} label="Highlight color">
+              <PropertyCard icon={<Pin className="h-3 w-3 rotate-45" />} label="Highlight color" tint="cyan">
                 <div className="flex items-center gap-2">
                   {NEON_COLORS.map(c => (
                     <button
@@ -522,7 +531,7 @@ export default function TaskWindow({
               </PropertyCard>
             )}
 
-            <PropertyCard icon={<Flag className="h-3 w-3" />} label="Priority">
+            <PropertyCard icon={<Flag className="h-3 w-3" />} label="Priority" tint="rose">
               <div className="flex gap-1">
                 {(['High', 'Medium', 'Low', 'None'] as const).map(p => (
                   <button
@@ -539,9 +548,9 @@ export default function TaskWindow({
               </div>
             </PropertyCard>
 
-            <PropertyCard icon={<CalendarDays className="h-3 w-3" />} label="Due date">
+            <PropertyCard icon={<CalendarDays className="h-3 w-3" />} label="Due date" tint="orange">
               <div className="flex flex-wrap items-center gap-1.5">
-                <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 focus-within:border-indigo-400 dark:border-slate-600 dark:bg-slate-800">
+                <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 focus-within:border-orange-400 dark:border-slate-600 dark:bg-slate-800">
                   <CalendarDays className="h-3.5 w-3.5 text-slate-300" />
                   <input
                     className="bg-transparent text-[12.5px] text-slate-700 outline-none dark:text-white"
@@ -558,7 +567,7 @@ export default function TaskWindow({
                       className={`rounded-lg px-2 py-1.5 text-[10.5px] font-semibold transition-all ${
                         active
                           ? 'bg-orange-100 text-orange-700 ring-1 ring-inset ring-orange-200'
-                          : 'bg-white text-slate-500 shadow-sm hover:bg-slate-100 dark:bg-slate-800'
+                          : 'bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-700 dark:text-slate-300'
                       }`}
                       key={p.label}
                       onClick={() => applyDueDate(active ? '' : iso)}>
@@ -569,9 +578,9 @@ export default function TaskWindow({
               </div>
             </PropertyCard>
 
-            <PropertyCard icon={<Repeat className="h-3 w-3" />} label="Repeats">
+            <PropertyCard icon={<Repeat className="h-3 w-3" />} label="Repeats" tint="violet">
               <select
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 onChange={e => changeRecurrence(e.target.value as RecurrenceFreq)}
                 value={recurrence}>
                 {(Object.keys(RECURRENCE_META) as RecurrenceFreq[]).map(f => (
@@ -582,9 +591,9 @@ export default function TaskWindow({
               </select>
             </PropertyCard>
 
-            <PropertyCard icon={<Tag className="h-3 w-3" />} label="Category & tags">
+            <PropertyCard icon={<Tag className="h-3 w-3" />} label="Category & tags" tint="sky">
               <input
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-indigo-400 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                 onBlur={commitCategory}
                 onChange={e => setCategory(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
@@ -594,7 +603,7 @@ export default function TaskWindow({
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 {tags.map(tag => (
                   <span
-                    className="flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-[11px] font-medium text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
+                    className="flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
                     key={tag}>
                     <Tag className="h-2.5 w-2.5 text-slate-400" />
                     {tag}
@@ -604,7 +613,7 @@ export default function TaskWindow({
                   </span>
                 ))}
                 <input
-                  className="w-20 rounded-lg border border-dashed border-slate-300 bg-transparent px-2 py-1 text-[11px] outline-none placeholder:text-slate-300 focus:border-indigo-400 dark:border-slate-600 dark:text-white"
+                  className="w-20 rounded-lg border border-dashed border-slate-300 bg-transparent px-2 py-1 text-[11px] outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600 dark:text-white"
                   onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addTag()}
                   placeholder="+ tag ↵"
@@ -614,7 +623,8 @@ export default function TaskWindow({
             </PropertyCard>
 
             {isEdit && task && (
-              <p className="px-1 pt-1 text-[10.5px] text-slate-300 dark:text-slate-600">
+              <p className="flex items-center gap-1.5 px-1 pt-1 text-[10.5px] text-slate-300 dark:text-slate-600">
+                <Clock className="h-3 w-3" />
                 Created {new Date(task.createdAt).toLocaleDateString()} · Updated{' '}
                 {new Date(task.updatedAt).toLocaleDateString()}
               </p>

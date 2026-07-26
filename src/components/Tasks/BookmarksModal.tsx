@@ -227,7 +227,9 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
       return matchCat && matchQuery;
     });
     result = [...result].sort((a, b) =>
-      sortBy === 'alpha' ? a.title.localeCompare(b.title) : Number(b.added_timestamp || 0) - Number(a.added_timestamp || 0),
+      sortBy === 'alpha'
+        ? a.title.localeCompare(b.title)
+        : Number(b.added_timestamp || 0) - Number(a.added_timestamp || 0),
     );
     return result;
   }, [bookmarks, category, query, sortBy]);
@@ -238,7 +240,9 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
   const renderCard = (b: Bookmark) => {
     if (editingId === b._id) {
       return (
-        <div className="space-y-2 rounded-2xl border-2 border-indigo-300 bg-white p-4 dark:border-indigo-500/50 dark:bg-slate-800" key={b._id}>
+        <div
+          className="space-y-2 rounded-2xl border-2 border-indigo-300 bg-white p-4 dark:border-indigo-500/50 dark:bg-slate-800"
+          key={b._id}>
           <input
             autoFocus
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] font-semibold text-slate-800 outline-none focus:border-indigo-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
@@ -347,7 +351,9 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
           key={b._id}>
           {tile}
           <div className="min-w-0 flex-1">
-            <button className="truncate text-left text-[13px] font-semibold text-slate-800 hover:text-indigo-600 dark:text-white" onClick={openInApp}>
+            <button
+              className="truncate text-left text-[13px] font-semibold text-slate-800 hover:text-indigo-600 dark:text-white"
+              onClick={openInApp}>
               {b.title || 'Untitled'}
             </button>
           </div>
@@ -397,13 +403,18 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
               title="Open in a new browser tab">
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700" onClick={() => copyLink(b._id, b.url)} title="Copy link">
+            <button
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+              onClick={() => copyLink(b._id, b.url)}
+              title="Copy link">
               {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
             {menu}
           </div>
         </div>
-        <button className="mb-1 line-clamp-2 text-left text-[13px] font-semibold text-slate-800 hover:text-indigo-600 dark:text-white" onClick={openInApp}>
+        <button
+          className="mb-1 line-clamp-2 text-left text-[13px] font-semibold text-slate-800 hover:text-indigo-600 dark:text-white"
+          onClick={openInApp}>
           {b.title || 'Untitled'}
         </button>
         {b.description && b.description.trim().toLowerCase() !== (b.title || '').trim().toLowerCase() && (
@@ -425,7 +436,7 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
     <div
       className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px]"
       onMouseDown={e => e.target === e.currentTarget && !editingId && onClose()}>
-      <div className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+      <div className="flex h-[85vh] w-full max-w-7xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-r from-orange-50 to-rose-50 px-6 py-4 dark:border-slate-700 dark:from-orange-500/10 dark:to-rose-500/10">
           <div className="flex items-center gap-2.5">
@@ -442,13 +453,21 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-0.5 rounded-lg bg-white/70 p-1 dark:bg-slate-700/60">
               <button
-                className={`rounded-md p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-white text-slate-700 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400'}`}
+                className={`rounded-md p-1.5 transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-slate-700 shadow-sm dark:bg-slate-600 dark:text-white'
+                    : 'text-slate-400'
+                }`}
                 onClick={() => setViewMode('grid')}
                 title="Grid view">
                 <Grid2x2 className="h-3.5 w-3.5" />
               </button>
               <button
-                className={`rounded-md p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white text-slate-700 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400'}`}
+                className={`rounded-md p-1.5 transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-white text-slate-700 shadow-sm dark:bg-slate-600 dark:text-white'
+                    : 'text-slate-400'
+                }`}
                 onClick={() => setViewMode('list')}
                 title="List view">
                 <ListIcon className="h-3.5 w-3.5" />
@@ -466,7 +485,9 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
               onClick={createBookmark}>
               <Plus className="h-3.5 w-3.5" /> Add
             </button>
-            <button className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/70 hover:text-slate-700 dark:hover:bg-slate-700" onClick={onClose}>
+            <button
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/70 hover:text-slate-700 dark:hover:bg-slate-700"
+              onClick={onClose}>
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -532,7 +553,12 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
                   <h3 className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     <Pin className="h-3 w-3 rotate-45 text-orange-400" /> Pinned
                   </h3>
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-2'}>
+                  <div
+                    className={
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+                        : 'flex flex-col gap-2'
+                    }>
                     {pinnedList.map(renderCard)}
                   </div>
                 </section>
@@ -540,9 +566,16 @@ export default function BookmarksModal({onClose, onOpenUrl}: BookmarksModalProps
               {restList.length > 0 && (
                 <section>
                   {pinnedList.length > 0 && (
-                    <h3 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">All bookmarks</h3>
+                    <h3 className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      All bookmarks
+                    </h3>
                   )}
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-2'}>
+                  <div
+                    className={
+                      viewMode === 'grid'
+                        ? 'grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3'
+                        : 'flex flex-col gap-2'
+                    }>
                     {restList.map(renderCard)}
                   </div>
                 </section>

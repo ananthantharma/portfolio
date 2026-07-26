@@ -61,11 +61,38 @@ export const STATUSES: {key: Status; label: string}[] = [
   {key: 'done', label: 'Done'},
 ];
 
-export const PRIORITY_META: Record<Task['priority'], {label: string; dot: string; chip: string; weight: number}> = {
-  High: {label: 'High', dot: 'bg-rose-500', chip: 'bg-rose-50 text-rose-700 ring-rose-200', weight: 3},
-  Medium: {label: 'Medium', dot: 'bg-amber-500', chip: 'bg-amber-50 text-amber-700 ring-amber-200', weight: 2},
-  Low: {label: 'Low', dot: 'bg-sky-500', chip: 'bg-sky-50 text-sky-700 ring-sky-200', weight: 1},
-  None: {label: 'None', dot: 'bg-slate-300', chip: 'bg-slate-100 text-slate-500 ring-slate-200', weight: 0},
+export const PRIORITY_META: Record<
+  Task['priority'],
+  {label: string; dot: string; chip: string; gradient: string; weight: number}
+> = {
+  High: {
+    label: 'High',
+    dot: 'bg-rose-500',
+    chip: 'bg-rose-50 text-rose-700 ring-rose-200',
+    gradient: 'from-rose-400 to-rose-500',
+    weight: 3,
+  },
+  Medium: {
+    label: 'Medium',
+    dot: 'bg-amber-500',
+    chip: 'bg-amber-50 text-amber-700 ring-amber-200',
+    gradient: 'from-amber-400 to-amber-500',
+    weight: 2,
+  },
+  Low: {
+    label: 'Low',
+    dot: 'bg-sky-500',
+    chip: 'bg-sky-50 text-sky-700 ring-sky-200',
+    gradient: 'from-sky-400 to-sky-500',
+    weight: 1,
+  },
+  None: {
+    label: 'None',
+    dot: 'bg-slate-300',
+    chip: 'bg-slate-100 text-slate-500 ring-slate-200',
+    gradient: 'from-slate-300 to-slate-400',
+    weight: 0,
+  },
 };
 
 export function statusOf(task: Task): Status {
@@ -349,9 +376,7 @@ export function isPinned(task: Task): boolean {
 
 /** Consecutive days (ending yesterday or today) with zero overdue/backlog left over. */
 export function completionStreak(tasks: Task[]): number {
-  const doneDates = new Set(
-    tasks.filter(t => t.isCompleted).map(t => startOfDay(new Date(t.updatedAt)).getTime()),
-  );
+  const doneDates = new Set(tasks.filter(t => t.isCompleted).map(t => startOfDay(new Date(t.updatedAt)).getTime()));
   let streak = 0;
   const cursor = startOfDay(new Date());
   while (doneDates.has(cursor.getTime())) {

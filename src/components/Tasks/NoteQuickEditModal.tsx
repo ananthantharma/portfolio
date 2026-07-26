@@ -76,7 +76,7 @@ export default function NoteQuickEditModal({pageId, onClose}: NoteQuickEditModal
     <div
       className="fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px]"
       onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div className="flex h-[75vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+      <div className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Header */}
         <div className="flex shrink-0 items-center gap-2.5 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-sky-50 px-5 py-3.5 dark:border-slate-700 dark:from-indigo-500/10 dark:to-sky-500/10">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow-sm">

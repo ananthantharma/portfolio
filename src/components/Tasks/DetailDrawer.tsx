@@ -7,6 +7,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Circle,
+  Clock,
   Copy,
   FileText,
   Flag,
@@ -179,17 +180,21 @@ export default function DetailDrawer({
   const prio = PRIORITY_META[task.priority];
 
   return (
-    <aside className="relative flex h-full w-[400px] shrink-0 animate-slide-up flex-col overflow-hidden border-l border-slate-200 bg-white shadow-[-8px_0_30px_-15px_rgba(0,0,0,0.15)] dark:border-slate-700 dark:bg-slate-800">
+    <aside className="relative flex h-full w-[400px] shrink-0 animate-slide-up flex-col overflow-hidden border-l border-slate-200/80 bg-white shadow-[-12px_0_40px_-20px_rgba(15,23,42,0.25)] dark:border-slate-700 dark:bg-slate-800">
       {/* Accent bar */}
-      <span className={`absolute inset-x-0 top-0 h-1 ${prio.dot} ${task.priority === 'None' ? 'opacity-0' : ''}`} />
+      <span
+        className={`absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r ${prio.gradient} ${
+          task.priority === 'None' ? 'opacity-0' : ''
+        }`}
+      />
 
       {/* Header */}
-      <div className="flex items-center gap-1 border-b border-slate-100 px-3.5 py-3 dark:border-slate-700">
+      <div className="flex items-center gap-1 border-b border-slate-100 bg-white/80 px-3.5 py-3 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/80">
         <button
-          className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[12px] font-semibold transition-colors ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold shadow-sm transition-all ${
             task.isCompleted
-              ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
-              : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
+              ? 'bg-emerald-500 text-white shadow-emerald-500/25 hover:bg-emerald-600'
+              : 'bg-slate-100 text-slate-500 shadow-none hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
           }`}
           onClick={() =>
             onPatch(task._id, {isCompleted: !task.isCompleted, status: task.isCompleted ? 'todo' : 'done'})
@@ -199,13 +204,13 @@ export default function DetailDrawer({
         </button>
         <div className="ml-auto flex items-center gap-0.5">
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onExpand(task)}
             title="Open in full window">
             <Maximize2 className="h-4 w-4" />
           </button>
           <button
-            className={`rounded-xl p-1.5 transition-colors ${
+            className={`rounded-full p-1.5 transition-colors ${
               pinned
                 ? 'text-cyan-500'
                 : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700'
@@ -217,32 +222,32 @@ export default function DetailDrawer({
             <Pin className="h-4 w-4 rotate-45" />
           </button>
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onSaveAsTemplate(task)}
             title="Save as template">
             <Bookmark className="h-4 w-4" />
           </button>
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={() => onDuplicate(task)}
             title="Duplicate task">
             <Copy className="h-4 w-4" />
           </button>
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10"
             onClick={() => onArchive(task)}
             title="Archive task">
             <Archive className="h-4 w-4" />
           </button>
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
             onClick={() => onDelete(task)}
             title="Delete permanently">
             <Trash2 className="h-4 w-4" />
           </button>
-          <div className="mx-0.5 h-5 w-px bg-slate-200 dark:bg-slate-600" />
+          <div className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-600" />
           <button
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
+            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
             onClick={onClose}
             title="Close (Esc)">
             <X className="h-4 w-4" />
@@ -253,7 +258,7 @@ export default function DetailDrawer({
       <div className="flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]" onPaste={onPasteAttachment}>
         {/* Title */}
         <textarea
-          className="w-full resize-none bg-transparent text-[19px] font-bold leading-snug tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-white"
+          className="w-full resize-none bg-transparent text-[20px] font-extrabold leading-snug tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-white"
           onBlur={commitTitle}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => {
@@ -269,13 +274,17 @@ export default function DetailDrawer({
         />
 
         {/* Status segmented */}
-        <div className="mt-3 flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-700">
+        <div className="mt-3.5 flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-700/60">
           {STATUSES.map(s => (
             <button
               className={`flex-1 rounded-xl py-1.5 text-[11.5px] font-semibold transition-all ${
                 status === s.key
-                  ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? s.key === 'done'
+                    ? 'bg-white text-emerald-600 shadow-sm dark:bg-slate-600 dark:text-emerald-300'
+                    : s.key === 'in-progress'
+                    ? 'bg-white text-amber-600 shadow-sm dark:bg-slate-600 dark:text-amber-300'
+                    : 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
               key={s.key}
               onClick={() => setStatus(s.key)}>
@@ -302,7 +311,7 @@ export default function DetailDrawer({
 
         {/* AI plan */}
         <button
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm shadow-indigo-500/20 transition-all hover:shadow-md disabled:opacity-40"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-sm shadow-orange-500/25 transition-all hover:shadow-md hover:shadow-orange-500/30 disabled:opacity-40"
           disabled={!task.title.trim() || planning}
           onClick={runAiPlan}
           title="Ask Gemini to write a summary and a full subtask checklist">
@@ -312,7 +321,7 @@ export default function DetailDrawer({
 
         {/* Properties */}
         <div className="mt-4 grid grid-cols-2 gap-2.5">
-          <PropertyCard icon={<Flag className="h-3 w-3" />} label="Priority">
+          <PropertyCard icon={<Flag className="h-3 w-3" />} label="Priority" tint="rose">
             <div className="flex flex-wrap gap-1">
               {(['High', 'Medium', 'Low', 'None'] as const).map(p => (
                 <button
@@ -329,7 +338,7 @@ export default function DetailDrawer({
             </div>
           </PropertyCard>
 
-          <PropertyCard icon={<Repeat className="h-3 w-3" />} label="Repeats">
+          <PropertyCard icon={<Repeat className="h-3 w-3" />} label="Repeats" tint="violet">
             <select
               className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
               onChange={e => onPatch(task._id, {recurrence: {freq: e.target.value as RecurrenceFreq, interval: 1}})}
@@ -342,7 +351,11 @@ export default function DetailDrawer({
             </select>
           </PropertyCard>
 
-          <PropertyCard className="col-span-2" icon={<CalendarDays className="h-3 w-3" />} label="Due date">
+          <PropertyCard
+            className="col-span-2"
+            icon={<CalendarDays className="h-3 w-3" />}
+            label="Due date"
+            tint="orange">
             <div className="flex flex-wrap items-center gap-1.5">
               <input
                 className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
@@ -360,7 +373,7 @@ export default function DetailDrawer({
                 {label: '+1 week', days: 7},
               ].map(p => (
                 <button
-                  className="rounded-lg bg-white px-2 py-1.5 text-[10.5px] font-semibold text-slate-500 shadow-sm transition-colors hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-800"
+                  className="rounded-lg bg-slate-50 px-2 py-1.5 text-[10.5px] font-semibold text-slate-500 transition-colors hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-700 dark:text-slate-300"
                   key={p.label}
                   onClick={() => {
                     const d = new Date();
@@ -374,7 +387,7 @@ export default function DetailDrawer({
             </div>
           </PropertyCard>
 
-          <PropertyCard className="col-span-2" icon={<Tag className="h-3 w-3" />} label="Category & tags">
+          <PropertyCard className="col-span-2" icon={<Tag className="h-3 w-3" />} label="Category & tags" tint="sky">
             <input
               className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
               onBlur={() => {
@@ -388,7 +401,7 @@ export default function DetailDrawer({
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {tags.map(tag => (
                 <span
-                  className="group flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-[11px] font-medium text-slate-600 shadow-sm dark:bg-slate-800 dark:text-slate-300"
+                  className="group flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
                   key={tag}>
                   <Tag className="h-2.5 w-2.5 text-slate-400" />
                   {tag}
@@ -411,10 +424,10 @@ export default function DetailDrawer({
         </div>
 
         {/* Subtasks */}
-        <div className="mt-5">
+        <div className="mt-6">
           <div className="flex items-center gap-2">
             <ListChecks className="h-3.5 w-3.5 text-slate-400" />
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Subtasks</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Subtasks</h4>
             {subtasks.length > 0 && (
               <span className="text-[10.5px] font-semibold text-slate-400">
                 {subDone}/{subtasks.length}
@@ -422,10 +435,10 @@ export default function DetailDrawer({
             )}
           </div>
           {subtasks.length > 0 && (
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div
-                className={`h-full rounded-full transition-all ${
-                  subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'
+                className={`h-full rounded-full bg-gradient-to-r transition-all duration-300 ${
+                  subDone === subtasks.length ? 'from-emerald-400 to-emerald-500' : 'from-orange-400 to-rose-400'
                 }`}
                 style={{width: `${(subDone / subtasks.length) * 100}%`}}
               />
@@ -434,13 +447,13 @@ export default function DetailDrawer({
           <div className="mt-2.5 space-y-0.5">
             {subtasks.map((sub, i) => (
               <div
-                className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40"
                 key={i}>
                 <button className="shrink-0" onClick={() => toggleSubtask(i)}>
                   {sub.isCompleted ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                   ) : (
-                    <Circle className="h-4 w-4 text-slate-300 hover:text-slate-400" />
+                    <Circle className="h-4 w-4 text-slate-300 hover:text-orange-400" />
                   )}
                 </button>
                 <span
@@ -456,7 +469,7 @@ export default function DetailDrawer({
                 </button>
               </div>
             ))}
-            <div className="flex items-center gap-2 px-1.5 pt-1">
+            <div className="flex items-center gap-2 rounded-xl px-1.5 py-1.5">
               <Plus className="h-4 w-4 text-slate-300" />
               <input
                 className="flex-1 bg-transparent text-[13px] text-slate-700 outline-none placeholder:text-slate-300 dark:text-white"
@@ -470,13 +483,13 @@ export default function DetailDrawer({
         </div>
 
         {/* Notes */}
-        <div className="mt-5">
+        <div className="mt-6">
           <div className="flex items-center gap-2">
             <FileText className="h-3.5 w-3.5 text-slate-400" />
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notes</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Notes</h4>
           </div>
           <textarea
-            className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/50 p-3.5 text-[13px] leading-relaxed text-slate-700 outline-none placeholder:text-slate-300 focus:border-indigo-400 focus:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-200"
+            className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/60 p-3.5 text-[13px] leading-relaxed text-slate-700 outline-none transition-colors placeholder:text-slate-300 focus:border-orange-400 focus:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-200"
             onBlur={() => {
               if ((notes || '') !== (task.notes || '')) onPatch(task._id, {notes});
             }}
@@ -488,10 +501,10 @@ export default function DetailDrawer({
         </div>
 
         {/* Attachments */}
-        <div className="mt-5">
+        <div className="mt-6">
           <div className="flex items-center gap-2">
             <Paperclip className="h-3.5 w-3.5 text-slate-400" />
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Attachments</h4>
+            <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Attachments</h4>
           </div>
           <div className="mt-2 space-y-2">
             <AttachmentGallery attachments={attachments} compact onRemove={removeAttachment} />
@@ -502,10 +515,11 @@ export default function DetailDrawer({
         {/* Linked note */}
         <LinkedNoteSection onPatch={onPatch} task={task} />
 
-        <p className="mt-5 pb-2 text-[10.5px] text-slate-300 dark:text-slate-600">
+        <div className="mt-6 flex items-center gap-1.5 border-t border-slate-100 pb-2 pt-3 text-[10.5px] text-slate-300 dark:border-slate-700 dark:text-slate-600">
+          <Clock className="h-3 w-3" />
           Created {new Date(task.createdAt).toLocaleDateString()} · Updated{' '}
           {new Date(task.updatedAt).toLocaleDateString()}
-        </p>
+        </div>
       </div>
     </aside>
   );
