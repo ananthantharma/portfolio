@@ -1,9 +1,10 @@
-export const dynamic = 'force-dynamic';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {NextResponse} from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
 import ToDo from '@/models/ToDo';
+
+export const dynamic = 'force-dynamic';
 
 // PUT: Update a To Do item
 export async function PUT(req: Request, {params}: {params: {id: string}}) {
@@ -98,7 +99,10 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
       data = body;
     }
 
-    const updatedToDo = await ToDo.findByIdAndUpdate(id, data, {new: true});
+    const updatedToDo = await ToDo.findByIdAndUpdate(id, data, {new: true}).populate({
+      path: 'sourcePageId',
+      select: 'title',
+    });
 
     if (!updatedToDo) {
       return NextResponse.json({success: false, error: 'To Do not found'}, {status: 404});

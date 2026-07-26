@@ -26,6 +26,7 @@ import {planTask} from './aiSubtasks';
 import {api} from './api';
 import AttachmentGallery, {PasteHint} from './AttachmentGallery';
 import {ExtractedTask} from './emailParse';
+import LinkedNoteSection from './LinkedNoteSection';
 import {attachmentFromPaste} from './pasteImage';
 import PropertyCard from './PropertyCard';
 import {
@@ -414,14 +415,18 @@ export default function TaskWindow({
               {subtasks.length > 0 && (
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                   <div
-                    className={`h-full rounded-full transition-all ${subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+                    className={`h-full rounded-full transition-all ${
+                      subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'
+                    }`}
                     style={{width: `${(subDone / subtasks.length) * 100}%`}}
                   />
                 </div>
               )}
               <div className="mt-2.5 space-y-0.5">
                 {subtasks.map((sub, i) => (
-                  <div className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40" key={i}>
+                  <div
+                    className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                    key={i}>
                     <button className="shrink-0" onClick={() => toggleSubtask(i)}>
                       {sub.isCompleted ? (
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -477,6 +482,8 @@ export default function TaskWindow({
                 <PasteHint />
               </div>
             </div>
+
+            {isEdit && task && onPatch && <LinkedNoteSection onPatch={onPatch} task={task} />}
           </div>
 
           {/* Right column — grouped properties */}
@@ -503,7 +510,9 @@ export default function TaskWindow({
                 <div className="flex items-center gap-2">
                   {NEON_COLORS.map(c => (
                     <button
-                      className={`h-5 w-5 rounded-full ${c.dot} ${task?.neonColor === c.key ? 'ring-2 ring-offset-2 dark:ring-offset-slate-800' : ''}`}
+                      className={`h-5 w-5 rounded-full ${c.dot} ${
+                        task?.neonColor === c.key ? 'ring-2 ring-offset-2 dark:ring-offset-slate-800' : ''
+                      }`}
                       key={c.key}
                       onClick={() => commit({neonColor: c.key})}
                       title={c.label}

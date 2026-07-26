@@ -436,7 +436,6 @@ const NotesLayout: React.FC = React.memo(() => {
     return () => clearInterval(interval);
   }, []);
 
-
   const fetchFlaggedTasks = useCallback(async () => {
     const response = await axios.get('/api/notes/pages?isFlagged=true');
     return response.data.data;
@@ -507,6 +506,26 @@ const NotesLayout: React.FC = React.memo(() => {
       setTargetTabId(tabId);
       setSelectedPageId(targetPageId);
     }
+  }, []);
+
+  // Deep link support: /notes?pageId=<id> (e.g. from a task's "Open note page" link) jumps
+  // straight to that page, resolving its section/category context first.
+  useEffect(() => {
+    const pageId = new URLSearchParams(window.location.search).get('pageId');
+    if (!pageId) return;
+    (async () => {
+      try {
+        const response = await axios.get(`/api/notes/pages/${pageId}`);
+        if (response.data?.success && response.data.data) {
+          await handleJumpToTask(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error opening linked note page:', error);
+      } finally {
+        window.history.replaceState(null, '', '/notes');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Category Operations
@@ -924,10 +943,7 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   const categoryRecentPages = useMemo(
-    () =>
-      selectedCategoryId
-        ? recentPages.filter(rp => rp.categoryId === selectedCategoryId).slice(0, 2)
-        : [],
+    () => (selectedCategoryId ? recentPages.filter(rp => rp.categoryId === selectedCategoryId).slice(0, 2) : []),
     [recentPages, selectedCategoryId],
   );
 
@@ -1138,9 +1154,9 @@ const NotesLayout: React.FC = React.memo(() => {
             <div className="flex-shrink-0 flex items-center h-11 rounded-2xl glass-nav z-30 overflow-visible">
               {/* ── Far-left: Portfolio home link ── */}
               <Link
+                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-l-2xl bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 transition-all duration-150 group"
                 href="/"
-                title="Back to Portfolio"
-                className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-l-2xl bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 transition-all duration-150 group">
+                title="Back to Portfolio">
                 <span className="text-white text-[13px] font-black tracking-tight group-hover:scale-110 transition-transform duration-150">
                   A
                 </span>
@@ -1152,12 +1168,12 @@ const NotesLayout: React.FC = React.memo(() => {
               <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden px-2">
                 {/* Workspace switcher */}
                 <button
+                  className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors group"
                   onClick={() => {
                     setSelectedCategoryId(null);
                     setSelectedSectionId(null);
                     setSelectedPageId(null);
                   }}
-                  className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors group"
                   title="Notes home">
                   <div className="w-5 h-5 rounded-md bg-indigo-500 flex items-center justify-center flex-shrink-0">
                     <HomeIcon className="h-3 w-3 text-white" />
@@ -1173,8 +1189,11 @@ const NotesLayout: React.FC = React.memo(() => {
                     <div className="flex items-center gap-1 overflow-hidden min-w-0 flex-shrink-0 max-w-[320px]">
                       {currentCategory && (
                         <button
-                          onClick={() => { setSelectedSectionId(null); setSelectedPageId(null); }}
                           className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[90px]"
+                          onClick={() => {
+                            setSelectedSectionId(null);
+                            setSelectedPageId(null);
+                          }}
                           title={currentCategory.name}>
                           {currentCategory.name}
                         </button>
@@ -1183,8 +1202,8 @@ const NotesLayout: React.FC = React.memo(() => {
                         <>
                           <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
                           <button
-                            onClick={() => setSelectedPageId(null)}
                             className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors truncate max-w-[90px]"
+                            onClick={() => setSelectedPageId(null)}
                             title={currentSection.name}>
                             {currentSection.name}
                           </button>
@@ -1193,7 +1212,9 @@ const NotesLayout: React.FC = React.memo(() => {
                       {selectedPage && (
                         <>
                           <ChevronRightIcon className="h-3 w-3 flex-shrink-0 text-slate-300" />
-                          <span className="text-[11px] text-slate-500 font-medium truncate max-w-[110px]" title={selectedPage.title}>
+                          <span
+                            className="text-[11px] text-slate-500 font-medium truncate max-w-[110px]"
+                            title={selectedPage.title}>
                             {selectedPage.title || 'Untitled'}
                           </span>
                         </>
@@ -1206,12 +1227,14 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* ⌘K Command bar */}
                 <button
+                  className="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-slate-100/80 hover:bg-slate-200/60 border border-slate-200/50 transition-all max-w-sm"
                   onClick={handleOpenSearch}
-                  title="Search or jump to... (⌘K)"
-                  className="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-slate-100/80 hover:bg-slate-200/60 border border-slate-200/50 transition-all max-w-sm">
+                  title="Search or jump to... (⌘K)">
                   <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
                   <span className="flex-1 text-left text-[12px] text-slate-400">Jump to page...</span>
-                  <kbd className="hidden sm:flex items-center text-[10px] font-mono bg-white/80 border border-slate-200 px-1 py-0.5 rounded text-slate-300 flex-shrink-0">⌘K</kbd>
+                  <kbd className="hidden sm:flex items-center text-[10px] font-mono bg-white/80 border border-slate-200 px-1 py-0.5 rounded text-slate-300 flex-shrink-0">
+                    ⌘K
+                  </kbd>
                 </button>
               </div>
 
@@ -1219,9 +1242,9 @@ const NotesLayout: React.FC = React.memo(() => {
               <div className="flex items-center gap-0.5 px-2 flex-shrink-0">
                 {/* Tasks */}
                 <button
+                  className="relative flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150"
                   onClick={handleOpenToDoList}
-                  title="Tasks"
-                  className="relative flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150">
+                  title="Tasks">
                   <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
                   <span className="hidden md:inline text-[12px]">Tasks</span>
                   {activeTaskCount > 0 && (
@@ -1235,17 +1258,17 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* Quick Note */}
                 <button
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150"
                   onClick={handleQuickNote}
-                  title="Quick Note"
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-150">
+                  title="Quick Note">
                   <DocumentPlusIcon className="h-4 w-4" />
                 </button>
 
                 {/* Focus Mode */}
                 <button
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150"
                   onClick={toggleFocusMode}
-                  title="Focus Mode (Ctrl+\)"
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150">
+                  title="Focus Mode (Ctrl+\)">
                   {isFocusMode ? (
                     <ArrowsPointingInIcon className="h-4 w-4" />
                   ) : (
@@ -1256,15 +1279,15 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className="w-px h-4 bg-slate-200 mx-0.5" />
 
                 {/* ── Inline profile — uses fixed dropdown to escape overflow:hidden ── */}
-                <div ref={profileRef} className="relative flex-shrink-0">
+                <div className="relative flex-shrink-0" ref={profileRef}>
                   <button
-                    onClick={() => setIsProfileOpen(v => !v)}
-                    className="flex items-center gap-1.5 rounded-xl px-2 py-1 hover:bg-slate-100 transition-all duration-150 group">
+                    className="flex items-center gap-1.5 rounded-xl px-2 py-1 hover:bg-slate-100 transition-all duration-150 group"
+                    onClick={() => setIsProfileOpen(v => !v)}>
                     {session?.user?.image ? (
                       <img
-                        src={session.user.image}
                         alt="avatar"
                         className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200"
+                        src={session.user.image}
                       />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center ring-1 ring-orange-200">
@@ -1295,22 +1318,25 @@ const NotesLayout: React.FC = React.memo(() => {
                       <div className="p-1.5 flex flex-col gap-0.5">
                         {isAdmin && (
                           <Link
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                             href="/admin"
-                            onClick={() => setIsProfileOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                            onClick={() => setIsProfileOpen(false)}>
                             <ShieldCheckIcon className="h-4 w-4 text-indigo-500" />
                             Admin Portal
                           </Link>
                         )}
                         <button
-                          onClick={() => { setIsProfileOpen(false); handleOpenSettings(); }}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-700 transition-colors w-full text-left">
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-700 transition-colors w-full text-left"
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            handleOpenSettings();
+                          }}>
                           <Cog6ToothIcon className="h-4 w-4" />
                           Badge Settings
                         </button>
                         <button
-                          onClick={() => signOut()}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left">
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors w-full text-left"
+                          onClick={() => signOut()}>
                           <ArrowLeftOnRectangleIcon className="h-4 w-4" />
                           Sign out
                         </button>
@@ -1326,13 +1352,17 @@ const NotesLayout: React.FC = React.memo(() => {
           <div className="flex flex-1 overflow-hidden gap-2 min-h-0">
             {/* ── Resource Rail — expandable icon palette, grouped by function ── */}
             {!isFocusMode && (
-              <div className={`flex flex-col py-2 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar gap-0.5 transition-all duration-200 ${isRailExpanded ? 'w-44 items-stretch px-1.5' : 'w-14 items-center'}`}>
-
+              <div
+                className={`flex flex-col py-2 rounded-xl glass-panel select-none z-10 flex-shrink-0 overflow-y-auto custom-scrollbar gap-0.5 transition-all duration-200 ${
+                  isRailExpanded ? 'w-44 items-stretch px-1.5' : 'w-14 items-center'
+                }`}>
                 {/* ── AI tools (Chat → Executive) ── */}
                 <button
+                  className={`flex items-center rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98] ${
+                    isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                  }`}
                   onClick={handleOpenAIChat}
-                  title="AI Chat"
-                  className={`flex items-center rounded-lg text-sky-600 hover:bg-sky-50 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  title="AI Chat">
                   <ChatBubbleLeftRightIcon className="h-[15px] w-[15px] flex-shrink-0" />
                   {isRailExpanded && <span className="truncate text-left text-[12px]">AI Chat</span>}
                 </button>
@@ -1347,7 +1377,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: ClipboardIcon, label: 'Assessment', action: handleOpenAssessment},
                   {icon: BriefcaseIcon, label: 'Executive', action: () => setIsExecutiveModalOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  <button
+                    className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${
+                      isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                    }`}
+                    key={label}
+                    onClick={action}
+                    title={label}>
                     <Icon className="h-[15px] w-[15px] flex-shrink-0" />
                     {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
@@ -1357,9 +1393,11 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* ── Data sources (Calendar → Bookmarks) ── */}
                 <button
+                  className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${
+                    isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                  }`}
                   onClick={() => setIsCalendarOpen(true)}
-                  title="Calendar"
-                  className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  title="Calendar">
                   <div className="relative flex-shrink-0">
                     <CalendarDaysIcon className="h-[15px] w-[15px]" />
                     <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
@@ -1372,7 +1410,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
                   {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
-                  <button key={label} onClick={action} title={label} className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
+                  <button
+                    className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${
+                      isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                    }`}
+                    key={label}
+                    onClick={action}
+                    title={label}>
                     <Icon className="h-[15px] w-[15px] flex-shrink-0" />
                     {isRailExpanded && <span className="truncate text-left text-[12px]">{label}</span>}
                   </button>
@@ -1382,21 +1426,33 @@ const NotesLayout: React.FC = React.memo(() => {
 
                 {/* ── Process Flow Builder ── */}
                 <button
+                  className={`flex items-center rounded-lg transition-all duration-150 active:scale-[0.98] ${
+                    isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                  }`}
                   onClick={() => window.open('/process-flow', '_blank')}
-                  title="Process Flow Builder"
-                  className={`flex items-center rounded-lg transition-all duration-150 active:scale-[0.98] ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}
-                  style={{color: '#0C2721', background: isRailExpanded ? 'rgba(102,204,0,0.10)' : undefined}}>
+                  style={{color: '#0C2721', background: isRailExpanded ? 'rgba(102,204,0,0.10)' : undefined}}
+                  title="Process Flow Builder">
                   <RectangleGroupIcon className="h-[15px] w-[15px] flex-shrink-0" style={{color: '#3a7d1e'}} />
-                  {isRailExpanded && <span className="truncate text-left text-[12px] font-medium" style={{color: '#2a5c12'}}>Process Flow</span>}
+                  {isRailExpanded && (
+                    <span className="truncate text-left text-[12px] font-medium" style={{color: '#2a5c12'}}>
+                      Process Flow
+                    </span>
+                  )}
                 </button>
 
                 {/* Expand/collapse toggle at the very bottom */}
                 <div className="flex-1" />
                 <button
+                  className={`flex items-center rounded-lg text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-all duration-150 mt-1 ${
+                    isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'
+                  }`}
                   onClick={() => setIsRailExpanded(v => !v)}
-                  title={isRailExpanded ? 'Collapse' : 'Expand'}
-                  className={`flex items-center rounded-lg text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-all duration-150 mt-1 ${isRailExpanded ? 'gap-2 px-2 py-1.5 w-full' : 'justify-center w-9 h-8'}`}>
-                  <ChevronRightIcon className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${isRailExpanded ? 'rotate-180' : ''}`} />
+                  title={isRailExpanded ? 'Collapse' : 'Expand'}>
+                  <ChevronRightIcon
+                    className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${
+                      isRailExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
                 </button>
               </div>
             )}
@@ -1408,7 +1464,9 @@ const NotesLayout: React.FC = React.memo(() => {
                 className="relative flex h-full flex-shrink-0 flex-col overflow-hidden border-r border-white/20 glass-sidebar transition-all duration-200"
                 style={{width: isCategoryCollapsed ? 48 : categoryWidth, background: 'var(--sidebar-cat)'}}>
                 <CategoryList
+                  badgeCounts={badgeCounts.categories}
                   categories={categories}
+                  dbSize={dbSize}
                   isCollapsed={isCategoryCollapsed}
                   loading={false}
                   onAddCategory={handleAddCategory}
@@ -1418,8 +1476,6 @@ const NotesLayout: React.FC = React.memo(() => {
                   onSelectCategory={handleSelectCategory}
                   onToggleCollapse={handleToggleCategoryCollapse}
                   selectedCategoryId={selectedCategoryId}
-                  badgeCounts={badgeCounts.categories}
-                  dbSize={dbSize}
                 />
                 {!isCategoryCollapsed && (
                   <div
@@ -1434,42 +1490,42 @@ const NotesLayout: React.FC = React.memo(() => {
                 className="relative flex h-full flex-shrink-0 flex-col overflow-hidden glass-sidebar transition-all duration-200"
                 style={{width: isSectionCollapsed ? 48 : sectionWidth, background: 'var(--sidebar-sec)'}}>
                 <SectionPageList
-                  sections={sections}
-                  selectedSectionId={selectedSectionId}
-                  onSelectSection={handleSelectSection}
-                  onAddSection={handleAddSection}
-                  onRenameSection={handleRenameSection}
-                  onDeleteSection={handleDeleteSection}
-                  onReorderSections={handleReorderSections}
-                  loadingSections={loadingSections}
-                  sectionBadgeCounts={badgeCounts.sections}
-                  pages={pages}
-                  selectedPageId={selectedPageId}
-                  onSelectPage={setSelectedPageId}
-                  onAddPage={handleAddPage}
-                  onRenamePage={handleRenamePage}
-                  onDeletePage={handleDeletePage}
-                  onMovePage={setSelectedPageToMove}
-                  onReorderPages={handleReorderPages}
-                  onToggleInactive={handleTogglePageInactive}
-                  onSetParentPage={handleSetParentPage}
-                  loadingPages={loadingPages}
-                  pageBadgeCounts={badgeCounts.pages}
-                  isCollapsed={isSectionCollapsed}
-                  onToggleCollapse={handleToggleSectionCollapse}
                   categoryName={currentCategory?.name}
-                  categoryRecentPages={categoryRecentPages}
-                  onJumpToRecentPage={handleJumpToRecentInSection}
                   categoryPages={categoryPages}
+                  categoryRecentPages={categoryRecentPages}
+                  isCollapsed={isSectionCollapsed}
                   loadingCategoryPages={loadingCategoryPages}
+                  loadingPages={loadingPages}
+                  loadingSections={loadingSections}
                   onAddCategoryPage={handleAddCategoryPage}
-                  onReorderCategoryPages={handleReorderCategoryPages}
+                  onAddPage={handleAddPage}
+                  onAddSection={handleAddSection}
+                  onDeletePage={handleDeletePage}
+                  onDeleteSection={handleDeleteSection}
+                  onJumpToRecentPage={handleJumpToRecentInSection}
+                  onMovePage={setSelectedPageToMove}
                   onMovePageTo={handleMovePage}
-                  selectedCategoryId={selectedCategoryId}
+                  onRenamePage={handleRenamePage}
+                  onRenameSection={handleRenameSection}
+                  onReorderCategoryPages={handleReorderCategoryPages}
+                  onReorderPages={handleReorderPages}
+                  onReorderSections={handleReorderSections}
                   onSelectCategoryPage={id => {
                     setSelectedSectionId(null);
                     setSelectedPageId(id);
                   }}
+                  onSelectPage={setSelectedPageId}
+                  onSelectSection={handleSelectSection}
+                  onSetParentPage={handleSetParentPage}
+                  onToggleCollapse={handleToggleSectionCollapse}
+                  onToggleInactive={handleTogglePageInactive}
+                  pageBadgeCounts={badgeCounts.pages}
+                  pages={pages}
+                  sectionBadgeCounts={badgeCounts.sections}
+                  sections={sections}
+                  selectedCategoryId={selectedCategoryId}
+                  selectedPageId={selectedPageId}
+                  selectedSectionId={selectedSectionId}
                 />
                 {!isSectionCollapsed && (
                   <div
@@ -1486,23 +1542,23 @@ const NotesLayout: React.FC = React.memo(() => {
               {selectedPageId ? (
                 <div className="h-full overflow-hidden">
                   <NoteEditor
-                    key={selectedPageId}
-                    page={selectedPage || null}
                     initialTabId={targetTabId}
+                    key={selectedPageId}
                     onSave={handleSavePageContent}
+                    page={selectedPage || null}
                   />
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
               selectedSectionId ? (
                 <SectionDashboard
-                  pages={pages}
-                  loadingPages={loadingPages}
-                  currentSection={currentSection}
-                  currentCategory={currentCategory}
                   badgeCounts={badgeCounts.pages}
-                  onOpenPage={handleOpenPageFromDashboard}
+                  currentCategory={currentCategory}
+                  currentSection={currentSection}
+                  loadingPages={loadingPages}
                   onAddPage={title => handleAddPage(title)}
+                  onOpenPage={handleOpenPageFromDashboard}
                   onUpdatePage={handleUpdatePage}
+                  pages={pages}
                 />
               ) : /* Category selected, no section: Sections overview */
               selectedCategoryId ? (
@@ -1511,8 +1567,12 @@ const NotesLayout: React.FC = React.memo(() => {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-8 gap-4">
                       <div className="min-w-0">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-indigo-400 mb-1.5">Notebook</p>
-                        <h1 className="text-2xl font-bold text-slate-900 leading-tight truncate">{currentCategory?.name}</h1>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-indigo-400 mb-1.5">
+                          Notebook
+                        </p>
+                        <h1 className="text-2xl font-bold text-slate-900 leading-tight truncate">
+                          {currentCategory?.name}
+                        </h1>
                         <p className="text-[12px] text-slate-400 mt-1">
                           {sections.length} section{sections.length !== 1 ? 's' : ''}
                           {' · '}
@@ -1521,14 +1581,14 @@ const NotesLayout: React.FC = React.memo(() => {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
-                          onClick={() => handleAddCategoryPage('New Page')}
                           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98]"
+                          onClick={() => handleAddCategoryPage('New Page')}
                           title="Create a page directly in this notebook — no section needed">
                           <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
                         </button>
                         <button
-                          onClick={() => handleAddSection('New Section')}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm active:scale-[0.98]">
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm active:scale-[0.98]"
+                          onClick={() => handleAddSection('New Section')}>
                           <PlusCircleIcon className="h-3.5 w-3.5 text-slate-400" /> New Section
                         </button>
                       </div>
@@ -1541,24 +1601,25 @@ const NotesLayout: React.FC = React.memo(() => {
                         {loadingCategoryPages ? (
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                             {[1, 2, 3].map(i => (
-                              <div key={i} className="h-[88px] rounded-2xl bg-slate-100/80 animate-pulse" />
+                              <div className="h-[88px] rounded-2xl bg-slate-100/80 animate-pulse" key={i} />
                             ))}
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                             {categoryPages.map(page => {
                               const pid = page._id as string;
-                              const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
+                              const PageIcon =
+                                ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
                               const pageColor = page.color && page.color !== '#000000' ? page.color : '#6366F1';
                               const pBadge = badgeCounts.pages[pid];
                               return (
                                 <button
+                                  className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]"
                                   key={pid}
                                   onClick={() => {
                                     setSelectedSectionId(null);
                                     setSelectedPageId(pid);
-                                  }}
-                                  className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]">
+                                  }}>
                                   <div className="flex items-start justify-between mb-3">
                                     <div
                                       className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
@@ -1581,10 +1642,12 @@ const NotesLayout: React.FC = React.memo(() => {
                               );
                             })}
                             <button
-                              onClick={() => handleAddCategoryPage('New Page')}
-                              className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[88px] active:scale-[0.98]">
+                              className="group flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[88px] active:scale-[0.98]"
+                              onClick={() => handleAddCategoryPage('New Page')}>
                               <DocumentPlusIcon className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
-                              <span className="text-[11px] text-slate-400 group-hover:text-indigo-600 transition-colors font-medium">New Page</span>
+                              <span className="text-[11px] text-slate-400 group-hover:text-indigo-600 transition-colors font-medium">
+                                New Page
+                              </span>
                             </button>
                           </div>
                         )}
@@ -1600,31 +1663,36 @@ const NotesLayout: React.FC = React.memo(() => {
                         <p className="text-[13px] text-slate-400 font-medium">This notebook is empty.</p>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleAddCategoryPage('New Page')}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20">
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20"
+                            onClick={() => handleAddCategoryPage('New Page')}>
                             <DocumentPlusIcon className="h-3.5 w-3.5" /> New Page
                           </button>
                           <button
-                            onClick={() => handleAddSection('New Section')}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm">
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-[12px] font-semibold transition-all border border-slate-200 shadow-sm"
+                            onClick={() => handleAddSection('New Section')}>
                             <PlusCircleIcon className="h-3.5 w-3.5 text-slate-400" /> New Section
                           </button>
                         </div>
-                        <p className="text-[11px] text-slate-300">Pages can live directly in a notebook — sections are optional.</p>
+                        <p className="text-[11px] text-slate-300">
+                          Pages can live directly in a notebook — sections are optional.
+                        </p>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-3">Sections</p>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-3">
+                          Sections
+                        </p>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                           {sections.map(section => {
                             const badge = badgeCounts.sections[section._id as string];
-                            const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+                            const SectionIcon =
+                              ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
                             const iconColor = section.color && section.color !== '#000000' ? section.color : '#6366F1';
                             return (
                               <button
+                                className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]"
                                 key={section._id as string}
-                                onClick={() => handleSelectSection(section._id as string)}
-                                className="group text-left p-4 rounded-2xl bg-white border border-slate-100/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/8 transition-all duration-200 active:scale-[0.98]">
+                                onClick={() => handleSelectSection(section._id as string)}>
                                 <div className="flex items-start justify-between mb-3.5">
                                   <div
                                     className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105"
@@ -1633,7 +1701,11 @@ const NotesLayout: React.FC = React.memo(() => {
                                       border: `1px solid ${iconColor}30`,
                                     }}>
                                     {section.image ? (
-                                      <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
+                                      <img
+                                        alt={section.name}
+                                        className="h-4 w-4 object-contain"
+                                        src={`https://logo.clearbit.com/${section.image}`}
+                                      />
                                     ) : (
                                       <SectionIcon className="h-4 w-4" style={{color: iconColor}} />
                                     )}
@@ -1654,8 +1726,8 @@ const NotesLayout: React.FC = React.memo(() => {
                             );
                           })}
                           <button
-                            onClick={() => handleAddSection('New Section')}
-                            className="group flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[110px] active:scale-[0.98]">
+                            className="group flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl bg-transparent border border-dashed border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40 transition-all min-h-[110px] active:scale-[0.98]"
+                            onClick={() => handleAddSection('New Section')}>
                             <div className="w-8 h-8 rounded-xl bg-slate-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
                               <PlusCircleIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                             </div>
@@ -1705,8 +1777,8 @@ const NotesLayout: React.FC = React.memo(() => {
                       </div>
 
                       <button
-                        onClick={handleOpenToDoList}
-                        className="group text-left p-6 rounded-3xl bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden">
+                        className="group text-left p-6 rounded-3xl bg-rose-50/40 border border-rose-100/50 hover:bg-rose-50 transition-all duration-300 active:scale-[0.98] relative overflow-hidden"
+                        onClick={handleOpenToDoList}>
                         {activeTaskCount > 0 && (
                           <span className="absolute top-4 right-6 h-2 w-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
                         )}
@@ -1721,8 +1793,8 @@ const NotesLayout: React.FC = React.memo(() => {
                       </button>
 
                       <button
-                        onClick={handleOpenKeyTasks}
-                        className="group text-left p-6 rounded-3xl bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]">
+                        className="group text-left p-6 rounded-3xl bg-amber-50/40 border border-amber-100/50 hover:bg-amber-50 transition-all duration-300 active:scale-[0.98]"
+                        onClick={handleOpenKeyTasks}>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500/60 mb-3">
                           Flagged
                         </p>
@@ -1734,8 +1806,8 @@ const NotesLayout: React.FC = React.memo(() => {
                       </button>
 
                       <button
-                        onClick={handleOpenImportant}
-                        className="group text-left p-6 rounded-3xl bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]">
+                        className="group text-left p-6 rounded-3xl bg-indigo-50/40 border border-indigo-100/50 hover:bg-indigo-50 transition-all duration-300 active:scale-[0.98]"
+                        onClick={handleOpenImportant}>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500/60 mb-3">
                           Important
                         </p>
@@ -1756,9 +1828,9 @@ const NotesLayout: React.FC = React.memo(() => {
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                           {recentPages.map(rp => (
                             <button
+                              className="group text-left p-3.5 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]"
                               key={rp.id}
-                              onClick={() => handleJumpToRecentPage(rp)}
-                              className="group text-left p-3.5 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]">
+                              onClick={() => handleJumpToRecentPage(rp)}>
                               <p className="text-[12px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate leading-snug mb-1">
                                 {rp.title}
                               </p>
@@ -1794,9 +1866,9 @@ const NotesLayout: React.FC = React.memo(() => {
                           {icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks},
                         ].map(({icon: Icon, label, action}) => (
                           <button
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F0F2] text-slate-500 text-[11.5px] font-medium hover:bg-slate-200/80 hover:text-slate-700 transition-all duration-150 active:scale-[0.97]"
                             key={label}
-                            onClick={action}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F0F2] text-slate-500 text-[11.5px] font-medium hover:bg-slate-200/80 hover:text-slate-700 transition-all duration-150 active:scale-[0.97]">
+                            onClick={action}>
                             <Icon className="h-3.5 w-3.5" />
                             {label}
                           </button>
@@ -1815,9 +1887,9 @@ const NotesLayout: React.FC = React.memo(() => {
                             const catBadge = badgeCounts.categories[cat._id as string];
                             return (
                               <button
+                                className="group text-left p-4 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]"
                                 key={cat._id as string}
-                                onClick={() => handleSelectCategory(cat._id as string)}
-                                className="group text-left p-4 rounded-xl bg-[#F0F0F2] hover:bg-white hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 active:scale-[0.98]">
+                                onClick={() => handleSelectCategory(cat._id as string)}>
                                 <div className="flex items-center justify-between">
                                   <p className="text-[13px] font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">
                                     {cat.name}
@@ -1843,11 +1915,11 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {/* ── Modals ── */}
         <ToDoListModal
+          isDirectCreateOpen={isDirectTaskCreateOpen}
           isOpen={isToDoListOpen}
           onClose={handleCloseToDoList}
-          onNavigate={task => (task ? handleJumpToTask(task) : undefined)}
-          isDirectCreateOpen={isDirectTaskCreateOpen}
           onCloseDirectCreate={() => setIsDirectTaskCreateOpen(false)}
+          onNavigate={task => (task ? handleJumpToTask(task) : undefined)}
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
@@ -1855,35 +1927,35 @@ const NotesLayout: React.FC = React.memo(() => {
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
         <UnifiedAIChatModal
+          geminiApiKey={geminiApiKey}
           isOpen={isAIChatOpen}
           onClose={handleCloseAIChat}
-          geminiApiKey={geminiApiKey}
           openaiApiKey={openaiApiKey}
         />
         <FlaggedItemsModal
+          fetchItems={fetchFlaggedTasks}
+          icon="flag"
           isOpen={isKeyTasksOpen}
           onClose={handleCloseKeyTasks}
-          title="Key Tasks"
-          fetchItems={fetchFlaggedTasks}
           onSelectTask={handleJumpToTask}
-          icon="flag"
+          title="Key Tasks"
         />
         <FlaggedItemsModal
+          fetchItems={fetchImportantTasks}
+          icon="important"
           isOpen={isImportantOpen}
           onClose={handleCloseImportant}
-          title="Important Items"
-          fetchItems={fetchImportantTasks}
           onSelectTask={handleJumpToTask}
-          icon="important"
+          title="Important Items"
         />
         <CommandPalette
-          isOpen={isSearchOpen}
-          onClose={handleCloseSearch}
-          fetchItems={fetchSearchResults}
-          onSelectTask={handleJumpToTask}
-          onCreatePage={selectedSectionId || selectedCategoryId ? handleCreatePageFromPalette : undefined}
           currentPageContent={selectedPage?.tabs?.[0]?.content || ''}
           currentPageTitle={selectedPage?.title || ''}
+          fetchItems={fetchSearchResults}
+          isOpen={isSearchOpen}
+          onClose={handleCloseSearch}
+          onCreatePage={selectedSectionId || selectedCategoryId ? handleCreatePageFromPalette : undefined}
+          onSelectTask={handleJumpToTask}
         />
         <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
         <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
@@ -1901,22 +1973,22 @@ const NotesLayout: React.FC = React.memo(() => {
 
         {selectedPageToMove && (
           <MovePageModal
-            isOpen={!!selectedPageToMove}
-            onClose={() => setSelectedPageToMove(null)}
-            onMove={handleMovePage}
             categories={categories}
-            pageId={selectedPageToMove._id as string}
-            pageTitle={selectedPageToMove.title}
+            currentCategoryId={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((selectedPageToMove.categoryId as any)?._id || selectedPageToMove.categoryId || selectedCategoryId) as
+                | string
+                | null
+            }
             currentSectionId={
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((selectedPageToMove.sectionId as any)?._id || selectedPageToMove.sectionId || null) as string | null
             }
-            currentCategoryId={
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ((selectedPageToMove.categoryId as any)?._id ||
-                selectedPageToMove.categoryId ||
-                selectedCategoryId) as string | null
-            }
+            isOpen={!!selectedPageToMove}
+            onClose={() => setSelectedPageToMove(null)}
+            onMove={handleMovePage}
+            pageId={selectedPageToMove._id as string}
+            pageTitle={selectedPageToMove.title}
           />
         )}
 
@@ -1929,8 +2001,8 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
               </div>
               <button
-                onClick={toggleFocusMode}
                 className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-white shadow-sm hover:shadow-md transition-all duration-150"
+                onClick={toggleFocusMode}
                 title="Exit Focus Mode (Ctrl+\)">
                 <ArrowsPointingInIcon className="h-4 w-4" />
               </button>
@@ -1951,8 +2023,8 @@ const NotesLayout: React.FC = React.memo(() => {
               </span>
             )}
             <button
-              onClick={handleOpenToDoList}
               className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-400 text-white shadow-[0_8px_28px_rgba(244,63,94,0.35)] hover:shadow-[0_12px_36px_rgba(244,63,94,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              onClick={handleOpenToDoList}
               title="Open Tasks">
               <ClipboardDocumentListIcon className="h-5 w-5 drop-shadow-sm" />
             </button>
@@ -1967,8 +2039,8 @@ const NotesLayout: React.FC = React.memo(() => {
               <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
             </div>
             <button
-              onClick={handleQuickNote}
               className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600 text-white shadow-[0_8px_28px_rgba(99,102,241,0.35)] hover:shadow-[0_12px_36px_rgba(99,102,241,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              onClick={handleQuickNote}
               title="Quick Note">
               <DocumentPlusIcon className="h-5 w-5 drop-shadow-sm" />
             </button>
@@ -1983,8 +2055,8 @@ const NotesLayout: React.FC = React.memo(() => {
               <span className="absolute inset-0 rounded-2xl bg-rose-400 opacity-25 animate-ping" />
             )}
             <button
-              onClick={() => setIsDirectTaskCreateOpen(true)}
               className="relative flex items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 text-white shadow-[0_8px_28px_rgba(244,63,94,0.35)] hover:shadow-[0_12px_36px_rgba(244,63,94,0.45)] hover:scale-110 active:scale-95 transition-all duration-200 border border-white/20"
+              onClick={() => setIsDirectTaskCreateOpen(true)}
               style={{width: '3.25rem', height: '3.25rem'}}
               title="New Task">
               {activeTaskCount > 0 && (

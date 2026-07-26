@@ -26,9 +26,20 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import {planTask} from './aiSubtasks';
 import AttachmentGallery, {PasteHint} from './AttachmentGallery';
+import LinkedNoteSection from './LinkedNoteSection';
 import {attachmentFromPaste} from './pasteImage';
 import PropertyCard from './PropertyCard';
-import {isPinned, NEON_COLORS, PRIORITY_META, RECURRENCE_META, RecurrenceFreq, Status, STATUSES, statusOf, Task} from './types';
+import {
+  isPinned,
+  NEON_COLORS,
+  PRIORITY_META,
+  RECURRENCE_META,
+  RecurrenceFreq,
+  Status,
+  STATUSES,
+  statusOf,
+  Task,
+} from './types';
 
 interface DetailDrawerProps {
   task: Task;
@@ -132,7 +143,9 @@ export default function DetailDrawer({
       const plan = await planTask(task.title, task.notes);
       const existing = new Set(subtasks.map(s => s.title.toLowerCase()));
       const fresh = plan.subtasks.filter(s => !existing.has(s.toLowerCase()));
-      const patch: Record<string, unknown> = {subtasks: [...subtasks, ...fresh.map(s => ({title: s, isCompleted: false}))]};
+      const patch: Record<string, unknown> = {
+        subtasks: [...subtasks, ...fresh.map(s => ({title: s, isCompleted: false}))],
+      };
       if (plan.summary) {
         patch.notes = plan.summary;
         setNotes(plan.summary);
@@ -162,8 +175,6 @@ export default function DetailDrawer({
     onPatch(task._id, {attachments: attachments.filter((_, i) => i !== index)});
   };
 
-  const sourceTitle =
-    task.sourcePageId && typeof task.sourcePageId === 'object' ? task.sourcePageId.title : null;
   const pinned = isPinned(task);
   const prio = PRIORITY_META[task.priority];
 
@@ -180,7 +191,9 @@ export default function DetailDrawer({
               ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
               : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
           }`}
-          onClick={() => onPatch(task._id, {isCompleted: !task.isCompleted, status: task.isCompleted ? 'todo' : 'done'})}>
+          onClick={() =>
+            onPatch(task._id, {isCompleted: !task.isCompleted, status: task.isCompleted ? 'todo' : 'done'})
+          }>
           {task.isCompleted ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
           {task.isCompleted ? 'Completed' : 'Mark done'}
         </button>
@@ -193,9 +206,13 @@ export default function DetailDrawer({
           </button>
           <button
             className={`rounded-xl p-1.5 transition-colors ${
-              pinned ? 'text-cyan-500' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700'
+              pinned
+                ? 'text-cyan-500'
+                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700'
             }`}
-            onClick={() => onPatch(task._id, {hasNeonBorder: !pinned, neonColor: pinned ? null : task.neonColor || 'blue'})}
+            onClick={() =>
+              onPatch(task._id, {hasNeonBorder: !pinned, neonColor: pinned ? null : task.neonColor || 'blue'})
+            }
             title={pinned ? 'Unpin' : 'Pin / highlight'}>
             <Pin className="h-4 w-4 rotate-45" />
           </button>
@@ -407,14 +424,18 @@ export default function DetailDrawer({
           {subtasks.length > 0 && (
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div
-                className={`h-full rounded-full transition-all ${subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'}`}
+                className={`h-full rounded-full transition-all ${
+                  subDone === subtasks.length ? 'bg-emerald-400' : 'bg-indigo-400'
+                }`}
                 style={{width: `${(subDone / subtasks.length) * 100}%`}}
               />
             </div>
           )}
           <div className="mt-2.5 space-y-0.5">
             {subtasks.map((sub, i) => (
-              <div className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40" key={i}>
+              <div
+                className="group flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/40"
+                key={i}>
                 <button className="shrink-0" onClick={() => toggleSubtask(i)}>
                   {sub.isCompleted ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -478,16 +499,8 @@ export default function DetailDrawer({
           </div>
         </div>
 
-        {/* Source note */}
-        {sourceTitle && (
-          <div className="mt-5 flex items-center gap-2 rounded-2xl bg-indigo-50/70 px-3.5 py-2.5 text-[12px] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-            <FileText className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 truncate">
-              From note: <strong>{sourceTitle}</strong>
-              {task.tabName ? ` · ${task.tabName}` : ''}
-            </span>
-          </div>
-        )}
+        {/* Linked note */}
+        <LinkedNoteSection onPatch={onPatch} task={task} />
 
         <p className="mt-5 pb-2 text-[10.5px] text-slate-300 dark:text-slate-600">
           Created {new Date(task.createdAt).toLocaleDateString()} · Updated{' '}
