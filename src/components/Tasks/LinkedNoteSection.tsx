@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {ExternalLink, FileText, Link2, Pencil, Plus, X} from 'lucide-react';
+import {ExternalLink, FileText, Link2, Plus, X} from 'lucide-react';
 import React, {useState} from 'react';
 
 import NoteLinkModal from './NoteLinkModal';
@@ -39,27 +39,19 @@ export default function LinkedNoteSection({task, onPatch}: LinkedNoteSectionProp
       {linkedPage ? (
         <div className="mt-2 flex items-center gap-1.5 rounded-2xl bg-indigo-50/70 px-3.5 py-2.5 text-[12px] text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
           <FileText className="h-4 w-4 shrink-0" />
-          <a
-            className="min-w-0 flex-1 truncate font-semibold hover:underline"
-            href={`/notes?pageId=${linkedPage._id}`}
-            rel="noopener noreferrer"
-            target="_blank"
-            title="Open note page">
-            {linkedPage.title}
-          </a>
-          {task.tabName && <span className="shrink-0 text-indigo-400">· {task.tabName}</span>}
           <button
-            className="shrink-0 rounded-lg p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            className="min-w-0 flex-1 truncate text-left font-semibold hover:underline"
             onClick={() => setQuickEditPageId(linkedPage._id)}
             title="Quick view & edit">
-            <Pencil className="h-3.5 w-3.5" />
+            {linkedPage.title}
           </button>
+          {task.tabName && <span className="shrink-0 text-indigo-400">· {task.tabName}</span>}
           <a
             className="shrink-0 rounded-lg p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
             href={`/notes?pageId=${linkedPage._id}`}
             rel="noopener noreferrer"
             target="_blank"
-            title="Open note page">
+            title="Open full page in /notes">
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
           <button
