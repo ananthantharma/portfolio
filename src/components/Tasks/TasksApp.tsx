@@ -30,6 +30,7 @@ import {
   Timer,
   Trash2,
   Upload,
+  Users,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ import {useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import InAppBrowser from '@/components/Anomaly/InAppBrowser';
+import ContactListModal from '@/components/Notes/ContactListModal';
 
 import {api} from './api';
 import ArchiveView from './ArchiveView';
@@ -146,6 +148,7 @@ export default function TasksApp() {
   const [emailPrefill, setEmailPrefill] = useState<ExtractedTask | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [contactsOpen, setContactsOpen] = useState(false);
   const [browserTarget, setBrowserTarget] = useState<{url: string; title: string} | null>(null);
   const dayCelebratedRef = useRef(false);
   const toolsRef = useRef<HTMLDivElement>(null);
@@ -861,6 +864,12 @@ export default function TasksApp() {
                   href="/anomaly">
                   Notes ↗
                 </Link>
+                <Link
+                  className="text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
+                  href="/process-flow"
+                  target="_blank">
+                  Process Flow ↗
+                </Link>
               </div>
 
               {/* Tools overflow menu */}
@@ -939,6 +948,14 @@ export default function TasksApp() {
                 onClick={() => setBookmarksOpen(true)}
                 title="Bookmarks">
                 <BookmarkIcon className="h-4 w-4" /> Bookmarks
+              </button>
+
+              {/* Contacts */}
+              <button
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                onClick={() => setContactsOpen(true)}
+                title="Contacts">
+                <Users className="h-4 w-4" /> Contacts
               </button>
 
               {/* Task from email */}
@@ -1330,6 +1347,8 @@ export default function TasksApp() {
         {browserTarget && (
           <InAppBrowser onClose={() => setBrowserTarget(null)} title={browserTarget.title} url={browserTarget.url} />
         )}
+
+        <ContactListModal isOpen={contactsOpen} onClose={() => setContactsOpen(false)} />
 
         {contextMenu && (
           <ContextMenu items={contextMenuItems} onClose={() => setContextMenu(null)} x={contextMenu.x} y={contextMenu.y} />

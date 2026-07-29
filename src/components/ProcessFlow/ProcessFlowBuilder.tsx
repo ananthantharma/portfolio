@@ -182,8 +182,8 @@ const HTML = `
     </div>
     <div class="grp">
       <button class="ghost" id="legendBtn" title="Toggle colour legend">🗓 Legend</button>
-      <button class="ghost" id="saveLocal" title="Save to browser">💾 Save</button>
-      <button class="ghost" id="loadLocal" title="Load saved flow">📂 Load</button>
+      <button class="ghost" id="saveLocal" title="Save to your account">💾 Save</button>
+      <button class="ghost" id="loadLocal" title="Load a saved flow">📂 Load</button>
       <button class="ghost" id="downloadJson" title="Download JSON">↓ JSON</button>
       <button class="ghost" id="importJson" title="Import JSON">↑ Import</button>
       <button class="ghost" id="png">PNG</button>
@@ -262,6 +262,8 @@ export default function ProcessFlowBuilder() {
     let selNodes = new Set<string>(); // multi-select: node IDs
     let selEdge: string|null = null;  // single selected edge
     let idc=1, edgeId=1, zoom=1;
+    let currentFlowId: string|null = null;   // Mongo _id of the flow currently loaded/saved, if any
+    let currentFlowName: string|null = null;
 
     const canvas = document.getElementById('canvas') as HTMLDivElement;
     const svg    = document.getElementById('edges') as unknown as SVGSVGElement;
@@ -1294,43 +1296,96 @@ export default function ProcessFlowBuilder() {
     };
     (document.getElementById('png') as HTMLButtonElement).onclick=exportPNG;
 
-    // ── Named Save / Load ──────────────────────────────────────────────────
-    const PFB_PREFIX='pfb_flow_';
+    // ── Named Save / Load (backed by MongoDB via /api/process-flow) ────────
+    type FlowListItem = {_id:string;name:string;lastUpdated:string};
     function stateToSave(){return {...state,legend:state.legend||defaultLegend()};}
     function loadState(loaded: AppState){
       applyState(loaded);
       fit();
     }
 
-    (document.getElementById('saveLocal') as HTMLButtonElement).onclick=()=>{
-      const name=window.prompt('Name this flow:');
+    (document.getElementById('saveLocal') as HTMLButtonElement).onclick=async ()=>{
+      const name=window.prompt('Name this flow:',currentFlowName||'');
       if (!name?.trim()) return;
-      localStorage.setItem(PFB_PREFIX+name.trim(),JSON.stringify(stateToSave()));
+      const trimmed=name.trim();
       const btn=document.getElementById('saveLocal') as HTMLButtonElement;
-      const orig=btn.textContent!;btn.textContent='✓ Saved!';
-      setTimeout(()=>btn.textContent=orig,1500);
+      const orig=btn.textContent!;
+      btn.textContent='Saving…';btn.disabled=true;
+      try{
+        // Overwrite the currently loaded flow if the name matches, or any
+        // existing flow with the same name, so re-saving doesn't duplicate.
+        let idToUse: string|null = currentFlowName===trimmed?currentFlowId:null;
+        if (!idToUse){
+          const listRes=await fetch('/api/process-flow');
+          const listJson=await listRes.json();
+          const match=((listJson.flows||[]) as FlowListItem[]).find(f=>f.name===trimmed);
+          if (match) idToUse=match._id;
+        }
+        const res=await fetch('/api/process-flow',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({id:idToUse,name:trimmed,data:stateToSave()}),
+        });
+        const json=await res.json();
+        if (!res.ok||!json.flow) throw new Error(json.error||'Save failed');
+        currentFlowId=json.flow._id;
+        currentFlowName=trimmed;
+        btn.textContent='✓ Saved!';
+      }catch(err){
+        console.error(err);
+        alert('Could not save flow. Please try again.');
+        btn.textContent=orig;
+      }finally{
+        btn.disabled=false;
+        setTimeout(()=>btn.textContent=orig,1500);
+      }
     };
-    (document.getElementById('loadLocal') as HTMLButtonElement).onclick=()=>{
-      const keys=Object.keys(localStorage).filter(k=>k.startsWith(PFB_PREFIX));
-      const names=keys.map(k=>k.slice(PFB_PREFIX.length));
+    (document.getElementById('loadLocal') as HTMLButtonElement).onclick=async ()=>{
       const overlay=document.createElement('div');overlay.className='pfb-overlay';document.body.appendChild(overlay);
       const panel=document.createElement('div');panel.className='pfb-panel';document.body.appendChild(panel);
       panel.innerHTML=`<h3>Load Flow</h3>
-        <div id="pfb-list">${names.length
-          ?names.map(n=>`<div class="pfb-flow-item" data-name="${n}"><span>${n}</span><button class="pfb-del" data-del="${n}">Delete</button></div>`).join('')
-          :'<p class="pfb-empty-msg">No saved flows yet.</p>'}</div>
+        <div id="pfb-list"><p class="pfb-empty-msg">Loading…</p></div>
         <div class="pfb-btn-row"><button class="pfb-cancel" id="pfb-close">Cancel</button></div>`;
       const close=()=>{panel.remove();overlay.remove();};
       overlay.addEventListener('click',close);
       (panel.querySelector('#pfb-close') as HTMLButtonElement).onclick=close;
-      panel.querySelectorAll('.pfb-flow-item').forEach(item=>{
-        (item as HTMLElement).addEventListener('click',e=>{
-          const btn=(e.target as HTMLElement).closest('[data-del]');
-          if(btn){const name=(btn as HTMLElement).dataset.del!;if(confirm(`Delete "${name}"?`)){localStorage.removeItem(PFB_PREFIX+name);(item as HTMLElement).remove();}return;}
-          const saved=localStorage.getItem(PFB_PREFIX+(item as HTMLElement).dataset.name!);
-          if(saved){try{snapshot();loadState(JSON.parse(saved));close();}catch{alert('Could not load.');}}
+      const list=panel.querySelector('#pfb-list') as HTMLElement;
+      try{
+        const res=await fetch('/api/process-flow');
+        const json=await res.json();
+        const flows=(json.flows||[]) as FlowListItem[];
+        list.innerHTML=flows.length
+          ?flows.map(f=>`<div class="pfb-flow-item" data-id="${f._id}"><span>${esc(f.name)}</span><button class="pfb-del" data-del="${f._id}">Delete</button></div>`).join('')
+          :'<p class="pfb-empty-msg">No saved flows yet.</p>';
+        list.querySelectorAll('.pfb-flow-item').forEach(item=>{
+          (item as HTMLElement).addEventListener('click',async e=>{
+            const id=(item as HTMLElement).dataset.id!;
+            const delBtn=(e.target as HTMLElement).closest('[data-del]');
+            if (delBtn){
+              const name=(item.querySelector('span') as HTMLElement).textContent||'';
+              if (confirm(`Delete "${name}"?`)){
+                await fetch(`/api/process-flow?id=${id}`,{method:'DELETE'});
+                (item as HTMLElement).remove();
+                if (currentFlowId===id){currentFlowId=null;currentFlowName=null;}
+              }
+              return;
+            }
+            try{
+              const r=await fetch(`/api/process-flow?id=${id}`);
+              const j=await r.json();
+              if (!r.ok||!j.flow) throw new Error(j.error||'Load failed');
+              snapshot();
+              currentFlowId=j.flow._id;
+              currentFlowName=j.flow.name;
+              loadState(j.flow.data);
+              close();
+            }catch(err){console.error(err);alert('Could not load flow.');}
+          });
         });
-      });
+      }catch(err){
+        console.error(err);
+        list.innerHTML='<p class="pfb-empty-msg">Failed to load saved flows.</p>';
+      }
     };
     (document.getElementById('downloadJson') as HTMLButtonElement).onclick=()=>{
       const blob=new Blob([JSON.stringify(stateToSave(),null,2)],{type:'application/json'});
