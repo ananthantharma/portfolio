@@ -16,9 +16,10 @@ function isImage(att: Attachment): boolean {
   return att.type.startsWith('image/') && !!(att.data || att.webViewLink);
 }
 
-/** Opens an image in a real new browser tab/window. `data:` URLs are converted to a
+/** Opens an attachment in a real new browser tab/window. `data:` URLs are converted to a
  * blob URL first — Chrome blocks top-level navigation straight to a data: URL. */
-async function openImageInNewWindow(src: string) {
+async function openAttachmentInNewWindow(src: string) {
+  if (!src) return;
   if (!src.startsWith('data:')) {
     window.open(src, '_blank', 'noopener,noreferrer');
     return;
@@ -59,7 +60,7 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
                     className="rounded-full bg-black/60 p-1 text-white"
                     onClick={e => {
                       e.stopPropagation();
-                      openImageInNewWindow(src);
+                      openAttachmentInNewWindow(src);
                     }}
                     title="Open in new browser window">
                     <ExternalLink className="h-3 w-3" />
@@ -86,16 +87,29 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
         <div className={`space-y-1.5 ${images.length > 0 ? 'mt-2' : ''}`}>
           {files.map((att, i) => {
             const idx = attachments.indexOf(att);
+            const src = att.data || att.webViewLink || '';
             return (
               <div
                 className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-[12px] text-slate-600 dark:bg-slate-700/60 dark:text-slate-300"
                 key={i}>
                 <Paperclip className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                <span className="min-w-0 flex-1 truncate">{att.name}</span>
-                {att.webViewLink && (
-                  <a className="text-slate-400 hover:text-orange-600" href={att.webViewLink} rel="noreferrer" target="_blank">
+                {src ? (
+                  <button
+                    className="min-w-0 flex-1 truncate text-left font-medium hover:text-orange-600 hover:underline"
+                    onClick={() => openAttachmentInNewWindow(src)}
+                    title="Open in new browser window">
+                    {att.name}
+                  </button>
+                ) : (
+                  <span className="min-w-0 flex-1 truncate">{att.name}</span>
+                )}
+                {src && (
+                  <button
+                    className="text-slate-400 hover:text-orange-600"
+                    onClick={() => openAttachmentInNewWindow(src)}
+                    title="Open in new browser window">
                     <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
+                  </button>
                 )}
                 {onRemove && (
                   <button className="text-slate-300 hover:text-rose-500" onClick={() => onRemove(idx)} title="Remove">
@@ -116,7 +130,7 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
             className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-white/20"
             onClick={e => {
               e.stopPropagation();
-              openImageInNewWindow(lightbox);
+              openAttachmentInNewWindow(lightbox);
             }}
             title="Open in new browser window">
             <ExternalLink className="h-3.5 w-3.5" /> Open in new window

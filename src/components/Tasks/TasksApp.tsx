@@ -64,6 +64,7 @@ import {
   formatMinutes,
   ImportedTask,
   isPinned,
+  NEON_COLORS,
   nextOccurrence,
   parseTasksCsv,
   PRIORITY_META,
@@ -528,12 +529,21 @@ export default function TasksApp() {
   const contextMenuItems: ContextMenuItem[] = useMemo(() => {
     if (!contextMenu) return [];
     const t = contextMenu.task;
+    const highlightItems: ContextMenuItem[] = NEON_COLORS.map((c, i) => ({
+      label: `Highlight ${c.label}${isPinned(t) && t.neonColor === c.key ? ' ✓' : ''}`,
+      icon: <span className={`h-2.5 w-2.5 rounded-full ${c.dot}`} />,
+      onSelect: () => patchTask(t._id, {hasNeonBorder: true, neonColor: c.key}),
+      divider: i === 0,
+    }));
+    if (isPinned(t)) {
+      highlightItems.push({label: 'Remove highlight', onSelect: () => patchTask(t._id, {hasNeonBorder: false})});
+    }
     return [
       {label: 'Open', onSelect: () => setSelectedId(t._id)},
       {label: 'Open in full window', onSelect: () => setExpandedTaskId(t._id)},
       {label: t.isCompleted ? 'Mark as not done' : 'Mark as done', onSelect: () => toggleComplete(t)},
       {label: 'Duplicate', onSelect: () => duplicateTask(t)},
-      {label: isPinned(t) ? 'Unpin' : 'Pin / highlight', onSelect: () => patchTask(t._id, {hasNeonBorder: !isPinned(t), neonColor: t.neonColor || 'blue'})},
+      ...highlightItems,
       {label: 'Push to tomorrow', onSelect: () => snoozeTask(t), divider: true},
       {label: 'Archive', onSelect: () => archiveTask(t)},
       {label: 'Delete', onSelect: () => deleteTask(t), danger: true, divider: true},
@@ -717,17 +727,18 @@ export default function TasksApp() {
     [focusFiltered],
   );
 
-  const reorderManual = useCallback(async (newOrder: Task[]) => {
+  const applyReorder = useCallback((updates: {id: string; order: number}[]) => {
     setTasks(prev => {
-      const rank = new Map(newOrder.map((t, i) => [t._id, i]));
-      return prev.map(t => (rank.has(t._id) ? {...t, order: rank.get(t._id)} : t));
+      const rank = new Map(updates.map(u => [u.id, u.order]));
+      return prev.map(t => (rank.has(t._id) ? {...t, order: rank.get(t._id)!} : t));
     });
-    try {
-      await api.reorder(newOrder.map((t, i) => ({id: t._id, order: i})));
-    } catch (err) {
-      console.error('Reorder failed', err);
-    }
+    api.reorder(updates).catch(err => console.error('Reorder failed', err));
   }, []);
+
+  const reorderManual = useCallback(
+    (newOrder: Task[]) => applyReorder(newOrder.map((t, i) => ({id: t._id, order: i}))),
+    [applyReorder],
+  );
 
   // ── Stats ───────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -1230,6 +1241,7 @@ export default function TasksApp() {
                 onContextMenu={openContextMenu}
                 onMoveToQuadrant={moveToQuadrant}
                 onOpen={t => setSelectedId(t._id)}
+                onReorderQuadrant={applyReorder}
                 onSnooze={snoozeTask}
                 onToggleComplete={toggleComplete}
                 selectedId={selectedId}

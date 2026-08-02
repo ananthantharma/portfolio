@@ -1,17 +1,9 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
+import {DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors} from '@dnd-kit/core';
+import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
 import React, {useState} from 'react';
 
 import TaskCard from './TaskCard';
@@ -27,7 +19,11 @@ interface MatrixViewProps {
   onSnooze?: (task: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
   onMoveToQuadrant: (task: Task, quadrant: Quadrant) => void;
+  /** Persists the drag-reordered rank of tasks within a quadrant (reuses the shared `order` field). */
+  onReorderQuadrant: (updates: {id: string; order: number}[]) => void;
 }
+
+const byOrder = (a: Task, b: Task) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER);
 
 // Eisenhower classification: urgent = overdue or due within 2 days; important = High/Medium priority
 export function quadrantOf(task: Task): Quadrant {
@@ -59,7 +55,7 @@ const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
 ];
 
-function DraggableCard({
+function SortableCard({
   task,
   selected,
   onOpen,
@@ -74,9 +70,10 @@ function DraggableCard({
   onSnooze?: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
-  const {attributes, listeners, setNodeRef, isDragging} = useDraggable({id: task._id});
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: task._id});
+  const style = {transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.3 : 1};
   return (
-    <div className={isDragging ? 'opacity-30' : ''} ref={setNodeRef} {...listeners} {...attributes}>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
       <TaskCard
         compact
         onContextMenu={onContextMenu}
@@ -120,17 +117,19 @@ function QuadrantBox({
         <span className="ml-auto rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold shadow-sm">{items.length}</span>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3 [scrollbar-width:thin]">
-        {items.map(task => (
-          <DraggableCard
-            key={task._id}
-            onContextMenu={onContextMenu}
-            onOpen={onOpen}
-            onSnooze={onSnooze}
-            onToggleComplete={onToggleComplete}
-            selected={task._id === selectedId}
-            task={task}
-          />
-        ))}
+        <SortableContext items={items.map(t => t._id)} strategy={verticalListSortingStrategy}>
+          {items.map(task => (
+            <SortableCard
+              key={task._id}
+              onContextMenu={onContextMenu}
+              onOpen={onOpen}
+              onSnooze={onSnooze}
+              onToggleComplete={onToggleComplete}
+              selected={task._id === selectedId}
+              task={task}
+            />
+          ))}
+        </SortableContext>
         {items.length === 0 && <p className="pt-6 text-center text-[11px] italic opacity-50">Drop tasks here</p>}
       </div>
     </div>
@@ -145,9 +144,11 @@ export default function MatrixView({
   onSnooze,
   onContextMenu,
   onMoveToQuadrant,
+  onReorderQuadrant,
 }: MatrixViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}));
+  const isQuadrantKey = (id: string): id is Quadrant => QUADRANTS.some(q => q.key === id);
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -155,10 +156,23 @@ export default function MatrixView({
 
   const onDragEnd = (e: DragEndEvent) => {
     setActiveTask(null);
-    const target = e.over?.id as Quadrant | undefined;
-    const task = tasks.find(t => t._id === e.active.id);
-    if (!task || !target) return;
-    if (quadrantOf(task) !== target) onMoveToQuadrant(task, target);
+    const {active, over} = e;
+    if (!over || active.id === over.id) return;
+    const task = tasks.find(t => t._id === active.id);
+    if (!task) return;
+
+    const overId = over.id as string;
+    const overTask = isQuadrantKey(overId) ? null : tasks.find(t => t._id === overId) || null;
+    const targetQuadrant: Quadrant = overTask ? quadrantOf(overTask) : (overId as Quadrant);
+    const sourceQuadrant = quadrantOf(task);
+
+    // Recompute the destination quadrant's order, with the dragged task inserted at the drop position.
+    const destItems = tasks.filter(t => quadrantOf(t) === targetQuadrant && t._id !== task._id).sort(byOrder);
+    const insertAt = overTask ? Math.max(0, destItems.findIndex(t => t._id === overTask._id)) : destItems.length;
+    const reordered = [...destItems.slice(0, insertAt), task, ...destItems.slice(insertAt)];
+
+    onReorderQuadrant(reordered.map((t, i) => ({id: t._id, order: i})));
+    if (sourceQuadrant !== targetQuadrant) onMoveToQuadrant(task, targetQuadrant);
   };
 
   return (
@@ -166,7 +180,7 @@ export default function MatrixView({
       <div className="grid h-full grid-cols-1 gap-4 overflow-y-auto px-6 pb-6 pt-4 md:grid-cols-2 md:grid-rows-2 md:overflow-hidden">
         {QUADRANTS.map(q => (
           <QuadrantBox
-            items={tasks.filter(t => quadrantOf(t) === q.key)}
+            items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
             key={q.key}
             onContextMenu={onContextMenu}
             onOpen={onOpen}
