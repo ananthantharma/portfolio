@@ -16,6 +16,19 @@ function isImage(att: Attachment): boolean {
   return att.type.startsWith('image/') && !!(att.data || att.webViewLink);
 }
 
+/** Opens an image in a real new browser tab/window. `data:` URLs are converted to a
+ * blob URL first — Chrome blocks top-level navigation straight to a data: URL. */
+async function openImageInNewWindow(src: string) {
+  if (!src.startsWith('data:')) {
+    window.open(src, '_blank', 'noopener,noreferrer');
+    return;
+  }
+  const blob = await (await fetch(src)).blob();
+  const objectUrl = URL.createObjectURL(blob);
+  window.open(objectUrl, '_blank', 'noopener,noreferrer');
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+}
+
 /** Shared image/file attachment view — used by both the sidebar drawer and the large task window. */
 export default function AttachmentGallery({attachments, onRemove, compact}: AttachmentGalleryProps) {
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -41,17 +54,28 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
                   onClick={() => setLightbox(src)}
                   src={src}
                 />
-                {onRemove && (
+                <div className="absolute right-1 top-1 hidden gap-1 group-hover:flex">
                   <button
-                    className="absolute right-1 top-1 hidden rounded-full bg-black/60 p-1 text-white group-hover:block"
+                    className="rounded-full bg-black/60 p-1 text-white"
                     onClick={e => {
                       e.stopPropagation();
-                      onRemove(idx);
+                      openImageInNewWindow(src);
                     }}
-                    title="Remove image">
-                    <X className="h-3 w-3" />
+                    title="Open in new browser window">
+                    <ExternalLink className="h-3 w-3" />
                   </button>
-                )}
+                  {onRemove && (
+                    <button
+                      className="rounded-full bg-black/60 p-1 text-white"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onRemove(idx);
+                      }}
+                      title="Remove image">
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -88,6 +112,15 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
         <div
           className="fixed inset-0 z-[300] flex cursor-zoom-out items-center justify-center bg-black/85 p-8"
           onClick={() => setLightbox(null)}>
+          <button
+            className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-white/20"
+            onClick={e => {
+              e.stopPropagation();
+              openImageInNewWindow(lightbox);
+            }}
+            title="Open in new browser window">
+            <ExternalLink className="h-3.5 w-3.5" /> Open in new window
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img alt="" className="max-h-full max-w-full rounded-lg object-contain shadow-2xl" src={lightbox} />
         </div>

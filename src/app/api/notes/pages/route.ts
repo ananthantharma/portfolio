@@ -184,6 +184,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({success: true, data: page}, {status: 201});
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
   }
 }

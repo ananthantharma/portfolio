@@ -161,7 +161,7 @@ export default function DetailDrawer({
 
   const attachments = task.attachments || [];
 
-  const onPasteAttachment = async (e: React.ClipboardEvent) => {
+  const onPasteAttachment = async (e: React.ClipboardEvent | ClipboardEvent) => {
     try {
       const att = await attachmentFromPaste(e);
       if (!att) return;
@@ -171,6 +171,19 @@ export default function DetailDrawer({
       alert(err instanceof Error ? err.message : 'Could not paste that image.');
     }
   };
+
+  // A React onPaste handler only fires while focus is inside an editable element within
+  // this drawer, so clicking anywhere non-editable silently breaks "paste anywhere".
+  // Listen at the document level instead, which sees every paste while the drawer is
+  // mounted regardless of what currently has focus.
+  useEffect(() => {
+    const handler = (e: ClipboardEvent) => {
+      onPasteAttachment(e);
+    };
+    document.addEventListener('paste', handler);
+    return () => document.removeEventListener('paste', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attachments]);
 
   const removeAttachment = (index: number) => {
     onPatch(task._id, {attachments: attachments.filter((_, i) => i !== index)});
@@ -255,7 +268,7 @@ export default function DetailDrawer({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]" onPaste={onPasteAttachment}>
+      <div className="flex-1 overflow-y-auto px-5 py-5 [scrollbar-width:thin]">
         {/* Title */}
         <textarea
           className="w-full resize-none bg-transparent text-[20px] font-extrabold leading-snug tracking-tight text-slate-900 outline-none placeholder:text-slate-300 dark:text-white"

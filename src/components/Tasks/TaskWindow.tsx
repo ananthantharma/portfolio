@@ -228,7 +228,7 @@ export default function TaskWindow({
     }
   };
 
-  const onPasteAttachment = async (e: React.ClipboardEvent) => {
+  const onPasteAttachment = async (e: React.ClipboardEvent | ClipboardEvent) => {
     try {
       const att = await attachmentFromPaste(e);
       if (!att) return;
@@ -240,6 +240,19 @@ export default function TaskWindow({
       alert(err instanceof Error ? err.message : 'Could not paste that image.');
     }
   };
+
+  // A React onPaste handler only fires while focus is inside an editable element within
+  // this modal, so clicking anywhere non-editable (e.g. a swatch, empty space) silently
+  // breaks "paste anywhere". Listen at the document level instead, which sees every
+  // paste while this modal is mounted regardless of what currently has focus.
+  useEffect(() => {
+    const handler = (e: ClipboardEvent) => {
+      onPasteAttachment(e);
+    };
+    document.addEventListener('paste', handler);
+    return () => document.removeEventListener('paste', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attachments]);
 
   const removeAttachment = (i: number) => {
     const next = attachments.filter((_, idx) => idx !== i);
@@ -284,8 +297,7 @@ export default function TaskWindow({
   return (
     <div
       className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[3px]"
-      onMouseDown={e => e.target === e.currentTarget && onClose()}
-      onPaste={onPasteAttachment}>
+      onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="relative flex h-[90vh] w-[min(97vw,1180px)] animate-scale-in flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
         {/* Accent bar */}
         <span

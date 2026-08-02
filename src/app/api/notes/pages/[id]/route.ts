@@ -19,7 +19,8 @@ export async function GET(_request: Request, {params}: {params: {id: string}}) {
     }
     return NextResponse.json({success: true, data: page});
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
   }
 }
 
@@ -46,7 +47,8 @@ export async function PUT(request: Request, {params}: {params: {id: string}}) {
     }
     return NextResponse.json({success: true, data: page});
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
   }
 }
 
@@ -63,6 +65,7 @@ export async function DELETE(_request: Request, {params}: {params: {id: string}}
     }
     return NextResponse.json({success: true, data: {}});
   } catch (error) {
-    return NextResponse.json({success: false, error: error}, {status: 400});
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({success: false, error: errorMessage}, {status: 400});
   }
 }
