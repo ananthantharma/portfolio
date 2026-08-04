@@ -4,7 +4,8 @@
 import {DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors} from '@dnd-kit/core';
 import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import React, {useState} from 'react';
+import {LayoutGrid, PanelLeft, PanelRight, PanelTop, Rows3} from 'lucide-react';
+import React, {useEffect, useState} from 'react';
 
 import TaskCard from './TaskCard';
 import {daysUntil, Task} from './types';
@@ -37,23 +38,82 @@ export function quadrantOf(task: Task): Quadrant {
 }
 
 const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring: string}[] = [
-  {key: 'do', title: 'Do first', hint: 'urgent + important', tone: 'border-rose-200 bg-rose-50/60 text-rose-700', ring: 'ring-rose-300'},
+  {key: 'do', title: 'Do First', hint: 'urgent + important', tone: 'border-rose-200 bg-rose-50/60 text-rose-700', ring: 'ring-rose-300'},
   {
     key: 'schedule',
-    title: 'Schedule',
+    title: 'Second Priority',
     hint: 'important, not urgent',
     tone: 'border-orange-200 bg-orange-50/60 text-orange-700',
     ring: 'ring-orange-300',
   },
   {
     key: 'delegate',
-    title: 'Delegate',
+    title: 'With Someone',
     hint: 'urgent, not important',
     tone: 'border-sky-200 bg-sky-50/60 text-sky-700',
     ring: 'ring-sky-300',
   },
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
 ];
+
+// ── Layout presets ──────────────────────────────────────────────────────────
+// Each preset places the four quadrants (by key) into a CSS grid via named
+// areas, so switching layouts never touches which tasks live where.
+type LayoutKey = 'grid' | 'doLeft' | 'doRight' | 'doTop' | 'column';
+
+interface LayoutPreset {
+  key: LayoutKey;
+  label: string;
+  icon: React.ReactNode;
+  areas: string; // grid-template-areas value (quoted rows)
+  cols: string;
+  rows: string;
+}
+
+const LAYOUTS: LayoutPreset[] = [
+  {
+    key: 'grid',
+    label: '2×2 grid',
+    icon: <LayoutGrid className="h-3.5 w-3.5" />,
+    areas: `"do schedule" "delegate someday"`,
+    cols: 'repeat(2, minmax(0, 1fr))',
+    rows: 'repeat(2, minmax(0, 1fr))',
+  },
+  {
+    key: 'doLeft',
+    label: 'Do First · left column',
+    icon: <PanelLeft className="h-3.5 w-3.5" />,
+    areas: `"do schedule" "do delegate" "do someday"`,
+    cols: 'minmax(0, 1fr) minmax(0, 1fr)',
+    rows: 'repeat(3, minmax(0, 1fr))',
+  },
+  {
+    key: 'doRight',
+    label: 'Do First · right column',
+    icon: <PanelRight className="h-3.5 w-3.5" />,
+    areas: `"schedule do" "delegate do" "someday do"`,
+    cols: 'minmax(0, 1fr) minmax(0, 1fr)',
+    rows: 'repeat(3, minmax(0, 1fr))',
+  },
+  {
+    key: 'doTop',
+    label: 'Do First · top row',
+    icon: <PanelTop className="h-3.5 w-3.5" />,
+    areas: `"do do do" "schedule delegate someday"`,
+    cols: 'repeat(3, minmax(0, 1fr))',
+    rows: 'minmax(0, 1fr) minmax(0, 1fr)',
+  },
+  {
+    key: 'column',
+    label: 'Single column',
+    icon: <Rows3 className="h-3.5 w-3.5" />,
+    areas: `"do" "schedule" "delegate" "someday"`,
+    cols: 'minmax(0, 1fr)',
+    rows: 'repeat(4, minmax(0, 1fr))',
+  },
+];
+
+const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT';
 
 function SortableCard({
   task,
@@ -110,7 +170,8 @@ function QuadrantBox({
       className={`flex min-h-[220px] flex-col rounded-3xl border transition-all ${q.tone} ${
         isOver ? `ring-2 ${q.ring} scale-[1.005]` : ''
       }`}
-      ref={setNodeRef}>
+      ref={setNodeRef}
+      style={{gridArea: q.key}}>
       <div className="flex items-baseline gap-2 px-4 pb-1 pt-3.5">
         <h3 className="text-[13px] font-bold uppercase tracking-wider">{q.title}</h3>
         <span className="text-[10.5px] font-medium opacity-60">{q.hint}</span>
@@ -147,8 +208,21 @@ export default function MatrixView({
   onReorderQuadrant,
 }: MatrixViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [layoutKey, setLayoutKey] = useState<LayoutKey>('grid');
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}));
   const isQuadrantKey = (id: string): id is Quadrant => QUADRANTS.some(q => q.key === id);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LAYOUT_STORAGE_KEY) as LayoutKey | null;
+    if (saved && LAYOUTS.some(l => l.key === saved)) setLayoutKey(saved);
+  }, []);
+
+  const changeLayout = (key: LayoutKey) => {
+    setLayoutKey(key);
+    localStorage.setItem(LAYOUT_STORAGE_KEY, key);
+  };
+
+  const layout = LAYOUTS.find(l => l.key === layoutKey) || LAYOUTS[0];
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -177,19 +251,48 @@ export default function MatrixView({
 
   return (
     <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart} sensors={sensors}>
-      <div className="grid h-full grid-cols-1 gap-4 overflow-y-auto px-6 pb-6 pt-4 md:grid-cols-2 md:grid-rows-2 md:overflow-hidden">
-        {QUADRANTS.map(q => (
-          <QuadrantBox
-            items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
-            key={q.key}
-            onContextMenu={onContextMenu}
-            onOpen={onOpen}
-            onSnooze={onSnooze}
-            onToggleComplete={onToggleComplete}
-            q={q}
-            selectedId={selectedId}
-          />
-        ))}
+      <style>{`
+        @media (min-width: 768px) {
+          #matrix-grid {
+            grid-template-areas: ${layout.areas};
+            grid-template-columns: ${layout.cols};
+            grid-template-rows: ${layout.rows};
+          }
+        }
+      `}</style>
+
+      <div className="flex h-full flex-col">
+        <div className="flex shrink-0 items-center justify-end gap-1.5 px-6 pt-3">
+          <span className="mr-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Layout</span>
+          <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
+            {LAYOUTS.map(l => (
+              <button
+                className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
+                  layoutKey === l.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
+                }`}
+                key={l.key}
+                onClick={() => changeLayout(l.key)}
+                title={l.label}>
+                {l.icon}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-6 pb-6 pt-3 md:overflow-hidden" id="matrix-grid">
+          {QUADRANTS.map(q => (
+            <QuadrantBox
+              items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
+              key={q.key}
+              onContextMenu={onContextMenu}
+              onOpen={onOpen}
+              onSnooze={onSnooze}
+              onToggleComplete={onToggleComplete}
+              q={q}
+              selectedId={selectedId}
+            />
+          ))}
+        </div>
       </div>
       <DragOverlay>
         {activeTask && (
