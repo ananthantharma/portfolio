@@ -8,12 +8,24 @@ import {Attachment} from './types';
 
 interface AttachmentGalleryProps {
   attachments: Attachment[];
+  taskId?: string; // lets locally-stored attachments be re-fetched by index once `data` has been stripped from a list refresh
   onRemove?: (index: number) => void;
   compact?: boolean;
 }
 
 function isImage(att: Attachment): boolean {
-  return att.type.startsWith('image/') && !!(att.data || att.webViewLink);
+  return att.type.startsWith('image/');
+}
+
+/** The task list (GET /api/todos) strips embedded base64 `data` to keep payloads small, so once
+ * that's gone the only way back to a locally-stored attachment's bytes is this on-demand route —
+ * it re-reads just that one attachment from the DB and serves it as a real, linkable URL that
+ * works from any machine/browser (not just the one that originally pasted it in this session). */
+function resolveSrc(att: Attachment, idx: number, taskId?: string): string {
+  if (att.data) return att.data;
+  if (att.webViewLink) return att.webViewLink;
+  if (taskId) return `/api/todos/attachment?todoId=${taskId}&index=${idx}`;
+  return '';
 }
 
 /** Opens an attachment in a real new browser tab/window. `data:` URLs are converted to a
@@ -31,7 +43,7 @@ async function openAttachmentInNewWindow(src: string) {
 }
 
 /** Shared image/file attachment view — used by both the sidebar drawer and the large task window. */
-export default function AttachmentGallery({attachments, onRemove, compact}: AttachmentGalleryProps) {
+export default function AttachmentGallery({attachments, taskId, onRemove, compact}: AttachmentGalleryProps) {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   if (attachments.length === 0) return null;
@@ -45,7 +57,7 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
         <div className={`grid gap-2 ${compact ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {images.map((att, i) => {
             const idx = attachments.indexOf(att);
-            const src = att.data || att.webViewLink || '';
+            const src = resolveSrc(att, idx, taskId);
             return (
               <div className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-600 dark:bg-slate-700" key={i}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -87,7 +99,7 @@ export default function AttachmentGallery({attachments, onRemove, compact}: Atta
         <div className={`space-y-1.5 ${images.length > 0 ? 'mt-2' : ''}`}>
           {files.map((att, i) => {
             const idx = attachments.indexOf(att);
-            const src = att.data || att.webViewLink || '';
+            const src = resolveSrc(att, idx, taskId);
             return (
               <div
                 className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-2 text-[12px] text-slate-600 dark:bg-slate-700/60 dark:text-slate-300"

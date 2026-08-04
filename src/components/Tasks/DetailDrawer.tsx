@@ -520,7 +520,7 @@ export default function DetailDrawer({
             <h4 className="text-[11px] font-bold uppercase tracking-wide text-slate-400">Attachments</h4>
           </div>
           <div className="mt-2 space-y-2">
-            <AttachmentGallery attachments={attachments} compact onRemove={removeAttachment} />
+            <AttachmentGallery attachments={attachments} compact onRemove={removeAttachment} taskId={task._id} />
             <PasteHint />
           </div>
         </div>

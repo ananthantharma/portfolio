@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     return new NextResponse(buffer as unknown as BodyInit, {
       headers: {
         'Content-Type': type,
-        'Content-Disposition': `attachment; filename="${attachment.name}"`,
+        'Content-Disposition': `inline; filename="${attachment.name}"`,
         'Content-Length': buffer.length.toString(),
       },
     });
