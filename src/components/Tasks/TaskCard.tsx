@@ -2,7 +2,6 @@
 'use client';
 
 import {
-  AlarmClockPlus,
   CalendarDays,
   CheckCircle2,
   ChevronDown,
@@ -25,7 +24,6 @@ interface TaskCardProps {
   selected: boolean;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
-  onSnooze?: (task: Task) => void;
   onToggleMinimize?: (task: Task) => void;
   onExpand?: (task: Task) => void;
   onContextMenu?: (task: Task, e: React.MouseEvent) => void;
@@ -40,7 +38,6 @@ export default function TaskCard({
   selected,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onToggleMinimize,
   onExpand,
   onContextMenu,
@@ -237,17 +234,6 @@ export default function TaskCard({
               }}
               title="Collapse to one line">
               <ChevronUp className="h-3.5 w-3.5" />
-            </button>
-          )}
-          {onSnooze && !done && (
-            <button
-              className="hidden rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 group-hover:flex dark:border-slate-600 dark:bg-slate-700"
-              onClick={e => {
-                e.stopPropagation();
-                onSnooze(task);
-              }}
-              title="Push to tomorrow">
-              <AlarmClockPlus className="h-3.5 w-3.5" />
             </button>
           )}
         </div>

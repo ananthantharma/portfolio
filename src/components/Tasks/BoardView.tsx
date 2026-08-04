@@ -24,7 +24,6 @@ interface BoardViewProps {
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
   onSetStatus: (task: Task, status: Status) => void;
-  onSnooze?: (task: Task) => void;
   onQuickCreate: (title: string, status: Status) => Promise<void>;
   onAddTask: (status: Status) => void; // opens the full New Task modal
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
@@ -41,28 +40,18 @@ function DraggableCard({
   selected,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onContextMenu,
 }: {
   task: Task;
   selected: boolean;
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
-  onSnooze?: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
   const {attributes, listeners, setNodeRef, isDragging} = useDraggable({id: task._id});
   return (
     <div className={isDragging ? 'opacity-30' : ''} ref={setNodeRef} {...listeners} {...attributes}>
-      <TaskCard
-        compact
-        onContextMenu={onContextMenu}
-        onOpen={onOpen}
-        onSnooze={onSnooze}
-        onToggleComplete={onToggleComplete}
-        selected={selected}
-        task={task}
-      />
+      <TaskCard compact onContextMenu={onContextMenu} onOpen={onOpen} onToggleComplete={onToggleComplete} selected={selected} task={task} />
     </div>
   );
 }
@@ -131,7 +120,6 @@ function Column({
   selectedId,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onQuickCreate,
   onAddTask,
   onContextMenu,
@@ -142,7 +130,6 @@ function Column({
   selectedId: string | null;
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
-  onSnooze?: (t: Task) => void;
   onQuickCreate: (title: string, status: Status) => Promise<void>;
   onAddTask: (status: Status) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
@@ -175,7 +162,6 @@ function Column({
             key={task._id}
             onContextMenu={onContextMenu}
             onOpen={onOpen}
-            onSnooze={onSnooze}
             onToggleComplete={onToggleComplete}
             selected={task._id === selectedId}
             task={task}
@@ -200,7 +186,6 @@ export default function BoardView({
   onOpen,
   onToggleComplete,
   onSetStatus,
-  onSnooze,
   onQuickCreate,
   onAddTask,
   onContextMenu,
@@ -232,7 +217,6 @@ export default function BoardView({
             onContextMenu={onContextMenu}
             onOpen={onOpen}
             onQuickCreate={onQuickCreate}
-            onSnooze={onSnooze}
             onToggleComplete={onToggleComplete}
             selectedId={selectedId}
             status={col.key}

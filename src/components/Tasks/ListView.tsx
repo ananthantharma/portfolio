@@ -20,7 +20,6 @@ interface ListViewProps {
   bulkSelected: Set<string>;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
-  onSnooze?: (task: Task) => void;
   onToggleMinimize: (task: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
   onBulkToggle: (task: Task) => void;
@@ -67,7 +66,6 @@ export default function ListView({
   bulkSelected,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onToggleMinimize,
   onContextMenu,
   onBulkToggle,
@@ -95,7 +93,6 @@ export default function ListView({
       onBulkToggle={onBulkToggle}
       onContextMenu={onContextMenu}
       onOpen={onOpen}
-      onSnooze={onSnooze}
       onToggleComplete={onToggleComplete}
       onToggleMinimize={onToggleMinimize}
       selected={task._id === selectedId}

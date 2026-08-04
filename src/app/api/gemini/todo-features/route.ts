@@ -46,12 +46,12 @@ export async function POST(req: Request) {
 
     if (action === 'plan') {
       const prompt = `
-        You are a meticulous project planning assistant.
+        You are a task planning assistant helping Ananthan stay organized. Be concise — Ananthan does not
+        want a detailed, granular, step-by-step breakdown.
         Given the task below, produce:
-        1. "summary": a concise 1-3 sentence summary of what this task involves and why it matters — suitable for a Notes field.
-        2. "subtasks": a COMPLETE checklist of every concrete step needed to actually finish this task from start to end.
-           Do not artificially limit the count — include as many steps as are genuinely required to cover the whole task (this
-           can be anywhere from 2 to 15+ depending on complexity), but do not pad with filler or redundant steps.
+        1. "summary": a concise 1-2 sentence summary of what this task involves and why it matters — suitable for a Notes field.
+        2. "subtasks": a short, high-level checklist (typically 2-5 items) of the main subtasks needed to finish this task.
+           Keep each item to one concise line. Do not break things down into fine-grained, step-by-step detail.
 
         Task: "${text}"
         ${context ? `Existing notes/context: ${context}` : ''}

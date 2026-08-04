@@ -17,7 +17,6 @@ interface MatrixViewProps {
   selectedId: string | null;
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
-  onSnooze?: (task: Task) => void;
   onExpand: (task: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
   onMoveToQuadrant: (task: Task, quadrant: Quadrant) => void;
@@ -57,48 +56,49 @@ const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
 ];
 
+const ALL_QUADRANT_KEYS: Quadrant[] = QUADRANTS.map(q => q.key);
+
 // ── Layout system ────────────────────────────────────────────────────────────
-// Two grid modes (2×2 / single row), plus an independent "show only" filter
-// that, when set, renders just that one quadrant full-bleed — on desktop AND
-// mobile, since it's a filter on which quadrants get rendered at all.
+// Two grid modes (2×2 / single row) plus a multi-select "which categories are
+// visible" filter. Visible quadrants render in a plain CSS grid, sized by
+// column-count — no need for named grid-areas now that every combination is
+// just "N boxes, wrapped or in a row."
 type LayoutMode = 'grid' | 'row';
 
 interface LayoutSettings {
   mode: LayoutMode;
-  focusQuadrant: Quadrant | 'all';
+  visible: Quadrant[];
 }
 
-const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', focusQuadrant: 'all'};
+const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', visible: ALL_QUADRANT_KEYS};
 
 const LAYOUT_MODES: {key: LayoutMode; label: string; icon: React.ReactNode}[] = [
   {key: 'grid', label: '2×2 grid', icon: <LayoutGrid className="h-3.5 w-3.5" />},
   {key: 'row', label: 'Single row', icon: <Columns3 className="h-3.5 w-3.5" />},
 ];
 
-interface GridSpec {
-  areas: string;
-  cols: string;
-  rows: string;
+// Tailwind's JIT compiler only picks up class names it can see literally in source,
+// so the desktop column-count has to be one of these spelled-out strings — not built
+// from a template literal — or the CSS for it would simply never get generated.
+const MD_COLS_CLASS: Record<number, string> = {
+  1: 'md:grid-cols-1',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-4',
+};
+
+function mdColsClass(mode: LayoutMode, count: number): string {
+  const cols = mode === 'row' ? count : Math.min(2, count);
+  return MD_COLS_CLASS[cols] || MD_COLS_CLASS[1];
 }
 
-function computeGrid({mode, focusQuadrant}: LayoutSettings): GridSpec {
-  if (focusQuadrant !== 'all') {
-    return {areas: `"${focusQuadrant}"`, cols: 'minmax(0, 1fr)', rows: 'minmax(0, 1fr)'};
-  }
-  if (mode === 'row') {
-    return {areas: `"do schedule delegate someday"`, cols: 'repeat(4, minmax(0, 1fr))', rows: 'minmax(0, 1fr)'};
-  }
-  return {areas: `"do schedule" "delegate someday"`, cols: 'repeat(2, minmax(0, 1fr))', rows: 'repeat(2, minmax(0, 1fr))'};
-}
-
-const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V3';
+const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V4';
 
 function SortableCard({
   task,
   selected,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onExpand,
   onContextMenu,
 }: {
@@ -106,7 +106,6 @@ function SortableCard({
   selected: boolean;
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
-  onSnooze?: (t: Task) => void;
   onExpand: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
@@ -119,7 +118,6 @@ function SortableCard({
         onContextMenu={onContextMenu}
         onExpand={onExpand}
         onOpen={onOpen}
-        onSnooze={onSnooze}
         onToggleComplete={onToggleComplete}
         selected={selected}
         task={task}
@@ -134,7 +132,6 @@ function QuadrantBox({
   selectedId,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onExpand,
   onContextMenu,
 }: {
@@ -143,7 +140,6 @@ function QuadrantBox({
   selectedId: string | null;
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
-  onSnooze?: (t: Task) => void;
   onExpand: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
@@ -153,8 +149,7 @@ function QuadrantBox({
       className={`flex min-h-[220px] flex-col rounded-3xl border transition-all ${q.tone} ${
         isOver ? `ring-2 ${q.ring} scale-[1.005]` : ''
       }`}
-      ref={setNodeRef}
-      style={{gridArea: q.key}}>
+      ref={setNodeRef}>
       <div className="flex items-baseline gap-2 px-4 pb-1 pt-3.5">
         <h3 className="text-[13px] font-bold uppercase tracking-wider">{q.title}</h3>
         <span className="text-[10.5px] font-medium opacity-60">{q.hint}</span>
@@ -168,7 +163,6 @@ function QuadrantBox({
               onContextMenu={onContextMenu}
               onExpand={onExpand}
               onOpen={onOpen}
-              onSnooze={onSnooze}
               onToggleComplete={onToggleComplete}
               selected={task._id === selectedId}
               task={task}
@@ -186,7 +180,6 @@ export default function MatrixView({
   selectedId,
   onOpen,
   onToggleComplete,
-  onSnooze,
   onExpand,
   onContextMenu,
   onMoveToQuadrant,
@@ -200,22 +193,33 @@ export default function MatrixView({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (saved) setLayout({...DEFAULT_LAYOUT, ...JSON.parse(saved)});
+      if (!saved) return;
+      const parsed = JSON.parse(saved);
+      const visible = Array.isArray(parsed?.visible) ? parsed.visible.filter((k: unknown) => ALL_QUADRANT_KEYS.includes(k as Quadrant)) : [];
+      setLayout({
+        mode: parsed?.mode === 'row' ? 'row' : 'grid',
+        visible: visible.length ? visible : ALL_QUADRANT_KEYS,
+      });
     } catch {
       // ignore malformed/legacy stored value — fall back to the default layout
     }
   }, []);
 
-  const changeLayout = (patch: Partial<LayoutSettings>) => {
-    setLayout(prev => {
-      const next = {...prev, ...patch};
-      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+  const persist = (next: LayoutSettings) => {
+    setLayout(next);
+    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
   };
 
-  const grid = computeGrid(layout);
-  const visibleQuadrants = layout.focusQuadrant === 'all' ? QUADRANTS : QUADRANTS.filter(q => q.key === layout.focusQuadrant);
+  const setMode = (mode: LayoutMode) => persist({...layout, mode});
+
+  const toggleQuadrant = (key: Quadrant) => {
+    const has = layout.visible.includes(key);
+    if (has && layout.visible.length === 1) return; // keep at least one category visible
+    const visible = has ? layout.visible.filter(k => k !== key) : [...layout.visible, key];
+    persist({...layout, visible});
+  };
+
+  const visibleQuadrants = QUADRANTS.filter(q => layout.visible.includes(q.key));
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -244,29 +248,23 @@ export default function MatrixView({
 
   return (
     <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart} sensors={sensors}>
-      <style>{`
-        @media (min-width: 768px) {
-          #matrix-grid {
-            grid-template-areas: ${grid.areas};
-            grid-template-columns: ${grid.cols};
-            grid-template-rows: ${grid.rows};
-          }
-        }
-      `}</style>
-
       <div className="flex h-full flex-col">
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 px-4 pt-3 sm:px-6">
-          <select
-            className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-            onChange={e => changeLayout({focusQuadrant: e.target.value as Quadrant | 'all'})}
-            value={layout.focusQuadrant}>
-            <option value="all">Show: All</option>
+          <div className="flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
             {QUADRANTS.map(q => (
-              <option key={q.key} value={q.key}>
-                Show: {q.title}
-              </option>
+              <button
+                className={`rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
+                  layout.visible.includes(q.key)
+                    ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+                key={q.key}
+                onClick={() => toggleQuadrant(q.key)}
+                title={`${layout.visible.includes(q.key) ? 'Hide' : 'Show'} "${q.title}"`}>
+                {q.title}
+              </button>
             ))}
-          </select>
+          </div>
           <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
             {LAYOUT_MODES.map(m => (
               <button
@@ -274,7 +272,7 @@ export default function MatrixView({
                   layout.mode === m.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
                 }`}
                 key={m.key}
-                onClick={() => changeLayout({mode: m.key})}
+                onClick={() => setMode(m.key)}
                 title={m.label}>
                 {m.icon}
               </button>
@@ -282,9 +280,7 @@ export default function MatrixView({
           </div>
         </div>
 
-        <div
-          className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 pt-3 sm:px-6 md:overflow-hidden"
-          id="matrix-grid">
+        <div className={`grid min-h-0 flex-1 auto-rows-fr grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 pt-3 sm:px-6 md:overflow-hidden ${mdColsClass(layout.mode, visibleQuadrants.length)}`}>
           {visibleQuadrants.map(q => (
             <QuadrantBox
               items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
@@ -292,7 +288,6 @@ export default function MatrixView({
               onContextMenu={onContextMenu}
               onExpand={onExpand}
               onOpen={onOpen}
-              onSnooze={onSnooze}
               onToggleComplete={onToggleComplete}
               q={q}
               selectedId={selectedId}

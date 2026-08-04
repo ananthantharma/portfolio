@@ -1227,7 +1227,6 @@ export default function TasksApp() {
                 onContextMenu={openContextMenu}
                 onOpen={t => setSelectedId(t._id)}
                 onReorderManual={reorderManual}
-                onSnooze={snoozeTask}
                 onToggleComplete={toggleComplete}
                 onToggleMinimize={toggleMinimize}
                 selectedId={selectedId}
@@ -1242,7 +1241,6 @@ export default function TasksApp() {
                 onOpen={t => setSelectedId(t._id)}
                 onQuickCreate={quickCreateInColumn}
                 onSetStatus={setStatus}
-                onSnooze={snoozeTask}
                 onToggleComplete={toggleComplete}
                 selectedId={selectedId}
                 tasks={focusFiltered}
@@ -1254,7 +1252,6 @@ export default function TasksApp() {
                 onMoveToQuadrant={moveToQuadrant}
                 onOpen={t => setSelectedId(t._id)}
                 onReorderQuadrant={applyReorder}
-                onSnooze={snoozeTask}
                 onToggleComplete={toggleComplete}
                 selectedId={selectedId}
                 tasks={active}
