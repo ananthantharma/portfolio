@@ -18,6 +18,7 @@ import {
   ListTodo as InsightsIcon,
   Loader2,
   Mail,
+  Maximize2,
   Moon,
   MoreHorizontal,
   Plus,
@@ -952,6 +953,16 @@ export default function TasksApp() {
                   type="file"
                 />
               </div>
+
+              {/* Full window — same destination as the Maximize2 button inside the side drawer */}
+              {selectedTask && (
+                <button
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                  onClick={() => setExpandedTaskId(selectedTask._id)}
+                  title="Open selected task in full window">
+                  <Maximize2 className="h-4 w-4" /> Full window
+                </button>
+              )}
 
               {/* Bookmarks */}
               <button

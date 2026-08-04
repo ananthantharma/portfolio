@@ -4,7 +4,7 @@
 import {DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors} from '@dnd-kit/core';
 import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {LayoutGrid, PanelLeft, PanelRight, PanelTop, Rows3} from 'lucide-react';
+import {Columns3, LayoutGrid, PanelBottom, PanelLeft, PanelRight, PanelTop, Rows3} from 'lucide-react';
 import React, {useEffect, useState} from 'react';
 
 import TaskCard from './TaskCard';
@@ -56,64 +56,96 @@ const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
 ];
 
-// ── Layout presets ──────────────────────────────────────────────────────────
-// Each preset places the four quadrants (by key) into a CSS grid via named
+// ── Layout system ────────────────────────────────────────────────────────────
+// A layout is computed (not hand-authored) so every quadrant can be the large
+// "featured" one, from any side — 4 quadrants × 4 positions = 16 combinations,
+// plus the plain grid / row / column modes. All resolve to CSS grid-template-
 // areas, so switching layouts never touches which tasks live where.
-type LayoutKey = 'grid' | 'doLeft' | 'doRight' | 'doTop' | 'column';
+type LayoutMode = 'grid' | 'featured' | 'row' | 'column';
+type FeaturedPosition = 'left' | 'right' | 'top' | 'bottom';
 
-interface LayoutPreset {
-  key: LayoutKey;
-  label: string;
-  icon: React.ReactNode;
-  areas: string; // grid-template-areas value (quoted rows)
+interface LayoutSettings {
+  mode: LayoutMode;
+  featuredQuadrant: Quadrant;
+  featuredPosition: FeaturedPosition;
+}
+
+const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', featuredQuadrant: 'do', featuredPosition: 'left'};
+
+const LAYOUT_MODES: {key: LayoutMode; label: string; icon: React.ReactNode}[] = [
+  {key: 'grid', label: '2×2 grid', icon: <LayoutGrid className="h-3.5 w-3.5" />},
+  {key: 'featured', label: 'Featured quadrant', icon: <PanelLeft className="h-3.5 w-3.5" />},
+  {key: 'row', label: 'Single row', icon: <Columns3 className="h-3.5 w-3.5" />},
+  {key: 'column', label: 'Single column', icon: <Rows3 className="h-3.5 w-3.5" />},
+];
+
+const POSITIONS: {key: FeaturedPosition; label: string; icon: React.ReactNode}[] = [
+  {key: 'left', label: 'Left', icon: <PanelLeft className="h-3.5 w-3.5" />},
+  {key: 'right', label: 'Right', icon: <PanelRight className="h-3.5 w-3.5" />},
+  {key: 'top', label: 'Top', icon: <PanelTop className="h-3.5 w-3.5" />},
+  {key: 'bottom', label: 'Bottom', icon: <PanelBottom className="h-3.5 w-3.5" />},
+];
+
+interface GridSpec {
+  areas: string;
   cols: string;
   rows: string;
 }
 
-const LAYOUTS: LayoutPreset[] = [
-  {
-    key: 'grid',
-    label: '2×2 grid',
-    icon: <LayoutGrid className="h-3.5 w-3.5" />,
+function computeGrid({mode, featuredQuadrant, featuredPosition}: LayoutSettings): GridSpec {
+  if (mode === 'row') {
+    return {
+      areas: `"do schedule delegate someday"`,
+      cols: 'repeat(4, minmax(0, 1fr))',
+      rows: 'minmax(0, 1fr)',
+    };
+  }
+  if (mode === 'column') {
+    return {
+      areas: `"do" "schedule" "delegate" "someday"`,
+      cols: 'minmax(0, 1fr)',
+      rows: 'repeat(4, minmax(0, 1fr))',
+    };
+  }
+  if (mode === 'featured') {
+    const others = QUADRANTS.map(q => q.key).filter(k => k !== featuredQuadrant);
+    const f = featuredQuadrant;
+    if (featuredPosition === 'left') {
+      return {
+        areas: `"${f} ${others[0]}" "${f} ${others[1]}" "${f} ${others[2]}"`,
+        cols: 'minmax(0, 1fr) minmax(0, 1fr)',
+        rows: 'repeat(3, minmax(0, 1fr))',
+      };
+    }
+    if (featuredPosition === 'right') {
+      return {
+        areas: `"${others[0]} ${f}" "${others[1]} ${f}" "${others[2]} ${f}"`,
+        cols: 'minmax(0, 1fr) minmax(0, 1fr)',
+        rows: 'repeat(3, minmax(0, 1fr))',
+      };
+    }
+    if (featuredPosition === 'top') {
+      return {
+        areas: `"${f} ${f} ${f}" "${others[0]} ${others[1]} ${others[2]}"`,
+        cols: 'repeat(3, minmax(0, 1fr))',
+        rows: 'minmax(0, 1fr) minmax(0, 1fr)',
+      };
+    }
+    return {
+      areas: `"${others[0]} ${others[1]} ${others[2]}" "${f} ${f} ${f}"`,
+      cols: 'repeat(3, minmax(0, 1fr))',
+      rows: 'minmax(0, 1fr) minmax(0, 1fr)',
+    };
+  }
+  // grid (default)
+  return {
     areas: `"do schedule" "delegate someday"`,
     cols: 'repeat(2, minmax(0, 1fr))',
     rows: 'repeat(2, minmax(0, 1fr))',
-  },
-  {
-    key: 'doLeft',
-    label: 'Do First · left column',
-    icon: <PanelLeft className="h-3.5 w-3.5" />,
-    areas: `"do schedule" "do delegate" "do someday"`,
-    cols: 'minmax(0, 1fr) minmax(0, 1fr)',
-    rows: 'repeat(3, minmax(0, 1fr))',
-  },
-  {
-    key: 'doRight',
-    label: 'Do First · right column',
-    icon: <PanelRight className="h-3.5 w-3.5" />,
-    areas: `"schedule do" "delegate do" "someday do"`,
-    cols: 'minmax(0, 1fr) minmax(0, 1fr)',
-    rows: 'repeat(3, minmax(0, 1fr))',
-  },
-  {
-    key: 'doTop',
-    label: 'Do First · top row',
-    icon: <PanelTop className="h-3.5 w-3.5" />,
-    areas: `"do do do" "schedule delegate someday"`,
-    cols: 'repeat(3, minmax(0, 1fr))',
-    rows: 'minmax(0, 1fr) minmax(0, 1fr)',
-  },
-  {
-    key: 'column',
-    label: 'Single column',
-    icon: <Rows3 className="h-3.5 w-3.5" />,
-    areas: `"do" "schedule" "delegate" "someday"`,
-    cols: 'minmax(0, 1fr)',
-    rows: 'repeat(4, minmax(0, 1fr))',
-  },
-];
+  };
+}
 
-const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT';
+const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V2';
 
 function SortableCard({
   task,
@@ -208,21 +240,28 @@ export default function MatrixView({
   onReorderQuadrant,
 }: MatrixViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [layoutKey, setLayoutKey] = useState<LayoutKey>('grid');
+  const [layout, setLayout] = useState<LayoutSettings>(DEFAULT_LAYOUT);
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}));
   const isQuadrantKey = (id: string): id is Quadrant => QUADRANTS.some(q => q.key === id);
 
   useEffect(() => {
-    const saved = localStorage.getItem(LAYOUT_STORAGE_KEY) as LayoutKey | null;
-    if (saved && LAYOUTS.some(l => l.key === saved)) setLayoutKey(saved);
+    try {
+      const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
+      if (saved) setLayout({...DEFAULT_LAYOUT, ...JSON.parse(saved)});
+    } catch {
+      // ignore malformed/legacy stored value — fall back to the default layout
+    }
   }, []);
 
-  const changeLayout = (key: LayoutKey) => {
-    setLayoutKey(key);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, key);
+  const changeLayout = (patch: Partial<LayoutSettings>) => {
+    setLayout(prev => {
+      const next = {...prev, ...patch};
+      localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
-  const layout = LAYOUTS.find(l => l.key === layoutKey) || LAYOUTS[0];
+  const grid = computeGrid(layout);
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -254,26 +293,60 @@ export default function MatrixView({
       <style>{`
         @media (min-width: 768px) {
           #matrix-grid {
-            grid-template-areas: ${layout.areas};
-            grid-template-columns: ${layout.cols};
-            grid-template-rows: ${layout.rows};
+            grid-template-areas: ${grid.areas};
+            grid-template-columns: ${grid.cols};
+            grid-template-rows: ${grid.rows};
           }
         }
       `}</style>
 
       <div className="flex h-full flex-col">
-        <div className="flex shrink-0 items-center justify-end gap-1.5 px-6 pt-3">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 px-6 pt-3">
+          {layout.mode === 'featured' && (
+            <>
+              <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
+                {QUADRANTS.map(q => (
+                  <button
+                    className={`rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
+                      layout.featuredQuadrant === q.key
+                        ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                    key={q.key}
+                    onClick={() => changeLayout({featuredQuadrant: q.key})}
+                    title={`Feature "${q.title}"`}>
+                    {q.title}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
+                {POSITIONS.map(p => (
+                  <button
+                    className={`flex items-center rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
+                      layout.featuredPosition === p.key
+                        ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                    key={p.key}
+                    onClick={() => changeLayout({featuredPosition: p.key})}
+                    title={`Feature it on the ${p.label.toLowerCase()}`}>
+                    {p.icon}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
           <span className="mr-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Layout</span>
           <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-            {LAYOUTS.map(l => (
+            {LAYOUT_MODES.map(m => (
               <button
                 className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
-                  layoutKey === l.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
+                  layout.mode === m.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
                 }`}
-                key={l.key}
-                onClick={() => changeLayout(l.key)}
-                title={l.label}>
-                {l.icon}
+                key={m.key}
+                onClick={() => changeLayout({mode: m.key})}
+                title={m.label}>
+                {m.icon}
               </button>
             ))}
           </div>
