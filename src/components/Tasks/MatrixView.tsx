@@ -4,7 +4,7 @@
 import {DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors} from '@dnd-kit/core';
 import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {Columns3, LayoutGrid, PanelBottom, PanelLeft, PanelRight, PanelTop, Rows3} from 'lucide-react';
+import {Columns3, LayoutGrid} from 'lucide-react';
 import React, {useEffect, useState} from 'react';
 
 import TaskCard from './TaskCard';
@@ -18,6 +18,7 @@ interface MatrixViewProps {
   onOpen: (task: Task) => void;
   onToggleComplete: (task: Task) => void;
   onSnooze?: (task: Task) => void;
+  onExpand: (task: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
   onMoveToQuadrant: (task: Task, quadrant: Quadrant) => void;
   /** Persists the drag-reordered rank of tasks within a quadrant (reuses the shared `order` field). */
@@ -57,33 +58,21 @@ const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring
 ];
 
 // ── Layout system ────────────────────────────────────────────────────────────
-// A layout is computed (not hand-authored) so every quadrant can be the large
-// "featured" one, from any side — 4 quadrants × 4 positions = 16 combinations,
-// plus the plain grid / row / column modes. All resolve to CSS grid-template-
-// areas, so switching layouts never touches which tasks live where.
-type LayoutMode = 'grid' | 'featured' | 'row' | 'column';
-type FeaturedPosition = 'left' | 'right' | 'top' | 'bottom';
+// Two grid modes (2×2 / single row), plus an independent "show only" filter
+// that, when set, renders just that one quadrant full-bleed — on desktop AND
+// mobile, since it's a filter on which quadrants get rendered at all.
+type LayoutMode = 'grid' | 'row';
 
 interface LayoutSettings {
   mode: LayoutMode;
-  featuredQuadrant: Quadrant;
-  featuredPosition: FeaturedPosition;
+  focusQuadrant: Quadrant | 'all';
 }
 
-const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', featuredQuadrant: 'do', featuredPosition: 'left'};
+const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', focusQuadrant: 'all'};
 
 const LAYOUT_MODES: {key: LayoutMode; label: string; icon: React.ReactNode}[] = [
   {key: 'grid', label: '2×2 grid', icon: <LayoutGrid className="h-3.5 w-3.5" />},
-  {key: 'featured', label: 'Featured quadrant', icon: <PanelLeft className="h-3.5 w-3.5" />},
   {key: 'row', label: 'Single row', icon: <Columns3 className="h-3.5 w-3.5" />},
-  {key: 'column', label: 'Single column', icon: <Rows3 className="h-3.5 w-3.5" />},
-];
-
-const POSITIONS: {key: FeaturedPosition; label: string; icon: React.ReactNode}[] = [
-  {key: 'left', label: 'Left', icon: <PanelLeft className="h-3.5 w-3.5" />},
-  {key: 'right', label: 'Right', icon: <PanelRight className="h-3.5 w-3.5" />},
-  {key: 'top', label: 'Top', icon: <PanelTop className="h-3.5 w-3.5" />},
-  {key: 'bottom', label: 'Bottom', icon: <PanelBottom className="h-3.5 w-3.5" />},
 ];
 
 interface GridSpec {
@@ -92,60 +81,17 @@ interface GridSpec {
   rows: string;
 }
 
-function computeGrid({mode, featuredQuadrant, featuredPosition}: LayoutSettings): GridSpec {
+function computeGrid({mode, focusQuadrant}: LayoutSettings): GridSpec {
+  if (focusQuadrant !== 'all') {
+    return {areas: `"${focusQuadrant}"`, cols: 'minmax(0, 1fr)', rows: 'minmax(0, 1fr)'};
+  }
   if (mode === 'row') {
-    return {
-      areas: `"do schedule delegate someday"`,
-      cols: 'repeat(4, minmax(0, 1fr))',
-      rows: 'minmax(0, 1fr)',
-    };
+    return {areas: `"do schedule delegate someday"`, cols: 'repeat(4, minmax(0, 1fr))', rows: 'minmax(0, 1fr)'};
   }
-  if (mode === 'column') {
-    return {
-      areas: `"do" "schedule" "delegate" "someday"`,
-      cols: 'minmax(0, 1fr)',
-      rows: 'repeat(4, minmax(0, 1fr))',
-    };
-  }
-  if (mode === 'featured') {
-    const others = QUADRANTS.map(q => q.key).filter(k => k !== featuredQuadrant);
-    const f = featuredQuadrant;
-    if (featuredPosition === 'left') {
-      return {
-        areas: `"${f} ${others[0]}" "${f} ${others[1]}" "${f} ${others[2]}"`,
-        cols: 'minmax(0, 1fr) minmax(0, 1fr)',
-        rows: 'repeat(3, minmax(0, 1fr))',
-      };
-    }
-    if (featuredPosition === 'right') {
-      return {
-        areas: `"${others[0]} ${f}" "${others[1]} ${f}" "${others[2]} ${f}"`,
-        cols: 'minmax(0, 1fr) minmax(0, 1fr)',
-        rows: 'repeat(3, minmax(0, 1fr))',
-      };
-    }
-    if (featuredPosition === 'top') {
-      return {
-        areas: `"${f} ${f} ${f}" "${others[0]} ${others[1]} ${others[2]}"`,
-        cols: 'repeat(3, minmax(0, 1fr))',
-        rows: 'minmax(0, 1fr) minmax(0, 1fr)',
-      };
-    }
-    return {
-      areas: `"${others[0]} ${others[1]} ${others[2]}" "${f} ${f} ${f}"`,
-      cols: 'repeat(3, minmax(0, 1fr))',
-      rows: 'minmax(0, 1fr) minmax(0, 1fr)',
-    };
-  }
-  // grid (default)
-  return {
-    areas: `"do schedule" "delegate someday"`,
-    cols: 'repeat(2, minmax(0, 1fr))',
-    rows: 'repeat(2, minmax(0, 1fr))',
-  };
+  return {areas: `"do schedule" "delegate someday"`, cols: 'repeat(2, minmax(0, 1fr))', rows: 'repeat(2, minmax(0, 1fr))'};
 }
 
-const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V2';
+const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V3';
 
 function SortableCard({
   task,
@@ -153,6 +99,7 @@ function SortableCard({
   onOpen,
   onToggleComplete,
   onSnooze,
+  onExpand,
   onContextMenu,
 }: {
   task: Task;
@@ -160,6 +107,7 @@ function SortableCard({
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
   onSnooze?: (t: Task) => void;
+  onExpand: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: task._id});
@@ -169,6 +117,7 @@ function SortableCard({
       <TaskCard
         compact
         onContextMenu={onContextMenu}
+        onExpand={onExpand}
         onOpen={onOpen}
         onSnooze={onSnooze}
         onToggleComplete={onToggleComplete}
@@ -186,6 +135,7 @@ function QuadrantBox({
   onOpen,
   onToggleComplete,
   onSnooze,
+  onExpand,
   onContextMenu,
 }: {
   q: (typeof QUADRANTS)[number];
@@ -194,6 +144,7 @@ function QuadrantBox({
   onOpen: (t: Task) => void;
   onToggleComplete: (t: Task) => void;
   onSnooze?: (t: Task) => void;
+  onExpand: (t: Task) => void;
   onContextMenu: (task: Task, e: React.MouseEvent) => void;
 }) {
   const {setNodeRef, isOver} = useDroppable({id: q.key});
@@ -215,6 +166,7 @@ function QuadrantBox({
             <SortableCard
               key={task._id}
               onContextMenu={onContextMenu}
+              onExpand={onExpand}
               onOpen={onOpen}
               onSnooze={onSnooze}
               onToggleComplete={onToggleComplete}
@@ -235,6 +187,7 @@ export default function MatrixView({
   onOpen,
   onToggleComplete,
   onSnooze,
+  onExpand,
   onContextMenu,
   onMoveToQuadrant,
   onReorderQuadrant,
@@ -262,6 +215,7 @@ export default function MatrixView({
   };
 
   const grid = computeGrid(layout);
+  const visibleQuadrants = layout.focusQuadrant === 'all' ? QUADRANTS : QUADRANTS.filter(q => q.key === layout.focusQuadrant);
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -301,42 +255,18 @@ export default function MatrixView({
       `}</style>
 
       <div className="flex h-full flex-col">
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 px-6 pt-3">
-          {layout.mode === 'featured' && (
-            <>
-              <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-                {QUADRANTS.map(q => (
-                  <button
-                    className={`rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
-                      layout.featuredQuadrant === q.key
-                        ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                    key={q.key}
-                    onClick={() => changeLayout({featuredQuadrant: q.key})}
-                    title={`Feature "${q.title}"`}>
-                    {q.title}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-                {POSITIONS.map(p => (
-                  <button
-                    className={`flex items-center rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
-                      layout.featuredPosition === p.key
-                        ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                    key={p.key}
-                    onClick={() => changeLayout({featuredPosition: p.key})}
-                    title={`Feature it on the ${p.label.toLowerCase()}`}>
-                    {p.icon}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-          <span className="mr-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">Layout</span>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 px-4 pt-3 sm:px-6">
+          <select
+            className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+            onChange={e => changeLayout({focusQuadrant: e.target.value as Quadrant | 'all'})}
+            value={layout.focusQuadrant}>
+            <option value="all">Show: All</option>
+            {QUADRANTS.map(q => (
+              <option key={q.key} value={q.key}>
+                Show: {q.title}
+              </option>
+            ))}
+          </select>
           <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
             {LAYOUT_MODES.map(m => (
               <button
@@ -352,12 +282,15 @@ export default function MatrixView({
           </div>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-6 pb-6 pt-3 md:overflow-hidden" id="matrix-grid">
-          {QUADRANTS.map(q => (
+        <div
+          className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 pt-3 sm:px-6 md:overflow-hidden"
+          id="matrix-grid">
+          {visibleQuadrants.map(q => (
             <QuadrantBox
               items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
               key={q.key}
               onContextMenu={onContextMenu}
+              onExpand={onExpand}
               onOpen={onOpen}
               onSnooze={onSnooze}
               onToggleComplete={onToggleComplete}
@@ -370,7 +303,15 @@ export default function MatrixView({
       <DragOverlay>
         {activeTask && (
           <div className="rotate-2 opacity-90">
-            <TaskCard compact onContextMenu={() => undefined} onOpen={() => undefined} onToggleComplete={() => undefined} selected task={activeTask} />
+            <TaskCard
+              compact
+              onContextMenu={() => undefined}
+              onExpand={() => undefined}
+              onOpen={() => undefined}
+              onToggleComplete={() => undefined}
+              selected
+              task={activeTask}
+            />
           </div>
         )}
       </DragOverlay>

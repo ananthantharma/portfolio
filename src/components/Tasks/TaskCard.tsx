@@ -9,6 +9,7 @@ import {
   ChevronUp,
   Circle,
   ListChecks,
+  Maximize2,
   Paperclip,
   Repeat,
   StickyNote,
@@ -26,6 +27,7 @@ interface TaskCardProps {
   onToggleComplete: (task: Task) => void;
   onSnooze?: (task: Task) => void;
   onToggleMinimize?: (task: Task) => void;
+  onExpand?: (task: Task) => void;
   onContextMenu?: (task: Task, e: React.MouseEvent) => void;
   bulkMode?: boolean;
   bulkSelected?: boolean;
@@ -40,6 +42,7 @@ export default function TaskCard({
   onToggleComplete,
   onSnooze,
   onToggleMinimize,
+  onExpand,
   onContextMenu,
   bulkMode,
   bulkSelected,
@@ -209,11 +212,25 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* Hover actions */}
-        <div className="absolute right-2 top-2 hidden items-center gap-0.5 group-hover:flex">
+        {/* Actions — the expand button stays visible on compact (Matrix) cards so it's a
+            quick, thumb-friendly tap instead of only reachable via hover or right-click. */}
+        <div className="absolute right-2 top-2 flex items-center gap-1">
+          {onExpand && (
+            <button
+              className={`flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-600 dark:bg-slate-700 ${
+                compact ? '' : 'hidden group-hover:flex'
+              }`}
+              onClick={e => {
+                e.stopPropagation();
+                onExpand(task);
+              }}
+              title="Open in full window">
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
           {onToggleMinimize && (
             <button
-              className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-slate-300 hover:text-slate-600 dark:border-slate-600 dark:bg-slate-700"
+              className="hidden rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-slate-300 hover:text-slate-600 group-hover:flex dark:border-slate-600 dark:bg-slate-700"
               onClick={e => {
                 e.stopPropagation();
                 onToggleMinimize(task);
@@ -224,7 +241,7 @@ export default function TaskCard({
           )}
           {onSnooze && !done && (
             <button
-              className="rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-600 dark:bg-slate-700"
+              className="hidden rounded-lg border border-slate-200 bg-white p-1.5 text-slate-400 shadow-sm transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 group-hover:flex dark:border-slate-600 dark:bg-slate-700"
               onClick={e => {
                 e.stopPropagation();
                 onSnooze(task);

@@ -1250,6 +1250,7 @@ export default function TasksApp() {
             ) : view === 'matrix' ? (
               <MatrixView
                 onContextMenu={openContextMenu}
+                onExpand={t => setExpandedTaskId(t._id)}
                 onMoveToQuadrant={moveToQuadrant}
                 onOpen={t => setSelectedId(t._id)}
                 onReorderQuadrant={applyReorder}
