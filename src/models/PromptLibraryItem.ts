@@ -15,7 +15,7 @@ const PromptLibraryItemSchema = new Schema<IPromptLibraryItem>(
     userEmail: {type: String, required: true, index: true},
     title: {type: String, required: true},
     description: {type: String, default: ''},
-    content: {type: String, required: true},
+    content: {type: String, default: ''},
     category: {type: String, required: true, default: 'General'},
   },
   {timestamps: true},
