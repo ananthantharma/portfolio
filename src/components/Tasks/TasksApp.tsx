@@ -6,6 +6,7 @@ import {
   Bell,
   BellOff,
   Bookmark as BookmarkIcon,
+  BookOpen,
   CalendarClock,
   CheckCheck,
   CheckSquare,
@@ -41,6 +42,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import InAppBrowser from '@/components/Anomaly/InAppBrowser';
 import ContactListModal from '@/components/Notes/ContactListModal';
+import PromptLibraryModal from '@/components/PromptLibrary/PromptLibraryModal';
 
 import {api} from './api';
 import ArchiveView from './ArchiveView';
@@ -150,6 +152,7 @@ export default function TasksApp() {
   const [emailPrefill, setEmailPrefill] = useState<ExtractedTask | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [promptLibraryOpen, setPromptLibraryOpen] = useState(false);
   const [contactsOpen, setContactsOpen] = useState(false);
   const [browserTarget, setBrowserTarget] = useState<{url: string; title: string} | null>(null);
   const dayCelebratedRef = useRef(false);
@@ -972,6 +975,14 @@ export default function TasksApp() {
                 <BookmarkIcon className="h-4 w-4" /> Bookmarks
               </button>
 
+              {/* Prompt Library */}
+              <button
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                onClick={() => setPromptLibraryOpen(true)}
+                title="Prompt Library">
+                <BookOpen className="h-4 w-4" /> Prompts
+              </button>
+
               {/* Contacts */}
               <button
                 className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
@@ -1364,6 +1375,8 @@ export default function TasksApp() {
             onOpenUrl={(url, title) => setBrowserTarget({url, title})}
           />
         )}
+
+        {promptLibraryOpen && <PromptLibraryModal onClose={() => setPromptLibraryOpen(false)} />}
 
         {browserTarget && (
           <InAppBrowser onClose={() => setBrowserTarget(null)} title={browserTarget.title} url={browserTarget.url} />

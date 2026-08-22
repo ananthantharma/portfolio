@@ -32,6 +32,7 @@ import {
   UserIcon,
   BoltIcon,
   RectangleGroupIcon,
+  BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -59,6 +60,7 @@ import {BadgeSettingsProvider} from './BadgeSettingsContext';
 import {BadgeSettingsModal} from './BadgeSettingsModal';
 import CommandPalette from './CommandPalette';
 import BookmarkListModal from './BookmarkListModal';
+import PromptLibraryModal from '../PromptLibrary/PromptLibraryModal';
 import {ICON_options} from './IconPicker';
 import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
@@ -997,6 +999,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isDirectTaskCreateOpen, setIsDirectTaskCreateOpen] = useState(false);
 
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
+  const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
 
   const handleToggleCategoryCollapse = useCallback(
     () => setIsCategoryCollapsed(!isCategoryCollapsed),
@@ -1409,6 +1412,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: CloudIcon, label: 'Drive', action: () => setIsDriveOpen(true)},
                   {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
                   {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
+                  {icon: BookOpenIcon, label: 'Prompt Library', action: () => setIsPromptLibraryOpen(true)},
                 ].map(({icon: Icon, label, action}) => (
                   <button
                     className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${
@@ -1923,6 +1927,7 @@ const NotesLayout: React.FC = React.memo(() => {
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
+        {isPromptLibraryOpen && <PromptLibraryModal onClose={() => setIsPromptLibraryOpen(false)} />}
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
         <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
