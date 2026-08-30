@@ -33,6 +33,7 @@ import {
   BoltIcon,
   RectangleGroupIcon,
   BookOpenIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -64,6 +65,7 @@ import PromptLibraryModal from '../PromptLibrary/PromptLibraryModal';
 import {ICON_options} from './IconPicker';
 import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
+import CameraModal from '../Anomaly/CameraModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
@@ -102,6 +104,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isDriveOpen, setIsDriveOpen] = useState(false);
   const [isAudioRecorderOpen, setIsAudioRecorderOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
@@ -1413,6 +1416,9 @@ const NotesLayout: React.FC = React.memo(() => {
                   {icon: UsersIcon, label: 'Contacts', action: handleOpenContactList},
                   {icon: BookmarkIcon, label: 'Bookmarks', action: () => setIsBookmarksOpen(true)},
                   {icon: BookOpenIcon, label: 'Prompt Library', action: () => setIsPromptLibraryOpen(true)},
+                  ...(isAdmin
+                    ? [{icon: VideoCameraIcon, label: 'Camera', action: () => setIsCameraOpen(true)}]
+                    : []),
                 ].map(({icon: Icon, label, action}) => (
                   <button
                     className={`flex items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all duration-150 active:scale-[0.98] ${
@@ -1868,6 +1874,9 @@ const NotesLayout: React.FC = React.memo(() => {
                             action: () => window.open('/pdf-autofill', '_blank'),
                           },
                           {icon: FlagIcon, label: 'Flagged', action: handleOpenKeyTasks},
+                          ...(isAdmin
+                            ? [{icon: VideoCameraIcon, label: 'Camera', action: () => setIsCameraOpen(true)}]
+                            : []),
                         ].map(({icon: Icon, label, action}) => (
                           <button
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F0F2] text-slate-500 text-[11.5px] font-medium hover:bg-slate-200/80 hover:text-slate-700 transition-all duration-150 active:scale-[0.97]"
@@ -1927,6 +1936,7 @@ const NotesLayout: React.FC = React.memo(() => {
         />
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
+        {isAdmin && isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} />}
         {isPromptLibraryOpen && <PromptLibraryModal onClose={() => setIsPromptLibraryOpen(false)} />}
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
