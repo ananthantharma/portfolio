@@ -6,6 +6,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {api} from './api';
 import BookmarksModal from './BookmarksModal';
+import CameraModal from './CameraModal';
 import CommandPalette from './CommandPalette';
 import EditorPanel from './EditorPanel';
 import HomeView from './HomeView';
@@ -34,6 +35,7 @@ export default function AnomalyApp() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [movingPage, setMovingPage] = useState<Page | null>(null);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [browserTarget, setBrowserTarget] = useState<{url: string; title: string} | null>(null);
   const restored = useRef(false);
 
@@ -404,6 +406,7 @@ export default function AnomalyApp() {
           onDeleteSection={deleteSection}
           onExpandAll={expandAllNotebooks}
           onOpenBookmarks={() => setBookmarksOpen(true)}
+          onOpenCamera={() => setCameraOpen(true)}
           onOpenPalette={() => setPaletteOpen(true)}
           onRenameNotebook={renameNotebook}
           onRenameSection={renameSection}
@@ -486,6 +489,7 @@ export default function AnomalyApp() {
           onOpenUrl={(url, title) => setBrowserTarget({url, title})}
         />
       )}
+      {cameraOpen && <CameraModal onClose={() => setCameraOpen(false)} />}
       {browserTarget && (
         <InAppBrowser onClose={() => setBrowserTarget(null)} title={browserTarget.title} url={browserTarget.url} />
       )}
