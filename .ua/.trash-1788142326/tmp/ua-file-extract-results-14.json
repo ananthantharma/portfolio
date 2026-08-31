@@ -1,0 +1,2313 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 7,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 7,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 7,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 165,
+      "nonEmptyLines": 152,
+      "functions": [
+        {
+          "name": "AddColumnModal",
+          "startLine": 19,
+          "endLine": 165,
+          "params": [
+            "{isOpen, onClose, onAdd}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AddColumnModal",
+          "line": 19,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AddColumnModal",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "AddColumnModal",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "name.trim",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Date.now",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onAdd",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "handleClose",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleClose",
+          "callee": "setName",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handleClose",
+          "callee": "setType",
+          "lineNumber": 51
+        },
+        {
+          "caller": "handleClose",
+          "callee": "onClose",
+          "lineNumber": 52
+        },
+        {
+          "caller": "AddColumnModal",
+          "callee": "setName",
+          "lineNumber": 109
+        },
+        {
+          "caller": "AddColumnModal",
+          "callee": "COLUMN_TYPES.map",
+          "lineNumber": 118
+        },
+        {
+          "caller": "AddColumnModal",
+          "callee": "setType",
+          "lineNumber": 129
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 154,
+      "nonEmptyLines": 140,
+      "functions": [
+        {
+          "name": "EditRowModal",
+          "startLine": 16,
+          "endLine": 154,
+          "params": [
+            "{isOpen, onClose, onSave, row, columns}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EditRowModal",
+          "line": 16,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "EditRowModal",
+          "callee": "useState",
+          "lineNumber": 17
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "useEffect",
+          "lineNumber": 19
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "setFormData",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handleChange",
+          "callee": "setFormData",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handleSave",
+          "callee": "onSave",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handleSave",
+          "callee": "onClose",
+          "lineNumber": 32
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "columns.map",
+          "lineNumber": 73
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "handleChange",
+          "lineNumber": 82
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "handleChange",
+          "lineNumber": 91
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "handleChange",
+          "lineNumber": 105
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "col.options?.map",
+          "lineNumber": 112
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "handleChange",
+          "lineNumber": 115
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "clsx",
+          "lineNumber": 116
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "opt.color.includes",
+          "lineNumber": 121
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "opt.color.replace",
+          "lineNumber": 122
+        },
+        {
+          "caller": "EditRowModal",
+          "callee": "clsx",
+          "lineNumber": 128
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 356,
+      "nonEmptyLines": 333,
+      "functions": [
+        {
+          "name": "PDFExportModal",
+          "startLine": 15,
+          "endLine": 356,
+          "params": [
+            "{isOpen, onClose, columns, rows, tableName}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PDFExportModal",
+          "line": 15,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PDFExportModal",
+          "callee": "useState",
+          "lineNumber": 16
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "useState",
+          "lineNumber": 17
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "useState",
+          "lineNumber": 19
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "useEffect",
+          "lineNumber": 23
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Math.floor",
+          "lineNumber": 25
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "columns.forEach",
+          "lineNumber": 27
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "setColWidths",
+          "lineNumber": 30
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Object.values(colWidths).reduce",
+          "lineNumber": 33
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Object.values",
+          "lineNumber": 33
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Math.abs",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleSlider",
+          "callee": "setColWidths",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleSlider",
+          "callee": "Math.max",
+          "lineNumber": 37
+        },
+        {
+          "caller": "normalize",
+          "callee": "Object.values(colWidths).reduce",
+          "lineNumber": 41
+        },
+        {
+          "caller": "normalize",
+          "callee": "Object.values",
+          "lineNumber": 41
+        },
+        {
+          "caller": "normalize",
+          "callee": "Object.keys",
+          "lineNumber": 44
+        },
+        {
+          "caller": "normalize",
+          "callee": "ids.forEach",
+          "lineNumber": 45
+        },
+        {
+          "caller": "normalize",
+          "callee": "ids.slice(0, -1).reduce",
+          "lineNumber": 48
+        },
+        {
+          "caller": "normalize",
+          "callee": "ids.slice",
+          "lineNumber": 48
+        },
+        {
+          "caller": "normalize",
+          "callee": "Math.round",
+          "lineNumber": 48
+        },
+        {
+          "caller": "normalize",
+          "callee": "Math.round",
+          "lineNumber": 49
+        },
+        {
+          "caller": "normalize",
+          "callee": "setColWidths",
+          "lineNumber": 51
+        },
+        {
+          "caller": "flattenRows",
+          "callee": "result.push",
+          "lineNumber": 57
+        },
+        {
+          "caller": "flattenRows",
+          "callee": "result.push",
+          "lineNumber": 59
+        },
+        {
+          "caller": "flattenRows",
+          "callee": "flattenRows",
+          "lineNumber": 59
+        },
+        {
+          "caller": "handleExport",
+          "callee": "setGenerating",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleExport",
+          "callee": "import",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handleExport",
+          "callee": "import",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setFont",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setFontSize",
+          "lineNumber": 80
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setTextColor",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.text",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setFont",
+          "lineNumber": 83
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setFontSize",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setTextColor",
+          "lineNumber": 85
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.text",
+          "lineNumber": 86
+        },
+        {
+          "caller": "handleExport",
+          "callee": "new Date().toLocaleDateString",
+          "lineNumber": 87
+        },
+        {
+          "caller": "handleExport",
+          "callee": "columns.map",
+          "lineNumber": 95
+        },
+        {
+          "caller": "handleExport",
+          "callee": "flattenRows",
+          "lineNumber": 98
+        },
+        {
+          "caller": "handleExport",
+          "callee": "flatRows.map",
+          "lineNumber": 99
+        },
+        {
+          "caller": "handleExport",
+          "callee": "columns.map",
+          "lineNumber": 100
+        },
+        {
+          "caller": "handleExport",
+          "callee": "'  '.repeat",
+          "lineNumber": 103
+        },
+        {
+          "caller": "handleExport",
+          "callee": "col.options.find",
+          "lineNumber": 105
+        },
+        {
+          "caller": "handleExport",
+          "callee": "Number(val).toLocaleString",
+          "lineNumber": 109
+        },
+        {
+          "caller": "handleExport",
+          "callee": "Number",
+          "lineNumber": 109
+        },
+        {
+          "caller": "handleExport",
+          "callee": "String",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleExport",
+          "callee": "autoTable",
+          "lineNumber": 115
+        },
+        {
+          "caller": "handleExport",
+          "callee": "columns.map",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleExport",
+          "callee": "Object.fromEntries",
+          "lineNumber": 121
+        },
+        {
+          "caller": "handleExport",
+          "callee": "columns.map",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleExport",
+          "callee": "(doc as any).internal.getNumberOfPages",
+          "lineNumber": 165
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setPage",
+          "lineNumber": 167
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setFontSize",
+          "lineNumber": 168
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.setTextColor",
+          "lineNumber": 169
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.text",
+          "lineNumber": 170
+        },
+        {
+          "caller": "handleExport",
+          "callee": "doc.save",
+          "lineNumber": 173
+        },
+        {
+          "caller": "handleExport",
+          "callee": "console.error",
+          "lineNumber": 175
+        },
+        {
+          "caller": "handleExport",
+          "callee": "alert",
+          "lineNumber": 176
+        },
+        {
+          "caller": "handleExport",
+          "callee": "setGenerating",
+          "lineNumber": 178
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "(['portrait', 'landscape'] as const).map",
+          "lineNumber": 213
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "setOrientation",
+          "lineNumber": 216
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "[...Array(o === 'portrait' ? 5 : 4)].map",
+          "lineNumber": 226
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Array",
+          "lineNumber": 226
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "[\n              {label: 'Include title', value: includeTitle, set: setIncludeTitle},\n              {label: 'Striped rows', value: stripedRows, set: setStripedRows},\n            ].map",
+          "lineNumber": 244
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "opt.set",
+          "lineNumber": 250
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "columns.map",
+          "lineNumber": 284
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "columns.map",
+          "lineNumber": 301
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "handleSlider",
+          "lineNumber": 315
+        },
+        {
+          "caller": "PDFExportModal",
+          "callee": "Number",
+          "lineNumber": 315
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "SortableHeader",
+          "startLine": 14,
+          "endLine": 71,
+          "params": [
+            "{column, onResizeStart, onRemove}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SortableHeader",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SortableHeader",
+          "callee": "useSortable",
+          "lineNumber": 15
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "CSS.Transform.toString",
+          "lineNumber": 18
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "clsx",
+          "lineNumber": 30
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "e.stopPropagation",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "onRemove",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "e.preventDefault",
+          "lineNumber": 63
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "e.stopPropagation",
+          "lineNumber": 64
+        },
+        {
+          "caller": "SortableHeader",
+          "callee": "onResizeStart",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1407,
+      "nonEmptyLines": 1301,
+      "functions": [
+        {
+          "name": "SortableColumnHeader",
+          "startLine": 68,
+          "endLine": 196,
+          "params": [
+            "{\n  column,\n  onResizeStart,\n  onRemove,\n  onRename,\n  onToggleIconOnly,\n}"
+          ]
+        },
+        {
+          "name": "AddColumnInline",
+          "startLine": 200,
+          "endLine": 275,
+          "params": [
+            "{onAdd}"
+          ]
+        },
+        {
+          "name": "AISmartImportModal",
+          "startLine": 279,
+          "endLine": 458,
+          "params": [
+            "{\n  isOpen,\n  onClose,\n  onImport,\n}"
+          ]
+        },
+        {
+          "name": "TableApp",
+          "startLine": 462,
+          "endLine": 1407,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TableApp",
+          "line": 462,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useSortable",
+          "lineNumber": 81
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useState",
+          "lineNumber": 84
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useState",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useRef",
+          "lineNumber": 86
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useEffect",
+          "lineNumber": 88
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "setLabel",
+          "lineNumber": 89
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "useEffect",
+          "lineNumber": 92
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "inputRef.current.focus",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "CSS.Transform.toString",
+          "lineNumber": 97
+        },
+        {
+          "caller": "commitRename",
+          "callee": "setEditing",
+          "lineNumber": 106
+        },
+        {
+          "caller": "commitRename",
+          "callee": "label.trim",
+          "lineNumber": 107
+        },
+        {
+          "caller": "commitRename",
+          "callee": "label.trim",
+          "lineNumber": 107
+        },
+        {
+          "caller": "commitRename",
+          "callee": "onRename",
+          "lineNumber": 108
+        },
+        {
+          "caller": "commitRename",
+          "callee": "label.trim",
+          "lineNumber": 108
+        },
+        {
+          "caller": "commitRename",
+          "callee": "setLabel",
+          "lineNumber": 110
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "setLabel",
+          "lineNumber": 135
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "commitRename",
+          "lineNumber": 138
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "setLabel",
+          "lineNumber": 140
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "setEditing",
+          "lineNumber": 141
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "setEditing",
+          "lineNumber": 148
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "e.stopPropagation",
+          "lineNumber": 161
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "onToggleIconOnly",
+          "lineNumber": 162
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "e.stopPropagation",
+          "lineNumber": 175
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "onRemove",
+          "lineNumber": 176
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "e.preventDefault",
+          "lineNumber": 189
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "e.stopPropagation",
+          "lineNumber": 190
+        },
+        {
+          "caller": "SortableColumnHeader",
+          "callee": "onResizeStart",
+          "lineNumber": 191
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "useState",
+          "lineNumber": 201
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "useState",
+          "lineNumber": 202
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "useState",
+          "lineNumber": 203
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "useRef",
+          "lineNumber": 204
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "useEffect",
+          "lineNumber": 206
+        },
+        {
+          "caller": "handler",
+          "callee": "ref.current.contains",
+          "lineNumber": 208
+        },
+        {
+          "caller": "handler",
+          "callee": "setOpen",
+          "lineNumber": 208
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "document.addEventListener",
+          "lineNumber": 210
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "document.removeEventListener",
+          "lineNumber": 211
+        },
+        {
+          "caller": "submit",
+          "callee": "name.trim",
+          "lineNumber": 215
+        },
+        {
+          "caller": "submit",
+          "callee": "Date.now",
+          "lineNumber": 217
+        },
+        {
+          "caller": "submit",
+          "callee": "name.trim",
+          "lineNumber": 218
+        },
+        {
+          "caller": "submit",
+          "callee": "onAdd",
+          "lineNumber": 227
+        },
+        {
+          "caller": "submit",
+          "callee": "setName",
+          "lineNumber": 228
+        },
+        {
+          "caller": "submit",
+          "callee": "setType",
+          "lineNumber": 229
+        },
+        {
+          "caller": "submit",
+          "callee": "setOpen",
+          "lineNumber": 230
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "setOpen",
+          "lineNumber": 236
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "setName",
+          "lineNumber": 247
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "submit",
+          "lineNumber": 248
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "(['text', 'number', 'date', 'status', 'currency'] as ColumnType[]).map",
+          "lineNumber": 252
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "setType",
+          "lineNumber": 255
+        },
+        {
+          "caller": "AddColumnInline",
+          "callee": "name.trim",
+          "lineNumber": 267
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "useState",
+          "lineNumber": 288
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "useState",
+          "lineNumber": 289
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "useState",
+          "lineNumber": 290
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "useState",
+          "lineNumber": 291
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "useRef",
+          "lineNumber": 292
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "item.type.indexOf",
+          "lineNumber": 299
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "item.getAsFile",
+          "lineNumber": 300
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "setImagePreview",
+          "lineNumber": 303
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 304
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "setMode",
+          "lineNumber": 305
+        },
+        {
+          "caller": "handleFile",
+          "callee": "setImagePreview",
+          "lineNumber": 315
+        },
+        {
+          "caller": "handleFile",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 316
+        },
+        {
+          "caller": "handleFile",
+          "callee": "setMode",
+          "lineNumber": 317
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 322
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split",
+          "lineNumber": 326
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split(',')[0].match",
+          "lineNumber": 327
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split",
+          "lineNumber": 327
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "axios.post",
+          "lineNumber": 330
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onImport",
+          "lineNumber": 332
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 333
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setInput",
+          "lineNumber": 334
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setImagePreview",
+          "lineNumber": 335
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "alert",
+          "lineNumber": 338
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 340
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "(['text', 'image'] as const).map",
+          "lineNumber": 368
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "setMode",
+          "lineNumber": 371
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "setInput",
+          "lineNumber": 389
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "setImagePreview",
+          "lineNumber": 401
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "fileRef.current?.click",
+          "lineNumber": 409
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "setInput",
+          "lineNumber": 422
+        },
+        {
+          "caller": "AISmartImportModal",
+          "callee": "input.trim",
+          "lineNumber": 437
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 463
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 464
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 465
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 466
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 467
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 468
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 469
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 470
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 471
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 472
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 473
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 474
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 475
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useState",
+          "lineNumber": 476
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useRef",
+          "lineNumber": 477
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useRef",
+          "lineNumber": 478
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useRef",
+          "lineNumber": 479
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useSensors",
+          "lineNumber": 481
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useSensor",
+          "lineNumber": 482
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useSensor",
+          "lineNumber": 483
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useEffect",
+          "lineNumber": 487
+        },
+        {
+          "caller": "handler",
+          "callee": "loadMenuRef.current.contains",
+          "lineNumber": 489
+        },
+        {
+          "caller": "handler",
+          "callee": "setIsLoadMenuOpen",
+          "lineNumber": 490
+        },
+        {
+          "caller": "handler",
+          "callee": "copyMenuRef.current.contains",
+          "lineNumber": 492
+        },
+        {
+          "caller": "handler",
+          "callee": "setIsCopyMenuOpen",
+          "lineNumber": 493
+        },
+        {
+          "caller": "handler",
+          "callee": "target.closest",
+          "lineNumber": 497
+        },
+        {
+          "caller": "handler",
+          "callee": "setOpenStatusDropdown",
+          "lineNumber": 498
+        },
+        {
+          "caller": "TableApp",
+          "callee": "document.addEventListener",
+          "lineNumber": 501
+        },
+        {
+          "caller": "TableApp",
+          "callee": "document.removeEventListener",
+          "lineNumber": 502
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useEffect",
+          "lineNumber": 505
+        },
+        {
+          "caller": "TableApp",
+          "callee": "fetchSavedTables",
+          "lineNumber": 506
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useEffect",
+          "lineNumber": 509
+        },
+        {
+          "caller": "TableApp",
+          "callee": "nameInputRef.current.focus",
+          "lineNumber": 510
+        },
+        {
+          "caller": "fetchSavedTables",
+          "callee": "axios.get",
+          "lineNumber": 515
+        },
+        {
+          "caller": "fetchSavedTables",
+          "callee": "setSavedTables",
+          "lineNumber": 516
+        },
+        {
+          "caller": "fetchSavedTables",
+          "callee": "console.error",
+          "lineNumber": 518
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setLoading",
+          "lineNumber": 525
+        },
+        {
+          "caller": "handleSave",
+          "callee": "axios.put",
+          "lineNumber": 528
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetchSavedTables",
+          "lineNumber": 529
+        },
+        {
+          "caller": "handleSave",
+          "callee": "prompt",
+          "lineNumber": 532
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setLoading",
+          "lineNumber": 534
+        },
+        {
+          "caller": "handleSave",
+          "callee": "axios.post",
+          "lineNumber": 537
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setCurrentTableId",
+          "lineNumber": 539
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setCurrentTableName",
+          "lineNumber": 540
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetchSavedTables",
+          "lineNumber": 541
+        },
+        {
+          "caller": "handleSave",
+          "callee": "alert",
+          "lineNumber": 545
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setLoading",
+          "lineNumber": 547
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setLoading",
+          "lineNumber": 552
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "axios.get",
+          "lineNumber": 554
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setCurrentTableId",
+          "lineNumber": 557
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setCurrentTableName",
+          "lineNumber": 558
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setColumns",
+          "lineNumber": 559
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setRows",
+          "lineNumber": 560
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setIsLoadMenuOpen",
+          "lineNumber": 561
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "alert",
+          "lineNumber": 564
+        },
+        {
+          "caller": "handleLoad",
+          "callee": "setLoading",
+          "lineNumber": 566
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "e.stopPropagation",
+          "lineNumber": 571
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "confirm",
+          "lineNumber": 572
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "axios.delete",
+          "lineNumber": 574
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "fetchSavedTables",
+          "lineNumber": 576
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "setCurrentTableId",
+          "lineNumber": 578
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "setCurrentTableName",
+          "lineNumber": 579
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "setRows",
+          "lineNumber": 580
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "setColumns",
+          "lineNumber": 581
+        },
+        {
+          "caller": "handleDeleteSavedTable",
+          "callee": "alert",
+          "lineNumber": 585
+        },
+        {
+          "caller": "handleNew",
+          "callee": "setCurrentTableId",
+          "lineNumber": 590
+        },
+        {
+          "caller": "handleNew",
+          "callee": "setCurrentTableName",
+          "lineNumber": 591
+        },
+        {
+          "caller": "handleNew",
+          "callee": "setColumns",
+          "lineNumber": 592
+        },
+        {
+          "caller": "handleNew",
+          "callee": "setRows",
+          "lineNumber": 593
+        },
+        {
+          "caller": "handleDragEnd",
+          "callee": "setColumns",
+          "lineNumber": 601
+        },
+        {
+          "caller": "handleDragEnd",
+          "callee": "items.findIndex",
+          "lineNumber": 602
+        },
+        {
+          "caller": "handleDragEnd",
+          "callee": "items.findIndex",
+          "lineNumber": 603
+        },
+        {
+          "caller": "handleDragEnd",
+          "callee": "arrayMove",
+          "lineNumber": 604
+        },
+        {
+          "caller": "handleAddColumn",
+          "callee": "setColumns",
+          "lineNumber": 610
+        },
+        {
+          "caller": "removeColumn",
+          "callee": "setColumns",
+          "lineNumber": 614
+        },
+        {
+          "caller": "removeColumn",
+          "callee": "prev.filter",
+          "lineNumber": 614
+        },
+        {
+          "caller": "renameColumn",
+          "callee": "setColumns",
+          "lineNumber": 618
+        },
+        {
+          "caller": "renameColumn",
+          "callee": "prev.map",
+          "lineNumber": 618
+        },
+        {
+          "caller": "toggleIconOnly",
+          "callee": "setColumns",
+          "lineNumber": 622
+        },
+        {
+          "caller": "toggleIconOnly",
+          "callee": "prev.map",
+          "lineNumber": 622
+        },
+        {
+          "caller": "startResizing",
+          "callee": "setResizingColId",
+          "lineNumber": 627
+        },
+        {
+          "caller": "stopResizing",
+          "callee": "setResizingColId",
+          "lineNumber": 628
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useCallback",
+          "lineNumber": 630
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setColumns",
+          "lineNumber": 633
+        },
+        {
+          "caller": "TableApp",
+          "callee": "prev.map",
+          "lineNumber": 634
+        },
+        {
+          "caller": "TableApp",
+          "callee": "Math.max",
+          "lineNumber": 634
+        },
+        {
+          "caller": "TableApp",
+          "callee": "useEffect",
+          "lineNumber": 640
+        },
+        {
+          "caller": "TableApp",
+          "callee": "window.addEventListener",
+          "lineNumber": 642
+        },
+        {
+          "caller": "TableApp",
+          "callee": "window.addEventListener",
+          "lineNumber": 643
+        },
+        {
+          "caller": "TableApp",
+          "callee": "window.removeEventListener",
+          "lineNumber": 646
+        },
+        {
+          "caller": "TableApp",
+          "callee": "window.removeEventListener",
+          "lineNumber": 647
+        },
+        {
+          "caller": "updateRecursive",
+          "callee": "items.map",
+          "lineNumber": 655
+        },
+        {
+          "caller": "updateRecursive",
+          "callee": "updateRecursive",
+          "lineNumber": 657
+        },
+        {
+          "caller": "updateCell",
+          "callee": "setRows",
+          "lineNumber": 660
+        },
+        {
+          "caller": "updateCell",
+          "callee": "updateRecursive",
+          "lineNumber": 660
+        },
+        {
+          "caller": "toggle",
+          "callee": "items.map",
+          "lineNumber": 665
+        },
+        {
+          "caller": "toggle",
+          "callee": "toggle",
+          "lineNumber": 667
+        },
+        {
+          "caller": "toggleRow",
+          "callee": "setRows",
+          "lineNumber": 670
+        },
+        {
+          "caller": "toggleRow",
+          "callee": "toggle",
+          "lineNumber": 670
+        },
+        {
+          "caller": "addRow",
+          "callee": "Date.now",
+          "lineNumber": 675
+        },
+        {
+          "caller": "addRow",
+          "callee": "setRows",
+          "lineNumber": 681
+        },
+        {
+          "caller": "addRecursive",
+          "callee": "items.map",
+          "lineNumber": 686
+        },
+        {
+          "caller": "addRecursive",
+          "callee": "Date.now",
+          "lineNumber": 689
+        },
+        {
+          "caller": "addRecursive",
+          "callee": "addRecursive",
+          "lineNumber": 696
+        },
+        {
+          "caller": "addChildRow",
+          "callee": "setRows",
+          "lineNumber": 699
+        },
+        {
+          "caller": "addChildRow",
+          "callee": "addRecursive",
+          "lineNumber": 699
+        },
+        {
+          "caller": "deleteRecursive",
+          "callee": "items\n        .filter(row => row.id !== rowId)\n        .map",
+          "lineNumber": 704
+        },
+        {
+          "caller": "deleteRecursive",
+          "callee": "items\n        .filter",
+          "lineNumber": 704
+        },
+        {
+          "caller": "deleteRecursive",
+          "callee": "deleteRecursive",
+          "lineNumber": 706
+        },
+        {
+          "caller": "deleteRow",
+          "callee": "setRows",
+          "lineNumber": 707
+        },
+        {
+          "caller": "deleteRow",
+          "callee": "deleteRecursive",
+          "lineNumber": 707
+        },
+        {
+          "caller": "indentRow",
+          "callee": "setRows",
+          "lineNumber": 711
+        },
+        {
+          "caller": "indentRow",
+          "callee": "JSON.parse",
+          "lineNumber": 712
+        },
+        {
+          "caller": "indentRow",
+          "callee": "JSON.stringify",
+          "lineNumber": 712
+        },
+        {
+          "caller": "findAndIndent",
+          "callee": "items.findIndex",
+          "lineNumber": 714
+        },
+        {
+          "caller": "findAndIndent",
+          "callee": "items.splice",
+          "lineNumber": 716
+        },
+        {
+          "caller": "findAndIndent",
+          "callee": "parent.children.push",
+          "lineNumber": 719
+        },
+        {
+          "caller": "findAndIndent",
+          "callee": "findAndIndent",
+          "lineNumber": 724
+        },
+        {
+          "caller": "indentRow",
+          "callee": "findAndIndent",
+          "lineNumber": 728
+        },
+        {
+          "caller": "outdentRow",
+          "callee": "setRows",
+          "lineNumber": 734
+        },
+        {
+          "caller": "outdentRow",
+          "callee": "JSON.parse",
+          "lineNumber": 735
+        },
+        {
+          "caller": "outdentRow",
+          "callee": "JSON.stringify",
+          "lineNumber": 735
+        },
+        {
+          "caller": "findAndOutdent",
+          "callee": "items[i].children!.findIndex",
+          "lineNumber": 739
+        },
+        {
+          "caller": "findAndOutdent",
+          "callee": "items[i].children!.splice",
+          "lineNumber": 741
+        },
+        {
+          "caller": "findAndOutdent",
+          "callee": "items.splice",
+          "lineNumber": 742
+        },
+        {
+          "caller": "findAndOutdent",
+          "callee": "findAndOutdent",
+          "lineNumber": 745
+        },
+        {
+          "caller": "outdentRow",
+          "callee": "findAndOutdent",
+          "lineNumber": 750
+        },
+        {
+          "caller": "handleAIImport",
+          "callee": "setColumns",
+          "lineNumber": 759
+        },
+        {
+          "caller": "handleAIImport",
+          "callee": "setRows",
+          "lineNumber": 760
+        },
+        {
+          "caller": "processRow",
+          "callee": "columns.forEach",
+          "lineNumber": 770
+        },
+        {
+          "caller": "processRow",
+          "callee": "'  '.repeat",
+          "lineNumber": 772
+        },
+        {
+          "caller": "processRow",
+          "callee": "col.options.find",
+          "lineNumber": 774
+        },
+        {
+          "caller": "processRow",
+          "callee": "exportData.push",
+          "lineNumber": 779
+        },
+        {
+          "caller": "processRow",
+          "callee": "row.children?.forEach",
+          "lineNumber": 780
+        },
+        {
+          "caller": "processRow",
+          "callee": "processRow",
+          "lineNumber": 780
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "rows.forEach",
+          "lineNumber": 782
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "processRow",
+          "lineNumber": 782
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "XLSX.utils.json_to_sheet",
+          "lineNumber": 783
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "XLSX.utils.book_new",
+          "lineNumber": 784
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "XLSX.utils.book_append_sheet",
+          "lineNumber": 785
+        },
+        {
+          "caller": "handleExportExcel",
+          "callee": "XLSX.writeFile",
+          "lineNumber": 786
+        },
+        {
+          "caller": "buildHTML",
+          "callee": "columns.forEach",
+          "lineNumber": 797
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "columns.forEach",
+          "lineNumber": 811
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "col.options.find",
+          "lineNumber": 822
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "Number(val).toLocaleString",
+          "lineNumber": 833
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "Number",
+          "lineNumber": 833
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "row.children?.forEach",
+          "lineNumber": 839
+        },
+        {
+          "caller": "renderHTMLRow",
+          "callee": "renderHTMLRow",
+          "lineNumber": 839
+        },
+        {
+          "caller": "buildHTML",
+          "callee": "rows.forEach",
+          "lineNumber": 841
+        },
+        {
+          "caller": "buildHTML",
+          "callee": "renderHTMLRow",
+          "lineNumber": 841
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "buildHTML",
+          "lineNumber": 846
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "columns.map(c => c.label).join",
+          "lineNumber": 849
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "columns.map",
+          "lineNumber": 849
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "columns.map",
+          "lineNumber": 851
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "'  '.repeat",
+          "lineNumber": 853
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "col.options.find",
+          "lineNumber": 855
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "cells.join",
+          "lineNumber": 860
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "row.children?.forEach",
+          "lineNumber": 861
+        },
+        {
+          "caller": "addPlainRow",
+          "callee": "addPlainRow",
+          "lineNumber": 861
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "rows.forEach",
+          "lineNumber": 863
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "addPlainRow",
+          "lineNumber": 863
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "navigator.clipboard.write",
+          "lineNumber": 869
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setCopySuccess",
+          "lineNumber": 875
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setTimeout",
+          "lineNumber": 876
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setCopySuccess",
+          "lineNumber": 876
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "document.createElement",
+          "lineNumber": 879
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "document.body.appendChild",
+          "lineNumber": 881
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "ta.select",
+          "lineNumber": 882
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "document.execCommand",
+          "lineNumber": 883
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "document.body.removeChild",
+          "lineNumber": 884
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setCopySuccess",
+          "lineNumber": 885
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setTimeout",
+          "lineNumber": 886
+        },
+        {
+          "caller": "copyAsHTML",
+          "callee": "setCopySuccess",
+          "lineNumber": 886
+        },
+        {
+          "caller": "renderCell",
+          "callee": "toggleRow",
+          "lineNumber": 901
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 916
+        },
+        {
+          "caller": "renderCell",
+          "callee": "col.options?.find",
+          "lineNumber": 923
+        },
+        {
+          "caller": "renderCell",
+          "callee": "e.stopPropagation",
+          "lineNumber": 932
+        },
+        {
+          "caller": "renderCell",
+          "callee": "setOpenStatusDropdown",
+          "lineNumber": 933
+        },
+        {
+          "caller": "renderCell",
+          "callee": "col.options?.map",
+          "lineNumber": 972
+        },
+        {
+          "caller": "renderCell",
+          "callee": "e.stopPropagation",
+          "lineNumber": 976
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 977
+        },
+        {
+          "caller": "renderCell",
+          "callee": "setOpenStatusDropdown",
+          "lineNumber": 978
+        },
+        {
+          "caller": "renderCell",
+          "callee": "e.stopPropagation",
+          "lineNumber": 987
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 988
+        },
+        {
+          "caller": "renderCell",
+          "callee": "setOpenStatusDropdown",
+          "lineNumber": 989
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 1021
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 1033
+        },
+        {
+          "caller": "renderCell",
+          "callee": "updateCell",
+          "lineNumber": 1044
+        },
+        {
+          "caller": "renderRow",
+          "callee": "columns.reduce",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "renderRow",
+          "callee": "toggleRow",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "renderRow",
+          "callee": "updateCell",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "renderRow",
+          "callee": "addChildRow",
+          "lineNumber": 1083
+        },
+        {
+          "caller": "renderRow",
+          "callee": "deleteRow",
+          "lineNumber": 1089
+        },
+        {
+          "caller": "renderRow",
+          "callee": "row.children?.map",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "renderRow",
+          "callee": "renderRow",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "renderRow",
+          "callee": "columns.map",
+          "lineNumber": 1106
+        },
+        {
+          "caller": "renderRow",
+          "callee": "renderCell",
+          "lineNumber": 1113
+        },
+        {
+          "caller": "renderRow",
+          "callee": "addChildRow",
+          "lineNumber": 1118
+        },
+        {
+          "caller": "renderRow",
+          "callee": "indentRow",
+          "lineNumber": 1124
+        },
+        {
+          "caller": "renderRow",
+          "callee": "outdentRow",
+          "lineNumber": 1130
+        },
+        {
+          "caller": "renderRow",
+          "callee": "deleteRow",
+          "lineNumber": 1136
+        },
+        {
+          "caller": "renderRow",
+          "callee": "row.children?.map",
+          "lineNumber": 1146
+        },
+        {
+          "caller": "renderRow",
+          "callee": "renderRow",
+          "lineNumber": 1146
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setCurrentTableName",
+          "lineNumber": 1167
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsEditingName",
+          "lineNumber": 1168
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsEditingName",
+          "lineNumber": 1170
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsEditingName",
+          "lineNumber": 1176
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsLoadMenuOpen",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "TableApp",
+          "callee": "savedTables.map",
+          "lineNumber": 1217
+        },
+        {
+          "caller": "TableApp",
+          "callee": "handleLoad",
+          "lineNumber": 1220
+        },
+        {
+          "caller": "TableApp",
+          "callee": "new Date(table.updatedAt).toLocaleDateString",
+          "lineNumber": 1224
+        },
+        {
+          "caller": "TableApp",
+          "callee": "handleDeleteSavedTable",
+          "lineNumber": 1228
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsAIModalOpen",
+          "lineNumber": 1252
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsCopyMenuOpen",
+          "lineNumber": 1263
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsCopyMenuOpen",
+          "lineNumber": 1284
+        },
+        {
+          "caller": "TableApp",
+          "callee": "copyAsHTML",
+          "lineNumber": 1285
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsCopyMenuOpen",
+          "lineNumber": 1296
+        },
+        {
+          "caller": "TableApp",
+          "callee": "copyAsHTML",
+          "lineNumber": 1297
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsPDFModalOpen",
+          "lineNumber": 1311
+        },
+        {
+          "caller": "TableApp",
+          "callee": "columns.map",
+          "lineNumber": 1334
+        },
+        {
+          "caller": "TableApp",
+          "callee": "columns.map",
+          "lineNumber": 1335
+        },
+        {
+          "caller": "TableApp",
+          "callee": "rows.map",
+          "lineNumber": 1353
+        },
+        {
+          "caller": "TableApp",
+          "callee": "renderRow",
+          "lineNumber": 1353
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsAIModalOpen",
+          "lineNumber": 1374
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsAIModalOpen",
+          "lineNumber": 1395
+        },
+        {
+          "caller": "TableApp",
+          "callee": "setIsPDFModalOpen",
+          "lineNumber": 1400
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 53,
+      "functions": [
+        {
+          "name": "TableAppModal",
+          "startLine": 11,
+          "endLine": 57,
+          "params": [
+            "{isOpen, onClose}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TableAppModal",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 22,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

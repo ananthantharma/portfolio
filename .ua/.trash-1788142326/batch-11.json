@@ -1,0 +1,467 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/api/invoices/scan/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/invoices/scan/route.ts",
+      "summary": "Next.js App Router API route that accepts an uploaded invoice image, enforces admin-only access, and delegates to Gemini for OCR-style analysis returning parsed JSON.",
+      "tags": ["api-handler", "route", "invoice", "gemini", "authentication"],
+      "complexity": "moderate",
+      "languageNotes": "Uses Node runtime and force-dynamic export for a multipart form-data upload handler."
+    },
+    {
+      "id": "function:src/app/api/invoices/scan/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/invoices/scan/route.ts",
+      "lineRange": [10, 62],
+      "summary": "Handles POST requests: validates the session against allowed emails, extracts the uploaded file, base64-encodes it, calls analyzeInvoice, and strips code fences before returning parsed JSON.",
+      "tags": ["api-handler", "file-upload", "validation", "gemini"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/drive/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/drive/page.tsx",
+      "summary": "Client-side Drive browser page listing files and folders with breadcrumb navigation, chunked upload, and delete, backed by a Google Drive style API.",
+      "tags": ["component", "page", "file-management", "upload", "next-app-router"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/drive/page.tsx:DrivePage",
+      "type": "function",
+      "name": "DrivePage",
+      "filePath": "src/app/drive/page.tsx",
+      "lineRange": [28, 336],
+      "summary": "Default page component managing file listing state, folder breadcrumbs, chunked multi-part upload flow, and file deletion against the drive API.",
+      "tags": ["component", "page", "upload", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/finance/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/finance/layout.tsx",
+      "summary": "App Router layout for the finance section that gates access by session and renders the shared UserProfileMenu chrome around finance pages.",
+      "tags": ["layout", "next-app-router", "authentication", "route-guard"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/finance/layout.tsx:FinanceLayout",
+      "type": "function",
+      "name": "FinanceLayout",
+      "filePath": "src/app/finance/layout.tsx",
+      "lineRange": [11, 74],
+      "summary": "Layout component that redirects unauthenticated users via the router and wraps finance children with navigation and the profile menu.",
+      "tags": ["layout", "route-guard", "authentication"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/gantt/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/gantt/page.tsx",
+      "summary": "Large interactive Gantt chart page with drag-and-drop task ordering, category management, timeline rendering, chart persistence, and AI-assisted task generation.",
+      "tags": ["component", "page", "gantt", "drag-and-drop", "ai-assisted"],
+      "complexity": "complex",
+      "languageNotes": "Uses @dnd-kit sensors and sortable contexts plus heavy useMemo/useEffect layout math for the timeline grid."
+    },
+    {
+      "id": "function:src/app/gantt/page.tsx:GanttPage",
+      "type": "function",
+      "name": "GanttPage",
+      "filePath": "src/app/gantt/page.tsx",
+      "lineRange": [185, 1461],
+      "summary": "Main Gantt page component holding task, category and view-mode state, CRUD handlers, chart save/load/delete against an API, AI instruction runner, and timeline/grid/bar renderers.",
+      "tags": ["component", "page", "state-management", "crud", "drag-and-drop"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/gantt/page.tsx:SortableTaskItem",
+      "type": "function",
+      "name": "SortableTaskItem",
+      "filePath": "src/app/gantt/page.tsx",
+      "lineRange": [123, 183],
+      "summary": "Sortable list-row component for a Gantt task using useSortable, rendering category color, add-subtask and delete controls.",
+      "tags": ["component", "drag-and-drop", "list-item"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/ApiKeyInput.tsx",
+      "type": "file",
+      "name": "ApiKeyInput.tsx",
+      "filePath": "src/components/ApiKeyInput.tsx",
+      "summary": "Small form component that collects a Gemini API key from the user and submits it to a parent callback.",
+      "tags": ["component", "form", "api-key", "gemini"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/ApiKeyInput.tsx:ApiKeyInput",
+      "type": "function",
+      "name": "ApiKeyInput",
+      "filePath": "src/components/ApiKeyInput.tsx",
+      "lineRange": [8, 66],
+      "summary": "Controlled input component that trims and forwards a submitted API key via the onApiKeySubmit prop.",
+      "tags": ["component", "form", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/ChatInterface.tsx",
+      "type": "file",
+      "name": "ChatInterface.tsx",
+      "filePath": "src/components/ChatInterface.tsx",
+      "summary": "Full-featured Gemini chat UI with multi-session history, custom instructions, model selection, image compression and upload, file/spreadsheet attachment parsing, and markdown rendering.",
+      "tags": ["component", "chat", "gemini", "markdown", "file-upload"],
+      "complexity": "complex",
+      "languageNotes": "Client component combining XLSX parsing, canvas-based image compression, and localStorage plus API-backed settings persistence."
+    },
+    {
+      "id": "function:src/components/ChatInterface.tsx:ChatInterface",
+      "type": "function",
+      "name": "ChatInterface",
+      "filePath": "src/components/ChatInterface.tsx",
+      "lineRange": [64, 1087],
+      "summary": "Chat component managing sessions, settings, model list, attachments and image compression, calling getChatResponse for Gemini replies.",
+      "tags": ["component", "chat", "state-management", "gemini"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Layout/Page.tsx",
+      "type": "file",
+      "name": "Page.tsx",
+      "filePath": "src/components/Layout/Page.tsx",
+      "summary": "Shared page wrapper component that sets document head metadata and renders children within a consistent layout shell.",
+      "tags": ["component", "layout", "wrapper", "seo"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/UnifiedAIChatModal.tsx",
+      "type": "file",
+      "name": "UnifiedAIChatModal.tsx",
+      "filePath": "src/components/Notes/UnifiedAIChatModal.tsx",
+      "summary": "Large modal chat component shared across notes and organization views that unifies Gemini and OpenAI backends with model selection, streaming display, and context-aware prompts.",
+      "tags": ["component", "modal", "chat", "gemini", "openai"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/OpenAIApiKeyInput.tsx",
+      "type": "file",
+      "name": "OpenAIApiKeyInput.tsx",
+      "filePath": "src/components/OpenAIApiKeyInput.tsx",
+      "summary": "Small form component that collects an OpenAI API key from the user and submits it to a parent callback.",
+      "tags": ["component", "form", "api-key", "openai"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/OpenAIApiKeyInput.tsx:OpenAIApiKeyInput",
+      "type": "function",
+      "name": "OpenAIApiKeyInput",
+      "filePath": "src/components/OpenAIApiKeyInput.tsx",
+      "lineRange": [8, 66],
+      "summary": "Controlled input component that trims and forwards a submitted OpenAI API key via the onApiKeySubmit prop.",
+      "tags": ["component", "form", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/OpenAIChatInterface.tsx",
+      "type": "file",
+      "name": "OpenAIChatInterface.tsx",
+      "filePath": "src/components/OpenAIChatInterface.tsx",
+      "summary": "OpenAI-backed chat UI with multi-session history, image attachments, markdown preprocessing and rendering, calling getOpenAIChatResponse for replies.",
+      "tags": ["component", "chat", "openai", "markdown", "image-upload"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/OpenAIChatInterface.tsx:OpenAIChatInterface",
+      "type": "function",
+      "name": "OpenAIChatInterface",
+      "filePath": "src/components/OpenAIChatInterface.tsx",
+      "lineRange": [63, 604],
+      "summary": "Chat component managing sessions and image selection, rendering message content, and invoking getOpenAIChatResponse for OpenAI completions.",
+      "tags": ["component", "chat", "state-management", "openai"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Sections/Header.tsx",
+      "type": "file",
+      "name": "Header.tsx",
+      "filePath": "src/components/Sections/Header.tsx",
+      "summary": "Primary site navigation header with section links, mobile menu, a feature/app dropdown, and the user profile menu, driven by data.tsx and the nav observer hook.",
+      "tags": ["component", "navigation", "header", "entry-point", "responsive"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/UserProfileMenu.tsx",
+      "type": "file",
+      "name": "UserProfileMenu.tsx",
+      "filePath": "src/components/UserProfileMenu.tsx",
+      "summary": "Dropdown menu showing the signed-in user's avatar and account actions such as sign out, used in section layouts.",
+      "tags": ["component", "menu", "authentication", "user-profile"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/hooks/useNavObserver.tsx",
+      "type": "file",
+      "name": "useNavObserver.tsx",
+      "filePath": "src/hooks/useNavObserver.tsx",
+      "summary": "Custom hook using IntersectionObserver to track which page section is in view and report the active nav target back to the header.",
+      "tags": ["hook", "navigation", "intersection-observer", "scroll-spy"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/hooks/useNavObserver.tsx:useNavObserver",
+      "type": "function",
+      "name": "useNavObserver",
+      "filePath": "src/hooks/useNavObserver.tsx",
+      "lineRange": [6, 60],
+      "summary": "Sets up an IntersectionObserver over the given selectors and calls the handler with the currently active section id, accounting for header offset.",
+      "tags": ["hook", "intersection-observer", "scroll-spy"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/lib/gemini.ts",
+      "type": "file",
+      "name": "gemini.ts",
+      "filePath": "src/lib/gemini.ts",
+      "summary": "Client-side Google Gemini helper library providing chat completions with history and attachments, dynamic model listing, and invoice image analysis.",
+      "tags": ["utility", "gemini", "ai-client", "service"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/lib/gemini.ts:getChatResponse",
+      "type": "function",
+      "name": "getChatResponse",
+      "filePath": "src/lib/gemini.ts",
+      "lineRange": [7, 48],
+      "summary": "Builds a Gemini generative model with system instruction and history, sends the user message plus optional attachments, and returns the response text.",
+      "tags": ["gemini", "chat", "ai-client"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/lib/gemini.ts:getAvailableModels",
+      "type": "function",
+      "name": "getAvailableModels",
+      "filePath": "src/lib/gemini.ts",
+      "lineRange": [55, 89],
+      "summary": "Fetches the Gemini models endpoint and filters to chat-capable models, returning normalized model names.",
+      "tags": ["gemini", "model-discovery", "ai-client"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/lib/gemini.ts:analyzeInvoice",
+      "type": "function",
+      "name": "analyzeInvoice",
+      "filePath": "src/lib/gemini.ts",
+      "lineRange": [90, 151],
+      "summary": "Sends a base64 invoice image with a structured extraction prompt to Gemini and returns the raw analysis text for downstream JSON parsing.",
+      "tags": ["gemini", "invoice", "vision", "extraction"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/lib/openai.ts",
+      "type": "file",
+      "name": "openai.ts",
+      "filePath": "src/lib/openai.ts",
+      "summary": "Client-side OpenAI helper that sends chat completions with history, system instruction, and optional images via the chat completions API.",
+      "tags": ["utility", "openai", "ai-client", "service"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/lib/openai.ts:getOpenAIChatResponse",
+      "type": "function",
+      "name": "getOpenAIChatResponse",
+      "filePath": "src/lib/openai.ts",
+      "lineRange": [5, 55],
+      "summary": "Assembles the messages array from history, system instruction, message and images, posts to the OpenAI chat completions endpoint, and returns the reply content.",
+      "tags": ["openai", "chat", "ai-client"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/pages/api/finance/categorize.ts",
+      "type": "file",
+      "name": "categorize.ts",
+      "filePath": "src/pages/api/finance/categorize.ts",
+      "summary": "Pages Router API endpoint that batches transactions to Gemini for automatic budget-category assignment using the shared category taxonomy.",
+      "tags": ["api-handler", "finance", "gemini", "categorization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/pages/api/finance/categorize.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/finance/categorize.ts",
+      "lineRange": [6, 125],
+      "summary": "Validates the request, batches transaction descriptions into a Gemini prompt built from BUDGET/TRANSACTION categories, parses the JSON response, and returns category assignments.",
+      "tags": ["api-handler", "finance", "gemini", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/pages/bookmarks.tsx",
+      "type": "file",
+      "name": "bookmarks.tsx",
+      "filePath": "src/pages/bookmarks.tsx",
+      "summary": "Bookmarks manager page with category grouping, search/filter, inline editing, and CRUD against a bookmarks API, wrapped in the shared page layout and header.",
+      "tags": ["component", "page", "bookmarks", "crud", "search"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/pages/bookmarks.tsx:BookmarksPage",
+      "type": "function",
+      "name": "BookmarksPage",
+      "filePath": "src/pages/bookmarks.tsx",
+      "lineRange": [384, 1015],
+      "summary": "Page component managing bookmark state, derived category list, grouped rendering, filtering, and add/edit/delete flows.",
+      "tags": ["component", "page", "state-management", "crud"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/pages/chat.tsx",
+      "type": "file",
+      "name": "chat.tsx",
+      "filePath": "src/pages/chat.tsx",
+      "summary": "Gemini chat page that stores the API key in localStorage and toggles between the ApiKeyInput gate and the ChatInterface.",
+      "tags": ["page", "chat", "gemini", "entry-point"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/chat.tsx:ChatPage",
+      "type": "function",
+      "name": "ChatPage",
+      "filePath": "src/pages/chat.tsx",
+      "lineRange": [9, 64],
+      "summary": "Manages the persisted Gemini API key and renders either the key input or the chat interface within the shared layout.",
+      "tags": ["page", "chat", "state-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/open.tsx",
+      "type": "file",
+      "name": "open.tsx",
+      "filePath": "src/pages/open.tsx",
+      "summary": "OpenAI chat page that stores the API key in localStorage and toggles between the OpenAIApiKeyInput gate and the OpenAIChatInterface.",
+      "tags": ["page", "chat", "openai", "entry-point"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/open.tsx:OpenPage",
+      "type": "function",
+      "name": "OpenPage",
+      "filePath": "src/pages/open.tsx",
+      "lineRange": [9, 58],
+      "summary": "Manages the persisted OpenAI API key and renders either the key input or the OpenAI chat interface within the shared layout.",
+      "tags": ["page", "chat", "state-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/privacy.tsx",
+      "type": "file",
+      "name": "privacy.tsx",
+      "filePath": "src/pages/privacy.tsx",
+      "summary": "Static privacy policy page rendered within the shared layout and header.",
+      "tags": ["page", "document", "privacy", "static-content"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/privacy.tsx:PrivacyPolicy",
+      "type": "function",
+      "name": "PrivacyPolicy",
+      "filePath": "src/pages/privacy.tsx",
+      "lineRange": [5, 106],
+      "summary": "Renders the privacy policy content sections with a last-updated date.",
+      "tags": ["page", "static-content"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/app/api/invoices/scan/route.ts", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/scan/route.ts", "target": "file:src/lib/gemini.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/scan/route.ts", "target": "function:src/app/api/invoices/scan/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/invoices/scan/route.ts", "target": "function:src/app/api/invoices/scan/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/app/api/invoices/scan/route.ts:POST", "target": "function:src/lib/gemini.ts:analyzeInvoice", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/drive/page.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/drive/page.tsx", "target": "function:src/app/drive/page.tsx:DrivePage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/drive/page.tsx", "target": "function:src/app/drive/page.tsx:DrivePage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/finance/layout.tsx", "target": "file:src/components/UserProfileMenu.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/finance/layout.tsx", "target": "function:src/app/finance/layout.tsx:FinanceLayout", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/finance/layout.tsx", "target": "function:src/app/finance/layout.tsx:FinanceLayout", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/gantt/page.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/gantt/page.tsx", "target": "function:src/app/gantt/page.tsx:GanttPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/gantt/page.tsx", "target": "function:src/app/gantt/page.tsx:SortableTaskItem", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/gantt/page.tsx", "target": "function:src/app/gantt/page.tsx:GanttPage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/ChatInterface.tsx", "target": "file:src/components/ChatInterface.css", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/ChatInterface.tsx", "target": "file:src/lib/gemini.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/ChatInterface.tsx", "target": "function:src/components/ChatInterface.tsx:ChatInterface", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/ChatInterface.tsx", "target": "function:src/components/ChatInterface.tsx:ChatInterface", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/ChatInterface.tsx:ChatInterface", "target": "function:src/lib/gemini.ts:getChatResponse", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/ChatInterface.tsx:ChatInterface", "target": "function:src/lib/gemini.ts:getAvailableModels", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/ApiKeyInput.tsx", "target": "function:src/components/ApiKeyInput.tsx:ApiKeyInput", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/ApiKeyInput.tsx", "target": "function:src/components/ApiKeyInput.tsx:ApiKeyInput", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/UnifiedAIChatModal.tsx", "target": "file:src/lib/gemini.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/UnifiedAIChatModal.tsx", "target": "file:src/lib/openai.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/OpenAIApiKeyInput.tsx", "target": "function:src/components/OpenAIApiKeyInput.tsx:OpenAIApiKeyInput", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/OpenAIApiKeyInput.tsx", "target": "function:src/components/OpenAIApiKeyInput.tsx:OpenAIApiKeyInput", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/OpenAIChatInterface.tsx", "target": "file:src/lib/openai.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/OpenAIChatInterface.tsx", "target": "function:src/components/OpenAIChatInterface.tsx:OpenAIChatInterface", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/OpenAIChatInterface.tsx", "target": "function:src/components/OpenAIChatInterface.tsx:OpenAIChatInterface", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/OpenAIChatInterface.tsx:OpenAIChatInterface", "target": "function:src/lib/openai.ts:getOpenAIChatResponse", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Sections/Header.tsx", "target": "file:src/components/UserProfileMenu.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Header.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Header.tsx", "target": "file:src/hooks/useNavObserver.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Header.tsx", "target": "function:src/hooks/useNavObserver.tsx:useNavObserver", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/hooks/useNavObserver.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/hooks/useNavObserver.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/hooks/useNavObserver.tsx", "target": "function:src/hooks/useNavObserver.tsx:useNavObserver", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/hooks/useNavObserver.tsx", "target": "function:src/hooks/useNavObserver.tsx:useNavObserver", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:getChatResponse", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:getAvailableModels", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:analyzeInvoice", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:getChatResponse", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:getAvailableModels", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/lib/gemini.ts", "target": "function:src/lib/gemini.ts:analyzeInvoice", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/lib/openai.ts", "target": "function:src/lib/openai.ts:getOpenAIChatResponse", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/lib/openai.ts", "target": "function:src/lib/openai.ts:getOpenAIChatResponse", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/pages/api/finance/categorize.ts", "target": "file:src/lib/categories.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/api/finance/categorize.ts", "target": "file:src/lib/gemini.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/api/finance/categorize.ts", "target": "function:src/pages/api/finance/categorize.ts:handler", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/api/finance/categorize.ts", "target": "function:src/pages/api/finance/categorize.ts:handler", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/pages/api/finance/categorize.ts:handler", "target": "function:src/lib/gemini.ts:getChatResponse", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/pages/bookmarks.tsx", "target": "file:src/components/Layout/Page.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/bookmarks.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/bookmarks.tsx", "target": "function:src/pages/bookmarks.tsx:BookmarksPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/bookmarks.tsx", "target": "function:src/pages/bookmarks.tsx:BookmarksPage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/pages/chat.tsx", "target": "file:src/components/ApiKeyInput.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/chat.tsx", "target": "file:src/components/ChatInterface.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/chat.tsx", "target": "file:src/components/Layout/Page.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/chat.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/chat.tsx", "target": "function:src/pages/chat.tsx:ChatPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/chat.tsx", "target": "function:src/pages/chat.tsx:ChatPage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/pages/open.tsx", "target": "file:src/components/Layout/Page.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/open.tsx", "target": "file:src/components/OpenAIApiKeyInput.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/open.tsx", "target": "file:src/components/OpenAIChatInterface.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/open.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/open.tsx", "target": "function:src/pages/open.tsx:OpenPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/open.tsx", "target": "function:src/pages/open.tsx:OpenPage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/pages/privacy.tsx", "target": "file:src/components/Layout/Page.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/privacy.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/privacy.tsx", "target": "function:src/pages/privacy.tsx:PrivacyPolicy", "type": "contains", "direction": "forward", "weight": 1.0}
+  ]
+}

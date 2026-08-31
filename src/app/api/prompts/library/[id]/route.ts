@@ -20,11 +20,12 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     await dbConnect();
 
     const body = await req.json();
-    const update: Record<string, string> = {};
+    const update: Record<string, unknown> = {};
     if (typeof body.title === 'string') update.title = body.title;
     if (typeof body.description === 'string') update.description = body.description;
     if (typeof body.content === 'string') update.content = body.content;
     if (typeof body.category === 'string') update.category = body.category;
+    if (typeof body.favorite === 'boolean') update.favorite = body.favorite;
 
     const item = await PromptLibraryItem.findOneAndUpdate({_id: params.id, userEmail: session.user.email}, update, {
       new: true,

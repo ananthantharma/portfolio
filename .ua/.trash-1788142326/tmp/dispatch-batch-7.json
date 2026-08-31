@@ -1,0 +1,298 @@
+{
+  "batchIndex": 7,
+  "files": [
+    {
+      "path": "src/components/CircuitBoardLoader.tsx",
+      "language": "typescript",
+      "sizeLines": 430,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/DribbbleIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/FacebookIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/GithubIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/Icon.tsx",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/InstagramIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/LinkedInIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/QuoteIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/StackOverflowIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Icon/TwitterIcon.tsx",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Layout/Section.tsx",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/PasswordItem.tsx",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Sections/Contact/ContactForm.tsx",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Sections/Contact/index.tsx",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Sections/Footer.tsx",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Sections/Hero.tsx",
+      "language": "typescript",
+      "sizeLines": 383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Socials.tsx",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/TimelineBox.tsx",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Vault/PasswordModal.tsx",
+      "language": "typescript",
+      "sizeLines": 397,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Vault/VaultDashboard.tsx",
+      "language": "typescript",
+      "sizeLines": 584,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/WorkTimeline.tsx",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/data/data.tsx",
+      "language": "typescript",
+      "sizeLines": 335,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/data/dataDef.ts",
+      "language": "typescript",
+      "sizeLines": 164,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/images/header-background.webp",
+      "language": "webp",
+      "sizeLines": 1034,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/dashboard.tsx",
+      "language": "typescript",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/index.tsx",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/components/CircuitBoardLoader.tsx": [
+      "src/data/data.tsx",
+      "src/data/dataDef.ts"
+    ],
+    "src/components/Icon/DribbbleIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/FacebookIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/GithubIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/Icon.tsx": [],
+    "src/components/Icon/InstagramIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/LinkedInIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/QuoteIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/StackOverflowIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Icon/TwitterIcon.tsx": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/components/Layout/Section.tsx": [
+      "src/data/data.tsx"
+    ],
+    "src/components/PasswordItem.tsx": [
+      "src/data/dataDef.ts"
+    ],
+    "src/components/Sections/Contact/ContactForm.tsx": [],
+    "src/components/Sections/Contact/index.tsx": [
+      "src/components/Icon/FacebookIcon.tsx",
+      "src/components/Icon/GithubIcon.tsx",
+      "src/components/Icon/InstagramIcon.tsx",
+      "src/components/Icon/LinkedInIcon.tsx",
+      "src/components/Icon/TwitterIcon.tsx",
+      "src/components/Layout/Section.tsx",
+      "src/components/Sections/Contact/ContactForm.tsx",
+      "src/data/data.tsx",
+      "src/data/dataDef.ts"
+    ],
+    "src/components/Sections/Footer.tsx": [
+      "src/components/Socials.tsx",
+      "src/data/data.tsx"
+    ],
+    "src/components/Sections/Hero.tsx": [
+      "src/components/Layout/Section.tsx",
+      "src/data/data.tsx"
+    ],
+    "src/components/Socials.tsx": [
+      "src/data/data.tsx"
+    ],
+    "src/components/TimelineBox.tsx": [
+      "src/data/dataDef.ts"
+    ],
+    "src/components/Vault/PasswordModal.tsx": [
+      "src/data/dataDef.ts"
+    ],
+    "src/components/Vault/VaultDashboard.tsx": [
+      "src/data/dataDef.ts"
+    ],
+    "src/components/WorkTimeline.tsx": [
+      "src/data/data.tsx"
+    ],
+    "src/data/data.tsx": [
+      "src/components/Icon/GithubIcon.tsx",
+      "src/components/Icon/InstagramIcon.tsx",
+      "src/components/Icon/LinkedInIcon.tsx",
+      "src/components/Icon/TwitterIcon.tsx",
+      "src/data/dataDef.ts",
+      "src/images/header-background.webp"
+    ],
+    "src/data/dataDef.ts": [
+      "src/components/Icon/Icon.tsx"
+    ],
+    "src/images/header-background.webp": [],
+    "src/pages/dashboard.tsx": [
+      "src/components/AccessDenied.tsx",
+      "src/components/Sections/Header.tsx",
+      "src/components/Vault/PasswordModal.tsx",
+      "src/components/Vault/VaultDashboard.tsx",
+      "src/data/dataDef.ts"
+    ],
+    "src/pages/index.tsx": [
+      "src/components/Layout/Page.tsx",
+      "src/components/Sections/Contact/index.tsx",
+      "src/components/Sections/Footer.tsx",
+      "src/components/Sections/Hero.tsx",
+      "src/data/data.tsx"
+    ]
+  },
+  "neighborMap": {
+    "src/data/data.tsx": [
+      {
+        "path": "src/components/Sections/Header.tsx",
+        "batchIndex": 11,
+        "symbols": [
+          "headerID"
+        ]
+      },
+      {
+        "path": "src/hooks/useNavObserver.tsx",
+        "batchIndex": 11,
+        "symbols": [
+          "useNavObserver"
+        ]
+      }
+    ],
+    "src/pages/dashboard.tsx": [
+      {
+        "path": "src/components/AccessDenied.tsx",
+        "batchIndex": 12,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Sections/Header.tsx",
+        "batchIndex": 11,
+        "symbols": [
+          "headerID"
+        ]
+      }
+    ],
+    "src/pages/index.tsx": [
+      {
+        "path": "src/components/Layout/Page.tsx",
+        "batchIndex": 11,
+        "symbols": []
+      }
+    ]
+  }
+}

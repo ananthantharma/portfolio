@@ -1,0 +1,163 @@
+[
+  {
+    "order": 1,
+    "title": "Project Overview & Manifest",
+    "description": "The README is only a placeholder, so the real map of this project is package.json. It declares a Next.js 13 app whose dependency list tells the whole story: MongoDB/Mongoose and Neon Postgres for storage, NextAuth for auth, Lexical for rich text, pdf-lib/pdfjs for document tooling, MQTT for the camera feed, and Google Generative AI plus OpenAI for the assistant features. next.config.js rounds this out with image domains and webpack tweaks needed by those libraries. Keep this ambient scope in mind: what began as a resume template is now an admin portal bolted onto a public portfolio.",
+    "nodeIds": [
+      "config:package.json",
+      "document:README.md",
+      "config:next.config.js"
+    ],
+    "languageLesson": "In package.json the build script runs `next build --no-lint` — linting is deliberately skipped at build time and enforced separately, a common pattern in large evolving codebases."
+  },
+  {
+    "order": 2,
+    "title": "Dual-Router Bootstrap",
+    "description": "This app runs the Pages Router and the App Router side by side. src/pages/_app.tsx is the classic custom App: it wraps every legacy page in the NextAuth SessionProvider and pings an analytics endpoint on route changes. src/app/layout.tsx is the App Router equivalent root, setting global metadata and delegating all context to src/app/providers.tsx, a client component that composes the app-wide providers and the same visit tracker. Understanding that both trees coexist explains why you will see two styles of route and API handler throughout the tour.",
+    "nodeIds": [
+      "file:src/pages/_app.tsx",
+      "file:src/app/layout.tsx",
+      "file:src/app/providers.tsx"
+    ],
+    "languageLesson": "Next.js lets `pages/` and `app/` coexist during migration. Files under `app/` are React Server Components by default; a `\"use client\"` directive (as in providers.tsx) opts a subtree back into the browser runtime."
+  },
+  {
+    "order": 3,
+    "title": "The Public Portfolio Surface",
+    "description": "src/pages/index.tsx is the one page anonymous visitors see: it composes Header, Hero, Contact and Footer sections inside the shared Page layout. All of its copy — hero text, timeline, skills, experience, social links — lives in src/data/data.tsx, typed by src/data/dataDef.ts, which also defines the VaultEntry model used later by the password vault. The Header from src/components/Sections/Header.tsx is the bridge between the two halves of the app: it renders portfolio section links for everyone plus a feature/app dropdown and profile menu that appear once you are signed in.",
+    "nodeIds": [
+      "file:src/pages/index.tsx",
+      "file:src/data/data.tsx",
+      "file:src/data/dataDef.ts",
+      "file:src/components/Sections/Header.tsx"
+    ],
+    "languageLesson": "The portfolio keeps all content in a single typed data module rather than a CMS. `dataDef.ts` acts as the schema; TypeScript then guarantees every section component receives the shape it expects."
+  },
+  {
+    "order": 4,
+    "title": "Authentication & Admin Gating",
+    "description": "Building on the SessionProvider from Step 2, src/lib/auth.ts is the single source of auth truth: it exports authOptions with Credentials and Google providers and JWT/session callbacks that refresh Google access tokens and hydrate per-user permission flags plus admin/trusted-email markers. src/pages/api/auth/[...nextauth].ts simply mounts that config as the auth endpoint, and src/types/next-auth.d.ts augments the Session and JWT types with the custom fields those callbacks add. Every admin feature page checks the session against an admin email and renders src/components/AccessDenied.tsx when the check fails.",
+    "nodeIds": [
+      "file:src/lib/auth.ts",
+      "file:src/pages/api/auth/[...nextauth].ts",
+      "file:src/types/next-auth.d.ts",
+      "file:src/components/AccessDenied.tsx"
+    ],
+    "languageLesson": "`next-auth.d.ts` uses TypeScript module augmentation — re-declaring an installed package's interfaces to add fields. This is how the app safely reads `session.user.isAdmin` without casting to `any`."
+  },
+  {
+    "order": 5,
+    "title": "Database Connections",
+    "description": "auth.ts and every API route depend on the helpers in src/lib. dbConnect.ts is a cached Mongoose connection tuned for serverless: it forces Oracle Cloud PLAIN/$external TLS auth and a single-connection pool so lambdas do not exhaust the database. mongodb.ts memoizes a raw MongoClient promise for code that needs the native driver, and neon.ts returns a Neon serverless Postgres tagged-template client. This split matters: notes, tasks, finance and supplier data live in MongoDB, while the PDF-autofill and e-signing subsystems use Neon Postgres.",
+    "nodeIds": [
+      "file:src/lib/dbConnect.ts",
+      "file:src/lib/mongodb.ts",
+      "file:src/lib/neon.ts"
+    ],
+    "languageLesson": "Serverless functions re-run cold often, so each helper memoizes its connection on the module scope (or `global` in dev). This 'connection caching' pattern prevents opening a new socket on every request."
+  },
+  {
+    "order": 6,
+    "title": "Data Models",
+    "description": "src/models holds the Mongoose schemas that define the domain. The Notes feature is a three-level tree: NoteCategory (top level, scoped by user email) contains NoteSection, which contains NotePage — the most depended-upon model in the codebase, with multi-tab content and compound indexes tuned for sidebar and badge-count queries. ToDo is a rich task model with subtasks, recurrence, dependencies and attachments, and BudgetItem is a representative finance model. Notice the recurring conventions: user-email scoping on every document and indexes designed around the exact queries the UI runs.",
+    "nodeIds": [
+      "file:src/models/NoteCategory.ts",
+      "file:src/models/NoteSection.ts",
+      "file:src/models/NotePage.ts",
+      "file:src/models/ToDo.ts",
+      "file:src/models/BudgetItem.ts"
+    ],
+    "languageLesson": "Mongoose models must be registered once. These files guard with `mongoose.models.X || mongoose.model('X', schema)` so hot reload and repeated serverless imports do not throw an OverwriteModelError."
+  },
+  {
+    "order": 7,
+    "title": "The API Route Handler Pattern",
+    "description": "With models and db helpers in place, the API handlers become formulaic. The notes routes for categories, sections and pages all follow the same shape: resolve the session via authOptions from Step 4, call dbConnect, then run a Mongoose query — often an aggregation that attaches badge counts for important, flagged and open-task pages. src/app/api/todos/route.ts adds inline base64 attachment handling on create. Read these four together and you have the template every other feature's API obeys.",
+    "nodeIds": [
+      "file:src/app/api/notes/categories/route.ts",
+      "file:src/app/api/notes/sections/route.ts",
+      "file:src/app/api/notes/pages/route.ts",
+      "file:src/app/api/todos/route.ts"
+    ],
+    "languageLesson": "App Router handlers export named functions per HTTP verb (`export async function GET(req)`, `POST`, ...) from a `route.ts` file, replacing the single default-export handler with a `req.method` switch used in the Pages Router."
+  },
+  {
+    "order": 8,
+    "title": "Feature Slice: OneNote-Style Notes",
+    "description": "This is the end-to-end picture of one feature. src/components/Notes/NotesLayout.tsx is the shell: it composes the category/section/page navigation over the APIs from Step 7 and hosts the full suite of feature modals — camera, audio, bookmarks, contacts, AI tools, calendar and Drive. When a page is selected, src/components/Notes/NoteEditor.tsx takes over as the editing surface for a single NotePage, wiring in attachments, linked todos, an AI executive summary, and prompt/rewrite modals. Trace NotesLayout to see how a large client feature is assembled from navigation state plus many lazily opened modals.",
+    "nodeIds": [
+      "file:src/components/Notes/NotesLayout.tsx",
+      "file:src/components/Notes/NoteEditor.tsx"
+    ],
+    "languageLesson": "NotesLayout has the highest fan-out in the codebase. Feature shells like this concentrate orchestration — data fetching, selection state, modal toggles — so leaf components can stay presentational."
+  },
+  {
+    "order": 9,
+    "title": "The Shared Lexical Rich-Text Editor",
+    "description": "src/components/Notes/RichTextEditor.tsx is a notable piece of infrastructure: a Lexical-based editor with a formatting toolbar, link and image paste handling, table actions, drawing blocks and controlled value sync. It is deliberately generic and reused by Notes, the Anomaly workspace and the Organization views. src/components/Anomaly/EditorPanel.tsx shows a second consumer: it loads a page, manages tabbed content with autosave, and embeds the same editor. When you see rich text anywhere in this app, it is this component.",
+    "nodeIds": [
+      "file:src/components/Notes/RichTextEditor.tsx",
+      "file:src/components/Anomaly/EditorPanel.tsx"
+    ],
+    "languageLesson": "Lexical models a document as an immutable node tree mutated inside `editor.update()` transactions. Plugins are React components rendered under `<LexicalComposer>` that register listeners and commands — composition instead of configuration."
+  },
+  {
+    "order": 10,
+    "title": "Tasks & Kanban",
+    "description": "The Tasks feature contrasts with Notes by pushing most logic to the client. src/components/Tasks/TasksApp.tsx owns all task state, data fetching, view switching, keyboard shortcuts and CSV import/export, orchestrating every sub-component and modal. src/components/Tasks/types.ts is the second-most depended-upon file after auth: alongside the client task type it carries a large library of pure helpers for status and due-date grouping, sorting, quick-add parsing, recurrence and streaks. Keeping these functions pure and separate makes the kanban, list and calendar views share one behavior set.",
+    "nodeIds": [
+      "file:src/components/Tasks/TasksApp.tsx",
+      "file:src/components/Tasks/types.ts"
+    ],
+    "languageLesson": "`types.ts` here is really a domain module: types plus pure functions with no React or I/O. Pure helpers are trivially unit-testable and let multiple views (board, list, calendar) reuse identical grouping and sorting logic."
+  },
+  {
+    "order": 11,
+    "title": "Finance Dashboards & AI Invoice Scan",
+    "description": "src/app/finance/page.tsx is a client-rendered dashboard that fetches and orchestrates budget items, transactions and investments, wiring together every Finance modal and widget. src/app/api/finance/transactions/route.ts is a typical data route — list, a one-time userEmail backfill migration, and bulk delete — and src/lib/categories.ts supplies the canonical budget/income/transaction taxonomy and emoji helpers used across the UI. src/app/api/invoices/scan/route.ts is the AI touchpoint: it takes an uploaded invoice image, enforces admin access, and delegates OCR-style parsing to Gemini via src/lib/gemini.ts.",
+    "nodeIds": [
+      "file:src/app/finance/page.tsx",
+      "file:src/app/api/finance/transactions/route.ts",
+      "file:src/lib/categories.ts",
+      "file:src/app/api/invoices/scan/route.ts",
+      "file:src/lib/gemini.ts"
+    ],
+    "languageLesson": "Note where AI calls run. `gemini.ts` is a client-side helper for chat features, but invoice scanning goes through a server route so the API key and the admin check stay on the server — the standard boundary for provider secrets."
+  },
+  {
+    "order": 12,
+    "title": "Supplier Risk Intelligence",
+    "description": "This subsystem is the most externally connected. src/pages/api/supplier-risk/intelligence.ts fans out to many public data sources — World Bank, GDELT, OpenCorporates, SEC, Yahoo Finance, NewsAPI, OpenSanctions and more — derives risk signals, and can raise RiskAlert records. src/pages/api/supplier-risk/dashboard.ts aggregates suppliers and alerts into dashboard metrics. The data is modeled by src/models/Supplier.ts, which carries multi-dimensional risk scores and an overall level, and src/models/RiskAlert.ts with its severity and read/resolved lifecycle. This feature lives entirely in the Pages Router API.",
+    "nodeIds": [
+      "file:src/pages/api/supplier-risk/intelligence.ts",
+      "file:src/pages/api/supplier-risk/dashboard.ts",
+      "file:src/models/Supplier.ts",
+      "file:src/models/RiskAlert.ts"
+    ],
+    "languageLesson": "The intelligence route wraps each external fetch so one provider failing (rate limit, outage) degrades a single risk signal instead of failing the whole request — essential when aggregating a dozen third-party APIs."
+  },
+  {
+    "order": 13,
+    "title": "Anomaly Workspace & ESP32 Camera Feed",
+    "description": "src/components/Anomaly/AnomalyApp.tsx is the admin-only notes workspace — notebooks, sections, pages, command palette, in-app browser — with view state persisted to localStorage. Its most unusual part is src/components/Anomaly/CameraModal.tsx: it fetches HiveMQ broker credentials from src/app/api/anomaly/camera/mqtt-creds/route.ts (an admin-gated endpoint), connects to the broker over a browser MQTT bundle, and renders JPEG frames streamed by an ESP32-CAM with a live FPS counter. The browser is a full MQTT subscriber here, not just an HTTP client.",
+    "nodeIds": [
+      "file:src/components/Anomaly/AnomalyApp.tsx",
+      "file:src/components/Anomaly/CameraModal.tsx",
+      "file:src/app/api/anomaly/camera/mqtt-creds/route.ts"
+    ],
+    "languageLesson": "MQTT is a pub/sub protocol over a persistent connection. The credentials endpoint keeps broker secrets off the client bundle by issuing them only after the server confirms an admin session, then the browser connects directly via WebSocket transport."
+  },
+  {
+    "order": 14,
+    "title": "PDF Autofill & E-Signing Pipeline",
+    "description": "The document subsystems close the tour and are the main users of Neon Postgres from Step 5. src/app/pdf-autofill/PdfAutoFillClient.tsx uploads source documents, extracts facts, analyzes a target PDF's form fields, maps values via API calls, and produces a flattened PDF for download; reusable field mappings are saved as templates through src/app/api/pdf-autofill/templates/route.ts. The e-signing flow starts at src/app/signing/page.tsx (envelope dashboard), sends documents to recipients with per-recipient tokens via src/app/api/signing/send/route.ts, and src/app/api/signing/sign/route.ts is the public token endpoint that stamps a recipient's signature into the PDF on submission.",
+    "nodeIds": [
+      "file:src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "file:src/app/api/pdf-autofill/templates/route.ts",
+      "file:src/app/signing/page.tsx",
+      "file:src/app/api/signing/send/route.ts",
+      "file:src/app/api/signing/sign/route.ts"
+    ],
+    "languageLesson": "The signing routes lazily `CREATE TABLE IF NOT EXISTS` on first use instead of shipping migrations. The `sign` endpoint is intentionally unauthenticated — authorization comes from an unguessable per-recipient token in the URL, the standard pattern for external signer links."
+  }
+]

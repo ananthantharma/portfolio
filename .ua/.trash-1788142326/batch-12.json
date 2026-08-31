@@ -1,0 +1,277 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/anomaly/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/anomaly/page.tsx",
+      "summary": "Next.js App Router server page for the anomaly-detection feature; checks the server session against the admin email and renders either AccessDenied or the AnomalyApp client component.",
+      "tags": ["entry-point", "page", "auth-guard", "server-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/api/invoices/[id]/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/invoices/[id]/route.ts",
+      "summary": "REST API route for a single invoice, exposing DELETE and PUT handlers that authorize the caller against shared-access emails and mutate the Mongoose Invoice document.",
+      "tags": ["api-handler", "rest", "crud", "auth-guard", "mongoose"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/invoices/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/invoices/route.ts",
+      "summary": "REST API route for the invoice collection, exposing GET (list, scoped by shared-access email) and POST (create) handlers backed by the Mongoose Invoice model.",
+      "tags": ["api-handler", "rest", "crud", "auth-guard", "mongoose"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/notes/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/notes/page.tsx",
+      "summary": "Next.js App Router server page for the legacy notes feature; gates access by admin session and renders AccessDenied or the NotesLayout component.",
+      "tags": ["entry-point", "page", "auth-guard", "server-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/organization/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/organization/page.tsx",
+      "summary": "Next.js App Router server page for the org-chart feature; gates access by admin session and renders AccessDenied or the OrganizationLayout component.",
+      "tags": ["entry-point", "page", "auth-guard", "server-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/pdf-autofill/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/pdf-autofill/page.tsx",
+      "summary": "Next.js App Router server page for the PDF autofill / e-signing feature; gates access by admin session and renders AccessDenied or the feature UI.",
+      "tags": ["entry-point", "page", "auth-guard", "server-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/process-flow/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/process-flow/page.tsx",
+      "summary": "Next.js App Router server page for the process-flow / diagram builder; gates access by admin session and renders AccessDenied or the ProcessFlowBuilder component.",
+      "tags": ["entry-point", "page", "auth-guard", "server-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/smart-invoices/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/smart-invoices/page.tsx",
+      "summary": "Client page for the smart-invoices feature that coordinates the InvoiceScanner and InvoiceList components, tracking year filters, aggregate stats, success messages, and a refresh trigger.",
+      "tags": ["page", "component", "state-management", "invoices"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/AccessDenied.tsx",
+      "type": "file",
+      "name": "AccessDenied.tsx",
+      "filePath": "src/components/AccessDenied.tsx",
+      "summary": "Reusable presentational component that renders a permission-denied message, shown by admin-gated pages when the current session lacks access.",
+      "tags": ["component", "ui", "auth-guard", "shared"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Invoices/InvoiceList.tsx",
+      "type": "file",
+      "name": "InvoiceList.tsx",
+      "filePath": "src/components/Invoices/InvoiceList.tsx",
+      "summary": "Client component that fetches invoices from the API, filters by year, computes aggregate stats, and supports inline editing, deletion, and CSV export of invoice rows.",
+      "tags": ["component", "data-table", "crud", "csv-export", "invoices"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Invoices/InvoiceScanner.tsx",
+      "type": "file",
+      "name": "InvoiceScanner.tsx",
+      "filePath": "src/components/Invoices/InvoiceScanner.tsx",
+      "summary": "Client component that uploads and client-side-compresses an invoice image, sends it to a scan API for OCR extraction, lets the user edit the parsed fields, and saves the resulting invoice.",
+      "tags": ["component", "file-upload", "image-processing", "ocr", "invoices"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx",
+      "type": "file",
+      "name": "ProcessFlowBuilder.tsx",
+      "filePath": "src/components/ProcessFlow/ProcessFlowBuilder.tsx",
+      "summary": "Large self-contained interactive diagram editor that builds process-flow / Gantt-style graphs with draggable nodes, orthogonal routed edges with bridges, undo/redo history, a legend, and an inspector panel, manipulating the DOM/SVG directly.",
+      "tags": ["component", "canvas-editor", "svg", "graph-editor", "undo-redo"],
+      "complexity": "complex",
+      "languageNotes": "Imperative DOM/SVG manipulation with a local mutable state object and JSON-snapshot history rather than React state."
+    },
+    {
+      "id": "file:src/models/Invoice.ts",
+      "type": "file",
+      "name": "Invoice.ts",
+      "filePath": "src/models/Invoice.ts",
+      "summary": "Mongoose model and IInvoice TypeScript interface defining the invoice schema (vendor, amounts, tax, GST, category, status, image URL) with timestamps and a per-user email index.",
+      "tags": ["data-model", "mongoose", "schema", "invoices"],
+      "complexity": "simple",
+      "languageNotes": "Uses the mongoose.models.Invoice || mongoose.model(...) guard to avoid model recompilation under Next.js hot reload."
+    },
+    {
+      "id": "function:src/app/api/invoices/[id]/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/invoices/[id]/route.ts",
+      "lineRange": [12, 42],
+      "summary": "Route handler that authorizes the session against shared-access emails and deletes the invoice identified by the route param.",
+      "tags": ["api-handler", "rest", "auth-guard", "mongoose"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/invoices/[id]/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/invoices/[id]/route.ts",
+      "lineRange": [44, 81],
+      "summary": "Route handler that authorizes the session and updates the invoice identified by the route param with the JSON request body.",
+      "tags": ["api-handler", "rest", "auth-guard", "mongoose"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/invoices/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/invoices/route.ts",
+      "lineRange": [11, 38],
+      "summary": "Route handler that returns the list of invoices, scoped to the authorized user unless the session belongs to a shared-access email.",
+      "tags": ["api-handler", "rest", "auth-guard", "mongoose"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/invoices/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/invoices/route.ts",
+      "lineRange": [40, 62],
+      "summary": "Route handler that authorizes the session and creates a new invoice document from the JSON request body.",
+      "tags": ["api-handler", "rest", "auth-guard", "mongoose"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/smart-invoices/page.tsx:SmartInvoicesPage",
+      "type": "function",
+      "name": "SmartInvoicesPage",
+      "filePath": "src/app/smart-invoices/page.tsx",
+      "lineRange": [13, 178],
+      "summary": "Client page component wiring the scanner and list together with year selection, aggregate stat tiles, success toasts, and a refresh trigger; redirects unauthenticated users.",
+      "tags": ["page", "component", "state-management", "invoices"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/AccessDenied.tsx:AccessDenied",
+      "type": "function",
+      "name": "AccessDenied",
+      "filePath": "src/components/AccessDenied.tsx",
+      "lineRange": [8, 34],
+      "summary": "Presentational component rendering a configurable permission-denied message block.",
+      "tags": ["component", "ui", "auth-guard"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList",
+      "type": "function",
+      "name": "InvoiceList",
+      "filePath": "src/components/Invoices/InvoiceList.tsx",
+      "lineRange": [20, 363],
+      "summary": "Invoice list component that loads data from the API, derives available years and filtered rows, reports stats upward, and handles inline edit, delete, and CSV export.",
+      "tags": ["component", "data-table", "crud", "csv-export", "invoices"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Invoices/InvoiceScanner.tsx:InvoiceScanner",
+      "type": "function",
+      "name": "InvoiceScanner",
+      "filePath": "src/components/Invoices/InvoiceScanner.tsx",
+      "lineRange": [27, 334],
+      "summary": "Invoice scanner component that compresses an uploaded image, posts it for OCR scanning, exposes the parsed fields for editing, and persists the invoice via the API.",
+      "tags": ["component", "file-upload", "image-processing", "ocr", "invoices"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/ProcessFlow/ProcessFlowBuilder.tsx:ProcessFlowBuilder",
+      "type": "function",
+      "name": "ProcessFlowBuilder",
+      "filePath": "src/components/ProcessFlow/ProcessFlowBuilder.tsx",
+      "lineRange": [203, 1438],
+      "summary": "Interactive process-flow diagram editor component managing nodes, orthogonally routed SVG edges with bridge crossings, undo/redo snapshots, legend, and inspector via direct DOM manipulation.",
+      "tags": ["component", "canvas-editor", "svg", "graph-editor", "undo-redo"],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/app/anomaly/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/anomaly/page.tsx", "target": "file:src/components/Anomaly/AnomalyApp.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/anomaly/page.tsx", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "file:src/lib/dbConnect.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "file:src/models/Invoice.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "file:src/lib/dbConnect.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "file:src/models/Invoice.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/notes/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/notes/page.tsx", "target": "file:src/components/Notes/NotesLayout.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/notes/page.tsx", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/organization/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/organization/page.tsx", "target": "file:src/components/Organization/OrganizationLayout.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/organization/page.tsx", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/pdf-autofill/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/pdf-autofill/page.tsx", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/process-flow/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/process-flow/page.tsx", "target": "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/process-flow/page.tsx", "target": "file:src/lib/auth.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "file:src/components/Invoices/InvoiceList.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "file:src/components/Invoices/InvoiceScanner.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Invoices/InvoiceList.tsx", "target": "file:src/models/Invoice.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "function:src/app/api/invoices/[id]/route.ts:DELETE", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "function:src/app/api/invoices/[id]/route.ts:PUT", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "function:src/app/api/invoices/route.ts:GET", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "function:src/app/api/invoices/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "function:src/app/smart-invoices/page.tsx:SmartInvoicesPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/AccessDenied.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Invoices/InvoiceList.tsx", "target": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Invoices/InvoiceScanner.tsx", "target": "function:src/components/Invoices/InvoiceScanner.tsx:InvoiceScanner", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx", "target": "function:src/components/ProcessFlow/ProcessFlowBuilder.tsx:ProcessFlowBuilder", "type": "contains", "direction": "forward", "weight": 1.0},
+
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "function:src/app/api/invoices/[id]/route.ts:DELETE", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/app/api/invoices/[id]/route.ts", "target": "function:src/app/api/invoices/[id]/route.ts:PUT", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "function:src/app/api/invoices/route.ts:GET", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/app/api/invoices/route.ts", "target": "function:src/app/api/invoices/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "function:src/app/smart-invoices/page.tsx:SmartInvoicesPage", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/AccessDenied.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Invoices/InvoiceList.tsx", "target": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Invoices/InvoiceScanner.tsx", "target": "function:src/components/Invoices/InvoiceScanner.tsx:InvoiceScanner", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx", "target": "function:src/components/ProcessFlow/ProcessFlowBuilder.tsx:ProcessFlowBuilder", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/anomaly/page.tsx", "target": "function:src/components/Anomaly/AnomalyApp.tsx:AnomalyApp", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/organization/page.tsx", "target": "function:src/components/Organization/OrganizationLayout.tsx:OrganizationLayout", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/process-flow/page.tsx", "target": "function:src/components/ProcessFlow/ProcessFlowBuilder.tsx:ProcessFlowBuilder", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "function:src/components/Invoices/InvoiceScanner.tsx:InvoiceScanner", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/anomaly/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/notes/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/organization/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/pdf-autofill/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/process-flow/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+    {"source": "file:src/app/smart-invoices/page.tsx", "target": "function:src/components/AccessDenied.tsx:AccessDenied", "type": "depends_on", "direction": "forward", "weight": 0.6},
+
+    {"source": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "target": "function:src/app/api/invoices/route.ts:GET", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "target": "function:src/app/api/invoices/[id]/route.ts:PUT", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Invoices/InvoiceList.tsx:InvoiceList", "target": "function:src/app/api/invoices/[id]/route.ts:DELETE", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Invoices/InvoiceScanner.tsx:InvoiceScanner", "target": "function:src/app/api/invoices/route.ts:POST", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

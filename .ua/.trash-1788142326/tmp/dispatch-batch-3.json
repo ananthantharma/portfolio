@@ -1,0 +1,1009 @@
+{
+  "batchIndex": 3,
+  "files": [
+    {
+      "path": "src/lib/auth.ts",
+      "language": "typescript",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/googleDrive.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/mongodb.ts",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/neon.ts",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/AIChatSession.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/ProcessFlow.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/PromptLibraryItem.ts",
+      "language": "typescript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/Property.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/RiskAlert.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/RiskQuestionnaire.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SavedPrompt.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SourcingConfig.ts",
+      "language": "typescript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SourcingEvent.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/Supplier.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/admin/users/[id]/delete.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/admin/users/create.ts",
+      "language": "typescript",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/auth/[...nextauth].ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/bookmarks.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/bookmarks/[id].ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/categories/update.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/debug/auth-check.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/finance/stock-price/index.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/gemini/assess.ts",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/sourcing/parse-clipboard.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/alerts.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/dashboard.ts",
+      "language": "typescript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/intelligence.ts",
+      "language": "typescript",
+      "sizeLines": 649,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/questionnaires.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/seed.ts",
+      "language": "typescript",
+      "sizeLines": 257,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/[id].ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/index.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/lib/auth.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/lib/googleDrive.ts": [],
+    "src/lib/mongodb.ts": [],
+    "src/lib/neon.ts": [],
+    "src/models/AIChatSession.ts": [],
+    "src/models/ProcessFlow.ts": [],
+    "src/models/PromptLibraryItem.ts": [],
+    "src/models/Property.ts": [],
+    "src/models/RiskAlert.ts": [],
+    "src/models/RiskQuestionnaire.ts": [],
+    "src/models/SavedPrompt.ts": [],
+    "src/models/SourcingConfig.ts": [],
+    "src/models/SourcingEvent.ts": [],
+    "src/models/Supplier.ts": [],
+    "src/pages/api/admin/users/[id]/delete.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/admin/users/create.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/auth/[...nextauth].ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/bookmarks.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/bookmarks/[id].ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/categories/update.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/debug/auth-check.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/finance/stock-price/index.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/gemini/assess.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/sourcing/parse-clipboard.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/supplier-risk/alerts.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts"
+    ],
+    "src/pages/api/supplier-risk/dashboard.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/intelligence.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts"
+    ],
+    "src/pages/api/supplier-risk/questionnaires.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskQuestionnaire.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/seed.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/suppliers/[id].ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/suppliers/index.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/Supplier.ts"
+    ]
+  },
+  "neighborMap": {
+    "src/lib/auth.ts": [
+      {
+        "path": "src/app/api/finance/transactions/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/categories/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/pages/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/sections/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/todos/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "POST",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/categories/[id]/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/sections/[id]/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/stats/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/anomaly/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "AnomalyPage"
+        ]
+      },
+      {
+        "path": "src/app/api/ai-chat/sessions/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/contacts/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "POST",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/debug/drive-status/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/finance/budget/route.ts",
+        "batchIndex": 6,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/finance/properties/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/gantt/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/invoices/[id]/route.ts",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "DELETE",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/invoices/route.ts",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/categories/reorder/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/pages/[id]/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/pages/reorder/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/notes/sections/reorder/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/process-flow/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/library/[id]/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/library/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/organize/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/rewrite/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/sourcing/config/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/sourcing/events/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/todos/attachment/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/user/settings/route.ts",
+        "batchIndex": 4,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/notes/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "NotesPage"
+        ]
+      },
+      {
+        "path": "src/app/organization/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "OrganizationPage"
+        ]
+      },
+      {
+        "path": "src/app/process-flow/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "ProcessFlowPage"
+        ]
+      },
+      {
+        "path": "src/pages/api/admin/users/[id]/permissions.ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/finance/investments/[id].ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/finance/investments/index.ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/finance/investments/sell.ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/passwords/[id].ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/passwords/index.ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/pages/api/sys-pulse.ts",
+        "batchIndex": 5,
+        "symbols": [
+          "handler"
+        ]
+      },
+      {
+        "path": "src/app/api/drive/files/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/invoices/scan/route.ts",
+        "batchIndex": 11,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/documents/[id]/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/documents/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/fields/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/migrate/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/recipients/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/send/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/pdf-autofill/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "PdfAutoFillPage"
+        ]
+      },
+      {
+        "path": "src/app/api/anomaly/camera/mqtt-creds/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET"
+        ]
+      }
+    ],
+    "src/lib/googleDrive.ts": [
+      {
+        "path": "src/app/api/debug/drive-status/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET"
+        ]
+      },
+      {
+        "path": "src/app/api/drive/files/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      }
+    ],
+    "src/lib/mongodb.ts": [
+      {
+        "path": "src/app/api/debug/drive-status/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET"
+        ]
+      }
+    ],
+    "src/lib/neon.ts": [
+      {
+        "path": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/pdf-autofill/templates/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/documents/[id]/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/documents/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/fields/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/migrate/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/recipients/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/send/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "POST"
+        ]
+      },
+      {
+        "path": "src/app/api/signing/sign/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      }
+    ],
+    "src/models/AIChatSession.ts": [
+      {
+        "path": "src/app/api/ai-chat/sessions/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ]
+      }
+    ],
+    "src/models/ProcessFlow.ts": [
+      {
+        "path": "src/app/api/process-flow/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      }
+    ],
+    "src/models/PromptLibraryItem.ts": [
+      {
+        "path": "src/app/api/prompts/library/[id]/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "PUT",
+          "DELETE"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/library/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "runtime",
+          "GET",
+          "POST"
+        ]
+      }
+    ],
+    "src/models/Property.ts": [
+      {
+        "path": "src/app/api/finance/properties/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET"
+        ]
+      }
+    ],
+    "src/models/RiskAlert.ts": [
+      {
+        "path": "src/components/SupplierRisk/AlertItem.tsx",
+        "batchIndex": 13,
+        "symbols": [
+          "AlertItem"
+        ]
+      }
+    ],
+    "src/models/SavedPrompt.ts": [
+      {
+        "path": "src/app/api/prompts/organize/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT"
+        ]
+      },
+      {
+        "path": "src/app/api/prompts/rewrite/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "PUT"
+        ]
+      }
+    ],
+    "src/models/SourcingConfig.ts": [
+      {
+        "path": "src/app/api/sourcing/config/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST"
+        ]
+      }
+    ],
+    "src/models/SourcingEvent.ts": [
+      {
+        "path": "src/app/api/sourcing/events/route.ts",
+        "batchIndex": 1,
+        "symbols": [
+          "dynamic",
+          "GET",
+          "POST",
+          "DELETE"
+        ]
+      }
+    ],
+    "src/models/Supplier.ts": [
+      {
+        "path": "src/components/SupplierRisk/RiskBadge.tsx",
+        "batchIndex": 13,
+        "symbols": [
+          "RiskBadge",
+          "ScoreBar"
+        ]
+      }
+    ],
+    "src/pages/api/supplier-risk/alerts.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/dashboard.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/intelligence.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/questionnaires.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/seed.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/suppliers/[id].ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/pages/api/supplier-risk/suppliers/index.ts": [
+      {
+        "path": "src/lib/dbConnect.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ]
+  }
+}

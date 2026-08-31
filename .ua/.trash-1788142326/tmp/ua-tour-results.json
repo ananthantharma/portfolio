@@ -1,0 +1,2406 @@
+{
+  "scriptCompleted": true,
+  "entryPointCandidates": [
+    {
+      "id": "file:src/pages/api/supplier-risk/suppliers/index.ts",
+      "score": 5,
+      "name": "index.ts",
+      "summary": "Authenticated Pages API route listing the user's suppliers with filtering and sorting, and creating new supplier documents."
+    },
+    {
+      "id": "file:src/pages/admin/index.tsx",
+      "score": 5,
+      "name": "index.tsx",
+      "summary": "Admin-only dashboard (SSR-guarded to the owner email) listing users with per-feature permission toggles and account management, plus grouped access-log/IP visitor history."
+    },
+    {
+      "id": "file:src/pages/api/finance/investments/index.ts",
+      "score": 5,
+      "name": "index.ts",
+      "summary": "Authenticated API endpoint to list and create Investment holdings for the session user."
+    },
+    {
+      "id": "file:src/pages/api/passwords/index.ts",
+      "score": 5,
+      "name": "index.ts",
+      "summary": "Authenticated API endpoint to list and create secure-vault items scoped to the session user."
+    },
+    {
+      "id": "file:src/pages/index.tsx",
+      "score": 5,
+      "name": "index.tsx",
+      "summary": "Next.js home page composing the Header (dynamically imported, client-only), Hero, Contact and Footer sections inside the Page layout with homepage meta."
+    },
+    {
+      "id": "file:src/pages/supplier-risk/index.tsx",
+      "score": 5,
+      "name": "index.tsx",
+      "summary": "Supplier risk dashboard page showing summary stat cards, risk distribution chart, top-risky suppliers, category breakdown, recent alerts, and a demo data seeding action."
+    },
+    {
+      "id": "file:src/pages/supplier-risk/suppliers/index.tsx",
+      "score": 5,
+      "name": "index.tsx",
+      "summary": "Supplier list page with search, risk/status filters, sorting, and create / edit / delete via the supplier modal and API."
+    },
+    {
+      "id": "document:README.md",
+      "score": 5,
+      "name": "README.md",
+      "summary": "Minimal project readme placeholder for the portfolio website repository."
+    }
+  ],
+  "fanInRanking": [
+    {
+      "id": "file:src/lib/auth.ts",
+      "fanIn": 75,
+      "name": "auth.ts"
+    },
+    {
+      "id": "file:src/lib/dbConnect.ts",
+      "fanIn": 57,
+      "name": "dbConnect.ts"
+    },
+    {
+      "id": "file:src/models/NotePage.ts",
+      "fanIn": 22,
+      "name": "NotePage.ts"
+    },
+    {
+      "id": "file:src/components/Tasks/types.ts",
+      "fanIn": 17,
+      "name": "types.ts"
+    },
+    {
+      "id": "file:src/models/NoteSection.ts",
+      "fanIn": 13,
+      "name": "NoteSection.ts"
+    },
+    {
+      "id": "file:src/models/NoteCategory.ts",
+      "fanIn": 11,
+      "name": "NoteCategory.ts"
+    },
+    {
+      "id": "file:src/models/ToDo.ts",
+      "fanIn": 11,
+      "name": "ToDo.ts"
+    },
+    {
+      "id": "file:src/lib/categories.ts",
+      "fanIn": 10,
+      "name": "categories.ts"
+    },
+    {
+      "id": "file:src/data/data.tsx",
+      "fanIn": 10,
+      "name": "data.tsx"
+    },
+    {
+      "id": "file:src/components/Sections/Header.tsx",
+      "fanIn": 10,
+      "name": "Header.tsx"
+    },
+    {
+      "id": "file:src/lib/neon.ts",
+      "fanIn": 9,
+      "name": "neon.ts"
+    },
+    {
+      "id": "file:src/models/BudgetItem.ts",
+      "fanIn": 9,
+      "name": "BudgetItem.ts"
+    },
+    {
+      "id": "file:src/components/Icon/Icon.tsx",
+      "fanIn": 9,
+      "name": "Icon.tsx"
+    },
+    {
+      "id": "file:src/lib/mongodb.ts",
+      "fanIn": 8,
+      "name": "mongodb.ts"
+    },
+    {
+      "id": "file:src/data/dataDef.ts",
+      "fanIn": 8,
+      "name": "dataDef.ts"
+    },
+    {
+      "id": "file:src/components/Notes/BadgeSettingsContext.tsx",
+      "fanIn": 8,
+      "name": "BadgeSettingsContext.tsx"
+    },
+    {
+      "id": "file:src/components/Anomaly/types.ts",
+      "fanIn": 8,
+      "name": "types.ts"
+    },
+    {
+      "id": "file:src/components/AccessDenied.tsx",
+      "fanIn": 8,
+      "name": "AccessDenied.tsx"
+    },
+    {
+      "id": "file:src/models/RiskAlert.ts",
+      "fanIn": 6,
+      "name": "RiskAlert.ts"
+    },
+    {
+      "id": "file:src/models/Supplier.ts",
+      "fanIn": 6,
+      "name": "Supplier.ts"
+    }
+  ],
+  "fanOutRanking": [
+    {
+      "id": "file:src/components/Notes/NotesLayout.tsx",
+      "fanOut": 30,
+      "name": "NotesLayout.tsx"
+    },
+    {
+      "id": "file:src/components/Organization/OrganizationLayout.tsx",
+      "fanOut": 25,
+      "name": "OrganizationLayout.tsx"
+    },
+    {
+      "id": "file:src/components/Tasks/TasksApp.tsx",
+      "fanOut": 22,
+      "name": "TasksApp.tsx"
+    },
+    {
+      "id": "file:src/app/finance/page.tsx",
+      "fanOut": 17,
+      "name": "page.tsx"
+    },
+    {
+      "id": "file:src/app/api/finance/transactions/route.ts",
+      "fanOut": 11,
+      "name": "transactions"
+    },
+    {
+      "id": "file:src/components/Anomaly/AnomalyApp.tsx",
+      "fanOut": 11,
+      "name": "AnomalyApp.tsx"
+    },
+    {
+      "id": "file:src/components/Sections/Contact/index.tsx",
+      "fanOut": 9,
+      "name": "index.tsx"
+    },
+    {
+      "id": "file:src/components/Notes/NoteEditor.tsx",
+      "fanOut": 9,
+      "name": "NoteEditor.tsx"
+    },
+    {
+      "id": "file:src/components/Tasks/TaskWindow.tsx",
+      "fanOut": 8,
+      "name": "TaskWindow.tsx"
+    },
+    {
+      "id": "file:src/components/Tasks/DetailDrawer.tsx",
+      "fanOut": 6,
+      "name": "DetailDrawer.tsx"
+    },
+    {
+      "id": "file:src/app/api/notes/categories/route.ts",
+      "fanOut": 6,
+      "name": "categories"
+    },
+    {
+      "id": "file:src/app/api/notes/pages/route.ts",
+      "fanOut": 6,
+      "name": "pages"
+    },
+    {
+      "id": "file:src/components/Notes/ToDoListModal.tsx",
+      "fanOut": 6,
+      "name": "ToDoListModal.tsx"
+    },
+    {
+      "id": "file:src/data/data.tsx",
+      "fanOut": 6,
+      "name": "data.tsx"
+    },
+    {
+      "id": "file:src/components/Notes/SectionPageList.tsx",
+      "fanOut": 6,
+      "name": "SectionPageList.tsx"
+    },
+    {
+      "id": "file:src/pages/supplier-risk/suppliers/[id].tsx",
+      "fanOut": 6,
+      "name": "[id].tsx"
+    },
+    {
+      "id": "file:src/app/api/notes/sections/route.ts",
+      "fanOut": 5,
+      "name": "sections"
+    },
+    {
+      "id": "file:src/app/api/todos/route.ts",
+      "fanOut": 5,
+      "name": "todos"
+    },
+    {
+      "id": "file:src/pages/dashboard.tsx",
+      "fanOut": 5,
+      "name": "dashboard.tsx"
+    },
+    {
+      "id": "file:src/pages/index.tsx",
+      "fanOut": 5,
+      "name": "index.tsx"
+    }
+  ],
+  "bfsTraversal": {
+    "startNode": "file:src/pages/_app.tsx",
+    "order": [
+      "file:src/pages/_app.tsx",
+      "file:src/globalStyles.scss"
+    ],
+    "depthMap": {
+      "file:src/pages/_app.tsx": 0,
+      "file:src/globalStyles.scss": 1
+    },
+    "byDepth": {
+      "0": [
+        "file:src/pages/_app.tsx"
+      ],
+      "1": [
+        "file:src/globalStyles.scss"
+      ]
+    }
+  },
+  "nonCodeFiles": {
+    "documentation": [
+      {
+        "id": "document:README.md",
+        "name": "README.md",
+        "type": "document",
+        "summary": "Minimal project readme placeholder for the portfolio website repository."
+      }
+    ],
+    "infrastructure": [],
+    "data": [],
+    "config": [
+      {
+        "id": "config:.env.local.example",
+        "name": ".env.local.example",
+        "type": "config",
+        "summary": "Template for local environment variables documenting required secrets (MongoDB URI, NextAuth secret, Google OAuth credentials) and optional supplier-risk intelligence API keys (News API, OpenSanctions, Alpha Vantage)."
+      },
+      {
+        "id": "config:.yarnrc.yml",
+        "name": ".yarnrc.yml",
+        "type": "config",
+        "summary": "Yarn configuration setting nodeLinker to use a conventional node_modules install layout."
+      },
+      {
+        "id": "config:package.json",
+        "name": "package.json",
+        "type": "config",
+        "summary": "NPM manifest for the react-resume-template portfolio app, declaring Next.js 13 scripts (build with --no-lint, dev, lint, sitemap) and a large dependency set spanning MongoDB/Mongoose, NextAuth, Lexical rich-text editing, PDF tooling, MQTT, Google Generative AI, and finance data libraries."
+      },
+      {
+        "id": "config:tsconfig.json",
+        "name": "tsconfig.json",
+        "type": "config",
+        "summary": "TypeScript compiler configuration enabling strict mode, unused-locals/parameters checks, and the @/* path alias mapping to ./src, with the Next.js language-service plugin and JSX preserved for the Next compiler."
+      },
+      {
+        "id": "config:vercel.json",
+        "name": "vercel.json",
+        "type": "config",
+        "summary": "Vercel deployment configuration pinning the Next.js framework preset, build command and output directory, and rewriting /api/proxy/* to the Google Generative Language API."
+      },
+      {
+        "id": "config:.claude/launch.json",
+        "name": "launch.json",
+        "type": "config",
+        "summary": "Claude Code launch configuration defining the dev server command and port used to preview this Next.js app."
+      },
+      {
+        "id": "config:.claude/settings.local.json",
+        "name": "settings.local.json",
+        "type": "config",
+        "summary": "Local Claude Code settings granting a curated allowlist of tool permissions for this project."
+      },
+      {
+        "id": "config:.github/FUNDING.yml",
+        "name": "FUNDING.yml",
+        "type": "config",
+        "summary": "GitHub Sponsors funding configuration pointing at the repository owner's sponsorship account."
+      },
+      {
+        "id": "config:next.config.js",
+        "name": "next.config.js",
+        "type": "config",
+        "summary": "Next.js build and runtime configuration covering image domains, webpack tweaks, and framework options for the portfolio app."
+      },
+      {
+        "id": "config:stylelint.config.js",
+        "name": "stylelint.config.js",
+        "type": "config",
+        "summary": "Stylelint configuration extending the recommended and order configs, enabling the Prettier plugin, and whitelisting Tailwind at-rules."
+      },
+      {
+        "id": "config:tailwind.config.js",
+        "name": "tailwind.config.js",
+        "type": "config",
+        "summary": "Tailwind CSS configuration defining the design system: font, color, spacing, radius, shadow, blur, and animation tokens plus glassmorphism utilities, with the forms and typography plugins."
+      }
+    ]
+  },
+  "clusters": [
+    {
+      "nodes": [
+        "file:src/components/Sections/Header.tsx",
+        "file:src/hooks/useNavObserver.tsx",
+        "file:src/data/data.tsx"
+      ],
+      "edgeCount": 4
+    },
+    {
+      "nodes": [
+        "file:src/components/Organization/OrgDashboard.tsx",
+        "file:src/components/Organization/OrganizationLayout.tsx"
+      ],
+      "edgeCount": 2
+    },
+    {
+      "nodes": [
+        "file:src/components/Organization/OrgFilesView.tsx",
+        "file:src/components/Organization/OrganizationLayout.tsx"
+      ],
+      "edgeCount": 2
+    },
+    {
+      "nodes": [
+        "file:src/components/Organization/OrganizationLayout.tsx",
+        "file:src/components/Organization/OrgNotesView.tsx"
+      ],
+      "edgeCount": 2
+    }
+  ],
+  "layers": {
+    "count": 7,
+    "list": [
+      {
+        "id": "layer:pages",
+        "name": "Pages & Route Entrypoints",
+        "description": "Next.js App Router and Pages Router page components (feature screens for finance, tasks, notes, anomaly, org charts, PDF autofill, e-signing, supplier risk) that compose feature components into routed views."
+      },
+      {
+        "id": "layer:api",
+        "name": "API & Route Handlers",
+        "description": "Server-side request handlers under src/app/api and src/pages/api that authenticate via NextAuth, talk to MongoDB/Neon and external services (Gemini, OpenAI, Google Drive, HiveMQ), and back every feature."
+      },
+      {
+        "id": "layer:ui",
+        "name": "Feature UI Components",
+        "description": "Client React components grouped by feature (Notes, Tasks, Finance, Anomaly, Organization, SupplierRisk, Invoices, ProcessFlow, Vault, Sections, Icon, Layout) plus shared hooks, forming the bulk of the interface."
+      },
+      {
+        "id": "layer:data",
+        "name": "Data Models",
+        "description": "Mongoose schema definitions for all persisted entities (notes, tasks, invoices, signing documents, finance properties, prompts, org nodes), the high-fan-in persistence contract shared by API handlers and components."
+      },
+      {
+        "id": "layer:lib",
+        "name": "Core Library & Integrations",
+        "description": "Foundational shared modules in src/lib — NextAuth config, dbConnect/mongodb/neon clients, Google Drive, Gemini and OpenAI wrappers, category constants — imported by nearly every API route and feature."
+      },
+      {
+        "id": "layer:static-data",
+        "name": "Static Data, Types & Assets",
+        "description": "Resume/portfolio content data, TypeScript type declarations, and image/static assets consumed by the marketing Sections and other presentational components."
+      },
+      {
+        "id": "layer:config",
+        "name": "Build, Config & Tooling",
+        "description": "Project configuration (next.config.js, tailwind, tsconfig, vercel.json, package.json), the standalone Express contact-form server.js, MongoDB seed/maintenance scripts, and CI/editor tooling files."
+      }
+    ]
+  },
+  "nodeSummaryIndex": {
+    "file:src/app/api/ai-chat/sessions/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Next.js route handlers for CRUD operations on AI chat sessions, persisting conversation history per authenticated user in MongoDB."
+    },
+    "file:src/app/api/anomaly/camera/mqtt-creds/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Admin-only endpoint that returns HiveMQ MQTT broker credentials for the ESP32 anomaly camera feed."
+    },
+    "file:src/app/api/calendar/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Proxy route that fetches and creates Google Calendar events for the authenticated admin user via an external calendar service."
+    },
+    "file:src/app/api/debug/drive-status/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Diagnostic endpoint that reports the connection state of the user's Google Drive OAuth account and stored tokens."
+    },
+    "file:src/app/api/drive/files/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Comprehensive Google Drive file API supporting listing, resumable/multipart uploads, and deletion within a managed app folder."
+    },
+    "file:src/app/api/drive/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Lightweight Google Drive route for listing, uploading, and deleting files using a session-provided access token."
+    },
+    "file:src/app/api/finance/properties/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Returns the list of finance properties from MongoDB for the authenticated admin user."
+    },
+    "file:src/app/api/gantt/ai/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Uses Google Gemini to generate or modify Gantt chart task structures from a natural-language prompt."
+    },
+    "file:src/app/api/gemini/email-parser/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Parses raw email text into structured data (sender, dates, action items) using a Gemini model."
+    },
+    "file:src/app/api/gemini/generate/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Core Gemini chat endpoint handling multi-turn history, image and file attachments, and remote content fetching."
+    },
+    "file:src/app/api/gemini/todo-features/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Gemini-backed endpoint providing AI features for the todo module: task breakdown, prioritization, and summarization."
+    },
+    "file:src/app/api/openai/generate/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Proxies chat completion requests to the OpenAI API for the authenticated admin user."
+    },
+    "file:src/app/api/openai/transcribe/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Forwards uploaded audio to the OpenAI transcription API and returns the transcribed text."
+    },
+    "file:src/app/api/pdf-autofill/templates/[id]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Per-template CRUD handlers for PDF autofill templates stored in a Neon Postgres database."
+    },
+    "file:src/app/api/pdf-autofill/templates/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Lists and creates PDF autofill templates in Neon Postgres, lazily creating the backing table on first use."
+    },
+    "file:src/app/api/process-flow/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "CRUD route for process-flow diagrams persisted per user in MongoDB, with list and single-document retrieval."
+    },
+    "file:src/app/api/prompts/library/[id]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Update and delete handlers for individual prompt library items owned by the authenticated user."
+    },
+    "file:src/app/api/prompts/library/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Lists and creates saved prompt library items scoped to the authenticated user in MongoDB."
+    },
+    "file:src/app/api/prompts/organize/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Stores and retrieves the user's prompt-organization state (folders/tags) for the prompt tools."
+    },
+    "file:src/app/api/prompts/rewrite/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Stores and retrieves the user's saved prompt-rewrite configuration for the prompt tools."
+    },
+    "file:src/app/api/proxy/[...path]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Catch-all authenticated proxy that forwards GET/POST requests to configured upstream APIs, injecting server-side API keys."
+    },
+    "file:src/app/api/signing/documents/[id]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Per-document handlers to fetch, update, and delete e-signing documents and their related fields/recipients in Neon Postgres."
+    },
+    "file:src/app/api/signing/documents/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Lists e-signing documents for the user and creates new ones, uploading the source PDF to blob storage."
+    },
+    "file:src/app/api/signing/fields/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Create, update, and delete signature-field placements on e-signing documents in Neon Postgres."
+    },
+    "file:src/app/api/signing/migrate/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Admin migration endpoint that creates or alters the e-signing database tables in Neon Postgres."
+    },
+    "file:src/app/api/signing/recipients/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Adds and removes recipients (signers) for an e-signing document, generating per-recipient signing tokens."
+    },
+    "file:src/app/api/signing/send/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Sends an e-signing document to its recipients by email and marks the document and recipients as sent."
+    },
+    "file:src/app/api/signing/sign/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Public token-based endpoint that loads a document for a recipient and applies their signature into the PDF on submission."
+    },
+    "file:src/app/api/sourcing/config/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Reads and upserts the supplier-sourcing/risk configuration for the authenticated user in MongoDB."
+    },
+    "file:src/app/api/sourcing/events/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "CRUD route for supplier-sourcing risk events persisted per user in MongoDB, with a document-count guard."
+    },
+    "file:src/app/api/upload/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Authenticated endpoint that streams an uploaded file to Vercel Blob storage and returns its public URL."
+    },
+    "file:src/app/tasks/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router page for the /tasks route; a thin client wrapper that mounts the TasksApp component."
+    },
+    "file:src/components/PromptLibrary/PromptLibraryModal.tsx": {
+      "name": "PromptLibraryModal.tsx",
+      "type": "file",
+      "summary": "Modal UI for browsing, searching, creating, editing and copying reusable AI prompts, backed by the prompt-library API."
+    },
+    "file:src/components/PromptLibrary/api.ts": {
+      "name": "api.ts",
+      "type": "file",
+      "summary": "Thin fetch wrapper exposing list/create/update/remove operations against the prompt-library REST endpoints."
+    },
+    "file:src/components/Tasks/ArchiveView.tsx": {
+      "name": "ArchiveView.tsx",
+      "type": "file",
+      "summary": "Overlay listing archived tasks with restore and permanent-purge actions."
+    },
+    "file:src/components/Tasks/AttachmentGallery.tsx": {
+      "name": "AttachmentGallery.tsx",
+      "type": "file",
+      "summary": "Renders task attachments as an image grid plus file chips, with a lightbox, open-in-new-window and remove handling."
+    },
+    "file:src/components/Tasks/BoardView.tsx": {
+      "name": "BoardView.tsx",
+      "type": "file",
+      "summary": "Kanban board view of tasks with drag-and-drop between status columns and per-column quick-create composers."
+    },
+    "file:src/components/Tasks/CalendarView.tsx": {
+      "name": "CalendarView.tsx",
+      "type": "file",
+      "summary": "Month-grid calendar view placing tasks on their due dates with prev/next month navigation."
+    },
+    "file:src/components/Tasks/CommandPalette.tsx": {
+      "name": "CommandPalette.tsx",
+      "type": "file",
+      "summary": "Keyboard-driven command palette for switching views, toggling modes and jumping to tasks by fuzzy title match."
+    },
+    "file:src/components/Tasks/ConfettiBurst.tsx": {
+      "name": "ConfettiBurst.tsx",
+      "type": "file",
+      "summary": "Transient confetti animation rendered at a screen coordinate when a task is completed."
+    },
+    "file:src/components/Tasks/ContextMenu.tsx": {
+      "name": "ContextMenu.tsx",
+      "type": "file",
+      "summary": "Positioned right-click context menu with outside-click and Escape dismissal, clamped to the viewport."
+    },
+    "file:src/components/Tasks/DetailDrawer.tsx": {
+      "name": "DetailDrawer.tsx",
+      "type": "file",
+      "summary": "Side drawer for editing a single task: title, status, priority, due date, recurrence, tags, subtasks, attachments, AI planning and linked notes."
+    },
+    "file:src/components/Tasks/EmailDropModal.tsx": {
+      "name": "EmailDropModal.tsx",
+      "type": "file",
+      "summary": "Modal that accepts a dropped .eml/.msg email file, extracts its text and turns it into a task draft."
+    },
+    "file:src/components/Tasks/InsightsView.tsx": {
+      "name": "InsightsView.tsx",
+      "type": "file",
+      "summary": "Analytics view summarizing task completion, streaks, overdue counts and category breakdowns."
+    },
+    "file:src/components/Tasks/LinkedNoteSection.tsx": {
+      "name": "LinkedNoteSection.tsx",
+      "type": "file",
+      "summary": "Task-detail section for linking a task to a Note, with quick-edit and note-picker modals."
+    },
+    "file:src/components/Tasks/ListView.tsx": {
+      "name": "ListView.tsx",
+      "type": "file",
+      "summary": "Sortable flat list view of tasks with drag-to-reorder rows rendered via TaskCard."
+    },
+    "file:src/components/Tasks/MatrixView.tsx": {
+      "name": "MatrixView.tsx",
+      "type": "file",
+      "summary": "Eisenhower priority/urgency matrix view sorting tasks into four quadrants with drag-and-drop between them."
+    },
+    "file:src/components/Tasks/NoteLinkModal.tsx": {
+      "name": "NoteLinkModal.tsx",
+      "type": "file",
+      "summary": "Modal for searching existing Notes and linking one to a task, backed by the notes API."
+    },
+    "file:src/components/Tasks/NoteQuickEditModal.tsx": {
+      "name": "NoteQuickEditModal.tsx",
+      "type": "file",
+      "summary": "Modal for quick-editing a linked Note inline using the shared rich text editor."
+    },
+    "file:src/components/Tasks/PropertyCard.tsx": {
+      "name": "PropertyCard.tsx",
+      "type": "file",
+      "summary": "Small presentational card wrapper used to group labelled property controls in task editors."
+    },
+    "file:src/components/Tasks/SavedViewsBar.tsx": {
+      "name": "SavedViewsBar.tsx",
+      "type": "file",
+      "summary": "Toolbar strip for selecting, applying and deleting saved task filter/sort views."
+    },
+    "file:src/components/Tasks/TaskCard.tsx": {
+      "name": "TaskCard.tsx",
+      "type": "file",
+      "summary": "Reusable task card showing title, priority, due date, tags, subtask progress and completion toggle; shared across list, board and matrix views."
+    },
+    "file:src/components/Tasks/TaskWindow.tsx": {
+      "name": "TaskWindow.tsx",
+      "type": "file",
+      "summary": "Full-screen expanded task editor window with all task fields, attachments, subtasks, AI planning, recurrence and linked notes."
+    },
+    "file:src/components/Tasks/TasksApp.tsx": {
+      "name": "TasksApp.tsx",
+      "type": "file",
+      "summary": "Root client component for the /tasks feature: owns task state, data fetching, view switching, keyboard shortcuts, CSV import/export and orchestrates every Tasks sub-component and modal."
+    },
+    "file:src/components/Tasks/TemplatesModal.tsx": {
+      "name": "TemplatesModal.tsx",
+      "type": "file",
+      "summary": "Modal for picking a saved task template to instantiate a new task from."
+    },
+    "file:src/components/Tasks/UndoToast.tsx": {
+      "name": "UndoToast.tsx",
+      "type": "file",
+      "summary": "Transient toast offering an undo action for the last destructive task operation."
+    },
+    "file:src/components/Tasks/aiSubtasks.ts": {
+      "name": "aiSubtasks.ts",
+      "type": "file",
+      "summary": "Client helper that calls the Gemini todo-features route to generate a task summary and subtask checklist."
+    },
+    "file:src/components/Tasks/api.ts": {
+      "name": "api.ts",
+      "type": "file",
+      "summary": "Thin JSON fetch wrapper over the /api/todos routes for task CRUD operations."
+    },
+    "file:src/components/Tasks/emailParse.ts": {
+      "name": "emailParse.ts",
+      "type": "file",
+      "summary": "Utilities to detect supported email file types and decode .eml/.msg files into plain text for task creation."
+    },
+    "file:src/components/Tasks/notesApi.ts": {
+      "name": "notesApi.ts",
+      "type": "file",
+      "summary": "Thin fetch wrapper over the /api/notes routes used by the Tasks note-linking modals."
+    },
+    "file:src/components/Tasks/pasteImage.ts": {
+      "name": "pasteImage.ts",
+      "type": "file",
+      "summary": "Helper that converts pasted clipboard image data into a base64 Attachment object."
+    },
+    "file:src/components/Tasks/types.ts": {
+      "name": "types.ts",
+      "type": "file",
+      "summary": "Client-side task domain model plus a large library of pure helpers: status/due grouping, sorting, quick-add parsing, recurrence, streaks and CSV import/export."
+    },
+    "file:src/lib/auth.ts": {
+      "name": "auth.ts",
+      "type": "file",
+      "summary": "Central NextAuth configuration exporting authOptions with Credentials and Google providers, JWT/session callbacks that refresh Google access tokens and hydrate per-user permissions and admin/trusted-email flags."
+    },
+    "file:src/lib/googleDrive.ts": {
+      "name": "googleDrive.ts",
+      "type": "file",
+      "summary": "Google Drive helper that builds OAuth2 / Drive API clients from stored access and refresh tokens and ensures a named app folder exists."
+    },
+    "file:src/lib/mongodb.ts": {
+      "name": "mongodb.ts",
+      "type": "file",
+      "summary": "Lazily builds and memoizes a shared MongoClient connection promise, sanitizing query params out of the connection URI and reusing the client across hot reloads in development."
+    },
+    "file:src/lib/neon.ts": {
+      "name": "neon.ts",
+      "type": "file",
+      "summary": "Thin helper that returns a Neon serverless Postgres SQL tagged-template client from the NEON_DATABASE_URL environment variable."
+    },
+    "file:src/models/AIChatSession.ts": {
+      "name": "AIChatSession.ts",
+      "type": "file",
+      "summary": "Mongoose model and TypeScript interfaces for AI chat sessions, storing provider, model, and full message history per user."
+    },
+    "file:src/models/ProcessFlow.ts": {
+      "name": "ProcessFlow.ts",
+      "type": "file",
+      "summary": "Mongoose model persisting a user's named process-flow diagram as a free-form data object with a last-updated timestamp."
+    },
+    "file:src/models/PromptLibraryItem.ts": {
+      "name": "PromptLibraryItem.ts",
+      "type": "file",
+      "summary": "Mongoose model for reusable prompt-library entries used by the prompt management tools."
+    },
+    "file:src/models/Property.ts": {
+      "name": "Property.ts",
+      "type": "file",
+      "summary": "Mongoose model for real-estate property records tracked in the finance module."
+    },
+    "file:src/models/RiskAlert.ts": {
+      "name": "RiskAlert.ts",
+      "type": "file",
+      "summary": "Mongoose model for supplier risk alerts with severity, category, source, and read/resolved lifecycle fields scoped per user."
+    },
+    "file:src/models/RiskQuestionnaire.ts": {
+      "name": "RiskQuestionnaire.ts",
+      "type": "file",
+      "summary": "Mongoose model for supplier risk-assessment questionnaires, holding a set of standard questions and their answers per supplier."
+    },
+    "file:src/models/SavedPrompt.ts": {
+      "name": "SavedPrompt.ts",
+      "type": "file",
+      "summary": "Mongoose model for user-saved prompts consumed by the prompt organize and rewrite endpoints."
+    },
+    "file:src/models/SourcingConfig.ts": {
+      "name": "SourcingConfig.ts",
+      "type": "file",
+      "summary": "Mongoose model storing per-user sourcing configuration such as departments and category leads used to parse and enrich sourcing events."
+    },
+    "file:src/models/SourcingEvent.ts": {
+      "name": "SourcingEvent.ts",
+      "type": "file",
+      "summary": "Mongoose model representing sourcing / RFx events with their metadata and line items."
+    },
+    "file:src/models/Supplier.ts": {
+      "name": "Supplier.ts",
+      "type": "file",
+      "summary": "Mongoose model for suppliers including contact and spend details plus multi-dimensional risk scores and an overall risk level."
+    },
+    "file:src/pages/api/admin/users/[id]/delete.ts": {
+      "name": "delete.ts",
+      "type": "file",
+      "summary": "Admin-only Pages API route that deletes a user plus their linked accounts and sessions, guarding against deleting the primary admin account."
+    },
+    "file:src/pages/api/admin/users/create.ts": {
+      "name": "create.ts",
+      "type": "file",
+      "summary": "Admin-only Pages API route that creates a new credentials user with a bcrypt-hashed password after checking for an existing email."
+    },
+    "file:src/pages/api/auth/[...nextauth].ts": {
+      "name": "[...nextauth].ts",
+      "type": "file",
+      "summary": "NextAuth catch-all Pages API route that mounts the shared authOptions configuration as the authentication endpoint."
+    },
+    "file:src/pages/api/bookmarks.ts": {
+      "name": "bookmarks.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route listing a user's bookmarks and creating new ones in the Mongo bookmarks collection."
+    },
+    "file:src/pages/api/bookmarks/[id].ts": {
+      "name": "[id].ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route updating or deleting a single bookmark by id in the Mongo bookmarks collection."
+    },
+    "file:src/pages/api/categories/update.ts": {
+      "name": "update.ts",
+      "type": "file",
+      "summary": "Pages API route that bulk-renames a bookmark category across all matching documents in the Mongo bookmarks collection."
+    },
+    "file:src/pages/api/debug/auth-check.ts": {
+      "name": "auth-check.ts",
+      "type": "file",
+      "summary": "Debug Pages API route that inspects stored Google OAuth account records and reports token presence and expiry."
+    },
+    "file:src/pages/api/finance/stock-price/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route returning a live stock quote for a ticker via the yahoo-finance2 library."
+    },
+    "file:src/pages/api/gemini/assess.ts": {
+      "name": "assess.ts",
+      "type": "file",
+      "summary": "Admin-only Pages API route that sends supplied text or a fetched document to Google Gemini for a risk assessment and returns the model's response."
+    },
+    "file:src/pages/api/sourcing/parse-clipboard.ts": {
+      "name": "parse-clipboard.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route that uses Gemini to parse pasted clipboard text into a structured sourcing event, enriched with the user's departments and category leads."
+    },
+    "file:src/pages/api/supplier-risk/alerts.ts": {
+      "name": "alerts.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route listing, creating, and bulk-updating supplier RiskAlert documents via Mongoose."
+    },
+    "file:src/pages/api/supplier-risk/dashboard.ts": {
+      "name": "dashboard.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route aggregating supplier and alert data into dashboard metrics: risk counts, category breakdowns, top suppliers, and open alert totals."
+    },
+    "file:src/pages/api/supplier-risk/intelligence.ts": {
+      "name": "intelligence.ts",
+      "type": "file",
+      "summary": "Large supplier-intelligence Pages API route that fans out to many external data sources (World Bank, GDELT, OpenCorporates, SEC, Yahoo Finance, NewsAPI, OpenSanctions, Alpha Vantage, FX rates) and derives risk signals, optionally raising RiskAlert records."
+    },
+    "file:src/pages/api/supplier-risk/questionnaires.ts": {
+      "name": "questionnaires.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route that lists risk questionnaires, creates one seeded with standard questions for a supplier, and saves answers."
+    },
+    "file:src/pages/api/supplier-risk/seed.ts": {
+      "name": "seed.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route that wipes and reseeds the user's supplier-risk data with a fixed demo set of suppliers and alerts."
+    },
+    "file:src/pages/api/supplier-risk/suppliers/[id].ts": {
+      "name": "[id].ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route to fetch, update, or delete a single supplier, cascading alert deletion on removal."
+    },
+    "file:src/pages/api/supplier-risk/suppliers/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Authenticated Pages API route listing the user's suppliers with filtering and sorting, and creating new supplier documents."
+    },
+    "file:src/app/api/attachments/[id]/route.ts": {
+      "name": "attachments-id",
+      "type": "file",
+      "summary": "Next.js API route serving and deleting a single file attachment by id, streaming the stored binary data back to the client."
+    },
+    "file:src/app/api/attachments/route.ts": {
+      "name": "attachments",
+      "type": "file",
+      "summary": "Next.js API route that accepts multipart uploads and persists file attachments, including their binary data, to MongoDB."
+    },
+    "file:src/app/api/contacts/[id]/route.ts": {
+      "name": "contacts-id",
+      "type": "file",
+      "summary": "Next.js API route to update or delete a single contact record by id."
+    },
+    "file:src/app/api/contacts/route.ts": {
+      "name": "contacts",
+      "type": "file",
+      "summary": "Next.js API route listing and creating contacts scoped to the authenticated user's email."
+    },
+    "file:src/app/api/debug/fix-gantt/route.ts": {
+      "name": "fix-gantt",
+      "type": "file",
+      "summary": "Debug and maintenance endpoint that inspects and drops stale MongoDB indexes on the Gantt charts collection."
+    },
+    "file:src/app/api/finance/transactions/[id]/route.ts": {
+      "name": "transactions-id",
+      "type": "file",
+      "summary": "Next.js API route to update or delete a single finance transaction by id."
+    },
+    "file:src/app/api/finance/transactions/route.ts": {
+      "name": "transactions",
+      "type": "file",
+      "summary": "Next.js API route that lists the authenticated user's finance transactions, runs a one-time userEmail backfill migration, and supports bulk delete."
+    },
+    "file:src/app/api/finance/transactions/upload/route.ts": {
+      "name": "transactions-upload",
+      "type": "file",
+      "summary": "Next.js API route that parses uploaded bank statement CSV files and bulk-inserts the extracted transactions."
+    },
+    "file:src/app/api/gantt/route.ts": {
+      "name": "gantt",
+      "type": "file",
+      "summary": "Next.js API route for loading, saving, and deleting Gantt chart documents for the authenticated user."
+    },
+    "file:src/app/api/notes/categories/[id]/route.ts": {
+      "name": "categories-id",
+      "type": "file",
+      "summary": "Next.js API route to rename or delete a note category, cascading deletion to its pages."
+    },
+    "file:src/app/api/notes/categories/reorder/route.ts": {
+      "name": "categories-reorder",
+      "type": "file",
+      "summary": "Next.js API route that persists a new ordering of note categories via a bulk write."
+    },
+    "file:src/app/api/notes/categories/route.ts": {
+      "name": "categories",
+      "type": "file",
+      "summary": "Next.js API route listing note categories with aggregated badge counts for important, flagged, and open-task pages, and creating new categories."
+    },
+    "file:src/app/api/notes/pages/[id]/attachments/route.ts": {
+      "name": "pages-id-attachments",
+      "type": "file",
+      "summary": "Next.js API route returning attachment metadata, excluding binary data, for a given note page."
+    },
+    "file:src/app/api/notes/pages/[id]/route.ts": {
+      "name": "pages-id",
+      "type": "file",
+      "summary": "Next.js API route to fetch, update, or delete a single note page by id."
+    },
+    "file:src/app/api/notes/pages/reorder/route.ts": {
+      "name": "pages-reorder",
+      "type": "file",
+      "summary": "Next.js API route that persists a new ordering of note pages via a bulk write."
+    },
+    "file:src/app/api/notes/pages/route.ts": {
+      "name": "pages",
+      "type": "file",
+      "summary": "Next.js API route providing note page search across pages, sections, and categories, plus creation of new pages with open-task badge annotation."
+    },
+    "file:src/app/api/notes/sections/[id]/route.ts": {
+      "name": "sections-id",
+      "type": "file",
+      "summary": "Next.js API route to rename or delete a note section, cascading deletion to its pages."
+    },
+    "file:src/app/api/notes/sections/reorder/route.ts": {
+      "name": "sections-reorder",
+      "type": "file",
+      "summary": "Next.js API route that persists a new ordering of note sections via a bulk write."
+    },
+    "file:src/app/api/notes/sections/route.ts": {
+      "name": "sections",
+      "type": "file",
+      "summary": "Next.js API route listing note sections, optionally filtered by category, with aggregated page badge counts, and creating new sections."
+    },
+    "file:src/app/api/notes/stats/route.ts": {
+      "name": "stats",
+      "type": "file",
+      "summary": "Next.js API route aggregating notes dashboard statistics: open task counts and soonest due dates rolled up by page, section, category, and tab."
+    },
+    "file:src/app/api/todos/[id]/route.ts": {
+      "name": "todos-id",
+      "type": "file",
+      "summary": "Next.js API route to update, supporting multipart attachment uploads, or delete a single todo item."
+    },
+    "file:src/app/api/todos/attachment/route.ts": {
+      "name": "todos-attachment",
+      "type": "file",
+      "summary": "Next.js API route that returns a single todo attachment as a downloadable binary response decoded from stored base64."
+    },
+    "file:src/app/api/todos/reorder/route.ts": {
+      "name": "todos-reorder",
+      "type": "file",
+      "summary": "Next.js API route that persists a new ordering of todo items via a bulk write."
+    },
+    "file:src/app/api/todos/route.ts": {
+      "name": "todos",
+      "type": "file",
+      "summary": "Next.js API route to create todos with inline base64 attachment handling and list the authenticated user's todos."
+    },
+    "file:src/app/api/user/settings/route.ts": {
+      "name": "user-settings",
+      "type": "file",
+      "summary": "Next.js API route to read and update the authenticated user's badge display settings."
+    },
+    "file:src/components/Finance/TransactionModal.tsx": {
+      "name": "TransactionModal.tsx",
+      "type": "file",
+      "summary": "React modal form for creating and editing finance transactions, with fields for amount, type, category, and reconciliation flags."
+    },
+    "file:src/components/Notes/EmailTaskModal.tsx": {
+      "name": "EmailTaskModal.tsx",
+      "type": "file",
+      "summary": "React modal that sends pasted email text to an AI analysis endpoint and forwards the extracted task details to a follow-up form."
+    },
+    "file:src/components/Notes/MovePageModal.tsx": {
+      "name": "MovePageModal.tsx",
+      "type": "file",
+      "summary": "React modal for relocating a note page to a different section or category, fetching all sections and filtering out the current location."
+    },
+    "file:src/components/Notes/SearchModal.tsx": {
+      "name": "SearchModal.tsx",
+      "type": "file",
+      "summary": "React modal providing incremental search over note pages with keyboard navigation."
+    },
+    "file:src/components/Notes/SectionDashboard.tsx": {
+      "name": "SectionDashboard.tsx",
+      "type": "file",
+      "summary": "Large React dashboard view rendering a note section's pages with activity metadata, expandable cards, and relative time formatting."
+    },
+    "file:src/components/Notes/SmartInput.tsx": {
+      "name": "SmartInput.tsx",
+      "type": "file",
+      "summary": "Lightweight natural-language task input that live-parses phrases like \"urgent\" and \"tomorrow\" into priority and due-date previews before adding a task."
+    },
+    "file:src/components/Notes/TaskFormModal.tsx": {
+      "name": "TaskFormModal.tsx",
+      "type": "file",
+      "summary": "Full-featured modal form for creating and editing to-do tasks: title, priority, due date, category, notes, and chunked file/email attachment uploads to Drive or Blob storage."
+    },
+    "file:src/components/Notes/ToDoBoard.tsx": {
+      "name": "ToDoBoard.tsx",
+      "type": "file",
+      "summary": "Kanban-style board view for to-do tasks with dnd-kit drag-and-drop columns, resizable/minimizable columns, per-card checklist, neon borders, starring, and inline category/priority editing."
+    },
+    "file:src/components/Notes/ToDoListModal.tsx": {
+      "name": "ToDoListModal.tsx",
+      "type": "file",
+      "summary": "Primary to-do manager modal: fetches todos from /api/todos, offers list and board views, and orchestrates status/reorder/priority/category/subtask mutations plus task-form and email-task sub-modals."
+    },
+    "file:src/lib/dbConnect.ts": {
+      "name": "dbConnect.ts",
+      "type": "file",
+      "summary": "Cached Mongoose connection helper for serverless use, forcing Oracle Cloud PLAIN/$external TLS auth and a single-connection pool to avoid lambda connection exhaustion."
+    },
+    "file:src/lib/gridfs.ts": {
+      "name": "gridfs.ts",
+      "type": "file",
+      "summary": "GridFS helper wrapping a MongoDB attachments bucket with upload, delete, and download-stream functions built on the shared Mongoose connection."
+    },
+    "file:src/models/AccessLog.ts": {
+      "name": "AccessLog.ts",
+      "type": "file",
+      "summary": "Mongoose model for the access_logs collection recording request IP, path, timestamp, and optional user email/agent for the site-visit pulse feature."
+    },
+    "file:src/models/Attachment.ts": {
+      "name": "Attachment.ts",
+      "type": "file",
+      "summary": "Mongoose model for note-page attachments, storing binary data locally or metadata/links for Google Drive and Blob storage, referencing a NotePage."
+    },
+    "file:src/models/Contact.ts": {
+      "name": "Contact.ts",
+      "type": "file",
+      "summary": "Mongoose model for organization contacts (name, company, position, department, type) with enum values sourced from contact-constants and per-user scoping."
+    },
+    "file:src/models/GanttChart.ts": {
+      "name": "GanttChart.ts",
+      "type": "file",
+      "summary": "Mongoose model persisting a user's Gantt project as an array of tasks/milestones plus a category-color map and last-updated timestamp."
+    },
+    "file:src/models/Investment.ts": {
+      "name": "Investment.ts",
+      "type": "file",
+      "summary": "Mongoose model for a portfolio holding (ticker, quantity, purchase date, book price, account category) scoped by user email."
+    },
+    "file:src/models/NoteCategory.ts": {
+      "name": "NoteCategory.ts",
+      "type": "file",
+      "summary": "Mongoose model for top-level note categories with color, icon, Brandfetch image, and ordering, scoped by user email."
+    },
+    "file:src/models/NotePage.ts": {
+      "name": "NotePage.ts",
+      "type": "file",
+      "summary": "Mongoose model for note pages with multi-tab content, hierarchy (section or category or parent page), flags, and compound indexes tuned for sidebar and badge-count queries."
+    },
+    "file:src/models/NoteSection.ts": {
+      "name": "NoteSection.ts",
+      "type": "file",
+      "summary": "Mongoose model for note sections nested under a NoteCategory, with ordering and compound indexes for category-scoped listing."
+    },
+    "file:src/models/Password.ts": {
+      "name": "Password.ts",
+      "type": "file",
+      "summary": "Mongoose model for the secure vault storing polymorphic items (password, card, identity, API key, secure note) keyed by itemType and user email."
+    },
+    "file:src/models/TableDoc.ts": {
+      "name": "TableDoc.ts",
+      "type": "file",
+      "summary": "Mongoose model for the hierarchical table/spreadsheet tool storing arbitrary columns and hierarchical rows as loosely-typed arrays."
+    },
+    "file:src/models/ToDo.ts": {
+      "name": "ToDo.ts",
+      "type": "file",
+      "summary": "Mongoose model for to-do tasks with priority, due date, status, subtasks, attachments, recurrence, dependencies, neon styling, and source-page linkage, indexed for badge counts."
+    },
+    "file:src/models/Transaction.ts": {
+      "name": "Transaction.ts",
+      "type": "file",
+      "summary": "Mongoose model for finance transactions (date, description, amount, income/expense/transfer type, category, optional property reference) scoped by user email."
+    },
+    "file:src/models/User.ts": {
+      "name": "User.ts",
+      "type": "file",
+      "summary": "Mongoose model for NextAuth users extended with per-feature permission flags, credentials-auth fields, custom AI prompts, and badge threshold/color settings."
+    },
+    "file:src/pages/admin/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Admin-only dashboard (SSR-guarded to the owner email) listing users with per-feature permission toggles and account management, plus grouped access-log/IP visitor history."
+    },
+    "file:src/pages/api/admin/users/[id]/permissions.ts": {
+      "name": "permissions.ts",
+      "type": "file",
+      "summary": "Admin-only API endpoint (owner-email guarded) to update or delete a user, toggling per-feature permission flags on the User model."
+    },
+    "file:src/pages/api/database-stats.ts": {
+      "name": "database-stats.ts",
+      "type": "file",
+      "summary": "GET endpoint returning MongoDB database statistics (collection counts and sizes) for the admin/system dashboard."
+    },
+    "file:src/pages/api/finance/investments/[id].ts": {
+      "name": "[id].ts",
+      "type": "file",
+      "summary": "Authenticated API endpoint to fetch, update, or delete a single Investment holding owned by the session user."
+    },
+    "file:src/pages/api/finance/investments/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Authenticated API endpoint to list and create Investment holdings for the session user."
+    },
+    "file:src/pages/api/finance/investments/sell.ts": {
+      "name": "sell.ts",
+      "type": "file",
+      "summary": "Authenticated POST endpoint that records selling a holding by reducing quantity or removing the Investment document."
+    },
+    "file:src/pages/api/passwords/[id].ts": {
+      "name": "[id].ts",
+      "type": "file",
+      "summary": "Authenticated API endpoint to update or delete a single secure-vault item for the session user."
+    },
+    "file:src/pages/api/passwords/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "Authenticated API endpoint to list and create secure-vault items scoped to the session user."
+    },
+    "file:src/pages/api/sys-pulse.ts": {
+      "name": "sys-pulse.ts",
+      "type": "file",
+      "summary": "POST endpoint that logs a visitor pulse (IP, path, user email) into the AccessLog collection for the admin visitor history."
+    },
+    "file:src/pages/api/tables/[id].ts": {
+      "name": "[id].ts",
+      "type": "file",
+      "summary": "API endpoint to fetch, update, or delete a single TableDoc for the hierarchical table tool."
+    },
+    "file:src/pages/api/tables/index.ts": {
+      "name": "index.ts",
+      "type": "file",
+      "summary": "API endpoint to list TableDoc summaries and create a new table document."
+    },
+    "file:src/app/api/finance/budget/[id]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Next.js App Router API route exposing PUT and DELETE handlers to update or remove a single budget item by id via the BudgetItem model."
+    },
+    "file:src/app/api/finance/budget/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Next.js App Router API route with session-gated GET and POST handlers that list and create budget items scoped to the authenticated user."
+    },
+    "file:src/app/finance/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Client-rendered finance dashboard page that fetches and orchestrates budget items, transactions, and investments, wiring together every Finance modal and widget."
+    },
+    "file:src/components/Finance/ActivityFeed.tsx": {
+      "name": "ActivityFeed.tsx",
+      "type": "file",
+      "summary": "Recent-transaction activity feed with inline category editing and an AI auto-categorize action that calls the categorize API and applies bulk changes."
+    },
+    "file:src/components/Finance/BudgetItemModal.tsx": {
+      "name": "BudgetItemModal.tsx",
+      "type": "file",
+      "summary": "Modal form for creating or editing a budget item, handling type, category, subcategory, and amount with category taxonomy lookups."
+    },
+    "file:src/components/Finance/BudgetListModal.tsx": {
+      "name": "BudgetListModal.tsx",
+      "type": "file",
+      "summary": "Modal that lists budget items grouped and collapsible by category, showing per-category totals for income or expense views."
+    },
+    "file:src/components/Finance/BudgetOverview.tsx": {
+      "name": "BudgetOverview.tsx",
+      "type": "file",
+      "summary": "Compact summary card presenting aggregate budgeted income, expenses, and remaining balance with currency formatting."
+    },
+    "file:src/components/Finance/BudgetTable.tsx": {
+      "name": "BudgetTable.tsx",
+      "type": "file",
+      "summary": "Renders budget income and expense sections as tables with per-row edit and delete actions and section totals."
+    },
+    "file:src/components/Finance/CSVUploader.tsx": {
+      "name": "CSVUploader.tsx",
+      "type": "file",
+      "summary": "File input control that uploads a CSV of transactions to the import API and reports upload status back to the caller."
+    },
+    "file:src/components/Finance/CategoryDetailModal.tsx": {
+      "name": "CategoryDetailModal.tsx",
+      "type": "file",
+      "summary": "Modal showing the transactions and spend breakdown for a single selected budget category."
+    },
+    "file:src/components/Finance/CategoryPicker.tsx": {
+      "name": "CategoryPicker.tsx",
+      "type": "file",
+      "summary": "Reusable dropdown control for selecting a budget category and subcategory from the shared category taxonomy."
+    },
+    "file:src/components/Finance/FinanceCharts.tsx": {
+      "name": "FinanceCharts.tsx",
+      "type": "file",
+      "summary": "Recharts-based chart wrappers with shared axis and tooltip currency formatters for finance visualizations."
+    },
+    "file:src/components/Finance/InvestmentHistoryModal.tsx": {
+      "name": "InvestmentHistoryModal.tsx",
+      "type": "file",
+      "summary": "Modal listing every purchase lot for a given ticker with aggregate cost basis and per-lot edit, delete, and sell actions."
+    },
+    "file:src/components/Finance/InvestmentManager.tsx": {
+      "name": "InvestmentManager.tsx",
+      "type": "file",
+      "summary": "Investment portfolio panel that groups holdings by ticker and category, computes gains against live prices, and drives the add, edit, sell, and history modals."
+    },
+    "file:src/components/Finance/InvestmentModal.tsx": {
+      "name": "InvestmentModal.tsx",
+      "type": "file",
+      "summary": "Modal form for adding or editing an investment lot, capturing ticker, quantity, book price, purchase date, and category."
+    },
+    "file:src/components/Finance/MetricCard.tsx": {
+      "name": "MetricCard.tsx",
+      "type": "file",
+      "summary": "Presentational KPI card showing a labeled currency metric with optional trend styling."
+    },
+    "file:src/components/Finance/MonthSelector.tsx": {
+      "name": "MonthSelector.tsx",
+      "type": "file",
+      "summary": "Previous/next month navigation control that emits the selected date to its parent."
+    },
+    "file:src/components/Finance/SellInvestmentModal.tsx": {
+      "name": "SellInvestmentModal.tsx",
+      "type": "file",
+      "summary": "Modal for selling a quantity of an existing holding, validating against the maximum available quantity before confirming."
+    },
+    "file:src/components/Finance/SpendTrendChart.tsx": {
+      "name": "SpendTrendChart.tsx",
+      "type": "file",
+      "summary": "Time-series chart visualizing spending trends across months with custom axis and tooltip formatting."
+    },
+    "file:src/components/Finance/TopCategorySpend.tsx": {
+      "name": "TopCategorySpend.tsx",
+      "type": "file",
+      "summary": "Ranked list of the highest-spend budget categories for the selected period with emoji labels and currency totals."
+    },
+    "file:src/components/Finance/TransactionEditModal.tsx": {
+      "name": "TransactionEditModal.tsx",
+      "type": "file",
+      "summary": "Modal for editing a single transaction's fields, including category reassignment via the shared taxonomy."
+    },
+    "file:src/components/Finance/TransactionList.tsx": {
+      "name": "TransactionList.tsx",
+      "type": "file",
+      "summary": "Container that composes the CSV uploader, finance charts, and transaction table into a single transactions view."
+    },
+    "file:src/components/Finance/TransactionTable.tsx": {
+      "name": "TransactionTable.tsx",
+      "type": "file",
+      "summary": "Sortable table of transactions with date and currency formatting and row-level actions."
+    },
+    "file:src/components/Finance/UpcomingExpenses.tsx": {
+      "name": "UpcomingExpenses.tsx",
+      "type": "file",
+      "summary": "Widget listing upcoming recurring expense budget items with due context and currency totals."
+    },
+    "file:src/lib/categories.ts": {
+      "name": "categories.ts",
+      "type": "file",
+      "summary": "Canonical budget, income, and transaction category taxonomy plus helpers to resolve a subcategory's parent and pick a category emoji."
+    },
+    "file:src/models/BudgetItem.ts": {
+      "name": "BudgetItem.ts",
+      "type": "file",
+      "summary": "Mongoose schema and model for budget items, defining type, category, amount, recurrence, and user-scoping fields."
+    },
+    "file:src/components/CircuitBoardLoader.tsx": {
+      "name": "CircuitBoardLoader.tsx",
+      "type": "file",
+      "summary": "Animated SVG/canvas circuit-board loading and intro visual for the hero area, featuring a scrambled 'hacker' text effect and animated timeline/education cards driven by requestAnimationFrame."
+    },
+    "file:src/components/Icon/DribbbleIcon.tsx": {
+      "name": "DribbbleIcon.tsx",
+      "type": "file",
+      "summary": "Dribbble brand SVG icon component wrapping the shared Icon primitive with vector path data."
+    },
+    "file:src/components/Icon/FacebookIcon.tsx": {
+      "name": "FacebookIcon.tsx",
+      "type": "file",
+      "summary": "Facebook brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/GithubIcon.tsx": {
+      "name": "GithubIcon.tsx",
+      "type": "file",
+      "summary": "GitHub brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/Icon.tsx": {
+      "name": "Icon.tsx",
+      "type": "file",
+      "summary": "Shared SVG wrapper primitive that standardizes viewBox, fill, ref forwarding and className handling for all brand icon components; exports the IconProps type."
+    },
+    "file:src/components/Icon/InstagramIcon.tsx": {
+      "name": "InstagramIcon.tsx",
+      "type": "file",
+      "summary": "Instagram brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/LinkedInIcon.tsx": {
+      "name": "LinkedInIcon.tsx",
+      "type": "file",
+      "summary": "LinkedIn brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/QuoteIcon.tsx": {
+      "name": "QuoteIcon.tsx",
+      "type": "file",
+      "summary": "Decorative quotation-mark SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/StackOverflowIcon.tsx": {
+      "name": "StackOverflowIcon.tsx",
+      "type": "file",
+      "summary": "Stack Overflow brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Icon/TwitterIcon.tsx": {
+      "name": "TwitterIcon.tsx",
+      "type": "file",
+      "summary": "Twitter brand SVG icon component wrapping the shared Icon primitive."
+    },
+    "file:src/components/Layout/Section.tsx": {
+      "name": "Section.tsx",
+      "type": "file",
+      "summary": "Layout primitive that renders a page <section> with a scroll-anchor id from SectionId and consistent padding/centering, used by Hero and Contact."
+    },
+    "file:src/components/PasswordItem.tsx": {
+      "name": "PasswordItem.tsx",
+      "type": "file",
+      "summary": "Legacy vault list-row component that displays a single password entry with show/hide, clipboard copy, inline edit form and delete actions."
+    },
+    "file:src/components/Sections/Contact/ContactForm.tsx": {
+      "name": "ContactForm.tsx",
+      "type": "file",
+      "summary": "Controlled contact form component that posts name/email/message to /api/contact and renders idle, sending, success and error states."
+    },
+    "file:src/components/Sections/Contact/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Contact section that lays out the ContactForm alongside contact details, mapping ContactType values to icons and links from the data module."
+    },
+    "file:src/components/Sections/Footer.tsx": {
+      "name": "Footer.tsx",
+      "type": "file",
+      "summary": "Page footer with a scroll-to-hero button, social icon links, attribution and a privacy policy link."
+    },
+    "file:src/components/Sections/Hero.tsx": {
+      "name": "Hero.tsx",
+      "type": "file",
+      "summary": "Landing hero section rendering an animated canvas starfield/comet background with mouse-driven parallax, credential badges, intro copy and call-to-action buttons."
+    },
+    "file:src/components/Socials.tsx": {
+      "name": "Socials.tsx",
+      "type": "file",
+      "summary": "Renders a row of accessible social media icon links from the socialLinks data array."
+    },
+    "file:src/components/TimelineBox.tsx": {
+      "name": "TimelineBox.tsx",
+      "type": "file",
+      "summary": "Scrollable card list that renders a titled timeline of TimelineItem entries (work or education) with logos and staggered fade-in animation."
+    },
+    "file:src/components/Vault/PasswordModal.tsx": {
+      "name": "PasswordModal.tsx",
+      "type": "file",
+      "summary": "Add/edit modal for vault entries with per-type tabs (password, card, note, identity, API key), dynamic field sets and an async onSave submit handler."
+    },
+    "file:src/components/Vault/VaultDashboard.tsx": {
+      "name": "VaultDashboard.tsx",
+      "type": "file",
+      "summary": "Main secure-vault UI: sidebar navigation by item type, search, grid/list views, favorites, security badges and per-entry copy/edit/delete actions over a VaultEntry list."
+    },
+    "file:src/components/WorkTimeline.tsx": {
+      "name": "WorkTimeline.tsx",
+      "type": "file",
+      "summary": "Compact vertical work-history timeline rendered from the heroTimeline data array."
+    },
+    "file:src/data/data.tsx": {
+      "name": "data.tsx",
+      "type": "file",
+      "summary": "Central content module exporting all portfolio data — page meta, section ids, hero copy, timeline, skills, education, experience, contact details and social links — consumed across the site."
+    },
+    "file:src/data/dataDef.ts": {
+      "name": "dataDef.ts",
+      "type": "file",
+      "summary": "Shared TypeScript type definitions for site content and the secure vault, including HomepageMeta, Hero, TimelineItem, ContactType, Social and the VaultEntry/VaultItemType model."
+    },
+    "file:src/images/header-background.webp": {
+      "name": "header-background.webp",
+      "type": "file",
+      "summary": "Hero header background image asset imported by the data module as the hero imageSrc."
+    },
+    "file:src/pages/dashboard.tsx": {
+      "name": "dashboard.tsx",
+      "type": "file",
+      "summary": "Next.js page for the secure vault: gates access via next-auth session and a secureLoginEnabled flag, fetches entries from /api/passwords and wires CRUD handlers into VaultDashboard and PasswordModal."
+    },
+    "file:src/pages/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Next.js home page composing the Header (dynamically imported, client-only), Hero, Contact and Footer sections inside the Page layout with homepage meta."
+    },
+    "file:src/components/Anomaly/CameraModal.tsx": {
+      "name": "CameraModal.tsx",
+      "type": "file",
+      "summary": "Admin-only modal that streams the ESP32 camera feed by fetching MQTT credentials, connecting to the HiveMQ broker over a browser MQTT bundle, and rendering JPEG frames with a live FPS counter and connection-phase status."
+    },
+    "file:src/components/Notes/AssessmentModal.tsx": {
+      "name": "AssessmentModal.tsx",
+      "type": "file",
+      "summary": "Modal that accepts a document upload (PDF/DOCX/XLSX), extracts its text client-side via mammoth and XLSX, and posts it to an AI endpoint for assessment analysis."
+    },
+    "file:src/components/Notes/AttachmentManager.tsx": {
+      "name": "AttachmentManager.tsx",
+      "type": "file",
+      "summary": "Component for uploading, listing, and deleting file attachments on a note, with drag-drop upload handling and human-readable size formatting."
+    },
+    "file:src/components/Notes/AudioRecorderModal.tsx": {
+      "name": "AudioRecorderModal.tsx",
+      "type": "file",
+      "summary": "Modal that captures microphone and/or system audio, encodes it to MP3 in-browser via a scriptProcessor pipeline, shows a live level meter and size/time readout, and lets the user save the recording locally."
+    },
+    "file:src/components/Notes/BadgeSettingsContext.tsx": {
+      "name": "BadgeSettingsContext.tsx",
+      "type": "file",
+      "summary": "React context provider and hook that fetch, cache, and persist per-user badge threshold/color/animation settings through an axios-backed API."
+    },
+    "file:src/components/Notes/BadgeSettingsModal.tsx": {
+      "name": "BadgeSettingsModal.tsx",
+      "type": "file",
+      "summary": "Settings modal that edits badge threshold, color, and animation options for multiple badge categories and persists them via the BadgeSettings context."
+    },
+    "file:src/components/Notes/BookmarkListModal.tsx": {
+      "name": "BookmarkListModal.tsx",
+      "type": "file",
+      "summary": "Large modal for browsing, searching, tagging, pinning, editing, and deleting saved bookmarks, with source-badge/domain helpers, relative-time formatting, and localStorage-persisted pins."
+    },
+    "file:src/components/Notes/CategoryList.tsx": {
+      "name": "CategoryList.tsx",
+      "type": "file",
+      "summary": "Sidebar list of note categories with drag-and-drop reordering (SortableItem), inline rename, color/icon pickers, and monogram avatar generation."
+    },
+    "file:src/components/Notes/ColorPicker.tsx": {
+      "name": "ColorPicker.tsx",
+      "type": "file",
+      "summary": "Small presentational color swatch picker exporting a shared COLOR_PALETTE constant and a ColorPicker component."
+    },
+    "file:src/components/Notes/CommandPalette.tsx": {
+      "name": "CommandPalette.tsx",
+      "type": "file",
+      "summary": "Keyboard-driven command palette for the notes app that fuzzy-searches pages and actions and dispatches navigation/commands."
+    },
+    "file:src/components/Notes/ContactFormModal.tsx": {
+      "name": "ContactFormModal.tsx",
+      "type": "file",
+      "summary": "Modal form for creating/editing a contact, using shared contact-constants for position/department/type options and an IconPicker for the avatar."
+    },
+    "file:src/components/Notes/ContactListModal.tsx": {
+      "name": "ContactListModal.tsx",
+      "type": "file",
+      "summary": "Modal that lists, searches, filters, and manages contacts, opening ContactFormModal for create/edit and grouping by department/type from contact-constants."
+    },
+    "file:src/components/Notes/ContractRedlineAnalyzer.tsx": {
+      "name": "ContractRedlineAnalyzer.tsx",
+      "type": "file",
+      "summary": "AI-powered tool that reviews contract text, flags clause-level risks with severity badges, and presents redline suggestions and audit status."
+    },
+    "file:src/components/Notes/ExecutiveModal.tsx": {
+      "name": "ExecutiveModal.tsx",
+      "type": "file",
+      "summary": "Modal presenting an executive summary view for a note or section, used from the note editor and notes layout."
+    },
+    "file:src/components/Notes/FlaggedItemsModal.tsx": {
+      "name": "FlaggedItemsModal.tsx",
+      "type": "file",
+      "summary": "Modal listing flagged note pages, letting the user jump to or clear flags on items derived from the NotePage model."
+    },
+    "file:src/components/Notes/GoogleCalendarModal.tsx": {
+      "name": "GoogleCalendarModal.tsx",
+      "type": "file",
+      "summary": "Thin modal wrapper that embeds the Organization OrgCalendarView inside the notes app."
+    },
+    "file:src/components/Notes/GoogleDriveModal.tsx": {
+      "name": "GoogleDriveModal.tsx",
+      "type": "file",
+      "summary": "Modal for browsing and picking files from a connected Google Drive, listing folders/files and returning a selection to the caller."
+    },
+    "file:src/components/Notes/Humanizer.tsx": {
+      "name": "Humanizer.tsx",
+      "type": "file",
+      "summary": "AI writing tool that rewrites text to sound more human, with a shared callAI helper, status-light indicator, and configurable style dropdowns."
+    },
+    "file:src/components/Notes/IconPicker.tsx": {
+      "name": "IconPicker.tsx",
+      "type": "file",
+      "summary": "Searchable icon picker exporting a large ICON_options catalog and an IconPicker component used for categories, contacts, and pages."
+    },
+    "file:src/components/Notes/ImageExtractionModal.tsx": {
+      "name": "ImageExtractionModal.tsx",
+      "type": "file",
+      "summary": "Modal that uploads an image and runs AI/OCR extraction to pull text or structured data into a note."
+    },
+    "file:src/components/Notes/LogicStyleRefiner.tsx": {
+      "name": "LogicStyleRefiner.tsx",
+      "type": "file",
+      "summary": "AI editor tool that refines the logic and style of text, showing type and audit-status badges, a status light, and a shared callAI helper."
+    },
+    "file:src/components/Notes/NoteEditor.tsx": {
+      "name": "NoteEditor.tsx",
+      "type": "file",
+      "summary": "The core note editing surface: wraps the rich text editor and integrates attachments, todos, executive summary, prompt/rewrite modals, and badge settings for a single NotePage."
+    },
+    "file:src/components/Notes/NotesLayout.tsx": {
+      "name": "NotesLayout.tsx",
+      "type": "file",
+      "summary": "Top-level shell for the notes/anomaly app that composes the category/section/page navigation, the note editor, and the full suite of feature modals (camera, audio, bookmarks, contacts, AI tools, calendar, drive)."
+    },
+    "file:src/components/Notes/PageList.tsx": {
+      "name": "PageList.tsx",
+      "type": "file",
+      "summary": "Renders a drag-and-drop sortable list of note pages within a section, with inline rename, color/icon pickers, and badge rendering driven by BadgeSettingsContext."
+    },
+    "file:src/components/Notes/PromptEditorModal.tsx": {
+      "name": "PromptEditorModal.tsx",
+      "type": "file",
+      "summary": "Small modal that lets the user edit an AI prompt template and save-and-run it, used by the note rewrite/AI features."
+    },
+    "file:src/components/Notes/RewriteModal.tsx": {
+      "name": "RewriteModal.tsx",
+      "type": "file",
+      "summary": "Modal for AI-assisted text rewriting that builds a prompt, calls the rewrite API, allows editing/saving the prompt template, and copies the generated result."
+    },
+    "file:src/components/Notes/SectionList.tsx": {
+      "name": "SectionList.tsx",
+      "type": "file",
+      "summary": "Renders a sortable list of note sections with color/icon customization and badge display, mirroring PageList for the section level of the notes hierarchy."
+    },
+    "file:src/components/Notes/SectionPageList.tsx": {
+      "name": "SectionPageList.tsx",
+      "type": "file",
+      "summary": "Large combined navigator that renders sections and their pages as a nested drag-and-drop tree with badge pills, category drop zones, and relative time formatting."
+    },
+    "file:src/components/Notes/SimpleRewriteModal.tsx": {
+      "name": "SimpleRewriteModal.tsx",
+      "type": "file",
+      "summary": "Lightweight modal that sends input text to the Gemini rewrite API and displays the rewritten output with a copy-to-clipboard action."
+    },
+    "file:src/components/Notes/SimpleRewriteOpenAIModal.tsx": {
+      "name": "SimpleRewriteOpenAIModal.tsx",
+      "type": "file",
+      "summary": "OpenAI variant of the simple rewrite modal that posts text to an OpenAI-backed rewrite endpoint and renders the result with copy support."
+    },
+    "file:src/components/Notes/SortableItem.tsx": {
+      "name": "SortableItem.tsx",
+      "type": "file",
+      "summary": "Thin wrapper around dnd-kit's useSortable that provides a reusable draggable list-item container used across the Notes lists."
+    },
+    "file:src/components/Notes/SourcingEventModal.tsx": {
+      "name": "SourcingEventModal.tsx",
+      "type": "file",
+      "summary": "Create/edit form modal for procurement sourcing events with collapsible sections, dynamic select options loaded from a config API, page linking, and vendor list entry."
+    },
+    "file:src/components/Notes/SourcingListModal.tsx": {
+      "name": "SourcingListModal.tsx",
+      "type": "file",
+      "summary": "Full-screen sourcing events table with inline cell editing, multi-select filtering, sorting, Excel export, AI smart-paste ingestion, and row navigation to linked note pages."
+    },
+    "file:src/components/Notes/ToDoModal.tsx": {
+      "name": "ToDoModal.tsx",
+      "type": "file",
+      "summary": "Modal form for creating or editing a to-do item (title, notes, due date, priority) that calls back on save."
+    },
+    "file:src/components/Notes/TruthTeller.tsx": {
+      "name": "TruthTeller.tsx",
+      "type": "file",
+      "summary": "AI analysis panel that sends user text to a selectable Gemini or OpenAI model via the chat API, with an outside-click model dropdown, abortable requests, and copyable output."
+    },
+    "file:src/components/Organization/OrgAISidebar.tsx": {
+      "name": "OrgAISidebar.tsx",
+      "type": "file",
+      "summary": "Slide-out AI chat sidebar for the Organization workspace that maintains a message thread, shows a typing indicator, and answers questions about the selected page content."
+    },
+    "file:src/components/Organization/OrgCalendarView.tsx": {
+      "name": "OrgCalendarView.tsx",
+      "type": "file",
+      "summary": "Calendar view for the Organization workspace that groups events by date, renders month/day layouts, and integrates with a Google Calendar modal."
+    },
+    "file:src/components/Organization/OrgContactsView.tsx": {
+      "name": "OrgContactsView.tsx",
+      "type": "file",
+      "summary": "Contacts directory for the Organization workspace with a contact create/edit modal, AI-assisted bulk import modal, avatar initials coloring, and search/filtering."
+    },
+    "file:src/components/Organization/OrgDashboard.tsx": {
+      "name": "OrgDashboard.tsx",
+      "type": "file",
+      "summary": "Landing dashboard for the Organization workspace showing a time-based greeting, upcoming events, task summaries, and quick navigation into other org views."
+    },
+    "file:src/components/Organization/OrgFilesView.tsx": {
+      "name": "OrgFilesView.tsx",
+      "type": "file",
+      "summary": "File browser for the Organization workspace with type-based icons, human-readable sizes, and multi-criteria filtering over uploaded files."
+    },
+    "file:src/components/Organization/OrgTasksView.tsx": {
+      "name": "OrgTasksView.tsx",
+      "type": "file",
+      "summary": "Task management view for the Organization workspace that reuses the Notes ToDoBoard and adds due-date computation, formatting, and source-page titles."
+    },
+    "file:src/components/Organization/OrganizationLayout.tsx": {
+      "name": "OrganizationLayout.tsx",
+      "type": "file",
+      "summary": "Top-level shell for the Organization workspace that wires navigation between dashboard, notes, tasks, calendar, contacts and files views and hosts the many shared modals (rewrite, bookmarks, command palette, AI chat, etc.)."
+    },
+    "file:src/components/StandaloneRewriteModal.tsx": {
+      "name": "StandaloneRewriteModal.tsx",
+      "type": "file",
+      "summary": "Self-contained AI rewrite modal usable outside the Notes layout, bundling prompt construction, API call, result editing and copy in one component."
+    },
+    "file:src/hooks/useDetectOutsideClick.ts": {
+      "name": "useDetectOutsideClick.ts",
+      "type": "file",
+      "summary": "React hook that toggles active state and listens for clicks outside a referenced element to close dropdowns and popovers."
+    },
+    "file:src/lib/contact-constants.ts": {
+      "name": "contact-constants.ts",
+      "type": "file",
+      "summary": "Shared constant lists (positions, departments, contact types) used by the contact forms and list modals."
+    },
+    "file:src/components/Anomaly/AnomalyApp.tsx": {
+      "name": "AnomalyApp.tsx",
+      "type": "file",
+      "summary": "Root client component for the admin-only /anomaly notes workspace, orchestrating notebooks, sections, pages, sidebar, editor, command palette, bookmarks, in-app browser and ESP32 camera modal with localStorage-persisted view state."
+    },
+    "file:src/components/Anomaly/BookmarksModal.tsx": {
+      "name": "BookmarksModal.tsx",
+      "type": "file",
+      "summary": "Modal for browsing, searching, tagging, pinning and editing bookmarks in the Anomaly workspace, backed by bookmarksApi with localStorage-persisted pins."
+    },
+    "file:src/components/Anomaly/CommandPalette.tsx": {
+      "name": "CommandPalette.tsx",
+      "type": "file",
+      "summary": "Ctrl/Cmd-K command palette for the Anomaly workspace that debounce-searches page titles or full text via the api client and opens the selected page or section."
+    },
+    "file:src/components/Anomaly/EditorPanel.tsx": {
+      "name": "EditorPanel.tsx",
+      "type": "file",
+      "summary": "Page editor panel that loads a page, manages tabbed rich-text content with autosave, icon selection and deletion, embedding the shared Notes RichTextEditor."
+    },
+    "file:src/components/Anomaly/HomeView.tsx": {
+      "name": "HomeView.tsx",
+      "type": "file",
+      "summary": "Landing view for the Anomaly workspace showing recent pages and quick actions, loading the full page list via the api client."
+    },
+    "file:src/components/Anomaly/IconPicker.tsx": {
+      "name": "IconPicker.tsx",
+      "type": "file",
+      "summary": "Popover grid for choosing a page icon from the shared Anomaly icon set."
+    },
+    "file:src/components/Anomaly/InAppBrowser.tsx": {
+      "name": "InAppBrowser.tsx",
+      "type": "file",
+      "summary": "Lightweight iframe-based in-app browser overlay for opening bookmarked URLs without leaving the workspace."
+    },
+    "file:src/components/Anomaly/MovePageModal.tsx": {
+      "name": "MovePageModal.tsx",
+      "type": "file",
+      "summary": "Modal for relocating a page to a different notebook or section, loading section lists on demand via the api client."
+    },
+    "file:src/components/Anomaly/PageList.tsx": {
+      "name": "PageList.tsx",
+      "type": "file",
+      "summary": "Renders a collection of page cards with drag reordering, pin toggles, snippets and accent colors for a notebook, section or special view."
+    },
+    "file:src/components/Anomaly/Sidebar.tsx": {
+      "name": "Sidebar.tsx",
+      "type": "file",
+      "summary": "Collapsible navigation tree of notebooks and sections with inline rename, drag reordering, count badges and context menus for the Anomaly workspace."
+    },
+    "file:src/components/Anomaly/api.ts": {
+      "name": "api.ts",
+      "type": "file",
+      "summary": "Typed fetch client for the Anomaly notes backend, exposing notebooks, sections and pages CRUD, reordering and search endpoints."
+    },
+    "file:src/components/Anomaly/bookmarksApi.ts": {
+      "name": "bookmarksApi.ts",
+      "type": "file",
+      "summary": "Fetch client for the shared bookmarks backend used by both the Anomaly and Tasks bookmark modals, with list/create/update/remove methods."
+    },
+    "file:src/components/Anomaly/icons.ts": {
+      "name": "icons.ts",
+      "type": "file",
+      "summary": "Shared icon registry (ICON_MAP/ICON_KEYS), page color palette and lookup helpers for the Anomaly workspace."
+    },
+    "file:src/components/Anomaly/types.ts": {
+      "name": "types.ts",
+      "type": "file",
+      "summary": "Shared TypeScript types for notebooks, sections and pages plus small helpers for id/name extraction, HTML stripping, accent selection and tab normalization."
+    },
+    "file:src/components/Notes/DrawingNode.tsx": {
+      "name": "DrawingNode.tsx",
+      "type": "file",
+      "summary": "Lexical decorator node and canvas component providing freehand drawing/sketch blocks embeddable in the rich-text editor."
+    },
+    "file:src/components/Notes/ImageNode.tsx": {
+      "name": "ImageNode.tsx",
+      "type": "file",
+      "summary": "Lexical decorator node and component for embedding, resizing and captioning images in the rich-text editor."
+    },
+    "file:src/components/Notes/ImagePastePlugin.tsx": {
+      "name": "ImagePastePlugin.tsx",
+      "type": "file",
+      "summary": "Lexical plugin that intercepts pasted/dropped image files, compresses them to data URLs and inserts ImageNodes into the editor."
+    },
+    "file:src/components/Notes/RichTextEditor.tsx": {
+      "name": "RichTextEditor.tsx",
+      "type": "file",
+      "summary": "Shared Lexical-based rich-text editor with a formatting toolbar, link/image paste handling, table actions, drawing blocks and controlled value sync, reused across Notes, Anomaly and Organization views."
+    },
+    "file:src/components/Notes/TableActionsPlugin.tsx": {
+      "name": "TableActionsPlugin.tsx",
+      "type": "file",
+      "summary": "Lexical plugin adding a floating table toolbar and column resizing for tables inside the rich-text editor."
+    },
+    "file:src/components/Organization/OrgNotesView.tsx": {
+      "name": "OrgNotesView.tsx",
+      "type": "file",
+      "summary": "Organization-scoped notes view embedding the shared RichTextEditor within the organization layout, with its own note list, selection and save handling."
+    },
+    "file:src/components/Tasks/BookmarksModal.tsx": {
+      "name": "BookmarksModal.tsx",
+      "type": "file",
+      "summary": "Tasks-workspace bookmarks modal for browsing, searching, categorizing and pinning bookmarks, sharing the same bookmarksApi backend as the Anomaly modal."
+    },
+    "file:src/app/api/invoices/scan/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "Next.js App Router API route that accepts an uploaded invoice image, enforces admin-only access, and delegates to Gemini for OCR-style analysis returning parsed JSON."
+    },
+    "file:src/app/drive/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Client-side Drive browser page listing files and folders with breadcrumb navigation, chunked upload, and delete, backed by a Google Drive style API."
+    },
+    "file:src/app/finance/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "App Router layout for the finance section that gates access by session and renders the shared UserProfileMenu chrome around finance pages."
+    },
+    "file:src/app/gantt/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Large interactive Gantt chart page with drag-and-drop task ordering, category management, timeline rendering, chart persistence, and AI-assisted task generation."
+    },
+    "file:src/components/ApiKeyInput.tsx": {
+      "name": "ApiKeyInput.tsx",
+      "type": "file",
+      "summary": "Small form component that collects a Gemini API key from the user and submits it to a parent callback."
+    },
+    "file:src/components/ChatInterface.tsx": {
+      "name": "ChatInterface.tsx",
+      "type": "file",
+      "summary": "Full-featured Gemini chat UI with multi-session history, custom instructions, model selection, image compression and upload, file/spreadsheet attachment parsing, and markdown rendering."
+    },
+    "file:src/components/Layout/Page.tsx": {
+      "name": "Page.tsx",
+      "type": "file",
+      "summary": "Shared page wrapper component that sets document head metadata and renders children within a consistent layout shell."
+    },
+    "file:src/components/Notes/UnifiedAIChatModal.tsx": {
+      "name": "UnifiedAIChatModal.tsx",
+      "type": "file",
+      "summary": "Large modal chat component shared across notes and organization views that unifies Gemini and OpenAI backends with model selection, streaming display, and context-aware prompts."
+    },
+    "file:src/components/OpenAIApiKeyInput.tsx": {
+      "name": "OpenAIApiKeyInput.tsx",
+      "type": "file",
+      "summary": "Small form component that collects an OpenAI API key from the user and submits it to a parent callback."
+    },
+    "file:src/components/OpenAIChatInterface.tsx": {
+      "name": "OpenAIChatInterface.tsx",
+      "type": "file",
+      "summary": "OpenAI-backed chat UI with multi-session history, image attachments, markdown preprocessing and rendering, calling getOpenAIChatResponse for replies."
+    },
+    "file:src/components/Sections/Header.tsx": {
+      "name": "Header.tsx",
+      "type": "file",
+      "summary": "Primary site navigation header with section links, mobile menu, a feature/app dropdown, and the user profile menu, driven by data.tsx and the nav observer hook."
+    },
+    "file:src/components/UserProfileMenu.tsx": {
+      "name": "UserProfileMenu.tsx",
+      "type": "file",
+      "summary": "Dropdown menu showing the signed-in user's avatar and account actions such as sign out, used in section layouts."
+    },
+    "file:src/hooks/useNavObserver.tsx": {
+      "name": "useNavObserver.tsx",
+      "type": "file",
+      "summary": "Custom hook using IntersectionObserver to track which page section is in view and report the active nav target back to the header."
+    },
+    "file:src/lib/gemini.ts": {
+      "name": "gemini.ts",
+      "type": "file",
+      "summary": "Client-side Google Gemini helper library providing chat completions with history and attachments, dynamic model listing, and invoice image analysis."
+    },
+    "file:src/lib/openai.ts": {
+      "name": "openai.ts",
+      "type": "file",
+      "summary": "Client-side OpenAI helper that sends chat completions with history, system instruction, and optional images via the chat completions API."
+    },
+    "file:src/pages/api/finance/categorize.ts": {
+      "name": "categorize.ts",
+      "type": "file",
+      "summary": "Pages Router API endpoint that batches transactions to Gemini for automatic budget-category assignment using the shared category taxonomy."
+    },
+    "file:src/pages/bookmarks.tsx": {
+      "name": "bookmarks.tsx",
+      "type": "file",
+      "summary": "Bookmarks manager page with category grouping, search/filter, inline editing, and CRUD against a bookmarks API, wrapped in the shared page layout and header."
+    },
+    "file:src/pages/chat.tsx": {
+      "name": "chat.tsx",
+      "type": "file",
+      "summary": "Gemini chat page that stores the API key in localStorage and toggles between the ApiKeyInput gate and the ChatInterface."
+    },
+    "file:src/pages/open.tsx": {
+      "name": "open.tsx",
+      "type": "file",
+      "summary": "OpenAI chat page that stores the API key in localStorage and toggles between the OpenAIApiKeyInput gate and the OpenAIChatInterface."
+    },
+    "file:src/pages/privacy.tsx": {
+      "name": "privacy.tsx",
+      "type": "file",
+      "summary": "Static privacy policy page rendered within the shared layout and header."
+    },
+    "file:src/app/anomaly/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router server page for the anomaly-detection feature; checks the server session against the admin email and renders either AccessDenied or the AnomalyApp client component."
+    },
+    "file:src/app/api/invoices/[id]/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "REST API route for a single invoice, exposing DELETE and PUT handlers that authorize the caller against shared-access emails and mutate the Mongoose Invoice document."
+    },
+    "file:src/app/api/invoices/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "REST API route for the invoice collection, exposing GET (list, scoped by shared-access email) and POST (create) handlers backed by the Mongoose Invoice model."
+    },
+    "file:src/app/notes/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router server page for the legacy notes feature; gates access by admin session and renders AccessDenied or the NotesLayout component."
+    },
+    "file:src/app/organization/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router server page for the org-chart feature; gates access by admin session and renders AccessDenied or the OrganizationLayout component."
+    },
+    "file:src/app/pdf-autofill/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router server page for the PDF autofill / e-signing feature; gates access by admin session and renders AccessDenied or the feature UI."
+    },
+    "file:src/app/process-flow/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Next.js App Router server page for the process-flow / diagram builder; gates access by admin session and renders AccessDenied or the ProcessFlowBuilder component."
+    },
+    "file:src/app/smart-invoices/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Client page for the smart-invoices feature that coordinates the InvoiceScanner and InvoiceList components, tracking year filters, aggregate stats, success messages, and a refresh trigger."
+    },
+    "file:src/components/AccessDenied.tsx": {
+      "name": "AccessDenied.tsx",
+      "type": "file",
+      "summary": "Reusable presentational component that renders a permission-denied message, shown by admin-gated pages when the current session lacks access."
+    },
+    "file:src/components/Invoices/InvoiceList.tsx": {
+      "name": "InvoiceList.tsx",
+      "type": "file",
+      "summary": "Client component that fetches invoices from the API, filters by year, computes aggregate stats, and supports inline editing, deletion, and CSV export of invoice rows."
+    },
+    "file:src/components/Invoices/InvoiceScanner.tsx": {
+      "name": "InvoiceScanner.tsx",
+      "type": "file",
+      "summary": "Client component that uploads and client-side-compresses an invoice image, sends it to a scan API for OCR extraction, lets the user edit the parsed fields, and saves the resulting invoice."
+    },
+    "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx": {
+      "name": "ProcessFlowBuilder.tsx",
+      "type": "file",
+      "summary": "Large self-contained interactive diagram editor that builds process-flow / Gantt-style graphs with draggable nodes, orthogonal routed edges with bridges, undo/redo history, a legend, and an inspector panel, manipulating the DOM/SVG directly."
+    },
+    "file:src/models/Invoice.ts": {
+      "name": "Invoice.ts",
+      "type": "file",
+      "summary": "Mongoose model and IInvoice TypeScript interface defining the invoice schema (vendor, amounts, tax, GST, category, status, image URL) with timestamps and a per-user email index."
+    },
+    "file:src/components/SupplierRisk/AlertItem.tsx": {
+      "name": "AlertItem.tsx",
+      "type": "file",
+      "summary": "Renders a single supplier risk alert row with severity styling, relative timestamp, and resolve / mark-read actions."
+    },
+    "file:src/components/SupplierRisk/RiskBadge.tsx": {
+      "name": "RiskBadge.tsx",
+      "type": "file",
+      "summary": "Small presentational components for rendering a supplier risk level badge and a labeled score bar."
+    },
+    "file:src/components/SupplierRisk/RiskDistributionChart.tsx": {
+      "name": "RiskDistributionChart.tsx",
+      "type": "file",
+      "summary": "Renders a donut/segmented chart visualizing the distribution of suppliers across risk levels."
+    },
+    "file:src/components/SupplierRisk/RiskRadarChart.tsx": {
+      "name": "RiskRadarChart.tsx",
+      "type": "file",
+      "summary": "Renders a radar chart plotting a supplier's financial, operational, compliance, and ESG risk scores."
+    },
+    "file:src/components/SupplierRisk/StatCard.tsx": {
+      "name": "StatCard.tsx",
+      "type": "file",
+      "summary": "Presentational KPI card showing a labeled metric with optional icon, subtext, color accent, and trend indicator."
+    },
+    "file:src/components/SupplierRisk/SupplierIntelligence.tsx": {
+      "name": "SupplierIntelligence.tsx",
+      "type": "file",
+      "summary": "Large intelligence panel that fetches external supplier data (World Bank, GDELT, OpenCorporates, SEC EDGAR, Yahoo Finance, FX, OpenSanctions, NewsAPI, AlphaVantage) and renders country risk, financials, sanctions, filings, and news sections."
+    },
+    "file:src/components/SupplierRisk/SupplierModal.tsx": {
+      "name": "SupplierModal.tsx",
+      "type": "file",
+      "summary": "Modal form for creating or editing a supplier, including identity fields, status, tags, and the four risk sub-scores."
+    },
+    "file:src/components/SupplierRisk/SupplierRiskLayout.tsx": {
+      "name": "SupplierRiskLayout.tsx",
+      "type": "file",
+      "summary": "Shared page shell for the supplier-risk section providing sidebar navigation, page title, action slot, and unread alert count badge."
+    },
+    "file:src/pages/supplier-risk/alerts.tsx": {
+      "name": "alerts.tsx",
+      "type": "file",
+      "summary": "Next.js page listing supplier risk alerts with severity/category filters, bulk selection, and resolve / mark-read actions against the alerts API."
+    },
+    "file:src/pages/supplier-risk/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Supplier risk dashboard page showing summary stat cards, risk distribution chart, top-risky suppliers, category breakdown, recent alerts, and a demo data seeding action."
+    },
+    "file:src/pages/supplier-risk/onboarding.tsx": {
+      "name": "onboarding.tsx",
+      "type": "file",
+      "summary": "Supplier onboarding page for sending due-diligence questionnaires to suppliers and answering / submitting questionnaire responses."
+    },
+    "file:src/pages/supplier-risk/suppliers/[id].tsx": {
+      "name": "[id].tsx",
+      "type": "file",
+      "summary": "Supplier detail page with overview, alerts, mitigation, and intelligence tabs, risk breakdown, inline edit modal, and per-alert resolve / mark-read."
+    },
+    "file:src/pages/supplier-risk/suppliers/index.tsx": {
+      "name": "index.tsx",
+      "type": "file",
+      "summary": "Supplier list page with search, risk/status filters, sorting, and create / edit / delete via the supplier modal and API."
+    },
+    "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx": {
+      "name": "AddColumnModal.tsx",
+      "type": "file",
+      "summary": "Modal dialog for adding a new column to the high-performance table, letting the user pick a column name and data type before submitting."
+    },
+    "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx": {
+      "name": "EditRowModal.tsx",
+      "type": "file",
+      "summary": "Modal dialog for editing all cell values of a single table row through per-column inputs, including status option selection."
+    },
+    "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx": {
+      "name": "PDFExportModal.tsx",
+      "type": "file",
+      "summary": "Configuration modal that exports the table to PDF via lazily-loaded jsPDF and jspdf-autotable, with controls for orientation, column widths, title, and striped rows."
+    },
+    "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx": {
+      "name": "SortableHeader.tsx",
+      "type": "file",
+      "summary": "Draggable and resizable table column header built on dnd-kit's useSortable, exposing resize-start and remove callbacks."
+    },
+    "file:src/components/Notes/HighPerformanceTable/TableApp.tsx": {
+      "name": "TableApp.tsx",
+      "type": "file",
+      "summary": "Core spreadsheet-like table application supporting hierarchical rows, drag-to-reorder and resizable columns, inline editing, AI smart import, clipboard/Excel/PDF export, and server-side save/load of named tables."
+    },
+    "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx": {
+      "name": "TableAppModal.tsx",
+      "type": "file",
+      "summary": "Thin full-screen modal wrapper that mounts the TableApp component when open."
+    },
+    "file:src/components/Notes/HighPerformanceTable/types.ts": {
+      "name": "types.ts",
+      "type": "file",
+      "summary": "Shared TypeScript type definitions for the high-performance table feature, including column types, column and row shapes, and status options."
+    },
+    "config:.env.local.example": {
+      "name": ".env.local.example",
+      "type": "config",
+      "summary": "Template for local environment variables documenting required secrets (MongoDB URI, NextAuth secret, Google OAuth credentials) and optional supplier-risk intelligence API keys (News API, OpenSanctions, Alpha Vantage)."
+    },
+    "config:.yarnrc.yml": {
+      "name": ".yarnrc.yml",
+      "type": "config",
+      "summary": "Yarn configuration setting nodeLinker to use a conventional node_modules install layout."
+    },
+    "document:README.md": {
+      "name": "README.md",
+      "type": "document",
+      "summary": "Minimal project readme placeholder for the portfolio website repository."
+    },
+    "config:package.json": {
+      "name": "package.json",
+      "type": "config",
+      "summary": "NPM manifest for the react-resume-template portfolio app, declaring Next.js 13 scripts (build with --no-lint, dev, lint, sitemap) and a large dependency set spanning MongoDB/Mongoose, NextAuth, Lexical rich-text editing, PDF tooling, MQTT, Google Generative AI, and finance data libraries."
+    },
+    "config:tsconfig.json": {
+      "name": "tsconfig.json",
+      "type": "config",
+      "summary": "TypeScript compiler configuration enabling strict mode, unused-locals/parameters checks, and the @/* path alias mapping to ./src, with the Next.js language-service plugin and JSX preserved for the Next compiler."
+    },
+    "config:vercel.json": {
+      "name": "vercel.json",
+      "type": "config",
+      "summary": "Vercel deployment configuration pinning the Next.js framework preset, build command and output directory, and rewriting /api/proxy/* to the Google Generative Language API."
+    },
+    "config:.claude/launch.json": {
+      "name": "launch.json",
+      "type": "config",
+      "summary": "Claude Code launch configuration defining the dev server command and port used to preview this Next.js app."
+    },
+    "config:.claude/settings.local.json": {
+      "name": "settings.local.json",
+      "type": "config",
+      "summary": "Local Claude Code settings granting a curated allowlist of tool permissions for this project."
+    },
+    "config:.github/FUNDING.yml": {
+      "name": "FUNDING.yml",
+      "type": "config",
+      "summary": "GitHub Sponsors funding configuration pointing at the repository owner's sponsorship account."
+    },
+    "file:.npmrc": {
+      "name": ".npmrc",
+      "type": "file",
+      "summary": "npm configuration file setting install behavior for the project's dependency resolution."
+    },
+    "file:.prettierignore": {
+      "name": ".prettierignore",
+      "type": "file",
+      "summary": "Prettier ignore list controlling which paths are excluded from code formatting (currently empty)."
+    },
+    "file:next-env.d.ts": {
+      "name": "next-env.d.ts",
+      "type": "file",
+      "summary": "Auto-generated Next.js TypeScript ambient type reference file; should not be edited manually."
+    },
+    "file:next-sitemap.js": {
+      "name": "next-sitemap.js",
+      "type": "file",
+      "summary": "next-sitemap configuration generating sitemap.xml and robots.txt for the deployed site."
+    },
+    "config:next.config.js": {
+      "name": "next.config.js",
+      "type": "config",
+      "summary": "Next.js build and runtime configuration covering image domains, webpack tweaks, and framework options for the portfolio app."
+    },
+    "file:postcss.config.js": {
+      "name": "postcss.config.js",
+      "type": "file",
+      "summary": "PostCSS configuration enabling Tailwind CSS and autoprefixer in the styling pipeline."
+    },
+    "file:public/site.webmanifest": {
+      "name": "site.webmanifest",
+      "type": "file",
+      "summary": "Progressive Web App manifest declaring app name, icons, theme colors, and display mode for the portfolio site."
+    },
+    "file:scripts/audit-data-ownership.js": {
+      "name": "audit-data-ownership.js",
+      "type": "file",
+      "summary": "One-off maintenance script that connects to MongoDB and audits every collection for document counts and per-user ownership fields."
+    },
+    "file:scripts/clear-transactions.js": {
+      "name": "clear-transactions.js",
+      "type": "file",
+      "summary": "Utility script that lists finance transactions via the API and deletes them to reset the dataset."
+    },
+    "file:scripts/list-transactions.js": {
+      "name": "list-transactions.js",
+      "type": "file",
+      "summary": "Small diagnostic script that fetches the transactions API and prints a sample of the returned records."
+    },
+    "file:scripts/seed-properties.js": {
+      "name": "seed-properties.js",
+      "type": "file",
+      "summary": "Database seed script that connects via Mongoose and inserts baseline Property records if they do not already exist."
+    },
+    "file:scripts/test-mongoose.js": {
+      "name": "test-mongoose.js",
+      "type": "file",
+      "summary": "Connectivity check script that opens a Mongoose connection and queries NoteCategory documents to verify the database setup."
+    },
+    "file:server.js": {
+      "name": "server.js",
+      "type": "file",
+      "summary": "Standalone Express server exposing a /submitForm endpoint that persists contact form submissions to MongoDB Atlas via Mongoose."
+    },
+    "file:src/app/anomaly/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Next.js App Router layout for the /anomaly section, wrapping child routes in the admin-only Guard component and setting section metadata."
+    },
+    "file:src/app/api/pdf-autofill/analyze-form/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "API route that loads an uploaded PDF, enumerates its AcroForm fields, and uses Gemini to produce human-readable labels for each field."
+    },
+    "file:src/app/api/pdf-autofill/extract/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "API route that extracts structured facts from uploaded source documents (PDF, DOCX, XLSX) using Gemini, keyed by a party role label."
+    },
+    "file:src/app/api/pdf-autofill/fill/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "API route that writes mapped values into a PDF, handling both AcroForm fields and flat PDFs by drawing text at computed coordinates."
+    },
+    "file:src/app/api/pdf-autofill/map-fields/route.ts": {
+      "name": "route.ts",
+      "type": "file",
+      "summary": "API route that uses Gemini to map extracted facts onto PDF form field names, then validates and reconciles the mappings against the real field set."
+    },
+    "file:src/app/debug/drive-status/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Client debug page that fetches /api/debug/drive-status and renders the Google Drive integration status as formatted JSON."
+    },
+    "file:src/app/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Root App Router layout that sets global metadata, imports global styles, and wraps the entire app in the Providers component."
+    },
+    "file:src/app/notes/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Client layout for the /notes route that gates access behind an authenticated session and redirects unauthenticated visitors to the login page."
+    },
+    "file:src/app/notes/loading.tsx": {
+      "name": "loading.tsx",
+      "type": "file",
+      "summary": "Next.js route-level loading UI for /notes that renders the full notes layout skeleton while the page streams in."
+    },
+    "file:src/app/organization/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Client layout for the /organization (org chart) section that enforces an authenticated session before rendering child pages."
+    },
+    "file:src/app/pdf-autofill/PdfAutoFillClient.tsx": {
+      "name": "PdfAutoFillClient.tsx",
+      "type": "file",
+      "summary": "Main client component for the PDF auto-fill workflow: uploads source documents, extracts facts, analyzes a target PDF's form fields, maps values via API calls, and produces a filled/flattened PDF for download."
+    },
+    "file:src/app/pdf-autofill/TemplateEditor.tsx": {
+      "name": "TemplateEditor.tsx",
+      "type": "file",
+      "summary": "Interactive editor for building reusable PDF auto-fill templates by rendering PDF pages to canvas and letting the user place, drag, type, and configure field markers before saving the template via API."
+    },
+    "file:src/app/process-flow/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Client layout for the /process-flow (Gantt / process diagram) section that requires an authenticated session before rendering."
+    },
+    "file:src/app/providers.tsx": {
+      "name": "providers.tsx",
+      "type": "file",
+      "summary": "Top-level client provider wrapper that composes app-wide context providers and mounts a visit-logging tracker that posts page views to the analytics API on route changes."
+    },
+    "file:src/app/sign/[token]/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Minimal pass-through layout for the public token-based document signing route."
+    },
+    "file:src/app/sign/[token]/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Public signer-facing page that loads a signing envelope by token, renders the document with assigned fields, and captures the recipient's typed/drawn signature and field input for submission."
+    },
+    "file:src/app/signing/[id]/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Admin document editor for an e-signing envelope: places and assigns signature/field markers per recipient over the rendered document and manages recipient order before sending for signature."
+    },
+    "file:src/app/signing/layout.tsx": {
+      "name": "layout.tsx",
+      "type": "file",
+      "summary": "Client layout for the admin /signing section that enforces an authenticated session before rendering the signing dashboard and editor."
+    },
+    "file:src/app/signing/page.tsx": {
+      "name": "page.tsx",
+      "type": "file",
+      "summary": "Admin signing dashboard listing e-signing envelopes with their status and recipients, and entry points to create a new envelope or open one in the editor."
+    },
+    "file:src/components/.gitkeep": {
+      "name": ".gitkeep",
+      "type": "file",
+      "summary": "Empty placeholder file that keeps the src/components directory tracked in git."
+    },
+    "file:src/components/Anomaly/Guard.tsx": {
+      "name": "Guard.tsx",
+      "type": "file",
+      "summary": "Client-side auth guard component for the anomaly-detection feature that redirects non-admin users away and only renders its children for authorized sessions."
+    },
+    "file:src/components/Base.tsx": {
+      "name": "Base.tsx",
+      "type": "file",
+      "summary": "Memoized no-op React component that renders an empty fragment, used as a placeholder/base stub."
+    },
+    "file:src/components/ChatInterface.css": {
+      "name": "ChatInterface.css",
+      "type": "file",
+      "summary": "Stylesheet for the ChatInterface component covering the chat panel layout, message bubbles, input area, and animation states."
+    },
+    "file:src/components/Finance/StatCard.tsx": {
+      "name": "StatCard.tsx",
+      "type": "file",
+      "summary": "Presentational finance stat card that displays a labeled metric with CAD currency formatting."
+    },
+    "file:src/components/Finance/SummaryCards.tsx": {
+      "name": "SummaryCards.tsx",
+      "type": "file",
+      "summary": "Finance summary row that aggregates income, expense, and balance figures into a set of formatted CAD summary cards."
+    },
+    "file:src/components/Notes/AISuggestions.tsx": {
+      "name": "AISuggestions.tsx",
+      "type": "file",
+      "summary": "Notes helper component that requests AI-generated subtask suggestions for a task title from an API and lets the user accept them into the note."
+    },
+    "file:src/components/Notes/ColoredTableCellNode.tsx": {
+      "name": "ColoredTableCellNode.tsx",
+      "type": "file",
+      "summary": "Custom Lexical editor node extending TableCellNode to persist per-cell background color across DOM import/export and JSON serialization in the notes rich-text editor."
+    },
+    "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx": {
+      "name": "AIImportModal.tsx",
+      "type": "file",
+      "summary": "Modal that accepts a pasted or uploaded screenshot of a table, sends the image to an AI endpoint for extraction, and imports the parsed rows into the high-performance table."
+    },
+    "file:src/components/Notes/NotesSkeleton.tsx": {
+      "name": "NotesSkeleton.tsx",
+      "type": "file",
+      "summary": "Collection of skeleton placeholder components (sidebar, page list, editor, badge, full layout) that mimic the notes UI structure during loading."
+    },
+    "file:src/components/Sections/StarField.tsx": {
+      "name": "StarField.tsx",
+      "type": "file",
+      "summary": "Decorative animated star-field background component that generates randomized stars and applies a parallax offset driven by mouse movement."
+    },
+    "file:src/config.ts": {
+      "name": "config.ts",
+      "type": "file",
+      "summary": "Environment detection helpers exporting boolean flags for browser, mobile pointer, DOM availability, and Apple platform."
+    },
+    "file:src/globalStyles.scss": {
+      "name": "globalStyles.scss",
+      "type": "file",
+      "summary": "Global SCSS stylesheet defining base element styles, resets, and shared utility classes applied across the whole application."
+    },
+    "file:src/hooks/useInterval.ts": {
+      "name": "useInterval.ts",
+      "type": "file",
+      "summary": "Custom React hook that runs a callback on a fixed interval, keeping the latest callback in a ref and pausing when the delay is null."
+    },
+    "file:src/hooks/useWindow.ts": {
+      "name": "useWindow.ts",
+      "type": "file",
+      "summary": "Custom React hook that tracks the browser window width and height, updating on resize events."
+    },
+    "file:src/images/.gitkeep": {
+      "name": ".gitkeep",
+      "type": "file",
+      "summary": "Placeholder file to keep the otherwise-empty src/images directory tracked in git."
+    },
+    "file:src/images/testimonial.webp": {
+      "name": "testimonial.webp",
+      "type": "file",
+      "summary": "Binary WebP image asset used as a testimonial photo in the portfolio UI."
+    },
+    "file:src/models/Bookmark.ts": {
+      "name": "Bookmark.ts",
+      "type": "file",
+      "summary": "Mongoose model and schema for user bookmarks, including URL, description, category, tags, and a text index for search."
+    },
+    "file:src/models/PdfTemplate.ts": {
+      "name": "PdfTemplate.ts",
+      "type": "file",
+      "summary": "Mongoose model for reusable PDF autofill templates, storing the base64 PDF plus an array of positioned template fields for e-signing and form fill."
+    },
+    "file:src/pages/_app.tsx": {
+      "name": "_app.tsx",
+      "type": "file",
+      "summary": "Next.js custom App component that wraps every page in the next-auth SessionProvider and logs page visits to the /api/sys-pulse analytics endpoint on route changes."
+    },
+    "file:src/pages/_document.tsx": {
+      "name": "_document.tsx",
+      "type": "file",
+      "summary": "Next.js custom Document that sets the HTML lang, preconnects and loads the Outfit Google font, and applies a black body background."
+    },
+    "file:src/pages/api/.gitkeep": {
+      "name": ".gitkeep",
+      "type": "file",
+      "summary": "Placeholder file to keep the src/pages/api directory tracked in git."
+    },
+    "file:src/pages/api/contact.ts": {
+      "name": "contact.ts",
+      "type": "file",
+      "summary": "Next.js API route that validates a contact form submission and emails it via a nodemailer Outlook SMTP transport."
+    },
+    "file:src/pages/api/tables/generate.ts": {
+      "name": "generate.ts",
+      "type": "file",
+      "summary": "Next.js API route that sends a text or image prompt to the Google Gemini model and returns structured hierarchical table JSON (columns and nested rows) for the table application."
+    },
+    "file:src/pages/login.tsx": {
+      "name": "login.tsx",
+      "type": "file",
+      "summary": "Login page providing credentials sign-in and Google OAuth via next-auth, with mode toggling, error handling, and redirect to the dashboard when authenticated."
+    },
+    "file:src/types.d.ts": {
+      "name": "types.d.ts",
+      "type": "file",
+      "summary": "Ambient module declarations letting TypeScript import image and video assets (jpg, webp, svg, png, webm, mp4) as string URLs."
+    },
+    "file:src/types/next-auth.d.ts": {
+      "name": "next-auth.d.ts",
+      "type": "file",
+      "summary": "Module augmentation extending next-auth Session and JWT types with custom fields such as access tokens, trust flags, and per-feature enablement toggles."
+    },
+    "file:src/types/quill-better-table.d.ts": {
+      "name": "quill-better-table.d.ts",
+      "type": "file",
+      "summary": "One-line ambient declaration stubbing the untyped quill-better-table module so it can be imported without type errors."
+    },
+    "config:stylelint.config.js": {
+      "name": "stylelint.config.js",
+      "type": "config",
+      "summary": "Stylelint configuration extending the recommended and order configs, enabling the Prettier plugin, and whitelisting Tailwind at-rules."
+    },
+    "config:tailwind.config.js": {
+      "name": "tailwind.config.js",
+      "type": "config",
+      "summary": "Tailwind CSS configuration defining the design system: font, color, spacing, radius, shadow, blur, and animation tokens plus glassmorphism utilities, with the forms and typography plugins."
+    }
+  },
+  "totalNodes": 395,
+  "totalEdges": 1459
+}

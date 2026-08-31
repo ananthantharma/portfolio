@@ -1,0 +1,33 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {"path": "src/app/anomaly/page.tsx", "language": "typescript", "sizeLines": 19, "fileCategory": "code"},
+    {"path": "src/app/api/invoices/[id]/route.ts", "language": "typescript", "sizeLines": 81, "fileCategory": "code"},
+    {"path": "src/app/api/invoices/route.ts", "language": "typescript", "sizeLines": 62, "fileCategory": "code"},
+    {"path": "src/app/notes/page.tsx", "language": "typescript", "sizeLines": 19, "fileCategory": "code"},
+    {"path": "src/app/organization/page.tsx", "language": "typescript", "sizeLines": 19, "fileCategory": "code"},
+    {"path": "src/app/pdf-autofill/page.tsx", "language": "typescript", "sizeLines": 19, "fileCategory": "code"},
+    {"path": "src/app/process-flow/page.tsx", "language": "typescript", "sizeLines": 19, "fileCategory": "code"},
+    {"path": "src/app/smart-invoices/page.tsx", "language": "typescript", "sizeLines": 178, "fileCategory": "code"},
+    {"path": "src/components/AccessDenied.tsx", "language": "typescript", "sizeLines": 36, "fileCategory": "code"},
+    {"path": "src/components/Invoices/InvoiceList.tsx", "language": "typescript", "sizeLines": 363, "fileCategory": "code"},
+    {"path": "src/components/Invoices/InvoiceScanner.tsx", "language": "typescript", "sizeLines": 334, "fileCategory": "code"},
+    {"path": "src/components/ProcessFlow/ProcessFlowBuilder.tsx", "language": "typescript", "sizeLines": 1438, "fileCategory": "code"},
+    {"path": "src/models/Invoice.ts", "language": "typescript", "sizeLines": 44, "fileCategory": "code"}
+  ],
+  "batchImportData": {
+    "src/app/anomaly/page.tsx": ["src/components/AccessDenied.tsx","src/components/Anomaly/AnomalyApp.tsx","src/lib/auth.ts"],
+    "src/app/api/invoices/[id]/route.ts": ["src/lib/auth.ts","src/lib/dbConnect.ts","src/models/Invoice.ts"],
+    "src/app/api/invoices/route.ts": ["src/lib/auth.ts","src/lib/dbConnect.ts","src/models/Invoice.ts"],
+    "src/app/notes/page.tsx": ["src/components/AccessDenied.tsx","src/components/Notes/NotesLayout.tsx","src/lib/auth.ts"],
+    "src/app/organization/page.tsx": ["src/components/AccessDenied.tsx","src/components/Organization/OrganizationLayout.tsx","src/lib/auth.ts"],
+    "src/app/pdf-autofill/page.tsx": ["src/components/AccessDenied.tsx","src/lib/auth.ts"],
+    "src/app/process-flow/page.tsx": ["src/components/AccessDenied.tsx","src/components/ProcessFlow/ProcessFlowBuilder.tsx","src/lib/auth.ts"],
+    "src/app/smart-invoices/page.tsx": ["src/components/AccessDenied.tsx","src/components/Invoices/InvoiceList.tsx","src/components/Invoices/InvoiceScanner.tsx","src/components/Sections/Header.tsx"],
+    "src/components/AccessDenied.tsx": [],
+    "src/components/Invoices/InvoiceList.tsx": ["src/models/Invoice.ts"],
+    "src/components/Invoices/InvoiceScanner.tsx": [],
+    "src/components/ProcessFlow/ProcessFlowBuilder.tsx": [],
+    "src/models/Invoice.ts": []
+  }
+}

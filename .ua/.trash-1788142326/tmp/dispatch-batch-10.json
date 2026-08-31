@@ -1,0 +1,264 @@
+{
+  "batchIndex": 10,
+  "files": [
+    {
+      "path": "src/components/Anomaly/AnomalyApp.tsx",
+      "language": "typescript",
+      "sizeLines": 498,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/BookmarksModal.tsx",
+      "language": "typescript",
+      "sizeLines": 659,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/CommandPalette.tsx",
+      "language": "typescript",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/EditorPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/HomeView.tsx",
+      "language": "typescript",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/IconPicker.tsx",
+      "language": "typescript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/InAppBrowser.tsx",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/MovePageModal.tsx",
+      "language": "typescript",
+      "sizeLines": 113,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/PageList.tsx",
+      "language": "typescript",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/Sidebar.tsx",
+      "language": "typescript",
+      "sizeLines": 564,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/api.ts",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/bookmarksApi.ts",
+      "language": "typescript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/icons.ts",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Anomaly/types.ts",
+      "language": "typescript",
+      "sizeLines": 123,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/DrawingNode.tsx",
+      "language": "typescript",
+      "sizeLines": 515,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ImageNode.tsx",
+      "language": "typescript",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ImagePastePlugin.tsx",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/RichTextEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 663,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/TableActionsPlugin.tsx",
+      "language": "typescript",
+      "sizeLines": 303,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Organization/OrgNotesView.tsx",
+      "language": "typescript",
+      "sizeLines": 720,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/BookmarksModal.tsx",
+      "language": "typescript",
+      "sizeLines": 589,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/components/Anomaly/AnomalyApp.tsx": [
+      "src/components/Anomaly/BookmarksModal.tsx",
+      "src/components/Anomaly/CameraModal.tsx",
+      "src/components/Anomaly/CommandPalette.tsx",
+      "src/components/Anomaly/EditorPanel.tsx",
+      "src/components/Anomaly/HomeView.tsx",
+      "src/components/Anomaly/InAppBrowser.tsx",
+      "src/components/Anomaly/MovePageModal.tsx",
+      "src/components/Anomaly/PageList.tsx",
+      "src/components/Anomaly/Sidebar.tsx",
+      "src/components/Anomaly/api.ts",
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/BookmarksModal.tsx": [
+      "src/components/Anomaly/bookmarksApi.ts",
+      "src/components/Anomaly/icons.ts"
+    ],
+    "src/components/Anomaly/CommandPalette.tsx": [
+      "src/components/Anomaly/api.ts",
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/EditorPanel.tsx": [
+      "src/components/Anomaly/IconPicker.tsx",
+      "src/components/Anomaly/api.ts",
+      "src/components/Anomaly/types.ts",
+      "src/components/Notes/RichTextEditor.tsx"
+    ],
+    "src/components/Anomaly/HomeView.tsx": [
+      "src/components/Anomaly/api.ts",
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/IconPicker.tsx": [
+      "src/components/Anomaly/icons.ts"
+    ],
+    "src/components/Anomaly/InAppBrowser.tsx": [],
+    "src/components/Anomaly/MovePageModal.tsx": [
+      "src/components/Anomaly/api.ts",
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/PageList.tsx": [
+      "src/components/Anomaly/icons.ts",
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/Sidebar.tsx": [
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/api.ts": [
+      "src/components/Anomaly/types.ts"
+    ],
+    "src/components/Anomaly/bookmarksApi.ts": [],
+    "src/components/Anomaly/icons.ts": [],
+    "src/components/Anomaly/types.ts": [],
+    "src/components/Notes/DrawingNode.tsx": [],
+    "src/components/Notes/ImageNode.tsx": [],
+    "src/components/Notes/ImagePastePlugin.tsx": [
+      "src/components/Notes/ImageNode.tsx"
+    ],
+    "src/components/Notes/RichTextEditor.tsx": [
+      "src/components/Notes/DrawingNode.tsx",
+      "src/components/Notes/ImageNode.tsx",
+      "src/components/Notes/ImagePastePlugin.tsx",
+      "src/components/Notes/TableActionsPlugin.tsx"
+    ],
+    "src/components/Notes/TableActionsPlugin.tsx": [],
+    "src/components/Organization/OrgNotesView.tsx": [
+      "src/components/Notes/RichTextEditor.tsx",
+      "src/components/Organization/OrganizationLayout.tsx"
+    ],
+    "src/components/Tasks/BookmarksModal.tsx": [
+      "src/components/Anomaly/bookmarksApi.ts"
+    ]
+  },
+  "neighborMap": {
+    "src/components/Anomaly/AnomalyApp.tsx": [
+      {
+        "path": "src/components/Anomaly/CameraModal.tsx",
+        "batchIndex": 8,
+        "symbols": [
+          "CameraModal"
+        ]
+      },
+      {
+        "path": "src/app/anomaly/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "AnomalyPage"
+        ]
+      }
+    ],
+    "src/components/Anomaly/InAppBrowser.tsx": [
+      {
+        "path": "src/components/Tasks/TasksApp.tsx",
+        "batchIndex": 2,
+        "symbols": [
+          "TasksApp"
+        ]
+      }
+    ],
+    "src/components/Notes/RichTextEditor.tsx": [
+      {
+        "path": "src/components/Notes/NoteEditor.tsx",
+        "batchIndex": 8,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Tasks/NoteQuickEditModal.tsx",
+        "batchIndex": 2,
+        "symbols": [
+          "NoteQuickEditModal"
+        ]
+      }
+    ],
+    "src/components/Organization/OrgNotesView.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Tasks/BookmarksModal.tsx": [
+      {
+        "path": "src/components/Tasks/TasksApp.tsx",
+        "batchIndex": 2,
+        "symbols": [
+          "TasksApp"
+        ]
+      }
+    ]
+  }
+}

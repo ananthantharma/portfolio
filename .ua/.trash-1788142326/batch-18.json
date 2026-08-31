@@ -1,0 +1,235 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/hooks/useInterval.ts",
+      "type": "file",
+      "name": "useInterval.ts",
+      "filePath": "src/hooks/useInterval.ts",
+      "summary": "Custom React hook that runs a callback on a fixed interval, keeping the latest callback in a ref and pausing when the delay is null.",
+      "tags": ["hook", "react", "utility", "timer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/hooks/useWindow.ts",
+      "type": "file",
+      "name": "useWindow.ts",
+      "filePath": "src/hooks/useWindow.ts",
+      "summary": "Custom React hook that tracks the browser window width and height, updating on resize events.",
+      "tags": ["hook", "react", "responsive", "event-handler"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/images/.gitkeep",
+      "type": "file",
+      "name": ".gitkeep",
+      "filePath": "src/images/.gitkeep",
+      "summary": "Placeholder file to keep the otherwise-empty src/images directory tracked in git.",
+      "tags": ["placeholder", "vcs", "scaffolding"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/images/testimonial.webp",
+      "type": "file",
+      "name": "testimonial.webp",
+      "filePath": "src/images/testimonial.webp",
+      "summary": "Binary WebP image asset used as a testimonial photo in the portfolio UI.",
+      "tags": ["asset", "image", "static", "media"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Bookmark.ts",
+      "type": "file",
+      "name": "Bookmark.ts",
+      "filePath": "src/models/Bookmark.ts",
+      "summary": "Mongoose model and schema for user bookmarks, including URL, description, category, tags, and a text index for search.",
+      "tags": ["data-model", "mongoose", "schema-definition", "database"],
+      "complexity": "simple",
+      "languageNotes": "Uses the mongoose.models.Bookmark || mongoose.model(...) guard to avoid model recompilation in Next.js hot-reload."
+    },
+    {
+      "id": "file:src/models/PdfTemplate.ts",
+      "type": "file",
+      "name": "PdfTemplate.ts",
+      "filePath": "src/models/PdfTemplate.ts",
+      "summary": "Mongoose model for reusable PDF autofill templates, storing the base64 PDF plus an array of positioned template fields for e-signing and form fill.",
+      "tags": ["data-model", "mongoose", "schema-definition", "pdf"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/pages/_app.tsx",
+      "type": "file",
+      "name": "_app.tsx",
+      "filePath": "src/pages/_app.tsx",
+      "summary": "Next.js custom App component that wraps every page in the next-auth SessionProvider and logs page visits to the /api/sys-pulse analytics endpoint on route changes.",
+      "tags": ["entry-point", "next-app", "middleware", "analytics"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/_document.tsx",
+      "type": "file",
+      "name": "_document.tsx",
+      "filePath": "src/pages/_document.tsx",
+      "summary": "Next.js custom Document that sets the HTML lang, preconnects and loads the Outfit Google font, and applies a black body background.",
+      "tags": ["entry-point", "next-document", "html-shell", "fonts"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/.gitkeep",
+      "type": "file",
+      "name": ".gitkeep",
+      "filePath": "src/pages/api/.gitkeep",
+      "summary": "Placeholder file to keep the src/pages/api directory tracked in git.",
+      "tags": ["placeholder", "vcs", "scaffolding"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/contact.ts",
+      "type": "file",
+      "name": "contact.ts",
+      "filePath": "src/pages/api/contact.ts",
+      "summary": "Next.js API route that validates a contact form submission and emails it via a nodemailer Outlook SMTP transport.",
+      "tags": ["api-handler", "serverless", "email", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/pages/api/tables/generate.ts",
+      "type": "file",
+      "name": "generate.ts",
+      "filePath": "src/pages/api/tables/generate.ts",
+      "summary": "Next.js API route that sends a text or image prompt to the Google Gemini model and returns structured hierarchical table JSON (columns and nested rows) for the table application.",
+      "tags": ["api-handler", "serverless", "ai-integration", "serialization"],
+      "complexity": "moderate",
+      "languageNotes": "Exports a Next.js route `config` object raising the body parser sizeLimit to 10mb for base64 image payloads."
+    },
+    {
+      "id": "file:src/pages/login.tsx",
+      "type": "file",
+      "name": "login.tsx",
+      "filePath": "src/pages/login.tsx",
+      "summary": "Login page providing credentials sign-in and Google OAuth via next-auth, with mode toggling, error handling, and redirect to the dashboard when authenticated.",
+      "tags": ["component", "page", "authentication", "form"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/types.d.ts",
+      "type": "file",
+      "name": "types.d.ts",
+      "filePath": "src/types.d.ts",
+      "summary": "Ambient module declarations letting TypeScript import image and video assets (jpg, webp, svg, png, webm, mp4) as string URLs.",
+      "tags": ["type-definition", "ambient-declaration", "assets"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/types/next-auth.d.ts",
+      "type": "file",
+      "name": "next-auth.d.ts",
+      "filePath": "src/types/next-auth.d.ts",
+      "summary": "Module augmentation extending next-auth Session and JWT types with custom fields such as access tokens, trust flags, and per-feature enablement toggles.",
+      "tags": ["type-definition", "ambient-declaration", "authentication"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/types/quill-better-table.d.ts",
+      "type": "file",
+      "name": "quill-better-table.d.ts",
+      "filePath": "src/types/quill-better-table.d.ts",
+      "summary": "One-line ambient declaration stubbing the untyped quill-better-table module so it can be imported without type errors.",
+      "tags": ["type-definition", "ambient-declaration", "shim"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:stylelint.config.js",
+      "type": "config",
+      "name": "stylelint.config.js",
+      "filePath": "stylelint.config.js",
+      "summary": "Stylelint configuration extending the recommended and order configs, enabling the Prettier plugin, and whitelisting Tailwind at-rules.",
+      "tags": ["configuration", "linting", "css", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:tailwind.config.js",
+      "type": "config",
+      "name": "tailwind.config.js",
+      "filePath": "tailwind.config.js",
+      "summary": "Tailwind CSS configuration defining the design system: font, color, spacing, radius, shadow, blur, and animation tokens plus glassmorphism utilities, with the forms and typography plugins.",
+      "tags": ["configuration", "tailwind", "design-system", "styling"],
+      "complexity": "moderate",
+      "languageNotes": "class-based dark mode; extensive theme.extend token set including custom keyframes and glass shadow presets."
+    },
+    {
+      "id": "function:src/hooks/useInterval.ts:useInterval",
+      "type": "function",
+      "name": "useInterval",
+      "filePath": "src/hooks/useInterval.ts",
+      "lineRange": [3, 19],
+      "summary": "Sets up a self-clearing setInterval that always invokes the most recent callback, skipping scheduling when delay is null.",
+      "tags": ["hook", "react", "timer", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/hooks/useWindow.ts:useWindow",
+      "type": "function",
+      "name": "useWindow",
+      "filePath": "src/hooks/useWindow.ts",
+      "lineRange": [8, 30],
+      "summary": "Returns the current window size and keeps it in state by subscribing to the resize event on mount.",
+      "tags": ["hook", "react", "responsive", "event-handler"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/_document.tsx:Document",
+      "type": "function",
+      "name": "Document",
+      "filePath": "src/pages/_document.tsx",
+      "lineRange": [9, 31],
+      "summary": "Renders the server-side HTML document shell with font preconnects, notranslate meta, and a black body.",
+      "tags": ["next-document", "html-shell", "fonts", "entry-point"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/contact.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/contact.ts",
+      "lineRange": [4, 55],
+      "summary": "Validates the POSTed name, email, and message and sends the contact email through a nodemailer SMTP transport, returning JSON status codes.",
+      "tags": ["api-handler", "email", "validation", "serverless"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/pages/api/tables/generate.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/tables/generate.ts",
+      "lineRange": [12, 100],
+      "summary": "Builds a system prompt plus optional inline image, calls the Gemini model, strips markdown fences, and returns parsed hierarchical table JSON or an error.",
+      "tags": ["api-handler", "ai-integration", "serialization", "serverless"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/pages/login.tsx:Login",
+      "type": "function",
+      "name": "Login",
+      "filePath": "src/pages/login.tsx",
+      "lineRange": [6, 118],
+      "summary": "Login page component managing credentials and Google sign-in via next-auth, form state, error display, and post-auth redirect.",
+      "tags": ["component", "authentication", "form", "page"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/pages/_app.tsx", "target": "file:src/globalStyles.scss", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/hooks/useInterval.ts", "target": "function:src/hooks/useInterval.ts:useInterval", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/hooks/useWindow.ts", "target": "function:src/hooks/useWindow.ts:useWindow", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/_document.tsx", "target": "function:src/pages/_document.tsx:Document", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/_document.tsx", "target": "function:src/pages/_document.tsx:Document", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/pages/api/contact.ts", "target": "function:src/pages/api/contact.ts:handler", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/api/contact.ts", "target": "function:src/pages/api/contact.ts:handler", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/pages/api/tables/generate.ts", "target": "function:src/pages/api/tables/generate.ts:handler", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/api/tables/generate.ts", "target": "function:src/pages/api/tables/generate.ts:handler", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/pages/login.tsx", "target": "function:src/pages/login.tsx:Login", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/pages/login.tsx", "target": "function:src/pages/login.tsx:Login", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "config:tailwind.config.js", "target": "file:src/pages/_app.tsx", "type": "configures", "direction": "forward", "weight": 0.6},
+    {"source": "config:stylelint.config.js", "target": "file:src/globalStyles.scss", "type": "configures", "direction": "forward", "weight": 0.6}
+  ]
+}

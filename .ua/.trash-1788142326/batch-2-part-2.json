@@ -1,0 +1,1320 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/components/Tasks/NoteLinkModal.tsx",
+      "type": "file",
+      "name": "NoteLinkModal.tsx",
+      "filePath": "src/components/Tasks/NoteLinkModal.tsx",
+      "summary": "Modal for searching existing Notes and linking one to a task, backed by the notes API.",
+      "tags": [
+        "component",
+        "tasks",
+        "notes-integration",
+        "modal",
+        "search"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "type": "file",
+      "name": "NoteQuickEditModal.tsx",
+      "filePath": "src/components/Tasks/NoteQuickEditModal.tsx",
+      "summary": "Modal for quick-editing a linked Note inline using the shared rich text editor.",
+      "tags": [
+        "component",
+        "tasks",
+        "notes-integration",
+        "modal",
+        "editor"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/PropertyCard.tsx",
+      "type": "file",
+      "name": "PropertyCard.tsx",
+      "filePath": "src/components/Tasks/PropertyCard.tsx",
+      "summary": "Small presentational card wrapper used to group labelled property controls in task editors.",
+      "tags": [
+        "component",
+        "tasks",
+        "ui",
+        "presentational"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/SavedViewsBar.tsx",
+      "type": "file",
+      "name": "SavedViewsBar.tsx",
+      "filePath": "src/components/Tasks/SavedViewsBar.tsx",
+      "summary": "Toolbar strip for selecting, applying and deleting saved task filter/sort views.",
+      "tags": [
+        "component",
+        "tasks",
+        "saved-views",
+        "toolbar"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/TaskCard.tsx",
+      "type": "file",
+      "name": "TaskCard.tsx",
+      "filePath": "src/components/Tasks/TaskCard.tsx",
+      "summary": "Reusable task card showing title, priority, due date, tags, subtask progress and completion toggle; shared across list, board and matrix views.",
+      "tags": [
+        "component",
+        "tasks",
+        "card",
+        "shared",
+        "presentational"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/TaskWindow.tsx",
+      "type": "file",
+      "name": "TaskWindow.tsx",
+      "filePath": "src/components/Tasks/TaskWindow.tsx",
+      "summary": "Full-screen expanded task editor window with all task fields, attachments, subtasks, AI planning, recurrence and linked notes.",
+      "tags": [
+        "component",
+        "tasks",
+        "detail-editor",
+        "window",
+        "forms"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Tasks/TasksApp.tsx",
+      "type": "file",
+      "name": "TasksApp.tsx",
+      "filePath": "src/components/Tasks/TasksApp.tsx",
+      "summary": "Root client component for the /tasks feature: owns task state, data fetching, view switching, keyboard shortcuts, CSV import/export and orchestrates every Tasks sub-component and modal.",
+      "tags": [
+        "component",
+        "tasks",
+        "container",
+        "state-management",
+        "orchestrator"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Tasks/TemplatesModal.tsx",
+      "type": "file",
+      "name": "TemplatesModal.tsx",
+      "filePath": "src/components/Tasks/TemplatesModal.tsx",
+      "summary": "Modal for picking a saved task template to instantiate a new task from.",
+      "tags": [
+        "component",
+        "tasks",
+        "templates",
+        "modal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/UndoToast.tsx",
+      "type": "file",
+      "name": "UndoToast.tsx",
+      "filePath": "src/components/Tasks/UndoToast.tsx",
+      "summary": "Transient toast offering an undo action for the last destructive task operation.",
+      "tags": [
+        "component",
+        "tasks",
+        "toast",
+        "undo",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/aiSubtasks.ts",
+      "type": "file",
+      "name": "aiSubtasks.ts",
+      "filePath": "src/components/Tasks/aiSubtasks.ts",
+      "summary": "Client helper that calls the Gemini todo-features route to generate a task summary and subtask checklist.",
+      "tags": [
+        "api-client",
+        "tasks",
+        "ai",
+        "gemini"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/api.ts",
+      "type": "file",
+      "name": "api.ts",
+      "filePath": "src/components/Tasks/api.ts",
+      "summary": "Thin JSON fetch wrapper over the /api/todos routes for task CRUD operations.",
+      "tags": [
+        "api-client",
+        "tasks",
+        "fetch-wrapper",
+        "crud"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/emailParse.ts",
+      "type": "file",
+      "name": "emailParse.ts",
+      "filePath": "src/components/Tasks/emailParse.ts",
+      "summary": "Utilities to detect supported email file types and decode .eml/.msg files into plain text for task creation.",
+      "tags": [
+        "utility",
+        "tasks",
+        "email-parsing",
+        "file-handling"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/notesApi.ts",
+      "type": "file",
+      "name": "notesApi.ts",
+      "filePath": "src/components/Tasks/notesApi.ts",
+      "summary": "Thin fetch wrapper over the /api/notes routes used by the Tasks note-linking modals.",
+      "tags": [
+        "api-client",
+        "tasks",
+        "notes-integration",
+        "fetch-wrapper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/pasteImage.ts",
+      "type": "file",
+      "name": "pasteImage.ts",
+      "filePath": "src/components/Tasks/pasteImage.ts",
+      "summary": "Helper that converts pasted clipboard image data into a base64 Attachment object.",
+      "tags": [
+        "utility",
+        "tasks",
+        "clipboard",
+        "attachments"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/types.ts",
+      "type": "file",
+      "name": "types.ts",
+      "filePath": "src/components/Tasks/types.ts",
+      "summary": "Client-side task domain model plus a large library of pure helpers: status/due grouping, sorting, quick-add parsing, recurrence, streaks and CSV import/export.",
+      "tags": [
+        "type-definition",
+        "tasks",
+        "domain-model",
+        "utility",
+        "data-model"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Tasks/NoteLinkModal.tsx:NoteLinkModal",
+      "type": "function",
+      "name": "NoteLinkModal",
+      "filePath": "src/components/Tasks/NoteLinkModal.tsx",
+      "lineRange": [
+        16,
+        171
+      ],
+      "summary": "Modal that searches notes and links the selected one to the current task.",
+      "tags": [
+        "component",
+        "notes-integration",
+        "modal",
+        "search"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/NoteQuickEditModal.tsx:NoteQuickEditModal",
+      "type": "function",
+      "name": "NoteQuickEditModal",
+      "filePath": "src/components/Tasks/NoteQuickEditModal.tsx",
+      "lineRange": [
+        16,
+        153
+      ],
+      "summary": "Modal for editing a linked note inline via the shared rich text editor.",
+      "tags": [
+        "component",
+        "notes-integration",
+        "modal",
+        "editor"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/PropertyCard.tsx:PropertyCard",
+      "type": "function",
+      "name": "PropertyCard",
+      "filePath": "src/components/Tasks/PropertyCard.tsx",
+      "lineRange": [
+        29,
+        45
+      ],
+      "summary": "Presentational labelled card wrapper for grouping property controls.",
+      "tags": [
+        "component",
+        "presentational",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/SavedViewsBar.tsx:SavedViewsBar",
+      "type": "function",
+      "name": "SavedViewsBar",
+      "filePath": "src/components/Tasks/SavedViewsBar.tsx",
+      "lineRange": [
+        18,
+        73
+      ],
+      "summary": "Toolbar for applying and deleting saved task views.",
+      "tags": [
+        "component",
+        "saved-views",
+        "toolbar"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/TaskCard.tsx:TaskCard",
+      "type": "function",
+      "name": "TaskCard",
+      "filePath": "src/components/Tasks/TaskCard.tsx",
+      "lineRange": [
+        35,
+        243
+      ],
+      "summary": "Shared task card rendering task metadata and completion toggle for all views.",
+      "tags": [
+        "component",
+        "card",
+        "shared"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/TaskWindow.tsx:TaskWindow",
+      "type": "function",
+      "name": "TaskWindow",
+      "filePath": "src/components/Tasks/TaskWindow.tsx",
+      "lineRange": [
+        83,
+        669
+      ],
+      "summary": "Full-screen expanded task editor covering all fields, attachments, subtasks, recurrence and AI planning.",
+      "tags": [
+        "component",
+        "detail-editor",
+        "window",
+        "forms"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Tasks/TasksApp.tsx:TasksApp",
+      "type": "function",
+      "name": "TasksApp",
+      "filePath": "src/components/Tasks/TasksApp.tsx",
+      "lineRange": [
+        114,
+        1415
+      ],
+      "summary": "Top-level Tasks container owning state, data sync, view routing, shortcuts and CSV import/export.",
+      "tags": [
+        "component",
+        "container",
+        "state-management",
+        "orchestrator"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Tasks/TemplatesModal.tsx:TemplatesModal",
+      "type": "function",
+      "name": "TemplatesModal",
+      "filePath": "src/components/Tasks/TemplatesModal.tsx",
+      "lineRange": [
+        16,
+        94
+      ],
+      "summary": "Modal listing task templates for instantiating a new task.",
+      "tags": [
+        "component",
+        "templates",
+        "modal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/UndoToast.tsx:UndoToast",
+      "type": "function",
+      "name": "UndoToast",
+      "filePath": "src/components/Tasks/UndoToast.tsx",
+      "lineRange": [
+        15,
+        50
+      ],
+      "summary": "Toast component exposing an undo action with an auto-dismiss timer.",
+      "tags": [
+        "component",
+        "toast",
+        "undo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/aiSubtasks.ts:planTask",
+      "type": "function",
+      "name": "planTask",
+      "filePath": "src/components/Tasks/aiSubtasks.ts",
+      "lineRange": [
+        9,
+        24
+      ],
+      "summary": "Calls the Gemini todo-features endpoint and returns a validated summary and subtask list.",
+      "tags": [
+        "api-client",
+        "ai",
+        "gemini"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/api.ts:request",
+      "type": "function",
+      "name": "request",
+      "filePath": "src/components/Tasks/api.ts",
+      "lineRange": [
+        5,
+        15
+      ],
+      "summary": "Internal JSON fetch helper for the task API, throwing on failure.",
+      "tags": [
+        "fetch-wrapper",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/emailParse.ts:isSupportedEmailFile",
+      "type": "function",
+      "name": "isSupportedEmailFile",
+      "filePath": "src/components/Tasks/emailParse.ts",
+      "lineRange": [
+        17,
+        24
+      ],
+      "summary": "Checks whether a file is a supported .eml or .msg email based on name and type.",
+      "tags": [
+        "utility",
+        "validation",
+        "email-parsing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/emailParse.ts:fileToEmailText",
+      "type": "function",
+      "name": "fileToEmailText",
+      "filePath": "src/components/Tasks/emailParse.ts",
+      "lineRange": [
+        43,
+        54
+      ],
+      "summary": "Reads an email file and returns its decoded plain-text body.",
+      "tags": [
+        "utility",
+        "email-parsing",
+        "file-handling"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/emailParse.ts:decodeMsg",
+      "type": "function",
+      "name": "decodeMsg",
+      "filePath": "src/components/Tasks/emailParse.ts",
+      "lineRange": [
+        26,
+        40
+      ],
+      "summary": "Best-effort decoder that extracts readable text from a binary Outlook .msg file.",
+      "tags": [
+        "utility",
+        "email-parsing",
+        "decoding"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/notesApi.ts:request",
+      "type": "function",
+      "name": "request",
+      "filePath": "src/components/Tasks/notesApi.ts",
+      "lineRange": [
+        28,
+        38
+      ],
+      "summary": "Internal JSON fetch helper for the notes API used by task linking.",
+      "tags": [
+        "fetch-wrapper",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/pasteImage.ts:attachmentFromPaste",
+      "type": "function",
+      "name": "attachmentFromPaste",
+      "filePath": "src/components/Tasks/pasteImage.ts",
+      "lineRange": [
+        18,
+        42
+      ],
+      "summary": "Converts a clipboard paste event image into a base64 Attachment object.",
+      "tags": [
+        "utility",
+        "clipboard",
+        "attachments"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:parseQuickAdd",
+      "type": "function",
+      "name": "parseQuickAdd",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        196,
+        264
+      ],
+      "summary": "Parses natural-language quick-add syntax (priority, due date, tags, category) into partial task fields.",
+      "tags": [
+        "utility",
+        "parsing",
+        "quick-add"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:parseTasksCsv",
+      "type": "function",
+      "name": "parseTasksCsv",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        465,
+        486
+      ],
+      "summary": "Parses a CSV export back into task objects.",
+      "tags": [
+        "utility",
+        "csv",
+        "import",
+        "serialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:tasksToCsv",
+      "type": "function",
+      "name": "tasksToCsv",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        407,
+        424
+      ],
+      "summary": "Serializes a list of tasks to a CSV string.",
+      "tags": [
+        "utility",
+        "csv",
+        "export",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:nextOccurrence",
+      "type": "function",
+      "name": "nextOccurrence",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        277,
+        293
+      ],
+      "summary": "Computes the next due date for a recurring task given its recurrence rule.",
+      "tags": [
+        "utility",
+        "recurrence",
+        "dates"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:compareBy",
+      "type": "function",
+      "name": "compareBy",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        308,
+        332
+      ],
+      "summary": "Returns a comparator implementing the various task sort modes.",
+      "tags": [
+        "utility",
+        "sorting",
+        "comparator"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:completionStreak",
+      "type": "function",
+      "name": "completionStreak",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        378,
+        387
+      ],
+      "summary": "Calculates the consecutive-day completion streak from task history.",
+      "tags": [
+        "utility",
+        "analytics",
+        "streak"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:splitCsvLine",
+      "type": "function",
+      "name": "splitCsvLine",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        426,
+        452
+      ],
+      "summary": "Splits a single CSV line into fields handling quoting and escapes.",
+      "tags": [
+        "utility",
+        "csv",
+        "parsing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:isBlocked",
+      "type": "function",
+      "name": "isBlocked",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        354,
+        361
+      ],
+      "summary": "Determines whether a task is blocked by an incomplete dependency.",
+      "tags": [
+        "utility",
+        "dependencies",
+        "predicate"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:smartCompare",
+      "type": "function",
+      "name": "smartCompare",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        168,
+        179
+      ],
+      "summary": "Default multi-key task comparator balancing completion, priority and due date.",
+      "tags": [
+        "utility",
+        "sorting",
+        "comparator"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/types.ts:dueGroupOf",
+      "type": "function",
+      "name": "dueGroupOf",
+      "filePath": "src/components/Tasks/types.ts",
+      "lineRange": [
+        130,
+        138
+      ],
+      "summary": "Buckets a task into a due-date group (overdue, today, upcoming, etc.).",
+      "tags": [
+        "utility",
+        "grouping",
+        "dates"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/components/Tasks/NoteLinkModal.tsx",
+      "target": "file:src/components/Tasks/notesApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "target": "file:src/components/Notes/RichTextEditor.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "target": "file:src/components/Tasks/notesApi.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/SavedViewsBar.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskCard.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/PropertyCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/aiSubtasks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/api.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/emailParse.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/pasteImage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Anomaly/InAppBrowser.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Notes/ContactListModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/ArchiveView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/BoardView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/BookmarksModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/CalendarView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/CommandPalette.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/ConfettiBurst.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/ContextMenu.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/DetailDrawer.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/EmailDropModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/InsightsView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/ListView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/MatrixView.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/SavedViewsBar.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/TaskWindow.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/TemplatesModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/UndoToast.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/api.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/emailParse.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/TemplatesModal.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/api.ts",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/pasteImage.ts",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/NoteLinkModal.tsx",
+      "target": "function:src/components/Tasks/NoteLinkModal.tsx:NoteLinkModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/NoteLinkModal.tsx",
+      "target": "function:src/components/Tasks/NoteLinkModal.tsx:NoteLinkModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "target": "function:src/components/Tasks/NoteQuickEditModal.tsx:NoteQuickEditModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "target": "function:src/components/Tasks/NoteQuickEditModal.tsx:NoteQuickEditModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/PropertyCard.tsx",
+      "target": "function:src/components/Tasks/PropertyCard.tsx:PropertyCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/PropertyCard.tsx",
+      "target": "function:src/components/Tasks/PropertyCard.tsx:PropertyCard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/SavedViewsBar.tsx",
+      "target": "function:src/components/Tasks/SavedViewsBar.tsx:SavedViewsBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/SavedViewsBar.tsx",
+      "target": "function:src/components/Tasks/SavedViewsBar.tsx:SavedViewsBar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TaskCard.tsx",
+      "target": "function:src/components/Tasks/TaskCard.tsx:TaskCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/TaskCard.tsx",
+      "target": "function:src/components/Tasks/TaskCard.tsx:TaskCard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "function:src/components/Tasks/TaskWindow.tsx:TaskWindow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "function:src/components/Tasks/TaskWindow.tsx:TaskWindow",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "function:src/components/Tasks/TasksApp.tsx:TasksApp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "function:src/components/Tasks/TasksApp.tsx:TasksApp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TemplatesModal.tsx",
+      "target": "function:src/components/Tasks/TemplatesModal.tsx:TemplatesModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/TemplatesModal.tsx",
+      "target": "function:src/components/Tasks/TemplatesModal.tsx:TemplatesModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/UndoToast.tsx",
+      "target": "function:src/components/Tasks/UndoToast.tsx:UndoToast",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/UndoToast.tsx",
+      "target": "function:src/components/Tasks/UndoToast.tsx:UndoToast",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/aiSubtasks.ts",
+      "target": "function:src/components/Tasks/aiSubtasks.ts:planTask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/aiSubtasks.ts",
+      "target": "function:src/components/Tasks/aiSubtasks.ts:planTask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/api.ts",
+      "target": "function:src/components/Tasks/api.ts:request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/emailParse.ts",
+      "target": "function:src/components/Tasks/emailParse.ts:isSupportedEmailFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/emailParse.ts",
+      "target": "function:src/components/Tasks/emailParse.ts:isSupportedEmailFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/emailParse.ts",
+      "target": "function:src/components/Tasks/emailParse.ts:fileToEmailText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/emailParse.ts",
+      "target": "function:src/components/Tasks/emailParse.ts:fileToEmailText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/emailParse.ts",
+      "target": "function:src/components/Tasks/emailParse.ts:decodeMsg",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/notesApi.ts",
+      "target": "function:src/components/Tasks/notesApi.ts:request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/pasteImage.ts",
+      "target": "function:src/components/Tasks/pasteImage.ts:attachmentFromPaste",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/pasteImage.ts",
+      "target": "function:src/components/Tasks/pasteImage.ts:attachmentFromPaste",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:parseQuickAdd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:parseQuickAdd",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:parseTasksCsv",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:parseTasksCsv",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:tasksToCsv",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:tasksToCsv",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:nextOccurrence",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:nextOccurrence",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:compareBy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:compareBy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:completionStreak",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:completionStreak",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:splitCsvLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:splitCsvLine",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:isBlocked",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:isBlocked",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:smartCompare",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:smartCompare",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:dueGroupOf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/types.ts",
+      "target": "function:src/components/Tasks/types.ts:dueGroupOf",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "function:src/components/Tasks/aiSubtasks.ts:planTask",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "function:src/components/Tasks/pasteImage.ts:attachmentFromPaste",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TaskWindow.tsx",
+      "target": "function:src/components/Tasks/emailParse.ts:fileToEmailText",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "function:src/components/Tasks/types.ts:tasksToCsv",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "function:src/components/Tasks/types.ts:parseTasksCsv",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/TasksApp.tsx",
+      "target": "function:src/components/Tasks/types.ts:parseQuickAdd",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

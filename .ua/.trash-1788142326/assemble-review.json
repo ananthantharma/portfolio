@@ -1,0 +1,21 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 0,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "nodesRemoved": 1,
+  "notes": [
+    "Merge script report was clean: input 776 nodes / 1459 edges == output, no ID normalization, no dangling edges dropped, no 'could not fix' items. Verified independently.",
+    "No nodes missing an id; no unknown node types (only file/function/class/config/document present); no out-of-range complexity values (simple/moderate/complex only).",
+    "Step 3 cross-batch check: all 602 non-empty importMap relations already have a matching 'imports' edge in the graph (that is why the merge script's importMap recovery added 0). No cross-batch imports edges were missing.",
+    "High-fan-in hub files verified against importMap exactly: src/lib/auth.ts 75, src/lib/dbConnect.ts 57, src/lib/neon.ts 9, src/lib/mongodb.ts 8, src/lib/gemini.ts 4, src/lib/openai.ts 2. All present.",
+    "File-node inventory matches scan-result exactly: 397 scan files vs 397 file/config/document nodes, 0 missing, 0 extra.",
+    "Removed node file:.ua/.understandignore - it is the Understand-Anything tool's own data directory, not project source. It had no edges, so removal was safe. Graph is now 775 nodes / 1459 edges.",
+    "Left config:.ua/config.json in place (also the tool's own .ua/ directory, no edges). Low priority - can be removed too for consistency; kept to avoid removing nodes beyond the one flagged.",
+    "Integrity checks all pass: no duplicate node ids, no duplicate (source,target,type) edges, no dangling edges, every function/class node has an inbound 'contains' edge, every edge has weight and direction.",
+    "The 3 'contains' edges whose source is a function (NotesSkeleton.tsx sub-skeletons) are legitimate component composition, not defects.",
+    "Did not add any 'calls' edges - step 3 only authorizes importMap-backed edges, and no speculative edges were warranted."
+  ]
+}

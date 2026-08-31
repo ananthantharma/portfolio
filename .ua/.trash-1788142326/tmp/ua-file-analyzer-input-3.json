@@ -1,0 +1,282 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {
+      "path": "src/lib/auth.ts",
+      "language": "typescript",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/googleDrive.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/mongodb.ts",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/neon.ts",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/AIChatSession.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/ProcessFlow.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/PromptLibraryItem.ts",
+      "language": "typescript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/Property.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/RiskAlert.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/RiskQuestionnaire.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SavedPrompt.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SourcingConfig.ts",
+      "language": "typescript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/SourcingEvent.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/Supplier.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/admin/users/[id]/delete.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/admin/users/create.ts",
+      "language": "typescript",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/auth/[...nextauth].ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/bookmarks.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/bookmarks/[id].ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/categories/update.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/debug/auth-check.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/finance/stock-price/index.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/gemini/assess.ts",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/sourcing/parse-clipboard.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/alerts.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/dashboard.ts",
+      "language": "typescript",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/intelligence.ts",
+      "language": "typescript",
+      "sizeLines": 649,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/questionnaires.ts",
+      "language": "typescript",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/seed.ts",
+      "language": "typescript",
+      "sizeLines": 257,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/[id].ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/index.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/lib/auth.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/lib/googleDrive.ts": [],
+    "src/lib/mongodb.ts": [],
+    "src/lib/neon.ts": [],
+    "src/models/AIChatSession.ts": [],
+    "src/models/ProcessFlow.ts": [],
+    "src/models/PromptLibraryItem.ts": [],
+    "src/models/Property.ts": [],
+    "src/models/RiskAlert.ts": [],
+    "src/models/RiskQuestionnaire.ts": [],
+    "src/models/SavedPrompt.ts": [],
+    "src/models/SourcingConfig.ts": [],
+    "src/models/SourcingEvent.ts": [],
+    "src/models/Supplier.ts": [],
+    "src/pages/api/admin/users/[id]/delete.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/admin/users/create.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/auth/[...nextauth].ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/bookmarks.ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/bookmarks/[id].ts": [
+      "src/lib/auth.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/categories/update.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/debug/auth-check.ts": [
+      "src/lib/mongodb.ts"
+    ],
+    "src/pages/api/finance/stock-price/index.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/gemini/assess.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/sourcing/parse-clipboard.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/pages/api/supplier-risk/alerts.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts"
+    ],
+    "src/pages/api/supplier-risk/dashboard.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/intelligence.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts"
+    ],
+    "src/pages/api/supplier-risk/questionnaires.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskQuestionnaire.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/seed.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/suppliers/[id].ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/Supplier.ts"
+    ],
+    "src/pages/api/supplier-risk/suppliers/index.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/Supplier.ts"
+    ]
+  }
+}

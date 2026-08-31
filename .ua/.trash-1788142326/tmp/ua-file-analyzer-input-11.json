@@ -1,0 +1,190 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {
+      "path": "src/app/api/invoices/scan/route.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/drive/page.tsx",
+      "language": "typescript",
+      "sizeLines": 336,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/finance/layout.tsx",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/gantt/page.tsx",
+      "language": "typescript",
+      "sizeLines": 1461,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/ApiKeyInput.tsx",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/ChatInterface.tsx",
+      "language": "typescript",
+      "sizeLines": 1087,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Layout/Page.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/UnifiedAIChatModal.tsx",
+      "language": "typescript",
+      "sizeLines": 1236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/OpenAIApiKeyInput.tsx",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/OpenAIChatInterface.tsx",
+      "language": "typescript",
+      "sizeLines": 604,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Sections/Header.tsx",
+      "language": "typescript",
+      "sizeLines": 529,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/UserProfileMenu.tsx",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/hooks/useNavObserver.tsx",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/gemini.ts",
+      "language": "typescript",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/lib/openai.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/finance/categorize.ts",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/bookmarks.tsx",
+      "language": "typescript",
+      "sizeLines": 1015,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/chat.tsx",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/open.tsx",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/privacy.tsx",
+      "language": "typescript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/app/api/invoices/scan/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/gemini.ts"
+    ],
+    "src/app/drive/page.tsx": [
+      "src/components/Sections/Header.tsx"
+    ],
+    "src/app/finance/layout.tsx": [
+      "src/components/UserProfileMenu.tsx"
+    ],
+    "src/app/gantt/page.tsx": [
+      "src/components/Sections/Header.tsx"
+    ],
+    "src/components/ApiKeyInput.tsx": [],
+    "src/components/ChatInterface.tsx": [
+      "src/components/ChatInterface.css",
+      "src/lib/gemini.ts"
+    ],
+    "src/components/Layout/Page.tsx": [],
+    "src/components/Notes/UnifiedAIChatModal.tsx": [
+      "src/lib/gemini.ts",
+      "src/lib/openai.ts"
+    ],
+    "src/components/OpenAIApiKeyInput.tsx": [],
+    "src/components/OpenAIChatInterface.tsx": [
+      "src/lib/openai.ts"
+    ],
+    "src/components/Sections/Header.tsx": [
+      "src/components/UserProfileMenu.tsx",
+      "src/data/data.tsx",
+      "src/hooks/useNavObserver.tsx"
+    ],
+    "src/components/UserProfileMenu.tsx": [],
+    "src/hooks/useNavObserver.tsx": [
+      "src/components/Sections/Header.tsx",
+      "src/data/data.tsx"
+    ],
+    "src/lib/gemini.ts": [],
+    "src/lib/openai.ts": [],
+    "src/pages/api/finance/categorize.ts": [
+      "src/lib/categories.ts",
+      "src/lib/gemini.ts"
+    ],
+    "src/pages/bookmarks.tsx": [
+      "src/components/Layout/Page.tsx",
+      "src/components/Sections/Header.tsx"
+    ],
+    "src/pages/chat.tsx": [
+      "src/components/ApiKeyInput.tsx",
+      "src/components/ChatInterface.tsx",
+      "src/components/Layout/Page.tsx",
+      "src/components/Sections/Header.tsx"
+    ],
+    "src/pages/open.tsx": [
+      "src/components/Layout/Page.tsx",
+      "src/components/OpenAIApiKeyInput.tsx",
+      "src/components/OpenAIChatInterface.tsx",
+      "src/components/Sections/Header.tsx"
+    ],
+    "src/pages/privacy.tsx": [
+      "src/components/Layout/Page.tsx",
+      "src/components/Sections/Header.tsx"
+    ]
+  }
+}

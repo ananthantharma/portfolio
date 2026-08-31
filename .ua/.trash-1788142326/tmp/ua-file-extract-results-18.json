@@ -1,0 +1,691 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 14,
+  "filesSkipped": [
+    "src/images/.gitkeep",
+    "src/images/testimonial.webp",
+    "src/pages/api/.gitkeep"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 14,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 14,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/hooks/useInterval.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "useInterval",
+          "startLine": 3,
+          "endLine": 19,
+          "params": [
+            "callback",
+            "delay"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useInterval",
+          "callee": "useRef",
+          "lineNumber": 4
+        },
+        {
+          "caller": "useInterval",
+          "callee": "useEffect",
+          "lineNumber": 6
+        },
+        {
+          "caller": "useInterval",
+          "callee": "useEffect",
+          "lineNumber": 10
+        },
+        {
+          "caller": "useInterval",
+          "callee": "setInterval",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useInterval",
+          "callee": "savedCallback.current",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useInterval",
+          "callee": "clearInterval",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/hooks/useWindow.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 26,
+      "functions": [
+        {
+          "name": "useWindow",
+          "startLine": 8,
+          "endLine": 30,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useWindow",
+          "callee": "useState",
+          "lineNumber": 9
+        },
+        {
+          "caller": "handleSize",
+          "callee": "setWindowSize",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useWindow",
+          "callee": "useEffect",
+          "lineNumber": 22
+        },
+        {
+          "caller": "useWindow",
+          "callee": "window.addEventListener",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useWindow",
+          "callee": "handleSize",
+          "lineNumber": 24
+        },
+        {
+          "caller": "useWindow",
+          "callee": "window.removeEventListener",
+          "lineNumber": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/Bookmark.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 25,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/PdfTemplate.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 52,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/_app.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 39,
+      "callGraph": [
+        {
+          "caller": "logVisit",
+          "callee": "fetch",
+          "lineNumber": 15
+        },
+        {
+          "caller": "logVisit",
+          "callee": "JSON.stringify",
+          "lineNumber": 18
+        },
+        {
+          "caller": "logVisit",
+          "callee": "console.error",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handleRouteChange",
+          "callee": "logVisit",
+          "lineNumber": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/_document.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 31,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "Document",
+          "startLine": 9,
+          "endLine": 31,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Document",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/contact.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 47,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 4,
+          "endLine": 55,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 4,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 6
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 6
+        },
+        {
+          "caller": "handler",
+          "callee": "name?.trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "email?.trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "message?.trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "nodemailer.createTransport",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "transporter.sendMail",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 52
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/tables/generate.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 100,
+      "nonEmptyLines": 85,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 12,
+          "endLine": 100,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "config",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "handler",
+          "line": 12,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "parts.push",
+          "lineNumber": 71
+        },
+        {
+          "caller": "handler",
+          "callee": "model.generateContent",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handler",
+          "callee": "response.text",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handler",
+          "callee": "text\n      .replace(/```json/g, '')\n      .replace(/```/g, '')\n      .trim",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handler",
+          "callee": "text\n      .replace(/```json/g, '')\n      .replace",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handler",
+          "callee": "text\n      .replace",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handler",
+          "callee": "JSON.parse",
+          "lineNumber": 90
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 93
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 94
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 94
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 98
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/login.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 118,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "Login",
+          "startLine": 6,
+          "endLine": 118,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Login",
+          "line": 6,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Login",
+          "callee": "useSession",
+          "lineNumber": 7
+        },
+        {
+          "caller": "Login",
+          "callee": "useRouter",
+          "lineNumber": 8
+        },
+        {
+          "caller": "Login",
+          "callee": "useState",
+          "lineNumber": 9
+        },
+        {
+          "caller": "Login",
+          "callee": "useState",
+          "lineNumber": 10
+        },
+        {
+          "caller": "Login",
+          "callee": "useState",
+          "lineNumber": 11
+        },
+        {
+          "caller": "Login",
+          "callee": "useState",
+          "lineNumber": 12
+        },
+        {
+          "caller": "Login",
+          "callee": "useState",
+          "lineNumber": 13
+        },
+        {
+          "caller": "Login",
+          "callee": "useEffect",
+          "lineNumber": 15
+        },
+        {
+          "caller": "Login",
+          "callee": "router.push",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "e.preventDefault",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "setError",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "setLoading",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "signIn",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "email.trim",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "setError",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "setError",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleCredentialsSignIn",
+          "callee": "setLoading",
+          "lineNumber": 39
+        },
+        {
+          "caller": "Login",
+          "callee": "setMode",
+          "lineNumber": 56
+        },
+        {
+          "caller": "Login",
+          "callee": "setError",
+          "lineNumber": 56
+        },
+        {
+          "caller": "Login",
+          "callee": "setMode",
+          "lineNumber": 63
+        },
+        {
+          "caller": "Login",
+          "callee": "setError",
+          "lineNumber": 63
+        },
+        {
+          "caller": "Login",
+          "callee": "signIn",
+          "lineNumber": 74
+        },
+        {
+          "caller": "Login",
+          "callee": "setEmail",
+          "lineNumber": 85
+        },
+        {
+          "caller": "Login",
+          "callee": "setPassword",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/types.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 25,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/types/next-auth.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 30,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/types/quill-better-table.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "stylelint.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tailwind.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 147,
+      "nonEmptyLines": 137,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

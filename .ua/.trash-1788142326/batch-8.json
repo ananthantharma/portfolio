@@ -1,0 +1,628 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/components/Anomaly/CameraModal.tsx",
+      "type": "file",
+      "name": "CameraModal.tsx",
+      "filePath": "src/components/Anomaly/CameraModal.tsx",
+      "summary": "Admin-only modal that streams the ESP32 camera feed by fetching MQTT credentials, connecting to the HiveMQ broker over a browser MQTT bundle, and rendering JPEG frames with a live FPS counter and connection-phase status.",
+      "tags": ["component", "modal", "mqtt", "camera", "event-handler"],
+      "complexity": "complex",
+      "languageNotes": "Dynamically imports the prebuilt mqtt/dist/mqtt.esm bundle to avoid pulling the Node build into the client compile."
+    },
+    {
+      "id": "function:src/components/Anomaly/CameraModal.tsx:CameraModal",
+      "type": "function",
+      "name": "CameraModal",
+      "filePath": "src/components/Anomaly/CameraModal.tsx",
+      "lineRange": [21, 263],
+      "summary": "React component managing MQTT connection lifecycle, frame decoding via object URLs, heartbeat publishing, FPS sampling, and error/offline phase transitions for the camera stream.",
+      "tags": ["component", "modal", "mqtt", "lifecycle"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/AssessmentModal.tsx",
+      "type": "file",
+      "name": "AssessmentModal.tsx",
+      "filePath": "src/components/Notes/AssessmentModal.tsx",
+      "summary": "Modal that accepts a document upload (PDF/DOCX/XLSX), extracts its text client-side via mammoth and XLSX, and posts it to an AI endpoint for assessment analysis.",
+      "tags": ["component", "modal", "ai", "file-upload", "serialization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/AssessmentModal.tsx:AssessmentModal",
+      "type": "function",
+      "name": "AssessmentModal",
+      "filePath": "src/components/Notes/AssessmentModal.tsx",
+      "lineRange": [15, 254],
+      "summary": "Handles file selection, per-format text extraction, AI analysis request with optional pro model, and result/error rendering.",
+      "tags": ["component", "ai", "file-upload"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/AttachmentManager.tsx",
+      "type": "file",
+      "name": "AttachmentManager.tsx",
+      "filePath": "src/components/Notes/AttachmentManager.tsx",
+      "summary": "Component for uploading, listing, and deleting file attachments on a note, with drag-drop upload handling and human-readable size formatting.",
+      "tags": ["component", "file-upload", "attachments", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/AttachmentManager.tsx:AttachmentManager",
+      "type": "function",
+      "name": "AttachmentManager",
+      "filePath": "src/components/Notes/AttachmentManager.tsx",
+      "lineRange": [31, 370],
+      "summary": "Renders the attachment list and manages upload/delete API calls and local state for a note's attachments.",
+      "tags": ["component", "attachments", "crud"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/AudioRecorderModal.tsx",
+      "type": "file",
+      "name": "AudioRecorderModal.tsx",
+      "filePath": "src/components/Notes/AudioRecorderModal.tsx",
+      "summary": "Modal that captures microphone and/or system audio, encodes it to MP3 in-browser via a scriptProcessor pipeline, shows a live level meter and size/time readout, and lets the user save the recording locally.",
+      "tags": ["component", "modal", "audio", "media-capture", "event-handler"],
+      "complexity": "complex",
+      "languageNotes": "Uses Web Audio ScriptProcessor + lamejs-style encodeBuffer with manual Int16 buffering and File System Access API for saving."
+    },
+    {
+      "id": "function:src/components/Notes/AudioRecorderModal.tsx:AudioRecorderModal",
+      "type": "function",
+      "name": "AudioRecorderModal",
+      "filePath": "src/components/Notes/AudioRecorderModal.tsx",
+      "lineRange": [53, 632],
+      "summary": "Manages capture streams, the audio processing/encoding pipeline, pause/resume, keyboard shortcuts, cleanup, and local save of the encoded MP3 blob.",
+      "tags": ["component", "audio", "lifecycle", "media-capture"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/BadgeSettingsContext.tsx",
+      "type": "file",
+      "name": "BadgeSettingsContext.tsx",
+      "filePath": "src/components/Notes/BadgeSettingsContext.tsx",
+      "summary": "React context provider and hook that fetch, cache, and persist per-user badge threshold/color/animation settings through an axios-backed API.",
+      "tags": ["context", "hook", "state-management", "settings"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/BadgeSettingsContext.tsx:BadgeSettingsProvider",
+      "type": "function",
+      "name": "BadgeSettingsProvider",
+      "filePath": "src/components/Notes/BadgeSettingsContext.tsx",
+      "lineRange": [47, 113],
+      "summary": "Provider that loads badge settings on mount and exposes an optimistic updateSettings that PUTs to the API and refetches on failure.",
+      "tags": ["context", "provider", "state-management"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/BadgeSettingsContext.tsx:useBadgeSettings",
+      "type": "function",
+      "name": "useBadgeSettings",
+      "filePath": "src/components/Notes/BadgeSettingsContext.tsx",
+      "lineRange": [115, 121],
+      "summary": "Hook returning the badge settings context value, throwing if used outside the provider.",
+      "tags": ["hook", "context"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/BadgeSettingsModal.tsx",
+      "type": "file",
+      "name": "BadgeSettingsModal.tsx",
+      "filePath": "src/components/Notes/BadgeSettingsModal.tsx",
+      "summary": "Settings modal that edits badge threshold, color, and animation options for multiple badge categories and persists them via the BadgeSettings context.",
+      "tags": ["component", "modal", "settings", "form"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/BadgeSettingsModal.tsx:BadgeSettingsModal",
+      "type": "function",
+      "name": "BadgeSettingsModal",
+      "filePath": "src/components/Notes/BadgeSettingsModal.tsx",
+      "lineRange": [31, 282],
+      "summary": "Holds local draft settings, renders threshold/color/animation controls per category, and commits changes through updateSettings on save.",
+      "tags": ["component", "settings", "form"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/BookmarkListModal.tsx",
+      "type": "file",
+      "name": "BookmarkListModal.tsx",
+      "filePath": "src/components/Notes/BookmarkListModal.tsx",
+      "summary": "Large modal for browsing, searching, tagging, pinning, editing, and deleting saved bookmarks, with source-badge/domain helpers, relative-time formatting, and localStorage-persisted pins.",
+      "tags": ["component", "modal", "bookmarks", "crud", "search"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/BookmarkListModal.tsx:BookmarkListModal",
+      "type": "function",
+      "name": "BookmarkListModal",
+      "filePath": "src/components/Notes/BookmarkListModal.tsx",
+      "lineRange": [495, 951],
+      "summary": "Top-level modal component managing bookmark fetching, filtering by tag/category, pin state, edit forms, and view-mode switching.",
+      "tags": ["component", "bookmarks", "crud"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/BookmarkListModal.tsx:BookmarkCard",
+      "type": "function",
+      "name": "BookmarkCard",
+      "filePath": "src/components/Notes/BookmarkListModal.tsx",
+      "lineRange": [230, 491],
+      "summary": "Renders a single bookmark with inline edit form, context menu, pin/copy/delete actions, tag pills, and source metadata.",
+      "tags": ["component", "bookmarks", "card"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/BookmarkListModal.tsx:TagInput",
+      "type": "function",
+      "name": "TagInput",
+      "filePath": "src/components/Notes/BookmarkListModal.tsx",
+      "lineRange": [145, 205],
+      "summary": "Controlled tag editor supporting add-on-enter/comma, backspace removal, and normalization of tag strings.",
+      "tags": ["component", "input", "tags"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/CategoryList.tsx",
+      "type": "file",
+      "name": "CategoryList.tsx",
+      "filePath": "src/components/Notes/CategoryList.tsx",
+      "summary": "Sidebar list of note categories with drag-and-drop reordering (SortableItem), inline rename, color/icon pickers, and monogram avatar generation.",
+      "tags": ["component", "drag-and-drop", "categories", "sidebar"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/CategoryList.tsx:CategoryList",
+      "type": "function",
+      "name": "CategoryList",
+      "filePath": "src/components/Notes/CategoryList.tsx",
+      "lineRange": [42, 631],
+      "summary": "Renders and reorders the category list, wiring color/icon editing and badge-settings-driven counts.",
+      "tags": ["component", "categories", "drag-and-drop"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ColorPicker.tsx",
+      "type": "file",
+      "name": "ColorPicker.tsx",
+      "filePath": "src/components/Notes/ColorPicker.tsx",
+      "summary": "Small presentational color swatch picker exporting a shared COLOR_PALETTE constant and a ColorPicker component.",
+      "tags": ["component", "color", "picker", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/ColorPicker.tsx:ColorPicker",
+      "type": "function",
+      "name": "ColorPicker",
+      "filePath": "src/components/Notes/ColorPicker.tsx",
+      "lineRange": [1, 44],
+      "summary": "Renders a grid of selectable color swatches from COLOR_PALETTE and reports the chosen value.",
+      "tags": ["component", "color", "picker"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/CommandPalette.tsx",
+      "type": "file",
+      "name": "CommandPalette.tsx",
+      "filePath": "src/components/Notes/CommandPalette.tsx",
+      "summary": "Keyboard-driven command palette for the notes app that fuzzy-searches pages and actions and dispatches navigation/commands.",
+      "tags": ["component", "command-palette", "search", "keyboard"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/CommandPalette.tsx:CommandPalette",
+      "type": "function",
+      "name": "CommandPalette",
+      "filePath": "src/components/Notes/CommandPalette.tsx",
+      "lineRange": [37, 419],
+      "summary": "Manages query state, filtered results, keyboard selection, and command execution for the palette.",
+      "tags": ["component", "command-palette", "keyboard"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ContactFormModal.tsx",
+      "type": "file",
+      "name": "ContactFormModal.tsx",
+      "filePath": "src/components/Notes/ContactFormModal.tsx",
+      "summary": "Modal form for creating/editing a contact, using shared contact-constants for position/department/type options and an IconPicker for the avatar.",
+      "tags": ["component", "modal", "form", "contacts", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ContactFormModal.tsx:ContactFormModal",
+      "type": "function",
+      "name": "ContactFormModal",
+      "filePath": "src/components/Notes/ContactFormModal.tsx",
+      "lineRange": [73, 343],
+      "summary": "Controlled contact form managing field state, select options, and save submission.",
+      "tags": ["component", "form", "contacts"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/ContactListModal.tsx",
+      "type": "file",
+      "name": "ContactListModal.tsx",
+      "filePath": "src/components/Notes/ContactListModal.tsx",
+      "summary": "Modal that lists, searches, filters, and manages contacts, opening ContactFormModal for create/edit and grouping by department/type from contact-constants.",
+      "tags": ["component", "modal", "contacts", "crud", "search"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/ContactListModal.tsx:ContactListModal",
+      "type": "function",
+      "name": "ContactListModal",
+      "filePath": "src/components/Notes/ContactListModal.tsx",
+      "lineRange": [1, 661],
+      "summary": "Fetches and renders the contact directory with filtering, selection, and delegation to the contact form modal.",
+      "tags": ["component", "contacts", "crud"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "type": "file",
+      "name": "ContractRedlineAnalyzer.tsx",
+      "filePath": "src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "summary": "AI-powered tool that reviews contract text, flags clause-level risks with severity badges, and presents redline suggestions and audit status.",
+      "tags": ["component", "ai", "contract", "risk-analysis"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/ContractRedlineAnalyzer.tsx:ContractRedlineAnalyzer",
+      "type": "function",
+      "name": "ContractRedlineAnalyzer",
+      "filePath": "src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "lineRange": [125, 743],
+      "summary": "Drives the contract analysis workflow: input handling, AI calls, risk-flag rendering, and redline review.",
+      "tags": ["component", "ai", "contract"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ExecutiveModal.tsx",
+      "type": "file",
+      "name": "ExecutiveModal.tsx",
+      "filePath": "src/components/Notes/ExecutiveModal.tsx",
+      "summary": "Modal presenting an executive summary view for a note or section, used from the note editor and notes layout.",
+      "tags": ["component", "modal", "summary"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ExecutiveModal.tsx:ExecutiveModal",
+      "type": "function",
+      "name": "ExecutiveModal",
+      "filePath": "src/components/Notes/ExecutiveModal.tsx",
+      "lineRange": [1, 196],
+      "summary": "Renders the executive summary modal content and close handling.",
+      "tags": ["component", "modal"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/FlaggedItemsModal.tsx",
+      "type": "file",
+      "name": "FlaggedItemsModal.tsx",
+      "filePath": "src/components/Notes/FlaggedItemsModal.tsx",
+      "summary": "Modal listing flagged note pages, letting the user jump to or clear flags on items derived from the NotePage model.",
+      "tags": ["component", "modal", "notes"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/FlaggedItemsModal.tsx:FlaggedItemsModal",
+      "type": "function",
+      "name": "FlaggedItemsModal",
+      "filePath": "src/components/Notes/FlaggedItemsModal.tsx",
+      "lineRange": [1, 120],
+      "summary": "Renders the flagged-pages list and selection/clear actions.",
+      "tags": ["component", "modal", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/GoogleCalendarModal.tsx",
+      "type": "file",
+      "name": "GoogleCalendarModal.tsx",
+      "filePath": "src/components/Notes/GoogleCalendarModal.tsx",
+      "summary": "Thin modal wrapper that embeds the Organization OrgCalendarView inside the notes app.",
+      "tags": ["component", "modal", "calendar", "wrapper"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/GoogleCalendarModal.tsx:GoogleCalendarModal",
+      "type": "function",
+      "name": "GoogleCalendarModal",
+      "filePath": "src/components/Notes/GoogleCalendarModal.tsx",
+      "lineRange": [11, 82],
+      "summary": "Renders a modal shell hosting OrgCalendarView with open/close control.",
+      "tags": ["component", "modal", "calendar"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/GoogleDriveModal.tsx",
+      "type": "file",
+      "name": "GoogleDriveModal.tsx",
+      "filePath": "src/components/Notes/GoogleDriveModal.tsx",
+      "summary": "Modal for browsing and picking files from a connected Google Drive, listing folders/files and returning a selection to the caller.",
+      "tags": ["component", "modal", "google-drive", "file-picker"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/GoogleDriveModal.tsx:GoogleDriveModal",
+      "type": "function",
+      "name": "GoogleDriveModal",
+      "filePath": "src/components/Notes/GoogleDriveModal.tsx",
+      "lineRange": [20, 268],
+      "summary": "Handles Drive listing requests, navigation between folders, and file selection state.",
+      "tags": ["component", "google-drive", "file-picker"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/Humanizer.tsx",
+      "type": "file",
+      "name": "Humanizer.tsx",
+      "filePath": "src/components/Notes/Humanizer.tsx",
+      "summary": "AI writing tool that rewrites text to sound more human, with a shared callAI helper, status-light indicator, and configurable style dropdowns.",
+      "tags": ["component", "ai", "text-processing", "editor-tool"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/Humanizer.tsx:Humanizer",
+      "type": "function",
+      "name": "Humanizer",
+      "filePath": "src/components/Notes/Humanizer.tsx",
+      "lineRange": [176, 573],
+      "summary": "Manages input/output text, style options, AI request lifecycle, and result display for the humanizer.",
+      "tags": ["component", "ai", "text-processing"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/Humanizer.tsx:callAI",
+      "type": "function",
+      "name": "callAI",
+      "filePath": "src/components/Notes/Humanizer.tsx",
+      "lineRange": [37, 67],
+      "summary": "Helper that posts a prompt to the AI endpoint and returns the parsed completion, handling errors.",
+      "tags": ["utility", "ai", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/IconPicker.tsx",
+      "type": "file",
+      "name": "IconPicker.tsx",
+      "filePath": "src/components/Notes/IconPicker.tsx",
+      "summary": "Searchable icon picker exporting a large ICON_options catalog and an IconPicker component used for categories, contacts, and pages.",
+      "tags": ["component", "picker", "icons", "search"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/IconPicker.tsx:IconPicker",
+      "type": "function",
+      "name": "IconPicker",
+      "filePath": "src/components/Notes/IconPicker.tsx",
+      "lineRange": [1, 513],
+      "summary": "Renders a filterable grid of icons from ICON_options and reports the selected icon name.",
+      "tags": ["component", "picker", "icons"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ImageExtractionModal.tsx",
+      "type": "file",
+      "name": "ImageExtractionModal.tsx",
+      "filePath": "src/components/Notes/ImageExtractionModal.tsx",
+      "summary": "Modal that uploads an image and runs AI/OCR extraction to pull text or structured data into a note.",
+      "tags": ["component", "modal", "ai", "ocr", "file-upload"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ImageExtractionModal.tsx:ImageExtractionModal",
+      "type": "function",
+      "name": "ImageExtractionModal",
+      "filePath": "src/components/Notes/ImageExtractionModal.tsx",
+      "lineRange": [1, 332],
+      "summary": "Handles image selection, extraction request, and rendering of extracted results.",
+      "tags": ["component", "ai", "ocr"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/LogicStyleRefiner.tsx",
+      "type": "file",
+      "name": "LogicStyleRefiner.tsx",
+      "filePath": "src/components/Notes/LogicStyleRefiner.tsx",
+      "summary": "AI editor tool that refines the logic and style of text, showing type and audit-status badges, a status light, and a shared callAI helper.",
+      "tags": ["component", "ai", "text-processing", "editor-tool"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/LogicStyleRefiner.tsx:LogicStyleRefiner",
+      "type": "function",
+      "name": "LogicStyleRefiner",
+      "filePath": "src/components/Notes/LogicStyleRefiner.tsx",
+      "lineRange": [175, 732],
+      "summary": "Drives the refine workflow: input handling, AI calls, badge/status rendering, and result review.",
+      "tags": ["component", "ai", "text-processing"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/LogicStyleRefiner.tsx:callAI",
+      "type": "function",
+      "name": "callAI",
+      "filePath": "src/components/Notes/LogicStyleRefiner.tsx",
+      "lineRange": [39, 70],
+      "summary": "Helper that posts a prompt to the AI endpoint and returns the parsed completion.",
+      "tags": ["utility", "ai", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/NoteEditor.tsx",
+      "type": "file",
+      "name": "NoteEditor.tsx",
+      "filePath": "src/components/Notes/NoteEditor.tsx",
+      "summary": "The core note editing surface: wraps the rich text editor and integrates attachments, todos, executive summary, prompt/rewrite modals, and badge settings for a single NotePage.",
+      "tags": ["component", "editor", "notes", "rich-text", "orchestrator"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/NoteEditor.tsx:NoteEditor",
+      "type": "function",
+      "name": "NoteEditor",
+      "filePath": "src/components/Notes/NoteEditor.tsx",
+      "lineRange": [1, 2383],
+      "summary": "Manages note content state, autosave, toolbar actions, and the many child modals/tools that operate on the active page.",
+      "tags": ["component", "editor", "notes"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/NotesLayout.tsx",
+      "type": "file",
+      "name": "NotesLayout.tsx",
+      "filePath": "src/components/Notes/NotesLayout.tsx",
+      "summary": "Top-level shell for the notes/anomaly app that composes the category/section/page navigation, the note editor, and the full suite of feature modals (camera, audio, bookmarks, contacts, AI tools, calendar, drive).",
+      "tags": ["component", "layout", "notes", "orchestrator", "entry-point"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/NotesLayout.tsx:NotesLayout",
+      "type": "function",
+      "name": "NotesLayout",
+      "filePath": "src/components/Notes/NotesLayout.tsx",
+      "lineRange": [1, 2093],
+      "summary": "Holds global notes app state (categories, sections, pages, selection), wires keyboard shortcuts and the command palette, and mounts every feature modal.",
+      "tags": ["component", "layout", "notes", "state-management"],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/components/Anomaly/CameraModal.tsx", "target": "function:src/components/Anomaly/CameraModal.tsx:CameraModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Anomaly/CameraModal.tsx", "target": "function:src/components/Anomaly/CameraModal.tsx:CameraModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/AssessmentModal.tsx", "target": "function:src/components/Notes/AssessmentModal.tsx:AssessmentModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/AssessmentModal.tsx", "target": "function:src/components/Notes/AssessmentModal.tsx:AssessmentModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/AttachmentManager.tsx", "target": "function:src/components/Notes/AttachmentManager.tsx:AttachmentManager", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/AttachmentManager.tsx", "target": "function:src/components/Notes/AttachmentManager.tsx:AttachmentManager", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/AudioRecorderModal.tsx", "target": "function:src/components/Notes/AudioRecorderModal.tsx:AudioRecorderModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/AudioRecorderModal.tsx", "target": "function:src/components/Notes/AudioRecorderModal.tsx:AudioRecorderModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/BadgeSettingsContext.tsx", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:BadgeSettingsProvider", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BadgeSettingsContext.tsx", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:useBadgeSettings", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BadgeSettingsContext.tsx", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:BadgeSettingsProvider", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/BadgeSettingsContext.tsx", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:useBadgeSettings", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/BadgeSettingsModal.tsx", "target": "function:src/components/Notes/BadgeSettingsModal.tsx:BadgeSettingsModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BadgeSettingsModal.tsx", "target": "function:src/components/Notes/BadgeSettingsModal.tsx:BadgeSettingsModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/BadgeSettingsModal.tsx", "target": "file:src/components/Notes/BadgeSettingsContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:src/components/Notes/BadgeSettingsModal.tsx:BadgeSettingsModal", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:useBadgeSettings", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/BookmarkListModal.tsx", "target": "function:src/components/Notes/BookmarkListModal.tsx:BookmarkListModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BookmarkListModal.tsx", "target": "function:src/components/Notes/BookmarkListModal.tsx:BookmarkCard", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BookmarkListModal.tsx", "target": "function:src/components/Notes/BookmarkListModal.tsx:TagInput", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/BookmarkListModal.tsx", "target": "function:src/components/Notes/BookmarkListModal.tsx:BookmarkListModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "function:src/components/Notes/CategoryList.tsx:CategoryList", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "function:src/components/Notes/CategoryList.tsx:CategoryList", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "file:src/components/Notes/BadgeSettingsContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "file:src/components/Notes/ColorPicker.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "file:src/components/Notes/IconPicker.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "file:src/components/Notes/SortableItem.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/CategoryList.tsx", "target": "file:src/models/NoteCategory.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/ColorPicker.tsx", "target": "function:src/components/Notes/ColorPicker.tsx:ColorPicker", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ColorPicker.tsx", "target": "function:src/components/Notes/ColorPicker.tsx:ColorPicker", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/CommandPalette.tsx", "target": "function:src/components/Notes/CommandPalette.tsx:CommandPalette", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/CommandPalette.tsx", "target": "function:src/components/Notes/CommandPalette.tsx:CommandPalette", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/CommandPalette.tsx", "target": "file:src/models/NotePage.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/ContactFormModal.tsx", "target": "function:src/components/Notes/ContactFormModal.tsx:ContactFormModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ContactFormModal.tsx", "target": "function:src/components/Notes/ContactFormModal.tsx:ContactFormModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/ContactFormModal.tsx", "target": "file:src/components/Notes/IconPicker.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/ContactFormModal.tsx", "target": "file:src/lib/contact-constants.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/ContactListModal.tsx", "target": "function:src/components/Notes/ContactListModal.tsx:ContactListModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ContactListModal.tsx", "target": "function:src/components/Notes/ContactListModal.tsx:ContactListModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/ContactListModal.tsx", "target": "file:src/components/Notes/ContactFormModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/ContactListModal.tsx", "target": "file:src/lib/contact-constants.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:src/components/Notes/ContactListModal.tsx:ContactListModal", "target": "function:src/components/Notes/ContactFormModal.tsx:ContactFormModal", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/ContractRedlineAnalyzer.tsx", "target": "function:src/components/Notes/ContractRedlineAnalyzer.tsx:ContractRedlineAnalyzer", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ContractRedlineAnalyzer.tsx", "target": "function:src/components/Notes/ContractRedlineAnalyzer.tsx:ContractRedlineAnalyzer", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/ExecutiveModal.tsx", "target": "function:src/components/Notes/ExecutiveModal.tsx:ExecutiveModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ExecutiveModal.tsx", "target": "function:src/components/Notes/ExecutiveModal.tsx:ExecutiveModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/FlaggedItemsModal.tsx", "target": "function:src/components/Notes/FlaggedItemsModal.tsx:FlaggedItemsModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/FlaggedItemsModal.tsx", "target": "function:src/components/Notes/FlaggedItemsModal.tsx:FlaggedItemsModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/FlaggedItemsModal.tsx", "target": "file:src/models/NotePage.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/GoogleCalendarModal.tsx", "target": "function:src/components/Notes/GoogleCalendarModal.tsx:GoogleCalendarModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/GoogleCalendarModal.tsx", "target": "function:src/components/Notes/GoogleCalendarModal.tsx:GoogleCalendarModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/GoogleCalendarModal.tsx", "target": "file:src/components/Organization/OrgCalendarView.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/GoogleDriveModal.tsx", "target": "function:src/components/Notes/GoogleDriveModal.tsx:GoogleDriveModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/GoogleDriveModal.tsx", "target": "function:src/components/Notes/GoogleDriveModal.tsx:GoogleDriveModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/Humanizer.tsx", "target": "function:src/components/Notes/Humanizer.tsx:Humanizer", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/Humanizer.tsx", "target": "function:src/components/Notes/Humanizer.tsx:callAI", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/Humanizer.tsx", "target": "function:src/components/Notes/Humanizer.tsx:Humanizer", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/IconPicker.tsx", "target": "function:src/components/Notes/IconPicker.tsx:IconPicker", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/IconPicker.tsx", "target": "function:src/components/Notes/IconPicker.tsx:IconPicker", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/ImageExtractionModal.tsx", "target": "function:src/components/Notes/ImageExtractionModal.tsx:ImageExtractionModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/ImageExtractionModal.tsx", "target": "function:src/components/Notes/ImageExtractionModal.tsx:ImageExtractionModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/LogicStyleRefiner.tsx", "target": "function:src/components/Notes/LogicStyleRefiner.tsx:LogicStyleRefiner", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/LogicStyleRefiner.tsx", "target": "function:src/components/Notes/LogicStyleRefiner.tsx:callAI", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/LogicStyleRefiner.tsx", "target": "function:src/components/Notes/LogicStyleRefiner.tsx:LogicStyleRefiner", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "function:src/components/Notes/NoteEditor.tsx:NoteEditor", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "function:src/components/Notes/NoteEditor.tsx:NoteEditor", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/AttachmentManager.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/BadgeSettingsContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/ExecutiveModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/PromptEditorModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/RewriteModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/RichTextEditor.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/components/Notes/ToDoModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/hooks/useDetectOutsideClick.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NoteEditor.tsx", "target": "file:src/models/NotePage.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:src/components/Notes/NoteEditor.tsx:NoteEditor", "target": "function:src/components/Notes/AttachmentManager.tsx:AttachmentManager", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Notes/NoteEditor.tsx:NoteEditor", "target": "function:src/components/Notes/BadgeSettingsContext.tsx:useBadgeSettings", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "function:src/components/Notes/NotesLayout.tsx:NotesLayout", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "function:src/components/Notes/NotesLayout.tsx:NotesLayout", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Anomaly/CameraModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/AssessmentModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/AudioRecorderModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/BadgeSettingsContext.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/BadgeSettingsModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/BookmarkListModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/CategoryList.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/CommandPalette.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/ContactListModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/ContractRedlineAnalyzer.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/ExecutiveModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/FlaggedItemsModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/GoogleCalendarModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/GoogleDriveModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/Humanizer.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/IconPicker.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/ImageExtractionModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/LogicStyleRefiner.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/MovePageModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/NoteEditor.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/SectionDashboard.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/SectionPageList.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/ToDoListModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/TruthTeller.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/Notes/UnifiedAIChatModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/PromptLibrary/PromptLibraryModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/components/StandaloneRewriteModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/models/NoteCategory.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/models/NotePage.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/NotesLayout.tsx", "target": "file:src/models/NoteSection.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "function:src/components/Notes/NotesLayout.tsx:NotesLayout", "target": "function:src/components/Notes/NoteEditor.tsx:NoteEditor", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Notes/NotesLayout.tsx:NotesLayout", "target": "function:src/components/Anomaly/CameraModal.tsx:CameraModal", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Notes/NotesLayout.tsx:NotesLayout", "target": "function:src/components/Notes/CommandPalette.tsx:CommandPalette", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

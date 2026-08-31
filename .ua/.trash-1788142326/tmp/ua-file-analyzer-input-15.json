@@ -1,0 +1,19 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {"path": ".env.local.example", "language": "config", "sizeLines": 31, "fileCategory": "config"},
+    {"path": ".yarnrc.yml", "language": "yaml", "sizeLines": 0, "fileCategory": "config"},
+    {"path": "README.md", "language": "markdown", "sizeLines": 2, "fileCategory": "docs"},
+    {"path": "package.json", "language": "json", "sizeLines": 121, "fileCategory": "config"},
+    {"path": "tsconfig.json", "language": "json", "sizeLines": 43, "fileCategory": "config"},
+    {"path": "vercel.json", "language": "json", "sizeLines": 10, "fileCategory": "config"}
+  ],
+  "batchImportData": {
+    ".env.local.example": [],
+    ".yarnrc.yml": [],
+    "README.md": [],
+    "package.json": [],
+    "tsconfig.json": [],
+    "vercel.json": []
+  }
+}

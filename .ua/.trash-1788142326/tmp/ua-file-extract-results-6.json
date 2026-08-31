@@ -1,0 +1,2566 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 26,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 26,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 26,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/api/finance/budget/[id]/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "PUT",
+          "startLine": 7,
+          "endLine": 22,
+          "params": [
+            "req",
+            "{params}"
+          ]
+        },
+        {
+          "name": "DELETE",
+          "startLine": 24,
+          "endLine": 38,
+          "params": [
+            "_req",
+            "{params}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "PUT",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "DELETE",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PUT",
+          "callee": "dbConnect",
+          "lineNumber": 9
+        },
+        {
+          "caller": "PUT",
+          "callee": "req.json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "PUT",
+          "callee": "BudgetItem.findByIdAndUpdate",
+          "lineNumber": 12
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 17
+        },
+        {
+          "caller": "PUT",
+          "callee": "console.error",
+          "lineNumber": 19
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 20
+        },
+        {
+          "caller": "DELETE",
+          "callee": "dbConnect",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DELETE",
+          "callee": "BudgetItem.findByIdAndDelete",
+          "lineNumber": 28
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 31
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 33
+        },
+        {
+          "caller": "DELETE",
+          "callee": "console.error",
+          "lineNumber": 35
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/finance/budget/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "GET",
+          "startLine": 10,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "POST",
+          "startLine": 26,
+          "endLine": 41,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "GET",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GET",
+          "callee": "dbConnect",
+          "lineNumber": 12
+        },
+        {
+          "caller": "GET",
+          "callee": "getServerSession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "GET",
+          "callee": "BudgetItem.find({userEmail: session.user.email}).sort",
+          "lineNumber": 18
+        },
+        {
+          "caller": "GET",
+          "callee": "BudgetItem.find",
+          "lineNumber": 18
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 19
+        },
+        {
+          "caller": "GET",
+          "callee": "console.error",
+          "lineNumber": 21
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 22
+        },
+        {
+          "caller": "POST",
+          "callee": "dbConnect",
+          "lineNumber": 28
+        },
+        {
+          "caller": "POST",
+          "callee": "getServerSession",
+          "lineNumber": 29
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 31
+        },
+        {
+          "caller": "POST",
+          "callee": "req.json",
+          "lineNumber": 34
+        },
+        {
+          "caller": "POST",
+          "callee": "BudgetItem.create",
+          "lineNumber": 35
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 36
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 38
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/finance/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 526,
+      "nonEmptyLines": 461,
+      "functions": [
+        {
+          "name": "FinanceDashboard",
+          "startLine": 37,
+          "endLine": 526,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "FinanceDashboard",
+          "line": 37,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useSession",
+          "lineNumber": 38
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 39
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 40
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 41
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 42
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 45
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 46
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 47
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 50
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 51
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 52
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 53
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 56
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 57
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useState",
+          "lineNumber": 60
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 69
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setRefreshingPrices",
+          "lineNumber": 70
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.from",
+          "lineNumber": 71
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "invs.map",
+          "lineNumber": 71
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Promise.all",
+          "lineNumber": 74
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "uniqueTickers.map",
+          "lineNumber": 75
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 77
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "res.json",
+          "lineNumber": 78
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 83
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setInvestmentPrices",
+          "lineNumber": 88
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setRefreshingPrices",
+          "lineNumber": 89
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 92
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setLoading",
+          "lineNumber": 94
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Promise.all",
+          "lineNumber": 95
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 96
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 97
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 98
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetRes.json",
+          "lineNumber": 101
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "transRes.json",
+          "lineNumber": 102
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "invRes.json",
+          "lineNumber": 103
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.isArray",
+          "lineNumber": 105
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setBudgetItems",
+          "lineNumber": 105
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setTransactions",
+          "lineNumber": 107
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setLastUpdated",
+          "lineNumber": 108
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.isArray",
+          "lineNumber": 110
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setInvestments",
+          "lineNumber": 111
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchInvestmentPrices",
+          "lineNumber": 112
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 115
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setLoading",
+          "lineNumber": 117
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useEffect",
+          "lineNumber": 121
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchData",
+          "lineNumber": 122
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 126
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 131
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "JSON.stringify",
+          "lineNumber": 134
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchData",
+          "lineNumber": 137
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsBudgetModalOpen",
+          "lineNumber": 138
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingItem",
+          "lineNumber": 139
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 142
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 148
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 152
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "res.json",
+          "lineNumber": 153
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.isArray",
+          "lineNumber": 154
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setInvestments",
+          "lineNumber": 155
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchInvestmentPrices",
+          "lineNumber": 156
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 160
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchInvestmentPrices",
+          "lineNumber": 161
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 164
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "confirm",
+          "lineNumber": 166
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 168
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchData",
+          "lineNumber": 169
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 171
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 177
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "confirm",
+          "lineNumber": 178
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 180
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setTransactions",
+          "lineNumber": 181
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "prev.filter",
+          "lineNumber": 181
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 183
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 187
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingTransaction",
+          "lineNumber": 188
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsEditTransactionModalOpen",
+          "lineNumber": 189
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 192
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setTransactions",
+          "lineNumber": 195
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "prev.map",
+          "lineNumber": 195
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 208
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "JSON.stringify",
+          "lineNumber": 211
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchData",
+          "lineNumber": 213
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 215
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 221
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setTransactions",
+          "lineNumber": 224
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "prev.map",
+          "lineNumber": 225
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Object.entries(updates).map",
+          "lineNumber": 240
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Object.entries",
+          "lineNumber": 240
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 241
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "JSON.stringify",
+          "lineNumber": 244
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Promise.all",
+          "lineNumber": 249
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetchData",
+          "lineNumber": 250
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 252
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 258
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "confirm",
+          "lineNumber": 259
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "fetch",
+          "lineNumber": 261
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setTransactions",
+          "lineNumber": 262
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setLastUpdated",
+          "lineNumber": 263
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "console.error",
+          "lineNumber": 265
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 269
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setSelectedCategory",
+          "lineNumber": 270
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsDetailModalOpen",
+          "lineNumber": 271
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 274
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsBudgetModalOpen",
+          "lineNumber": 275
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingItem",
+          "lineNumber": 276
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 279
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsDetailModalOpen",
+          "lineNumber": 280
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 283
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setSelectedDate",
+          "lineNumber": 284
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useMemo",
+          "lineNumber": 289
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "transactions.filter",
+          "lineNumber": 290
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "tDate.getMonth",
+          "lineNumber": 292
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "selectedDate.getMonth",
+          "lineNumber": 292
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "tDate.getFullYear",
+          "lineNumber": 292
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "selectedDate.getFullYear",
+          "lineNumber": 292
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useMemo",
+          "lineNumber": 297
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter(i => i.type === 'Income').reduce",
+          "lineNumber": 298
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter",
+          "lineNumber": 298
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useMemo",
+          "lineNumber": 302
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter(i => i.type === 'Expense').reduce",
+          "lineNumber": 303
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter",
+          "lineNumber": 303
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useMemo",
+          "lineNumber": 309
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "investments.reduce",
+          "lineNumber": 310
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useMemo",
+          "lineNumber": 323
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter(i => i.type === 'Expense').map",
+          "lineNumber": 329
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter",
+          "lineNumber": 329
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "filteredTransactions.filter(t => t.type === 'Expense').map",
+          "lineNumber": 331
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "filteredTransactions.filter",
+          "lineNumber": 331
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "getParentCategory",
+          "lineNumber": 331
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.from(activeCategories)\n      .map(mainCat => {\n        const budgeted = budgetItems\n          .filter(i => i.category === mainCat && i.type === 'Expense')\n          .reduce((s, i) => s + i.amount, 0);\n\n        const spent = filteredTransactions\n          .filter(t => {\n            if (t.type !== 'Expense') return false;\n            const parent = getParentCategory(t.category);\n            // Match if parent matches, OR if the transaction category literally overlaps (legacy data)\n            return parent === mainCat || t.category === mainCat;\n          })\n          .reduce((s, t) => s + t.amount, 0);\n        return {name: mainCat, budgeted, spent};\n      })\n      .sort",
+          "lineNumber": 334
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.from(activeCategories)\n      .map",
+          "lineNumber": 334
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "Array.from",
+          "lineNumber": 334
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems\n          .filter(i => i.category === mainCat && i.type === 'Expense')\n          .reduce",
+          "lineNumber": 336
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems\n          .filter",
+          "lineNumber": 336
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "filteredTransactions\n          .filter(t => {\n            if (t.type !== 'Expense') return false;\n            const parent = getParentCategory(t.category);\n            // Match if parent matches, OR if the transaction category literally overlaps (legacy data)\n            return parent === mainCat || t.category === mainCat;\n          })\n          .reduce",
+          "lineNumber": 340
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "filteredTransactions\n          .filter",
+          "lineNumber": 340
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "getParentCategory",
+          "lineNumber": 343
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 353
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsEditTransactionModalOpen",
+          "lineNumber": 354
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 357
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setBudgetListType",
+          "lineNumber": 358
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 361
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "handleManageBudget",
+          "lineNumber": 361
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 362
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "handleManageBudget",
+          "lineNumber": 362
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 363
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "handleManageBudget",
+          "lineNumber": 363
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 365
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsBudgetModalOpen",
+          "lineNumber": 366
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingItem",
+          "lineNumber": 367
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 370
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setBudgetListType",
+          "lineNumber": 370
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "useCallback",
+          "lineNumber": 372
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingItem",
+          "lineNumber": 373
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsBudgetModalOpen",
+          "lineNumber": 374
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setEditingItem",
+          "lineNumber": 402
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "setIsBudgetModalOpen",
+          "lineNumber": 403
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "budgetItems.filter",
+          "lineNumber": 498
+        },
+        {
+          "caller": "FinanceDashboard",
+          "callee": "filteredTransactions.filter",
+          "lineNumber": 502
+        }
+      ],
+      "metrics": {
+        "importCount": 17,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/ActivityFeed.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 362,
+      "nonEmptyLines": 324,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 46
+        },
+        {
+          "caller": "formatDate",
+          "callee": "new Date(dateStr).toLocaleDateString",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "confirm",
+          "lineNumber": 187
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "setStatus",
+          "lineNumber": 190
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "fetch",
+          "lineNumber": 191
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "JSON.stringify",
+          "lineNumber": 192
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "res.json().catch",
+          "lineNumber": 198
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "res.json",
+          "lineNumber": 198
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "res.json",
+          "lineNumber": 202
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "Object.entries(data.categorizations).forEach",
+          "lineNumber": 207
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "Object.entries",
+          "lineNumber": 207
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "transactions.find",
+          "lineNumber": 217
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "Math.abs",
+          "lineNumber": 220
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "Object.keys",
+          "lineNumber": 228
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "onBulkCategoryChange",
+          "lineNumber": 230
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "setSuccessCount",
+          "lineNumber": 231
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "setStatus",
+          "lineNumber": 232
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "setStatus",
+          "lineNumber": 234
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "console.error",
+          "lineNumber": 237
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "setStatus",
+          "lineNumber": 238
+        },
+        {
+          "caller": "handleAutoCategorize",
+          "callee": "alert",
+          "lineNumber": 240
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/BudgetItemModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 241,
+      "nonEmptyLines": 222,
+      "callGraph": [
+        {
+          "caller": "handleTypeChange",
+          "callee": "setType",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleTypeChange",
+          "callee": "setCategory",
+          "lineNumber": 51
+        },
+        {
+          "caller": "handleTypeChange",
+          "callee": "setSubcategory",
+          "lineNumber": 52
+        },
+        {
+          "caller": "handleTypeChange",
+          "callee": "Object.keys",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handleTypeChange",
+          "callee": "setCategory",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleTypeChange",
+          "callee": "setSubcategory",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handleCategoryChange",
+          "callee": "setCategory",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleCategoryChange",
+          "callee": "setSubcategory",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 73
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onSave",
+          "lineNumber": 74
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "parseFloat",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/BudgetListModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 260,
+      "nonEmptyLines": 240,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 30
+        },
+        {
+          "caller": "toggleCategory",
+          "callee": "newSet.has",
+          "lineNumber": 56
+        },
+        {
+          "caller": "toggleCategory",
+          "callee": "newSet.delete",
+          "lineNumber": 57
+        },
+        {
+          "caller": "toggleCategory",
+          "callee": "newSet.add",
+          "lineNumber": 59
+        },
+        {
+          "caller": "toggleCategory",
+          "callee": "setExpandedCategories",
+          "lineNumber": 61
+        },
+        {
+          "caller": "toggleAll",
+          "callee": "setExpandedCategories",
+          "lineNumber": 66
+        },
+        {
+          "caller": "toggleAll",
+          "callee": "setExpandedCategories",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/BudgetOverview.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 56,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0}).format",
+          "lineNumber": 18
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/BudgetTable.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 100,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {\n      style: 'currency',\n      currency: 'CAD',\n    }).format",
+          "lineNumber": 15
+        },
+        {
+          "caller": "renderTableSection",
+          "callee": "formatCurrency",
+          "lineNumber": 47
+        },
+        {
+          "caller": "renderTableSection",
+          "callee": "data.map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "renderTableSection",
+          "callee": "formatCurrency",
+          "lineNumber": 77
+        },
+        {
+          "caller": "renderTableSection",
+          "callee": "onEdit",
+          "lineNumber": 81
+        },
+        {
+          "caller": "renderTableSection",
+          "callee": "onDelete",
+          "lineNumber": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/CSVUploader.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 86,
+      "nonEmptyLines": 74,
+      "callGraph": [
+        {
+          "caller": "handleFileChange",
+          "callee": "setUploading",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setMessage",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "formData.append",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "fetch",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "res.json",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setMessage",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "onUploadSuccess",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setMessage",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "console.error",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setMessage",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setUploading",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/CategoryDetailModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 139,
+      "nonEmptyLines": 127,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/CategoryPicker.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 70,
+      "exports": [
+        {
+          "name": "CategoryPicker",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/FinanceCharts.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 60,
+      "functions": [
+        {
+          "name": "formatYAxisTick",
+          "startLine": 31,
+          "endLine": 31,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "formatTooltipValue",
+          "startLine": 32,
+          "endLine": 32,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/InvestmentHistoryModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 109,
+      "nonEmptyLines": 102,
+      "functions": [
+        {
+          "name": "InvestmentHistoryModal",
+          "startLine": 25,
+          "endLine": 109,
+          "params": [
+            "{\n  isOpen,\n  onClose,\n  ticker,\n  category,\n  investments,\n  onEdit,\n  onDelete,\n  onSell,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvestmentHistoryModal",
+          "line": 25,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "investments.reduce",
+          "lineNumber": 35
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "investments.reduce",
+          "lineNumber": 36
+        },
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 39
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "formatCurrency",
+          "lineNumber": 53
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "onClose",
+          "lineNumber": 65
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "onSell",
+          "lineNumber": 66
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "investments.map",
+          "lineNumber": 84
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "formatCurrency",
+          "lineNumber": 88
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "formatCurrency",
+          "lineNumber": 90
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "onEdit",
+          "lineNumber": 93
+        },
+        {
+          "caller": "InvestmentHistoryModal",
+          "callee": "onDelete",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/InvestmentManager.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 330,
+      "nonEmptyLines": 295,
+      "functions": [
+        {
+          "name": "InvestmentManager",
+          "startLine": 39,
+          "endLine": 330,
+          "params": [
+            "{\n  investments,\n  prices,\n  loading,\n  refreshing,\n  onRefreshPrices,\n  onDataChange,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvestmentManager",
+          "line": 39,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 48
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 51
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 52
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 55
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 56
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 60
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "fetch",
+          "lineNumber": 65
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "JSON.stringify",
+          "lineNumber": 68
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "onDataChange",
+          "lineNumber": 72
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 78
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsAddModalOpen",
+          "lineNumber": 79
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 82
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "confirm",
+          "lineNumber": 84
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "fetch",
+          "lineNumber": 85
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "onDataChange",
+          "lineNumber": 86
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsHistoryModalOpen",
+          "lineNumber": 87
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 92
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "fetch",
+          "lineNumber": 96
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "JSON.stringify",
+          "lineNumber": 99
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "onDataChange",
+          "lineNumber": 106
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsSellModalOpen",
+          "lineNumber": 107
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsHistoryModalOpen",
+          "lineNumber": 108
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 113
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsHistoryModalOpen",
+          "lineNumber": 114
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setEditingInv",
+          "lineNumber": 115
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsAddModalOpen",
+          "lineNumber": 116
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 119
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setSellTicker",
+          "lineNumber": 121
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsSellModalOpen",
+          "lineNumber": 122
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 127
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsHistoryModalOpen",
+          "lineNumber": 128
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useCallback",
+          "lineNumber": 131
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsSellModalOpen",
+          "lineNumber": 132
+        },
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 136
+        },
+        {
+          "caller": "formatPercent",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'percent', minimumFractionDigits: 2}).format",
+          "lineNumber": 139
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useMemo",
+          "lineNumber": 142
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "investments.forEach",
+          "lineNumber": 145
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "g.lots.push",
+          "lineNumber": 163
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "Object.values(groups).map",
+          "lineNumber": 169
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "Object.values",
+          "lineNumber": 169
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "useMemo",
+          "lineNumber": 180
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "groupedHoldings.forEach",
+          "lineNumber": 182
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "cats[h.category].push",
+          "lineNumber": 183
+        },
+        {
+          "caller": "calculateTotals",
+          "callee": "items.forEach",
+          "lineNumber": 192
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setEditingInv",
+          "lineNumber": 216
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsAddModalOpen",
+          "lineNumber": 217
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "Object.entries(holdingsByCategory).map",
+          "lineNumber": 230
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "Object.entries",
+          "lineNumber": 230
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "calculateTotals",
+          "lineNumber": 232
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatCurrency",
+          "lineNumber": 239
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatCurrency",
+          "lineNumber": 240
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "items.map",
+          "lineNumber": 256
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setSelectedHolding",
+          "lineNumber": 261
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "setIsHistoryModalOpen",
+          "lineNumber": 262
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatCurrency",
+          "lineNumber": 267
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatCurrency",
+          "lineNumber": 270
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatCurrency",
+          "lineNumber": 275
+        },
+        {
+          "caller": "InvestmentManager",
+          "callee": "formatPercent",
+          "lineNumber": 280
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/InvestmentModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 161,
+      "functions": [
+        {
+          "name": "InvestmentModal",
+          "startLine": 23,
+          "endLine": 172,
+          "params": [
+            "{isOpen, onClose, onSave, initialData}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvestmentModal",
+          "line": 23,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 24
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 25
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 26
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "useEffect",
+          "lineNumber": 31
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setTicker",
+          "lineNumber": 34
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setQuantity",
+          "lineNumber": 35
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "initialData.quantity.toString",
+          "lineNumber": 35
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setBookPrice",
+          "lineNumber": 36
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "initialData.bookPrice.toString",
+          "lineNumber": 36
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setPurchaseDate",
+          "lineNumber": 39
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "d.toISOString().split",
+          "lineNumber": 39
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "d.toISOString",
+          "lineNumber": 39
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setCategory",
+          "lineNumber": 40
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setTicker",
+          "lineNumber": 42
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setQuantity",
+          "lineNumber": 43
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setBookPrice",
+          "lineNumber": 44
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setPurchaseDate",
+          "lineNumber": 45
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "new Date().toISOString().split",
+          "lineNumber": 45
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "new Date().toISOString",
+          "lineNumber": 45
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setCategory",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 52
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onSave",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "ticker.toUpperCase",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Number",
+          "lineNumber": 58
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Number",
+          "lineNumber": 59
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "console.error",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 67
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setTicker",
+          "lineNumber": 90
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "e.target.value.toUpperCase",
+          "lineNumber": 90
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setQuantity",
+          "lineNumber": 104
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setBookPrice",
+          "lineNumber": 117
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setPurchaseDate",
+          "lineNumber": 132
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "setCategory",
+          "lineNumber": 142
+        },
+        {
+          "caller": "InvestmentModal",
+          "callee": "CATEGORIES.map",
+          "lineNumber": 144
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/MetricCard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 50,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0}).format",
+          "lineNumber": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/MonthSelector.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 36,
+      "callGraph": [
+        {
+          "caller": "handlePrevMonth",
+          "callee": "newDate.setMonth",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handlePrevMonth",
+          "callee": "newDate.getMonth",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handlePrevMonth",
+          "callee": "onMonthChange",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handleNextMonth",
+          "callee": "newDate.setMonth",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handleNextMonth",
+          "callee": "newDate.getMonth",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handleNextMonth",
+          "callee": "onMonthChange",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/SellInvestmentModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "SellInvestmentModal",
+          "startLine": 13,
+          "endLine": 99,
+          "params": [
+            "{isOpen, onClose, onConfirm, ticker, maxQuantity}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SellInvestmentModal",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SellInvestmentModal",
+          "callee": "useState",
+          "lineNumber": 14
+        },
+        {
+          "caller": "SellInvestmentModal",
+          "callee": "useState",
+          "lineNumber": 15
+        },
+        {
+          "caller": "SellInvestmentModal",
+          "callee": "useState",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setError",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Number",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setError",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setError",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onConfirm",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setQuantity",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "console.error",
+          "lineNumber": 38
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setError",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 41
+        },
+        {
+          "caller": "SellInvestmentModal",
+          "callee": "setQuantity",
+          "lineNumber": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/SpendTrendChart.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 150,
+      "nonEmptyLines": 133,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/TopCategorySpend.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 51,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0}).format",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/TransactionEditModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 152,
+      "nonEmptyLines": 136,
+      "callGraph": [
+        {
+          "caller": "handleSave",
+          "callee": "onSave",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleSave",
+          "callee": "onClose",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/TransactionList.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 125,
+      "nonEmptyLines": 112,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/TransactionTable.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 129,
+      "nonEmptyLines": 123,
+      "callGraph": [
+        {
+          "caller": "formatDate",
+          "callee": "new Date(dateString).toLocaleDateString",
+          "lineNumber": 27
+        },
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {\n      style: 'currency',\n      currency: 'CAD',\n    }).format",
+          "lineNumber": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/UpcomingExpenses.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 54,
+      "nonEmptyLines": 46,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD', maximumFractionDigits: 0}).format",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/categories.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 183,
+      "nonEmptyLines": 175,
+      "functions": [
+        {
+          "name": "getParentCategory",
+          "startLine": 130,
+          "endLine": 142,
+          "params": [
+            "subCat"
+          ]
+        },
+        {
+          "name": "getCategoryEmoji",
+          "startLine": 144,
+          "endLine": 181,
+          "params": [
+            "cat"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BUDGET_CATEGORIES",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "INCOME_CATEGORIES",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "getParentCategory",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "getCategoryEmoji",
+          "line": 144,
+          "isDefault": false
+        },
+        {
+          "name": "TRANSACTION_CATEGORIES",
+          "line": 183,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getParentCategory",
+          "callee": "INCOME_CATEGORIES.includes",
+          "lineNumber": 133
+        },
+        {
+          "caller": "getParentCategory",
+          "callee": "Object.entries",
+          "lineNumber": 136
+        },
+        {
+          "caller": "getParentCategory",
+          "callee": "subCats.includes",
+          "lineNumber": 137
+        },
+        {
+          "caller": "getCategoryEmoji",
+          "callee": "getParentCategory",
+          "lineNumber": 147
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/BudgetItem.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 66,
+      "nonEmptyLines": 60,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

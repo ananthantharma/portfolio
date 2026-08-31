@@ -1,0 +1,4607 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 22,
+  "filesSkipped": [
+    "src/components/.gitkeep",
+    "src/components/ChatInterface.css",
+    "src/globalStyles.scss"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 22,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 22,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/notes/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 20,
+      "functions": [
+        {
+          "name": "NotesLayout",
+          "startLine": 7,
+          "endLine": 26,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "NotesLayout",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NotesLayout",
+          "callee": "useSession",
+          "lineNumber": 8
+        },
+        {
+          "caller": "NotesLayout",
+          "callee": "useRouter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "NotesLayout",
+          "callee": "useEffect",
+          "lineNumber": 11
+        },
+        {
+          "caller": "NotesLayout",
+          "callee": "router.push",
+          "lineNumber": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/notes/loading.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 5,
+      "nonEmptyLines": 4,
+      "functions": [
+        {
+          "name": "NotesLoading",
+          "startLine": 3,
+          "endLine": 5,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "NotesLoading",
+          "line": 3,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/organization/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 52,
+      "nonEmptyLines": 45,
+      "functions": [
+        {
+          "name": "OrganizationRootLayout",
+          "startLine": 8,
+          "endLine": 52,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OrganizationRootLayout",
+          "line": 8,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OrganizationRootLayout",
+          "callee": "useSession",
+          "lineNumber": 9
+        },
+        {
+          "caller": "OrganizationRootLayout",
+          "callee": "useRouter",
+          "lineNumber": 10
+        },
+        {
+          "caller": "OrganizationRootLayout",
+          "callee": "useEffect",
+          "lineNumber": 12
+        },
+        {
+          "caller": "OrganizationRootLayout",
+          "callee": "router.push",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 862,
+      "nonEmptyLines": 779,
+      "functions": [
+        {
+          "name": "resolveFieldDefault",
+          "startLine": 34,
+          "endLine": 50,
+          "params": [
+            "f"
+          ]
+        },
+        {
+          "name": "confidenceClass",
+          "startLine": 63,
+          "endLine": 81,
+          "params": [
+            "c"
+          ]
+        },
+        {
+          "name": "fileIcon",
+          "startLine": 85,
+          "endLine": 90,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "triggerDownload",
+          "startLine": 94,
+          "endLine": 103,
+          "params": [
+            "blob",
+            "filename"
+          ]
+        },
+        {
+          "name": "loadPdfJs",
+          "startLine": 108,
+          "endLine": 127,
+          "params": []
+        },
+        {
+          "name": "PdfAutoFillClient",
+          "startLine": 158,
+          "endLine": 862,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PdfAutoFillClient",
+          "line": 158,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.setDate",
+          "lineNumber": 37
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getDate",
+          "lineNumber": 37
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 39
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getDate",
+          "lineNumber": 39
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String(d.getDate()).padStart",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getDate",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 41
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getMonth",
+          "lineNumber": 41
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String(d.getMonth() + 1).padStart",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getMonth",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 43
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 44
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String(d.getFullYear()).slice",
+          "lineNumber": 45
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 45
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getFullYear",
+          "lineNumber": 45
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "String",
+          "lineNumber": 46
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.getFullYear",
+          "lineNumber": 46
+        },
+        {
+          "caller": "resolveFieldDefault",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 47
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 86
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 87
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 87
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 88
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 88
+        },
+        {
+          "caller": "fileIcon",
+          "callee": "name.endsWith",
+          "lineNumber": 88
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 95
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "document.createElement",
+          "lineNumber": 96
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "document.body.appendChild",
+          "lineNumber": 99
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "a.click",
+          "lineNumber": 100
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "document.body.removeChild",
+          "lineNumber": 101
+        },
+        {
+          "caller": "triggerDownload",
+          "callee": "URL.revokeObjectURL",
+          "lineNumber": 102
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "resolve",
+          "lineNumber": 112
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "document.createElement",
+          "lineNumber": 115
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "resolve",
+          "lineNumber": 121
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "document.head.appendChild",
+          "lineNumber": 124
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 160
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 161
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 162
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 165
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 166
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 167
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 168
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 169
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 170
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 173
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 174
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 175
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 178
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 179
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 180
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useState",
+          "lineNumber": 181
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 185
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "Array.from",
+          "lineNumber": 186
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setSourceFiles",
+          "lineNumber": 187
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "prev.map",
+          "lineNumber": 188
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "arr.filter(f => !names.has(f.name)).map",
+          "lineNumber": 189
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "arr.filter",
+          "lineNumber": 189
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "names.has",
+          "lineNumber": 189
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 193
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setSourceFiles",
+          "lineNumber": 194
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "prev.filter",
+          "lineNumber": 194
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 197
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setSourceFiles",
+          "lineNumber": 198
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "prev.map",
+          "lineNumber": 198
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 203
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setLoadingTemplates",
+          "lineNumber": 204
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 206
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "res.json",
+          "lineNumber": 207
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTemplates",
+          "lineNumber": 208
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setLoadingTemplates",
+          "lineNumber": 210
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 213
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 216
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "res.json",
+          "lineNumber": 217
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "Uint8Array.from",
+          "lineNumber": 220
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "atob",
+          "lineNumber": 220
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "c.charCodeAt",
+          "lineNumber": 220
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "URL.revokeObjectURL",
+          "lineNumber": 224
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdf",
+          "lineNumber": 225
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdfUrl",
+          "lineNumber": 226
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 226
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFormFields",
+          "lineNumber": 227
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateId",
+          "lineNumber": 228
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateName",
+          "lineNumber": 229
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 230
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setMappings",
+          "lineNumber": 231
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFacts",
+          "lineNumber": 232
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 233
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateSelector",
+          "lineNumber": 234
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 236
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 242
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 244
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTemplates",
+          "lineNumber": 245
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "prev.filter",
+          "lineNumber": 245
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateId",
+          "lineNumber": 247
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateName",
+          "lineNumber": 248
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 256
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "URL.revokeObjectURL",
+          "lineNumber": 258
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdf",
+          "lineNumber": 259
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdfUrl",
+          "lineNumber": 260
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 260
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 261
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setMappings",
+          "lineNumber": 262
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFormFields",
+          "lineNumber": 263
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFacts",
+          "lineNumber": 264
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 265
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateId",
+          "lineNumber": 266
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateName",
+          "lineNumber": 267
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 274
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 276
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 280
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 284
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 285
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 290
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "sourceFiles.forEach",
+          "lineNumber": 292
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "extractForm.append",
+          "lineNumber": 292
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "extractForm.append",
+          "lineNumber": 293
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "JSON.stringify",
+          "lineNumber": 293
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "sourceFiles.map",
+          "lineNumber": 293
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 294
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "extractRes.json",
+          "lineNumber": 295
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "extractRes.json",
+          "lineNumber": 296
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFacts",
+          "lineNumber": 297
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 302
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "analyzeForm.append",
+          "lineNumber": 304
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 305
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "analyzeRes.json",
+          "lineNumber": 306
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "analyzeRes.json",
+          "lineNumber": 307
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFormFields",
+          "lineNumber": 309
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setIsAcroForm",
+          "lineNumber": 310
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 314
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 315
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "JSON.stringify",
+          "lineNumber": 318
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mapRes.json",
+          "lineNumber": 320
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mapRes.json",
+          "lineNumber": 321
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fields.map",
+          "lineNumber": 324
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "(mapped || []).map",
+          "lineNumber": 325
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fieldMeta.get",
+          "lineNumber": 326
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "resolveFieldDefault",
+          "lineNumber": 327
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setMappings",
+          "lineNumber": 347
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 349
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 350
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 352
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 353
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 354
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 360
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setMappings",
+          "lineNumber": 361
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "prev.map",
+          "lineNumber": 361
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "useCallback",
+          "lineNumber": 366
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 368
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 369
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fillForm.append",
+          "lineNumber": 375
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fillForm.append",
+          "lineNumber": 376
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "JSON.stringify",
+          "lineNumber": 376
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fillForm.append",
+          "lineNumber": 377
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fillForm.append",
+          "lineNumber": 378
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "JSON.stringify",
+          "lineNumber": 378
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetch",
+          "lineNumber": 380
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "res.json",
+          "lineNumber": 381
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "triggerDownload",
+          "lineNumber": 382
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "res.blob",
+          "lineNumber": 382
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "loadPdfJs",
+          "lineNumber": 386
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "targetPdf.arrayBuffer",
+          "lineNumber": 387
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "pdfjsLib.getDocument",
+          "lineNumber": 388
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "import",
+          "lineNumber": 390
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 393
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 396
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "pdfDoc.getPage",
+          "lineNumber": 397
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "page.getViewport",
+          "lineNumber": 401
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.createElement",
+          "lineNumber": 402
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "page.render",
+          "lineNumber": 405
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "canvas.getContext",
+          "lineNumber": 405
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.addPage",
+          "lineNumber": 413
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.addImage",
+          "lineNumber": 417
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "canvas.toDataURL",
+          "lineNumber": 417
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.setFont",
+          "lineNumber": 420
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.setFontSize",
+          "lineNumber": 421
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.setTextColor",
+          "lineNumber": 422
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "formFields.filter",
+          "lineNumber": 424
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mappings.find",
+          "lineNumber": 426
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.text",
+          "lineNumber": 428
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "doc.save",
+          "lineNumber": 432
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "targetPdf.name.replace",
+          "lineNumber": 432
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setError",
+          "lineNumber": 435
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStatusMsg",
+          "lineNumber": 438
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mappings.filter",
+          "lineNumber": 443
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mappings.filter",
+          "lineNumber": 444
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mappings.filter",
+          "lineNumber": 445
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateEditor",
+          "lineNumber": 455
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateId",
+          "lineNumber": 457
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setActiveTemplateName",
+          "lineNumber": 458
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFormFields",
+          "lineNumber": 459
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateEditor",
+          "lineNumber": 460
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetchTemplates",
+          "lineNumber": 461
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateSelector",
+          "lineNumber": 470
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "e.stopPropagation",
+          "lineNumber": 473
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateSelector",
+          "lineNumber": 476
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "templates.map",
+          "lineNumber": 492
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "loadTemplate",
+          "lineNumber": 508
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "deleteTemplate",
+          "lineNumber": 513
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fetchTemplates",
+          "lineNumber": 549
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateSelector",
+          "lineNumber": 550
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setShowTemplateEditor",
+          "lineNumber": 557
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setStep",
+          "lineNumber": 577
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setMappings",
+          "lineNumber": 578
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFormFields",
+          "lineNumber": 579
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setFacts",
+          "lineNumber": 580
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "e.preventDefault",
+          "lineNumber": 620
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "e.preventDefault",
+          "lineNumber": 622
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "addSourceFiles",
+          "lineNumber": 623
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById('source-input')?.click",
+          "lineNumber": 625
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById",
+          "lineNumber": 625
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "addSourceFiles",
+          "lineNumber": 636
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "sourceFiles.map",
+          "lineNumber": 647
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "fileIcon",
+          "lineNumber": 650
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "removeSource",
+          "lineNumber": 655
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "updateSourceRole",
+          "lineNumber": 664
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "(Object.keys(ROLE_LABELS) as SourceRole[]).map",
+          "lineNumber": 668
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "Object.keys",
+          "lineNumber": 668
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "facts.slice(0, 12).map",
+          "lineNumber": 683
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "facts.slice",
+          "lineNumber": 683
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById('target-pdf-input')?.click",
+          "lineNumber": 712
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById",
+          "lineNumber": 712
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdfFile",
+          "lineNumber": 721
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "e.preventDefault",
+          "lineNumber": 730
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "e.preventDefault",
+          "lineNumber": 732
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "setTargetPdfFile",
+          "lineNumber": 734
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById('target-pdf-input')?.click",
+          "lineNumber": 739
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "document.getElementById",
+          "lineNumber": 739
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "mappings.map",
+          "lineNumber": 806
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "formFields.find",
+          "lineNumber": 807
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "confidenceClass",
+          "lineNumber": 808
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "Math.round",
+          "lineNumber": 826
+        },
+        {
+          "caller": "PdfAutoFillClient",
+          "callee": "updateMapping",
+          "lineNumber": 832
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/pdf-autofill/TemplateEditor.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 705,
+      "nonEmptyLines": 647,
+      "functions": [
+        {
+          "name": "loadPdfJs",
+          "startLine": 43,
+          "endLine": 61,
+          "params": []
+        },
+        {
+          "name": "uid",
+          "startLine": 63,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "TemplateEditor",
+          "startLine": 69,
+          "endLine": 705,
+          "params": [
+            "{pdf, onClose, onSaved}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TemplateEditor",
+          "line": 69,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "loadPdfJs",
+          "callee": "resolve",
+          "lineNumber": 47
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "document.createElement",
+          "lineNumber": 50
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "resolve",
+          "lineNumber": 55
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "document.head.appendChild",
+          "lineNumber": 58
+        },
+        {
+          "caller": "uid",
+          "callee": "Math.random().toString(36).slice",
+          "lineNumber": 64
+        },
+        {
+          "caller": "uid",
+          "callee": "Math.random().toString",
+          "lineNumber": 64
+        },
+        {
+          "caller": "uid",
+          "callee": "Math.random",
+          "lineNumber": 64
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 70
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 71
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 72
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 74
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 75
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 76
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useRef",
+          "lineNumber": 77
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 79
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "pdf.name.replace",
+          "lineNumber": 79
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 80
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 81
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 82
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 83
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useState",
+          "lineNumber": 84
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fields.find",
+          "lineNumber": 86
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useEffect",
+          "lineNumber": 90
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(async () => {\n      setRendering(true);\n      try {\n        const lib = await loadPdfJs();\n        const arrayBuffer = await pdf.arrayBuffer();\n        const doc = await lib.getDocument({data: new Uint8Array(arrayBuffer)}).promise;\n        if (cancelled) return;\n\n        const images: string[] = [];\n        for (let i = 1; i <= doc.numPages; i++) {\n          const page = await doc.getPage(i);\n          const viewport = page.getViewport({scale: 1.4});\n          const canvas = document.createElement('canvas');\n          canvas.width = viewport.width;\n          canvas.height = viewport.height;\n          await page.render({canvasContext: canvas.getContext('2d')!, viewport}).promise;\n          images.push(canvas.toDataURL('image/jpeg', 0.88));\n        }\n        if (!cancelled) {\n          setPageImages(images);\n          setPageCount(doc.numPages);\n        }\n      } catch (e) {\n        if (!cancelled) setError('Failed to render PDF: ' + (e as Error).message);\n      } finally {\n        if (!cancelled) setRendering(false);\n      }\n    })",
+          "lineNumber": 92
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setRendering",
+          "lineNumber": 93
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "loadPdfJs",
+          "lineNumber": 95
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "pdf.arrayBuffer",
+          "lineNumber": 96
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "lib.getDocument",
+          "lineNumber": 97
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "doc.getPage",
+          "lineNumber": 102
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "page.getViewport",
+          "lineNumber": 103
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "document.createElement",
+          "lineNumber": 104
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "page.render",
+          "lineNumber": 107
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "canvas.getContext",
+          "lineNumber": 107
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "images.push",
+          "lineNumber": 108
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "canvas.toDataURL",
+          "lineNumber": 108
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setPageImages",
+          "lineNumber": 111
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setPageCount",
+          "lineNumber": 112
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 115
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setRendering",
+          "lineNumber": 117
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 127
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setAssessing",
+          "lineNumber": 128
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 129
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setStatus",
+          "lineNumber": 130
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "form.append",
+          "lineNumber": 133
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fetch",
+          "lineNumber": 134
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "res.json",
+          "lineNumber": 135
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "res.json",
+          "lineNumber": 136
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 138
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(detectedFields || []).map",
+          "lineNumber": 139
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 140
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 141
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setStatus",
+          "lineNumber": 152
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 154
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setStatus",
+          "lineNumber": 155
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setAssessing",
+          "lineNumber": 157
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 163
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "e.stopPropagation",
+          "lineNumber": 164
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "e.preventDefault",
+          "lineNumber": 165
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setDraggingId",
+          "lineNumber": 166
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 168
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 171
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(e.currentTarget as HTMLDivElement).getBoundingClientRect",
+          "lineNumber": 174
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.max",
+          "lineNumber": 175
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.min",
+          "lineNumber": 175
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.max",
+          "lineNumber": 176
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.min",
+          "lineNumber": 176
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 177
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "prev.map",
+          "lineNumber": 177
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 182
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setDraggingId",
+          "lineNumber": 183
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 189
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(e.currentTarget as HTMLDivElement).getBoundingClientRect",
+          "lineNumber": 192
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 196
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 197
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.max",
+          "lineNumber": 204
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.min",
+          "lineNumber": 204
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.max",
+          "lineNumber": 205
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.min",
+          "lineNumber": 205
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 207
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 208
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 215
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 216
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "prev.map",
+          "lineNumber": 216
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 219
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 220
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "prev.filter",
+          "lineNumber": 220
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 221
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "useCallback",
+          "lineNumber": 226
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "templateName.trim",
+          "lineNumber": 227
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 228
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSaving",
+          "lineNumber": 231
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 232
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "pdf.arrayBuffer",
+          "lineNumber": 235
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "btoa",
+          "lineNumber": 236
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "new Uint8Array(arrayBuffer).reduce",
+          "lineNumber": 236
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String.fromCharCode",
+          "lineNumber": 236
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fetch",
+          "lineNumber": 238
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "JSON.stringify",
+          "lineNumber": 241
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "templateName.trim",
+          "lineNumber": 242
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "templateDesc.trim",
+          "lineNumber": 243
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "res.json",
+          "lineNumber": 251
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "res.json",
+          "lineNumber": 252
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "onSaved",
+          "lineNumber": 253
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setError",
+          "lineNumber": 255
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSaving",
+          "lineNumber": 257
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setTemplateName",
+          "lineNumber": 280
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setTemplateDesc",
+          "lineNumber": 286
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "pageImages.map",
+          "lineNumber": 349
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "handlePageClick",
+          "lineNumber": 354
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "handlePageMouseMove",
+          "lineNumber": 355
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fields\n                  .filter(f => f.page === pageIdx)\n                  .map",
+          "lineNumber": 365
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fields\n                  .filter",
+          "lineNumber": 365
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "handleMarkerMouseDown",
+          "lineNumber": 381
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "e.stopPropagation",
+          "lineNumber": 383
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 384
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 429
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 438
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 447
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "FIELD_TYPES.map",
+          "lineNumber": 449
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 461
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 475
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Number",
+          "lineNumber": 475
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "selectedField.x.toFixed",
+          "lineNumber": 486
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 487
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Number",
+          "lineNumber": 487
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "selectedField.y.toFixed",
+          "lineNumber": 498
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 499
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Number",
+          "lineNumber": 499
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(['text', 'date'] as const).map",
+          "lineNumber": 512
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 517
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 537
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 551
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Math.max",
+          "lineNumber": 551
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "Number",
+          "lineNumber": 551
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 563
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "(() => {\n                            const d = new Date();\n                            d.setDate(d.getDate() + (selectedField.defaultValueDateOffset ?? 0));\n                            const part = selectedField.defaultValueDatePart ?? 'full';\n                            if (part === 'D') return String(d.getDate());\n                            if (part === 'DD') return String(d.getDate()).padStart(2, '0');\n                            if (part === 'M') return String(d.getMonth() + 1);\n                            if (part === 'MM') return String(d.getMonth() + 1).padStart(2, '0');\n                            if (part === 'MMM') return d.toLocaleDateString('en-US', {month: 'short'});\n                            if (part === 'MMMM') return d.toLocaleDateString('en-US', {month: 'long'});\n                            if (part === 'YY') return String(d.getFullYear()).slice(-2);\n                            if (part === 'YYYY') return String(d.getFullYear());\n                            return d.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});\n                          })",
+          "lineNumber": 589
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.setDate",
+          "lineNumber": 591
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getDate",
+          "lineNumber": 591
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 593
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getDate",
+          "lineNumber": 593
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String(d.getDate()).padStart",
+          "lineNumber": 594
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 594
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getDate",
+          "lineNumber": 594
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 595
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getMonth",
+          "lineNumber": 595
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String(d.getMonth() + 1).padStart",
+          "lineNumber": 596
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 596
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getMonth",
+          "lineNumber": 596
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 597
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 598
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String(d.getFullYear()).slice",
+          "lineNumber": 599
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 599
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getFullYear",
+          "lineNumber": 599
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "String",
+          "lineNumber": 600
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.getFullYear",
+          "lineNumber": 600
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "d.toLocaleDateString",
+          "lineNumber": 601
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 614
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "updateField",
+          "lineNumber": 628
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "deleteField",
+          "lineNumber": 637
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 654
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "uid",
+          "lineNumber": 655
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setFields",
+          "lineNumber": 665
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 666
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "fields.map",
+          "lineNumber": 673
+        },
+        {
+          "caller": "TemplateEditor",
+          "callee": "setSelectedId",
+          "lineNumber": 679
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/process-flow/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "ProcessFlowLayout",
+          "startLine": 7,
+          "endLine": 47,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProcessFlowLayout",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProcessFlowLayout",
+          "callee": "useSession",
+          "lineNumber": 8
+        },
+        {
+          "caller": "ProcessFlowLayout",
+          "callee": "useRouter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "ProcessFlowLayout",
+          "callee": "useEffect",
+          "lineNumber": 11
+        },
+        {
+          "caller": "ProcessFlowLayout",
+          "callee": "router.push",
+          "lineNumber": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/providers.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "LogVisitTracker",
+          "startLine": 7,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "Providers",
+          "startLine": 34,
+          "endLine": 43,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Providers",
+          "line": 34,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "LogVisitTracker",
+          "callee": "usePathname",
+          "lineNumber": 8
+        },
+        {
+          "caller": "LogVisitTracker",
+          "callee": "useSearchParams",
+          "lineNumber": 9
+        },
+        {
+          "caller": "LogVisitTracker",
+          "callee": "useEffect",
+          "lineNumber": 11
+        },
+        {
+          "caller": "LogVisitTracker",
+          "callee": "searchParams?.toString",
+          "lineNumber": 12
+        },
+        {
+          "caller": "LogVisitTracker",
+          "callee": "searchParams.toString",
+          "lineNumber": 12
+        },
+        {
+          "caller": "logVisit",
+          "callee": "fetch",
+          "lineNumber": 16
+        },
+        {
+          "caller": "logVisit",
+          "callee": "JSON.stringify",
+          "lineNumber": 19
+        },
+        {
+          "caller": "logVisit",
+          "callee": "console.error",
+          "lineNumber": 22
+        },
+        {
+          "caller": "LogVisitTracker",
+          "callee": "logVisit",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/sign/[token]/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "functions": [
+        {
+          "name": "SignPublicLayout",
+          "startLine": 1,
+          "endLine": 3,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SignPublicLayout",
+          "line": 1,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/sign/[token]/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 500,
+      "nonEmptyLines": 460,
+      "functions": [
+        {
+          "name": "PublicSigningPage",
+          "startLine": 42,
+          "endLine": 500,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PublicSigningPage",
+          "line": 42,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useParams",
+          "lineNumber": 43
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 46
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 47
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 48
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 49
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 50
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 51
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 52
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 53
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 54
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useRef",
+          "lineNumber": 57
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 59
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useState",
+          "lineNumber": 60
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useCallback",
+          "lineNumber": 62
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "fetch",
+          "lineNumber": 64
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "res.json",
+          "lineNumber": 65
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setData",
+          "lineNumber": 67
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setCompleted",
+          "lineNumber": 69
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setError",
+          "lineNumber": 72
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setError",
+          "lineNumber": 75
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setLoading",
+          "lineNumber": 77
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "useEffect",
+          "lineNumber": 81
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "fetchData",
+          "lineNumber": 82
+        },
+        {
+          "caller": "getCanvasCoords",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 89
+        },
+        {
+          "caller": "startDraw",
+          "callee": "canvasRef.current?.getContext",
+          "lineNumber": 97
+        },
+        {
+          "caller": "startDraw",
+          "callee": "setIsDrawing",
+          "lineNumber": 99
+        },
+        {
+          "caller": "startDraw",
+          "callee": "getCanvasCoords",
+          "lineNumber": 100
+        },
+        {
+          "caller": "startDraw",
+          "callee": "ctx.beginPath",
+          "lineNumber": 101
+        },
+        {
+          "caller": "startDraw",
+          "callee": "ctx.moveTo",
+          "lineNumber": 102
+        },
+        {
+          "caller": "draw",
+          "callee": "canvasRef.current?.getContext",
+          "lineNumber": 107
+        },
+        {
+          "caller": "draw",
+          "callee": "getCanvasCoords",
+          "lineNumber": 109
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.lineTo",
+          "lineNumber": 113
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.stroke",
+          "lineNumber": 114
+        },
+        {
+          "caller": "stopDraw",
+          "callee": "setIsDrawing",
+          "lineNumber": 117
+        },
+        {
+          "caller": "clearCanvas",
+          "callee": "canvas.getContext",
+          "lineNumber": 122
+        },
+        {
+          "caller": "clearCanvas",
+          "callee": "ctx.clearRect",
+          "lineNumber": 124
+        },
+        {
+          "caller": "applySignature",
+          "callee": "canvas.toDataURL",
+          "lineNumber": 133
+        },
+        {
+          "caller": "applySignature",
+          "callee": "document.createElement",
+          "lineNumber": 136
+        },
+        {
+          "caller": "applySignature",
+          "callee": "tempCanvas.getContext",
+          "lineNumber": 139
+        },
+        {
+          "caller": "applySignature",
+          "callee": "ctx.fillRect",
+          "lineNumber": 142
+        },
+        {
+          "caller": "applySignature",
+          "callee": "ctx.fillText",
+          "lineNumber": 147
+        },
+        {
+          "caller": "applySignature",
+          "callee": "tempCanvas.toDataURL",
+          "lineNumber": 148
+        },
+        {
+          "caller": "applySignature",
+          "callee": "setFieldValues",
+          "lineNumber": 151
+        },
+        {
+          "caller": "applySignature",
+          "callee": "setSignatureModal",
+          "lineNumber": 152
+        },
+        {
+          "caller": "applySignature",
+          "callee": "setTypedSig",
+          "lineNumber": 153
+        },
+        {
+          "caller": "applySignature",
+          "callee": "clearCanvas",
+          "lineNumber": 154
+        },
+        {
+          "caller": "handleFieldClick",
+          "callee": "setSignatureModal",
+          "lineNumber": 161
+        },
+        {
+          "caller": "handleFieldClick",
+          "callee": "setFieldValues",
+          "lineNumber": 163
+        },
+        {
+          "caller": "handleFieldClick",
+          "callee": "new Date().toLocaleDateString",
+          "lineNumber": 165
+        },
+        {
+          "caller": "handleFieldClick",
+          "callee": "prompt",
+          "lineNumber": 168
+        },
+        {
+          "caller": "handleFieldClick",
+          "callee": "setFieldValues",
+          "lineNumber": 170
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "data.fields.filter",
+          "lineNumber": 178
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "alert",
+          "lineNumber": 180
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setSubmitting",
+          "lineNumber": 184
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Object.entries(fieldValues).map",
+          "lineNumber": 186
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "Object.entries",
+          "lineNumber": 186
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "fetch",
+          "lineNumber": 191
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "JSON.stringify",
+          "lineNumber": 194
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "res.json",
+          "lineNumber": 197
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setCompleted",
+          "lineNumber": 199
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "alert",
+          "lineNumber": 201
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "alert",
+          "lineNumber": 204
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setSubmitting",
+          "lineNumber": 206
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "Object.keys",
+          "lineNumber": 272
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "data.fields.filter",
+          "lineNumber": 272
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "data.fields.filter",
+          "lineNumber": 274
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setCurrentPage",
+          "lineNumber": 326
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "Math.max",
+          "lineNumber": 326
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setCurrentPage",
+          "lineNumber": 337
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "Math.min",
+          "lineNumber": 337
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setTotalPages",
+          "lineNumber": 352
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "pageFields.map",
+          "lineNumber": 369
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "handleFieldClick",
+          "lineNumber": 374
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "fieldValues[field.id].startsWith",
+          "lineNumber": 389
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setSignatureModal",
+          "lineNumber": 419
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "clearCanvas",
+          "lineNumber": 420
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setTypedSig",
+          "lineNumber": 421
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "(['draw', 'type'] as const).map",
+          "lineNumber": 432
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setSigMode",
+          "lineNumber": 435
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setTypedSig",
+          "lineNumber": 467
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setSignatureModal",
+          "lineNumber": 482
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "clearCanvas",
+          "lineNumber": 483
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "setTypedSig",
+          "lineNumber": 484
+        },
+        {
+          "caller": "PublicSigningPage",
+          "callee": "applySignature",
+          "lineNumber": 490
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/signing/[id]/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 625,
+      "nonEmptyLines": 582,
+      "functions": [
+        {
+          "name": "getRecipientColor",
+          "startLine": 58,
+          "endLine": 64,
+          "params": [
+            "recipientId",
+            "recipients"
+          ]
+        },
+        {
+          "name": "DocumentEditor",
+          "startLine": 66,
+          "endLine": 625,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentEditor",
+          "line": 66,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getRecipientColor",
+          "callee": "recipients.findIndex",
+          "lineNumber": 59
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useParams",
+          "lineNumber": 67
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useRouter",
+          "lineNumber": 68
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 71
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 72
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 73
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 74
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 75
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 76
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 77
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 80
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 81
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 84
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useState",
+          "lineNumber": 85
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useRef",
+          "lineNumber": 86
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useRef",
+          "lineNumber": 87
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useCallback",
+          "lineNumber": 89
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "fetch",
+          "lineNumber": 91
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "res.json",
+          "lineNumber": 92
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setDoc",
+          "lineNumber": 94
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setActiveRecipient",
+          "lineNumber": 96
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "console.error",
+          "lineNumber": 100
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setLoading",
+          "lineNumber": 102
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useEffect",
+          "lineNumber": 106
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "fetchDoc",
+          "lineNumber": 107
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "newName.trim",
+          "lineNumber": 112
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "newEmail.trim",
+          "lineNumber": 112
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "fetch",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "JSON.stringify",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "res.json",
+          "lineNumber": 119
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "setNewName",
+          "lineNumber": 121
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "setNewEmail",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "fetchDoc",
+          "lineNumber": 123
+        },
+        {
+          "caller": "handleAddRecipient",
+          "callee": "console.error",
+          "lineNumber": 126
+        },
+        {
+          "caller": "handleRemoveRecipient",
+          "callee": "fetch",
+          "lineNumber": 132
+        },
+        {
+          "caller": "handleRemoveRecipient",
+          "callee": "fetchDoc",
+          "lineNumber": 133
+        },
+        {
+          "caller": "handleRemoveRecipient",
+          "callee": "console.error",
+          "lineNumber": 135
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "alert",
+          "lineNumber": 142
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "fetch",
+          "lineNumber": 146
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "JSON.stringify",
+          "lineNumber": 149
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "res.json",
+          "lineNumber": 160
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "fetchDoc",
+          "lineNumber": 161
+        },
+        {
+          "caller": "handleAddField",
+          "callee": "console.error",
+          "lineNumber": 163
+        },
+        {
+          "caller": "handleDeleteField",
+          "callee": "fetch",
+          "lineNumber": 169
+        },
+        {
+          "caller": "handleDeleteField",
+          "callee": "fetchDoc",
+          "lineNumber": 170
+        },
+        {
+          "caller": "handleDeleteField",
+          "callee": "console.error",
+          "lineNumber": 172
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "e.preventDefault",
+          "lineNumber": 178
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "e.stopPropagation",
+          "lineNumber": 179
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "(e.target as HTMLElement).closest('[data-field]')?.getBoundingClientRect",
+          "lineNumber": 180
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "(e.target as HTMLElement).closest",
+          "lineNumber": 180
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "setDragging",
+          "lineNumber": 182
+        },
+        {
+          "caller": "handleFieldMouseDown",
+          "callee": "setDragOffset",
+          "lineNumber": 183
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useCallback",
+          "lineNumber": 189
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "pdfPageRef.current.getBoundingClientRect",
+          "lineNumber": 192
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setDoc",
+          "lineNumber": 197
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "prev.fields.map",
+          "lineNumber": 201
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "Math.max",
+          "lineNumber": 202
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "Math.max",
+          "lineNumber": 202
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useCallback",
+          "lineNumber": 210
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setDragging",
+          "lineNumber": 212
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.fields.find",
+          "lineNumber": 215
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "fetch",
+          "lineNumber": 218
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "JSON.stringify",
+          "lineNumber": 221
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setDragging",
+          "lineNumber": 224
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "useEffect",
+          "lineNumber": 227
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "window.addEventListener",
+          "lineNumber": 229
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "window.addEventListener",
+          "lineNumber": 230
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "window.removeEventListener",
+          "lineNumber": 232
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "window.removeEventListener",
+          "lineNumber": 233
+        },
+        {
+          "caller": "handleSend",
+          "callee": "alert",
+          "lineNumber": 243
+        },
+        {
+          "caller": "handleSend",
+          "callee": "alert",
+          "lineNumber": 247
+        },
+        {
+          "caller": "handleSend",
+          "callee": "setSending",
+          "lineNumber": 251
+        },
+        {
+          "caller": "handleSend",
+          "callee": "fetch",
+          "lineNumber": 255
+        },
+        {
+          "caller": "handleSend",
+          "callee": "JSON.stringify",
+          "lineNumber": 258
+        },
+        {
+          "caller": "handleSend",
+          "callee": "fetch",
+          "lineNumber": 262
+        },
+        {
+          "caller": "handleSend",
+          "callee": "JSON.stringify",
+          "lineNumber": 265
+        },
+        {
+          "caller": "handleSend",
+          "callee": "res.json",
+          "lineNumber": 268
+        },
+        {
+          "caller": "handleSend",
+          "callee": "alert",
+          "lineNumber": 270
+        },
+        {
+          "caller": "handleSend",
+          "callee": "fetchDoc",
+          "lineNumber": 271
+        },
+        {
+          "caller": "handleSend",
+          "callee": "alert",
+          "lineNumber": 273
+        },
+        {
+          "caller": "handleSend",
+          "callee": "console.error",
+          "lineNumber": 276
+        },
+        {
+          "caller": "handleSend",
+          "callee": "setSending",
+          "lineNumber": 278
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.fields.filter",
+          "lineNumber": 299
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "router.push",
+          "lineNumber": 307
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.recipients.map",
+          "lineNumber": 356
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setActiveRecipient",
+          "lineNumber": 361
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "r.name.charAt(0).toUpperCase",
+          "lineNumber": 368
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "r.name.charAt",
+          "lineNumber": 368
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "e.stopPropagation",
+          "lineNumber": 390
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleRemoveRecipient",
+          "lineNumber": 391
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setNewName",
+          "lineNumber": 414
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setNewEmail",
+          "lineNumber": 421
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleAddRecipient",
+          "lineNumber": 425
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "[\n                  {type: 'SIGNATURE', label: 'Signature', icon: '✍️'},\n                  {type: 'DATE', label: 'Date', icon: '📅'},\n                  {type: 'TEXT', label: 'Text', icon: '📝'},\n                  {type: 'INITIALS', label: 'Initials', icon: '🅰️'},\n                ].map",
+          "lineNumber": 444
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleAddField",
+          "lineNumber": 452
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setMessage",
+          "lineNumber": 471
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.fields.map",
+          "lineNumber": 484
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.recipients.find",
+          "lineNumber": 485
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "getRecipientColor",
+          "lineNumber": 486
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleDeleteField",
+          "lineNumber": 500
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setCurrentPage",
+          "lineNumber": 524
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "Math.max",
+          "lineNumber": 524
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setCurrentPage",
+          "lineNumber": 535
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "Math.min",
+          "lineNumber": 535
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "setTotalPages",
+          "lineNumber": 553
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "pageFields.map",
+          "lineNumber": 571
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "getRecipientColor",
+          "lineNumber": 572
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "doc.recipients.find",
+          "lineNumber": 573
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleFieldMouseDown",
+          "lineNumber": 591
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "e.stopPropagation",
+          "lineNumber": 607
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "handleDeleteField",
+          "lineNumber": 608
+        },
+        {
+          "caller": "DocumentEditor",
+          "callee": "e.stopPropagation",
+          "lineNumber": 610
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/signing/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 42,
+      "functions": [
+        {
+          "name": "SigningLayout",
+          "startLine": 8,
+          "endLine": 49,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SigningLayout",
+          "line": 8,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SigningLayout",
+          "callee": "useSession",
+          "lineNumber": 9
+        },
+        {
+          "caller": "SigningLayout",
+          "callee": "useRouter",
+          "lineNumber": 10
+        },
+        {
+          "caller": "SigningLayout",
+          "callee": "useEffect",
+          "lineNumber": 12
+        },
+        {
+          "caller": "SigningLayout",
+          "callee": "router.push",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/signing/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 338,
+      "nonEmptyLines": 315,
+      "functions": [
+        {
+          "name": "SigningDashboard",
+          "startLine": 26,
+          "endLine": 338,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SigningDashboard",
+          "line": 26,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SigningDashboard",
+          "callee": "useRouter",
+          "lineNumber": 27
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useCallback",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "fetch",
+          "lineNumber": 37
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "res.json",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setDocs",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "console.error",
+          "lineNumber": 43
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setLoading",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useCallback",
+          "lineNumber": 49
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "fetch",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "res.json",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setMigrated",
+          "lineNumber": 54
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "fetchDocs",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "console.error",
+          "lineNumber": 57
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "console.error",
+          "lineNumber": 60
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "useEffect",
+          "lineNumber": 64
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "runMigration",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "file.name.toLowerCase().endsWith",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "file.name.toLowerCase",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "alert",
+          "lineNumber": 71
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "setUploading",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "formData.append",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "file.name.replace",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "formData.append",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "fetch",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "res.json",
+          "lineNumber": 86
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "router.push",
+          "lineNumber": 88
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "alert",
+          "lineNumber": 90
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "console.error",
+          "lineNumber": 93
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "alert",
+          "lineNumber": 94
+        },
+        {
+          "caller": "handleUpload",
+          "callee": "setUploading",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handleDrop",
+          "callee": "e.preventDefault",
+          "lineNumber": 101
+        },
+        {
+          "caller": "handleDrop",
+          "callee": "setDragActive",
+          "lineNumber": 102
+        },
+        {
+          "caller": "handleDrop",
+          "callee": "handleUpload",
+          "lineNumber": 104
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "confirm",
+          "lineNumber": 108
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "fetch",
+          "lineNumber": 110
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "setDocs",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "prev.filter",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "console.error",
+          "lineNumber": 113
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "docs.filter",
+          "lineNumber": 117
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "e.preventDefault",
+          "lineNumber": 142
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setDragActive",
+          "lineNumber": 143
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "e.preventDefault",
+          "lineNumber": 146
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setDragActive",
+          "lineNumber": 147
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "e.preventDefault",
+          "lineNumber": 149
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "handleUpload",
+          "lineNumber": 159
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "['ALL', 'DRAFT', 'PENDING', 'COMPLETED'].map",
+          "lineNumber": 198
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "setFilterStatus",
+          "lineNumber": 201
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "filteredDocs.map",
+          "lineNumber": 237
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "Number",
+          "lineNumber": 240
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "Number",
+          "lineNumber": 240
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "router.push",
+          "lineNumber": 245
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "new Date(doc.created_at).toLocaleDateString",
+          "lineNumber": 268
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "Math.round",
+          "lineNumber": 301
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "e.stopPropagation",
+          "lineNumber": 309
+        },
+        {
+          "caller": "SigningDashboard",
+          "callee": "handleDelete",
+          "lineNumber": 310
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Anomaly/Guard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "Guard",
+          "startLine": 14,
+          "endLine": 35,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Guard",
+          "line": 14,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Guard",
+          "callee": "useSession",
+          "lineNumber": 15
+        },
+        {
+          "caller": "Guard",
+          "callee": "useRouter",
+          "lineNumber": 16
+        },
+        {
+          "caller": "Guard",
+          "callee": "useEffect",
+          "lineNumber": 18
+        },
+        {
+          "caller": "Guard",
+          "callee": "router.push",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Base.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 6,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/StatCard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 28,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {style: 'currency', currency: 'CAD'}).format",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Finance/SummaryCards.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 77,
+      "nonEmptyLines": 72,
+      "callGraph": [
+        {
+          "caller": "formatCurrency",
+          "callee": "new Intl.NumberFormat('en-CA', {\n        style: 'currency',\n        currency: 'CAD',\n      }).format",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/AISuggestions.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 68,
+      "functions": [
+        {
+          "name": "AISuggestions",
+          "startLine": 9,
+          "endLine": 72,
+          "params": [
+            "{taskTitle, onAccept}"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AISuggestions",
+          "callee": "useState",
+          "lineNumber": 10
+        },
+        {
+          "caller": "AISuggestions",
+          "callee": "useState",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "setLoading",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "fetch",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "JSON.stringify",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "res.json",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "setSuggestions",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "console.error",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleGenerate",
+          "callee": "setLoading",
+          "lineNumber": 27
+        },
+        {
+          "caller": "AISuggestions",
+          "callee": "onAccept",
+          "lineNumber": 53
+        },
+        {
+          "caller": "AISuggestions",
+          "callee": "setSuggestions",
+          "lineNumber": 54
+        },
+        {
+          "caller": "AISuggestions",
+          "callee": "suggestions.map",
+          "lineNumber": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/ColoredTableCellNode.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 104,
+      "nonEmptyLines": 91,
+      "functions": [
+        {
+          "name": "convertColoredTableCellElement",
+          "startLine": 42,
+          "endLine": 96,
+          "params": [
+            "domNode"
+          ]
+        },
+        {
+          "name": "$createColoredTableCellNode",
+          "startLine": 98,
+          "endLine": 104,
+          "params": [
+            "headerState",
+            "colSpan",
+            "width"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ColoredTableCellNode",
+          "startLine": 12,
+          "endLine": 40,
+          "methods": [
+            "getType",
+            "clone",
+            "importDOM",
+            "importJSON"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ColoredTableCellNode",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "$createColoredTableCellNode",
+          "line": 98,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "importJSON",
+          "callee": "TableCellNode.importJSON",
+          "lineNumber": 38
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "domNode.nodeName.toLowerCase",
+          "lineNumber": 44
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "/^(\\d+(?:\\.\\d+)?)px$/.test",
+          "lineNumber": 47
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "parseFloat",
+          "lineNumber": 48
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "$createTableCellNode",
+          "lineNumber": 54
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "cellNode.setBackgroundColor",
+          "lineNumber": 60
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "cellNode.setVerticalAlign",
+          "lineNumber": 66
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "(style?.textDecoration ?? '').split",
+          "lineNumber": 70
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "textDecoration.includes",
+          "lineNumber": 72
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "textDecoration.includes",
+          "lineNumber": 74
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "$isTextNode",
+          "lineNumber": 81
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.toggleFormat",
+          "lineNumber": 82
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.toggleFormat",
+          "lineNumber": 83
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.toggleFormat",
+          "lineNumber": 84
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.toggleFormat",
+          "lineNumber": 85
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.getStyle().includes",
+          "lineNumber": 87
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.getStyle",
+          "lineNumber": 87
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.setStyle",
+          "lineNumber": 88
+        },
+        {
+          "caller": "convertColoredTableCellElement",
+          "callee": "child.getStyle",
+          "lineNumber": 88
+        },
+        {
+          "caller": "$createColoredTableCellNode",
+          "callee": "$applyNodeReplacement",
+          "lineNumber": 103
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 226,
+      "nonEmptyLines": 212,
+      "functions": [
+        {
+          "name": "AIImportModal",
+          "startLine": 13,
+          "endLine": 226,
+          "params": [
+            "{isOpen, onClose, onImport}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AIImportModal",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AIImportModal",
+          "callee": "useState",
+          "lineNumber": 14
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "useState",
+          "lineNumber": 15
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "useState",
+          "lineNumber": 16
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "useState",
+          "lineNumber": 17
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "useRef",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setImagePreview",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "item.type.indexOf",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "item.getAsFile",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "setImagePreview",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handlePaste",
+          "callee": "setActiveTab",
+          "lineNumber": 42
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split(',')[0].match",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "imagePreview.split",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "axios.post",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onImport",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "alert",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 71
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "setActiveTab",
+          "lineNumber": 120
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "clsx",
+          "lineNumber": 121
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "setActiveTab",
+          "lineNumber": 130
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "clsx",
+          "lineNumber": 131
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "setTextInput",
+          "lineNumber": 150
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "setImagePreview",
+          "lineNumber": 159
+        },
+        {
+          "caller": "AIImportModal",
+          "callee": "setTextInput",
+          "lineNumber": 195
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Notes/NotesSkeleton.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 134,
+      "nonEmptyLines": 119,
+      "functions": [
+        {
+          "name": "Bone",
+          "startLine": 14,
+          "endLine": 16,
+          "params": [
+            "{className = '', style}"
+          ]
+        },
+        {
+          "name": "SidebarSkeleton",
+          "startLine": 19,
+          "endLine": 33,
+          "params": [
+            "{rows = 6}"
+          ]
+        },
+        {
+          "name": "PageListSkeleton",
+          "startLine": 36,
+          "endLine": 51,
+          "params": [
+            "{rows = 8}"
+          ]
+        },
+        {
+          "name": "EditorSkeleton",
+          "startLine": 54,
+          "endLine": 88,
+          "params": []
+        },
+        {
+          "name": "BadgeSkeleton",
+          "startLine": 91,
+          "endLine": 93,
+          "params": []
+        },
+        {
+          "name": "NotesLayoutSkeleton",
+          "startLine": 96,
+          "endLine": 134,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SidebarSkeleton",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "PageListSkeleton",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "EditorSkeleton",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "BadgeSkeleton",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "NotesLayoutSkeleton",
+          "line": 96,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SidebarSkeleton",
+          "callee": "Array.from({length: rows}).map",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SidebarSkeleton",
+          "callee": "Array.from",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SidebarSkeleton",
+          "callee": "Math.sin",
+          "lineNumber": 28
+        },
+        {
+          "caller": "PageListSkeleton",
+          "callee": "Array.from({length: rows}).map",
+          "lineNumber": 41
+        },
+        {
+          "caller": "PageListSkeleton",
+          "callee": "Array.from",
+          "lineNumber": 41
+        },
+        {
+          "caller": "PageListSkeleton",
+          "callee": "Math.sin",
+          "lineNumber": 45
+        },
+        {
+          "caller": "EditorSkeleton",
+          "callee": "[1, 0.95, 0.9, 0, 1, 0.85, 0.92, 0, 0.88, 0.96, 0.78].map",
+          "lineNumber": 63
+        },
+        {
+          "caller": "EditorSkeleton",
+          "callee": "[0.9, 0.75, 0.85, 0.6].map",
+          "lineNumber": 74
+        },
+        {
+          "caller": "EditorSkeleton",
+          "callee": "[1, 0.93, 0.87, 0.97, 0.8].map",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Sections/StarField.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 101,
+      "callGraph": [
+        {
+          "caller": "generateStars",
+          "callee": "Array.from({length: count}).map",
+          "lineNumber": 22
+        },
+        {
+          "caller": "generateStars",
+          "callee": "Array.from",
+          "lineNumber": 22
+        },
+        {
+          "caller": "generateStars",
+          "callee": "Math.random",
+          "lineNumber": 24
+        },
+        {
+          "caller": "generateStars",
+          "callee": "Math.random",
+          "lineNumber": 25
+        },
+        {
+          "caller": "generateStars",
+          "callee": "Math.random",
+          "lineNumber": 26
+        },
+        {
+          "caller": "generateStars",
+          "callee": "Math.random",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handleMouseMove",
+          "callee": "setOffset",
+          "lineNumber": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "exports": [
+        {
+          "name": "isBrowser",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "isMobile",
+          "line": 2,
+          "isDefault": false
+        },
+        {
+          "name": "canUseDOM",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "isApple",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

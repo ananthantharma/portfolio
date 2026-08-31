@@ -4,6 +4,7 @@ export interface PromptLibraryItem {
   description: string;
   content: string;
   category: string;
+  favorite?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,7 +32,7 @@ export const promptLibraryApi = {
   list: () => request<PromptLibraryItem[]>('/api/prompts/library'),
   create: (payload: PromptLibraryItemDraft) =>
     request<PromptLibraryItem>('/api/prompts/library', {method: 'POST', body: JSON.stringify(payload)}),
-  update: (id: string, patch: Partial<PromptLibraryItemDraft>) =>
+  update: (id: string, patch: Partial<PromptLibraryItemDraft> & {favorite?: boolean}) =>
     request<PromptLibraryItem>(`/api/prompts/library/${id}`, {method: 'PUT', body: JSON.stringify(patch)}),
   remove: (id: string) => request<unknown>(`/api/prompts/library/${id}`, {method: 'DELETE'}),
 };

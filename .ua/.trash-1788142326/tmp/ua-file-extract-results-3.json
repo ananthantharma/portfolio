@@ -1,0 +1,3482 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 31,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 31,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 31,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/lib/auth.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 252,
+      "nonEmptyLines": 219,
+      "functions": [
+        {
+          "name": "fetchPermissions",
+          "startLine": 34,
+          "endLine": 39,
+          "params": [
+            "userId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ADMIN_EMAIL",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "authOptions",
+          "line": 41,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fetchPermissions",
+          "callee": "import",
+          "lineNumber": 35
+        },
+        {
+          "caller": "fetchPermissions",
+          "callee": "client.db",
+          "lineNumber": 37
+        },
+        {
+          "caller": "fetchPermissions",
+          "callee": "db.collection('users').findOne",
+          "lineNumber": 38
+        },
+        {
+          "caller": "fetchPermissions",
+          "callee": "db.collection",
+          "lineNumber": 38
+        },
+        {
+          "caller": "authorize",
+          "callee": "client.db",
+          "lineNumber": 73
+        },
+        {
+          "caller": "authorize",
+          "callee": "db.collection('users').findOne",
+          "lineNumber": 75
+        },
+        {
+          "caller": "authorize",
+          "callee": "db.collection",
+          "lineNumber": 75
+        },
+        {
+          "caller": "authorize",
+          "callee": "credentials.email.toLowerCase",
+          "lineNumber": 79
+        },
+        {
+          "caller": "authorize",
+          "callee": "credentials.email.toLowerCase",
+          "lineNumber": 80
+        },
+        {
+          "caller": "authorize",
+          "callee": "console.log",
+          "lineNumber": 89
+        },
+        {
+          "caller": "authorize",
+          "callee": "bcrypt.compare",
+          "lineNumber": 93
+        },
+        {
+          "caller": "authorize",
+          "callee": "db.collection('users').updateOne",
+          "lineNumber": 96
+        },
+        {
+          "caller": "authorize",
+          "callee": "db.collection",
+          "lineNumber": 96
+        },
+        {
+          "caller": "authorize",
+          "callee": "user._id.toString",
+          "lineNumber": 99
+        },
+        {
+          "caller": "jwt",
+          "callee": "Date.now",
+          "lineNumber": 135
+        },
+        {
+          "caller": "jwt",
+          "callee": "fetch",
+          "lineNumber": 147
+        },
+        {
+          "caller": "jwt",
+          "callee": "response.json",
+          "lineNumber": 151
+        },
+        {
+          "caller": "jwt",
+          "callee": "Math.floor",
+          "lineNumber": 157
+        },
+        {
+          "caller": "jwt",
+          "callee": "Date.now",
+          "lineNumber": 157
+        },
+        {
+          "caller": "jwt",
+          "callee": "import",
+          "lineNumber": 162
+        },
+        {
+          "caller": "jwt",
+          "callee": "client.db",
+          "lineNumber": 164
+        },
+        {
+          "caller": "jwt",
+          "callee": "db.collection('accounts').updateOne",
+          "lineNumber": 165
+        },
+        {
+          "caller": "jwt",
+          "callee": "db.collection",
+          "lineNumber": 165
+        },
+        {
+          "caller": "jwt",
+          "callee": "console.error",
+          "lineNumber": 177
+        },
+        {
+          "caller": "jwt",
+          "callee": "user.email.toLowerCase",
+          "lineNumber": 184
+        },
+        {
+          "caller": "jwt",
+          "callee": "TRUSTED_EMAILS.has",
+          "lineNumber": 185
+        },
+        {
+          "caller": "jwt",
+          "callee": "fetchPermissions",
+          "lineNumber": 187
+        },
+        {
+          "caller": "jwt",
+          "callee": "import",
+          "lineNumber": 189
+        },
+        {
+          "caller": "jwt",
+          "callee": "client.db",
+          "lineNumber": 191
+        },
+        {
+          "caller": "jwt",
+          "callee": "db\n              .collection('users')\n              .updateOne",
+          "lineNumber": 192
+        },
+        {
+          "caller": "jwt",
+          "callee": "db\n              .collection",
+          "lineNumber": 192
+        },
+        {
+          "caller": "session",
+          "callee": "fetchPermissions",
+          "lineNumber": 218
+        },
+        {
+          "caller": "session",
+          "callee": "(dbUser.email ?? '').toLowerCase",
+          "lineNumber": 221
+        },
+        {
+          "caller": "session",
+          "callee": "TRUSTED_EMAILS.has",
+          "lineNumber": 222
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/googleDrive.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 52,
+      "nonEmptyLines": 45,
+      "functions": [
+        {
+          "name": "getOAuth2Client",
+          "startLine": 3,
+          "endLine": 11,
+          "params": [
+            "accessToken",
+            "refreshToken"
+          ]
+        },
+        {
+          "name": "getDriveClient",
+          "startLine": 13,
+          "endLine": 16,
+          "params": [
+            "accessToken",
+            "refreshToken"
+          ]
+        },
+        {
+          "name": "ensureFolder",
+          "startLine": 19,
+          "endLine": 52,
+          "params": [
+            "drive",
+            "folderName"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getOAuth2Client",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "getDriveClient",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "ensureFolder",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getOAuth2Client",
+          "callee": "auth.setCredentials",
+          "lineNumber": 9
+        },
+        {
+          "caller": "getDriveClient",
+          "callee": "getOAuth2Client",
+          "lineNumber": 14
+        },
+        {
+          "caller": "getDriveClient",
+          "callee": "google.drive",
+          "lineNumber": 15
+        },
+        {
+          "caller": "ensureFolder",
+          "callee": "drive.files.list",
+          "lineNumber": 23
+        },
+        {
+          "caller": "ensureFolder",
+          "callee": "console.log",
+          "lineNumber": 30
+        },
+        {
+          "caller": "ensureFolder",
+          "callee": "drive.files.create",
+          "lineNumber": 41
+        },
+        {
+          "caller": "ensureFolder",
+          "callee": "console.log",
+          "lineNumber": 46
+        },
+        {
+          "caller": "ensureFolder",
+          "callee": "console.error",
+          "lineNumber": 49
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/mongodb.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 72,
+      "nonEmptyLines": 63,
+      "functions": [
+        {
+          "name": "buildClientPromise",
+          "startLine": 15,
+          "endLine": 46,
+          "params": []
+        },
+        {
+          "name": "getClientPromise",
+          "startLine": 49,
+          "endLine": 52,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "getClientPromise",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildClientPromise",
+          "callee": "Promise.reject",
+          "lineNumber": 17
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "Array.from",
+          "lineNumber": 23
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "urlParams.searchParams.entries",
+          "lineNumber": 23
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "params.forEach",
+          "lineNumber": 25
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "urlParams.searchParams.delete",
+          "lineNumber": 27
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "urlParams.toString",
+          "lineNumber": 31
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "uri.replace",
+          "lineNumber": 33
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "match.startsWith",
+          "lineNumber": 33
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "match.charAt",
+          "lineNumber": 33
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "connectionUri.replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "new MongoClient(connectionUri, clientOptions).connect",
+          "lineNumber": 40
+        },
+        {
+          "caller": "buildClientPromise",
+          "callee": "new MongoClient(connectionUri, clientOptions).connect",
+          "lineNumber": 45
+        },
+        {
+          "caller": "getClientPromise",
+          "callee": "buildClientPromise",
+          "lineNumber": 50
+        },
+        {
+          "caller": "then",
+          "callee": "getClientPromise().then",
+          "lineNumber": 61
+        },
+        {
+          "caller": "then",
+          "callee": "getClientPromise",
+          "lineNumber": 61
+        },
+        {
+          "caller": "catch",
+          "callee": "getClientPromise().catch",
+          "lineNumber": 64
+        },
+        {
+          "caller": "catch",
+          "callee": "getClientPromise",
+          "lineNumber": 64
+        },
+        {
+          "caller": "finally",
+          "callee": "getClientPromise().finally",
+          "lineNumber": 67
+        },
+        {
+          "caller": "finally",
+          "callee": "getClientPromise",
+          "lineNumber": 67
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/lib/neon.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 5,
+      "functions": [
+        {
+          "name": "getDb",
+          "startLine": 3,
+          "endLine": 6,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "getDb",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getDb",
+          "callee": "neon",
+          "lineNumber": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/AIChatSession.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 40,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/ProcessFlow.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/PromptLibraryItem.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/Property.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/RiskAlert.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 52,
+      "nonEmptyLines": 47,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/RiskQuestionnaire.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 51,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/SavedPrompt.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 22,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/SourcingConfig.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 88,
+      "nonEmptyLines": 84,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/SourcingEvent.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 77,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/Supplier.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 85,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/admin/users/[id]/delete.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 35,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 10,
+          "endLine": 45,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 10,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "session.user.email.toLowerCase",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(403).json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('users').findOne",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "user.email?.toLowerCase",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(403).json",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handler",
+          "callee": "Promise.all",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('users').deleteOne",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('accounts').deleteMany",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('sessions').deleteMany",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 42
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/admin/users/create.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 73,
+      "nonEmptyLines": 61,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 10,
+          "endLine": 73,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 10,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "session.user.email.toLowerCase",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(403).json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('users').findOne",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "email.toLowerCase",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(409).json",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "bcrypt.hash",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handler",
+          "callee": "email.toLowerCase",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handler",
+          "callee": "email.toLowerCase",
+          "lineNumber": 42
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('users').insertOne",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(201).json",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handler",
+          "callee": "result.insertedId.toString",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 71
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/auth/[...nextauth].ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/bookmarks.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 8,
+          "endLine": 64,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 8,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(503).json",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.find({userEmail: session.user.email}).sort({category: 1, title: 1}).toArray",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.find({userEmail: session.user.email}).sort",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.find",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handler",
+          "callee": "url.startsWith",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "url.startsWith",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "Array.isArray",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "tags.filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "t.trim",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.floor(Date.now() / 1000).toString",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.floor",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handler",
+          "callee": "Date.now",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.insertOne",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(201).json",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 60
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/bookmarks/[id].ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 69,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 9,
+          "endLine": 84,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(503).json",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "url.startsWith",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "url.startsWith",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "Array.isArray",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "tags.filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "t.trim",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.floor(Date.now() / 1000).toString",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.floor",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handler",
+          "callee": "Date.now",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.updateOne",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 64
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 64
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handler",
+          "callee": "collection.deleteOne",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 73
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 73
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/categories/update.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 28,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 5,
+          "endLine": 36,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 5,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 7
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 7
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(503).json",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handler",
+          "callee": "db\n      .collection('bookmarks')\n      .updateMany",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "db\n      .collection",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/debug/auth-check.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 30,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 5,
+          "endLine": 35,
+          "params": [
+            "_req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 5,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "client.db",
+          "lineNumber": 8
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('accounts').find({provider: 'google'}).toArray",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection('accounts').find",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "db.collection",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "accounts.map",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 33
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/finance/stock-price/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 27,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 7,
+          "endLine": 36,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 8
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "yahooFinance.quote",
+          "lineNumber": 22
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/gemini/assess.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 81,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 9,
+          "endLine": 101,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(403).json",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handler",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "fetch",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handler",
+          "callee": "fetchRes.arrayBuffer",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handler",
+          "callee": "Buffer.from(arrayBuffer).toString",
+          "lineNumber": 44
+        },
+        {
+          "caller": "handler",
+          "callee": "Buffer.from",
+          "lineNumber": 44
+        },
+        {
+          "caller": "handler",
+          "callee": "promptParts.push",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handler",
+          "callee": "textToAnalyze.slice",
+          "lineNumber": 87
+        },
+        {
+          "caller": "handler",
+          "callee": "promptParts.push",
+          "lineNumber": 90
+        },
+        {
+          "caller": "handler",
+          "callee": "model.generateContent",
+          "lineNumber": 92
+        },
+        {
+          "caller": "handler",
+          "callee": "response.text",
+          "lineNumber": 94
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 98
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 99
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 99
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/sourcing/parse-clipboard.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 79,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 6,
+          "endLine": 96,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 6,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 8
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 8
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(503).json",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 19
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "options?.departments?.join",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "options?.categoryLeads?.join",
+          "lineNumber": 29
+        },
+        {
+          "caller": "handler",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "JSON.stringify",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handler",
+          "callee": "text.slice",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handler",
+          "callee": "model.generateContent",
+          "lineNumber": 74
+        },
+        {
+          "caller": "handler",
+          "callee": "response.text",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handler",
+          "callee": "textResponse.match",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handler",
+          "callee": "JSON.parse",
+          "lineNumber": 83
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 86
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 87
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 87
+        },
+        {
+          "caller": "handler",
+          "callee": "console.error",
+          "lineNumber": 90
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(500).json",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handler",
+          "callee": "JSON.stringify",
+          "lineNumber": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/alerts.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 8,
+          "endLine": 47,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 8,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 9
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find(filter).sort({createdAt: -1}).limit(Number(limit)).lean",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find(filter).sort({createdAt: -1}).limit",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find(filter).sort",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "Number",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "alert.save",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(201).json",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.updateMany",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.updateMany",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 43
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/dashboard.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 9,
+          "endLine": 83,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 12
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.find({userEmail}).lean",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.find",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find({userEmail, isResolved: false}).sort({createdAt: -1}).limit(10).lean",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find({userEmail, isResolved: false}).sort({createdAt: -1}).limit",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find({userEmail, isResolved: false}).sort",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.find",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 24
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 30
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 33
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.filter",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.round",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handler",
+          "callee": "suppliers.reduce",
+          "lineNumber": 37
+        },
+        {
+          "caller": "handler",
+          "callee": "Object.entries(categoryMap).map",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handler",
+          "callee": "Object.entries",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handler",
+          "callee": "Math.round",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handler",
+          "callee": "[...suppliers]\n    .sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0))\n    .slice(0, 5)\n    .map",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handler",
+          "callee": "[...suppliers]\n    .sort((a, b) => (b.overallScore || 0) - (a.overallScore || 0))\n    .slice",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handler",
+          "callee": "[...suppliers]\n    .sort",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.countDocuments",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.countDocuments",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 72
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/intelligence.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 649,
+      "nonEmptyLines": 614,
+      "functions": [
+        {
+          "name": "fetchWithTimeout",
+          "startLine": 111,
+          "endLine": 119,
+          "params": [
+            "url",
+            "timeoutMs"
+          ]
+        },
+        {
+          "name": "getWorldBankData",
+          "startLine": 122,
+          "endLine": 163,
+          "params": [
+            "country"
+          ]
+        },
+        {
+          "name": "getCountryContext",
+          "startLine": 166,
+          "endLine": 191,
+          "params": [
+            "country"
+          ]
+        },
+        {
+          "name": "getGdeltNews",
+          "startLine": 194,
+          "endLine": 217,
+          "params": [
+            "name",
+            "country"
+          ]
+        },
+        {
+          "name": "getOpenCorporates",
+          "startLine": 220,
+          "endLine": 246,
+          "params": [
+            "name",
+            "country"
+          ]
+        },
+        {
+          "name": "getSecFilings",
+          "startLine": 249,
+          "endLine": 271,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "getYahooFinance",
+          "startLine": 274,
+          "endLine": 331,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "getNewsApi",
+          "startLine": 334,
+          "endLine": 356,
+          "params": [
+            "name",
+            "country"
+          ]
+        },
+        {
+          "name": "getOpenSanctions",
+          "startLine": 359,
+          "endLine": 391,
+          "params": [
+            "name",
+            "country"
+          ]
+        },
+        {
+          "name": "getAlphaVantageNewsSentiment",
+          "startLine": 394,
+          "endLine": 417,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "getCurrencyRisk",
+          "startLine": 420,
+          "endLine": 482,
+          "params": [
+            "country"
+          ]
+        },
+        {
+          "name": "maybeCreateAlerts",
+          "startLine": 485,
+          "endLine": 577,
+          "params": [
+            "userEmail",
+            "supplierId",
+            "supplierName",
+            "data"
+          ]
+        },
+        {
+          "name": "handler",
+          "startLine": 580,
+          "endLine": 649,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 580,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fetchWithTimeout",
+          "callee": "setTimeout",
+          "lineNumber": 113
+        },
+        {
+          "caller": "fetchWithTimeout",
+          "callee": "controller.abort",
+          "lineNumber": 113
+        },
+        {
+          "caller": "fetchWithTimeout",
+          "callee": "fetch",
+          "lineNumber": 115
+        },
+        {
+          "caller": "fetchWithTimeout",
+          "callee": "clearTimeout",
+          "lineNumber": 117
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "Promise.all",
+          "lineNumber": 126
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "WB_INDICATORS.map",
+          "lineNumber": 127
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 130
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "res.json",
+          "lineNumber": 132
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "(json[1] as Array<{value: number | null; date: string}>)?.filter",
+          "lineNumber": 133
+        },
+        {
+          "caller": "getWorldBankData",
+          "callee": "results.filter",
+          "lineNumber": 162
+        },
+        {
+          "caller": "getCountryContext",
+          "callee": "encodeURIComponent",
+          "lineNumber": 168
+        },
+        {
+          "caller": "getCountryContext",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 171
+        },
+        {
+          "caller": "getCountryContext",
+          "callee": "res.json",
+          "lineNumber": 173
+        },
+        {
+          "caller": "getCountryContext",
+          "callee": "Object.keys",
+          "lineNumber": 182
+        },
+        {
+          "caller": "getCountryContext",
+          "callee": "Object.values",
+          "lineNumber": 183
+        },
+        {
+          "caller": "getGdeltNews",
+          "callee": "encodeURIComponent",
+          "lineNumber": 197
+        },
+        {
+          "caller": "getGdeltNews",
+          "callee": "name.split",
+          "lineNumber": 197
+        },
+        {
+          "caller": "getGdeltNews",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 199
+        },
+        {
+          "caller": "getGdeltNews",
+          "callee": "res.json",
+          "lineNumber": 201
+        },
+        {
+          "caller": "getGdeltNews",
+          "callee": "(json.articles || []).map",
+          "lineNumber": 203
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "(COUNTRY_ISO[country] || '').toLowerCase",
+          "lineNumber": 222
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "encodeURIComponent",
+          "lineNumber": 223
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 226
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "res.json",
+          "lineNumber": 228
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "(json.results?.companies || []).slice(0, 5).map",
+          "lineNumber": 230
+        },
+        {
+          "caller": "getOpenCorporates",
+          "callee": "(json.results?.companies || []).slice",
+          "lineNumber": 230
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "encodeURIComponent",
+          "lineNumber": 251
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "new Date().toISOString().split",
+          "lineNumber": 252
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "new Date().toISOString",
+          "lineNumber": 252
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().split",
+          "lineNumber": 253
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString",
+          "lineNumber": 253
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "Date.now",
+          "lineNumber": 253
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 255
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "res.json",
+          "lineNumber": 257
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "(json.hits?.hits || []).slice(0, 8).map",
+          "lineNumber": 259
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "(json.hits?.hits || []).slice",
+          "lineNumber": 259
+        },
+        {
+          "caller": "getSecFilings",
+          "callee": "encodeURIComponent",
+          "lineNumber": 264
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "(yf as any).search",
+          "lineNumber": 278
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "quotes.find",
+          "lineNumber": 282
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "(equity.longname || equity.shortname || '').toLowerCase",
+          "lineNumber": 286
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "name.split(/\\s+/)[0].toLowerCase",
+          "lineNumber": 287
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "name.split",
+          "lineNumber": 287
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "symbolName.includes",
+          "lineNumber": 288
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "firstWord.includes",
+          "lineNumber": 288
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "symbolName.split",
+          "lineNumber": 288
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "(yf as any).quoteSummary",
+          "lineNumber": 293
+        },
+        {
+          "caller": "getYahooFinance",
+          "callee": "summary?.assetProfile?.longBusinessSummary?.substring",
+          "lineNumber": 326
+        },
+        {
+          "caller": "getNewsApi",
+          "callee": "encodeURIComponent",
+          "lineNumber": 338
+        },
+        {
+          "caller": "getNewsApi",
+          "callee": "name.split",
+          "lineNumber": 338
+        },
+        {
+          "caller": "getNewsApi",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 340
+        },
+        {
+          "caller": "getNewsApi",
+          "callee": "res.json",
+          "lineNumber": 342
+        },
+        {
+          "caller": "getNewsApi",
+          "callee": "(json.articles || []).map",
+          "lineNumber": 345
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "encodeURIComponent",
+          "lineNumber": 364
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "iso.toLowerCase",
+          "lineNumber": 365
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 366
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "res.json",
+          "lineNumber": 371
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "results.slice(0, 5).map",
+          "lineNumber": 377
+        },
+        {
+          "caller": "getOpenSanctions",
+          "callee": "results.slice",
+          "lineNumber": 377
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "encodeURIComponent",
+          "lineNumber": 398
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 400
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "res.json",
+          "lineNumber": 402
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "json.feed.slice(0, 8).map",
+          "lineNumber": 405
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "json.feed.slice",
+          "lineNumber": 405
+        },
+        {
+          "caller": "getAlphaVantageNewsSentiment",
+          "callee": "item.summary?.substring",
+          "lineNumber": 412
+        },
+        {
+          "caller": "getCurrencyRisk",
+          "callee": "fetchWithTimeout",
+          "lineNumber": 474
+        },
+        {
+          "caller": "getCurrencyRisk",
+          "callee": "res.json",
+          "lineNumber": 476
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "data.sanctions.matches?.some",
+          "lineNumber": 495
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "alertsToCreate.push",
+          "lineNumber": 496
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "(data.gdeltNews || []).filter",
+          "lineNumber": 509
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "alertsToCreate.push",
+          "lineNumber": 511
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "(data.secFilings || []).filter",
+          "lineNumber": 524
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "alertsToCreate.push",
+          "lineNumber": 526
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "data.countryRisk?.indicators?.find",
+          "lineNumber": 539
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "alertsToCreate.push",
+          "lineNumber": 541
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "pvStat.value.toFixed",
+          "lineNumber": 548
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "alertsToCreate.push",
+          "lineNumber": 557
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "data.financials.debtToEquity.toFixed",
+          "lineNumber": 564
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "dbConnect",
+          "lineNumber": 572
+        },
+        {
+          "caller": "maybeCreateAlerts",
+          "callee": "RiskAlert.insertMany",
+          "lineNumber": 573
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 581
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 581
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 583
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 584
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 584
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(400).json",
+          "lineNumber": 587
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 587
+        },
+        {
+          "caller": "handler",
+          "callee": "Promise.allSettled",
+          "lineNumber": 601
+        },
+        {
+          "caller": "handler",
+          "callee": "getWorldBankData",
+          "lineNumber": 602
+        },
+        {
+          "caller": "handler",
+          "callee": "getCountryContext",
+          "lineNumber": 603
+        },
+        {
+          "caller": "handler",
+          "callee": "getGdeltNews",
+          "lineNumber": 604
+        },
+        {
+          "caller": "handler",
+          "callee": "getOpenCorporates",
+          "lineNumber": 605
+        },
+        {
+          "caller": "handler",
+          "callee": "getSecFilings",
+          "lineNumber": 606
+        },
+        {
+          "caller": "handler",
+          "callee": "getYahooFinance",
+          "lineNumber": 607
+        },
+        {
+          "caller": "handler",
+          "callee": "getNewsApi",
+          "lineNumber": 608
+        },
+        {
+          "caller": "handler",
+          "callee": "getOpenSanctions",
+          "lineNumber": 609
+        },
+        {
+          "caller": "handler",
+          "callee": "getAlphaVantageNewsSentiment",
+          "lineNumber": 610
+        },
+        {
+          "caller": "handler",
+          "callee": "getCurrencyRisk",
+          "lineNumber": 611
+        },
+        {
+          "caller": "handler",
+          "callee": "new Date().toISOString",
+          "lineNumber": 618
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 625
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 626
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 627
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 628
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 629
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 630
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 631
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 632
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 633
+        },
+        {
+          "caller": "handler",
+          "callee": "ok",
+          "lineNumber": 634
+        },
+        {
+          "caller": "handler",
+          "callee": "maybeCreateAlerts",
+          "lineNumber": 642
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 648
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 648
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/questionnaires.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 69,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 26,
+          "endLine": 81,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "STANDARD_QUESTIONS",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "handler",
+          "line": 26,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskQuestionnaire.find(filter).sort({createdAt: -1}).lean",
+          "lineNumber": 38
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskQuestionnaire.find(filter).sort",
+          "lineNumber": 38
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskQuestionnaire.find",
+          "lineNumber": 38
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.findOne",
+          "lineNumber": 44
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handler",
+          "callee": "STANDARD_QUESTIONS.map",
+          "lineNumber": 47
+        },
+        {
+          "caller": "handler",
+          "callee": "questionnaire.save",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(201).json",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskQuestionnaire.findOne",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handler",
+          "callee": "q.save",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 80
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/seed.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 257,
+      "nonEmptyLines": 245,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 194,
+          "endLine": 257,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 194,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 195
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 195
+        },
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 197
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 198
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 198
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 201
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.deleteMany",
+          "lineNumber": 204
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.deleteMany",
+          "lineNumber": 205
+        },
+        {
+          "caller": "handler",
+          "callee": "Promise.all",
+          "lineNumber": 208
+        },
+        {
+          "caller": "handler",
+          "callee": "DEMO_SUPPLIERS.map",
+          "lineNumber": 209
+        },
+        {
+          "caller": "handler",
+          "callee": "doc.save",
+          "lineNumber": 216
+        },
+        {
+          "caller": "handler",
+          "callee": "Promise.all",
+          "lineNumber": 237
+        },
+        {
+          "caller": "handler",
+          "callee": "alertAssignments.map",
+          "lineNumber": 238
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.create",
+          "lineNumber": 241
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 252
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 252
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/[id].ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 61,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 9,
+          "endLine": 71,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 11
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 15
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.findOne",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(404).json",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 18
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 21
+        },
+        {
+          "caller": "handler",
+          "callee": "supplier.save",
+          "lineNumber": 60
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.deleteOne",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handler",
+          "callee": "RiskAlert.deleteMany",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/api/supplier-risk/suppliers/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "handler",
+          "startLine": 8,
+          "endLine": 36,
+          "params": [
+            "req",
+            "res"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "handler",
+          "line": 8,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handler",
+          "callee": "getServerSession",
+          "lineNumber": 9
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(401).json",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 10
+        },
+        {
+          "caller": "handler",
+          "callee": "dbConnect",
+          "lineNumber": 13
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.find(filter).sort(sortObj).lean",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.find(filter).sort",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "Supplier.find",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(200).json",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handler",
+          "callee": "doc.save",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(201).json",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 32
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status(405).json",
+          "lineNumber": 35
+        },
+        {
+          "caller": "handler",
+          "callee": "res.status",
+          "lineNumber": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,717 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [
+    "src/images/header-background.webp"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 25,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 25,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/components/CircuitBoardLoader.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 430,
+      "nonEmptyLines": 389,
+      "callGraph": [
+        {
+          "caller": "animate",
+          "callee": "setDisplayText",
+          "lineNumber": 22
+        },
+        {
+          "caller": "animate",
+          "callee": "text\n            .split('')\n            .map((l, i) => (i < iterationRef.current ? l : chars[Math.floor(Math.random() * chars.length)]))\n            .join",
+          "lineNumber": 23
+        },
+        {
+          "caller": "animate",
+          "callee": "text\n            .split('')\n            .map",
+          "lineNumber": 23
+        },
+        {
+          "caller": "animate",
+          "callee": "text\n            .split",
+          "lineNumber": 23
+        },
+        {
+          "caller": "animate",
+          "callee": "Math.floor",
+          "lineNumber": 25
+        },
+        {
+          "caller": "animate",
+          "callee": "Math.random",
+          "lineNumber": 25
+        },
+        {
+          "caller": "animate",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/DribbbleIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 35,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/FacebookIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/GithubIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 13,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/Icon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/InstagramIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/LinkedInIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/QuoteIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/StackOverflowIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 12,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Icon/TwitterIcon.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Layout/Section.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 14,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/PasswordItem.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 149,
+      "nonEmptyLines": 138,
+      "callGraph": [
+        {
+          "caller": "handleCopy",
+          "callee": "navigator.clipboard.writeText",
+          "lineNumber": 25
+        },
+        {
+          "caller": "handleCopy",
+          "callee": "alert",
+          "lineNumber": 26
+        },
+        {
+          "caller": "handleSave",
+          "callee": "onUpdate",
+          "lineNumber": 31
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setIsEditing",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Sections/Contact/ContactForm.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 103,
+      "nonEmptyLines": 95,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Sections/Contact/index.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 67,
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Sections/Footer.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 33,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Sections/Hero.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 383,
+      "nonEmptyLines": 342,
+      "callGraph": [
+        {
+          "caller": "loop",
+          "callee": "setTilt",
+          "lineNumber": 48
+        },
+        {
+          "caller": "loop",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 57
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.clearRect",
+          "lineNumber": 103
+        },
+        {
+          "caller": "render",
+          "callee": "Math.cos",
+          "lineNumber": 111
+        },
+        {
+          "caller": "render",
+          "callee": "Math.sin",
+          "lineNumber": 112
+        },
+        {
+          "caller": "render",
+          "callee": "Date.now",
+          "lineNumber": 114
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 120
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 121
+        },
+        {
+          "caller": "render",
+          "callee": "Math.min",
+          "lineNumber": 131
+        },
+        {
+          "caller": "render",
+          "callee": "Math.sin",
+          "lineNumber": 132
+        },
+        {
+          "caller": "render",
+          "callee": "Math.max",
+          "lineNumber": 134
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.beginPath",
+          "lineNumber": 136
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.arc",
+          "lineNumber": 137
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.fill",
+          "lineNumber": 139
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.fill",
+          "lineNumber": 144
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 150
+        },
+        {
+          "caller": "render",
+          "callee": "comets.push",
+          "lineNumber": 151
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 152
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 153
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 154
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 155
+        },
+        {
+          "caller": "render",
+          "callee": "Math.random",
+          "lineNumber": 156
+        },
+        {
+          "caller": "render",
+          "callee": "Math.cos",
+          "lineNumber": 163
+        },
+        {
+          "caller": "render",
+          "callee": "Math.sin",
+          "lineNumber": 164
+        },
+        {
+          "caller": "render",
+          "callee": "comets.splice",
+          "lineNumber": 168
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.createLinearGradient",
+          "lineNumber": 172
+        },
+        {
+          "caller": "render",
+          "callee": "Math.cos",
+          "lineNumber": 175
+        },
+        {
+          "caller": "render",
+          "callee": "Math.sin",
+          "lineNumber": 176
+        },
+        {
+          "caller": "render",
+          "callee": "grad.addColorStop",
+          "lineNumber": 178
+        },
+        {
+          "caller": "render",
+          "callee": "grad.addColorStop",
+          "lineNumber": 179
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.beginPath",
+          "lineNumber": 181
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.moveTo",
+          "lineNumber": 182
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.lineTo",
+          "lineNumber": 183
+        },
+        {
+          "caller": "render",
+          "callee": "Math.cos",
+          "lineNumber": 183
+        },
+        {
+          "caller": "render",
+          "callee": "Math.sin",
+          "lineNumber": 183
+        },
+        {
+          "caller": "render",
+          "callee": "ctx.stroke",
+          "lineNumber": 186
+        },
+        {
+          "caller": "render",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 189
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Socials.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/TimelineBox.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 74,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Vault/PasswordModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 397,
+      "nonEmptyLines": 374,
+      "functions": [
+        {
+          "name": "empty",
+          "startLine": 91,
+          "endLine": 113,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 134
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 135
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onSave",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 138
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setLoading",
+          "lineNumber": 142
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Vault/VaultDashboard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 584,
+      "nonEmptyLines": 544,
+      "functions": [
+        {
+          "name": "getFavicon",
+          "startLine": 84,
+          "endLine": 91,
+          "params": [
+            "url"
+          ]
+        },
+        {
+          "name": "maskCard",
+          "startLine": 93,
+          "endLine": 93,
+          "params": [
+            "n"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "VaultDashboard",
+          "line": 348,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "maskCard",
+          "callee": "n.replace(/\\s/g, '').slice",
+          "lineNumber": 93
+        },
+        {
+          "caller": "maskCard",
+          "callee": "n.replace",
+          "lineNumber": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/WorkTimeline.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/data/data.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 335,
+      "nonEmptyLines": 322,
+      "exports": [
+        {
+          "name": "homePageMeta",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "SectionId",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "heroData",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "heroTimeline",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "skills",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "heroEducation",
+          "line": 188,
+          "isDefault": false
+        },
+        {
+          "name": "experience",
+          "line": 232,
+          "isDefault": false
+        },
+        {
+          "name": "contact",
+          "line": 295,
+          "isDefault": false
+        },
+        {
+          "name": "socialLinks",
+          "line": 326,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 9,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/data/dataDef.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 164,
+      "nonEmptyLines": 145,
+      "exports": [
+        {
+          "name": "ContactType",
+          "line": 93,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/dashboard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 161,
+      "nonEmptyLines": 143,
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/index.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 22,
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

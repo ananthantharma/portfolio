@@ -1,0 +1,1896 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 21,
+  "filesSkipped": [
+    ".npmrc",
+    ".prettierignore",
+    ".ua/.understandignore",
+    "public/site.webmanifest"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 21,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 17,
+      "failed": 0,
+      "skipped": 4
+    }
+  },
+  "results": [
+    {
+      "path": ".claude/launch.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 11,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "configurations",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 27,
+      "nonEmptyLines": 27,
+      "sections": [
+        {
+          "heading": "permissions",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".github/FUNDING.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 4,
+      "nonEmptyLines": 2,
+      "sections": [
+        {
+          "heading": "github",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".ua/config.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "sections": [
+        {
+          "heading": "outputLanguage",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "next-env.d.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "next-sitemap.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "next.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 48,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "postcss.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 12,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/audit-data-ownership.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 79,
+      "functions": [
+        {
+          "name": "auditData",
+          "startLine": 6,
+          "endLine": 92,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 7
+        },
+        {
+          "caller": "auditData",
+          "callee": "client.connect",
+          "lineNumber": 14
+        },
+        {
+          "caller": "auditData",
+          "callee": "client.db",
+          "lineNumber": 15
+        },
+        {
+          "caller": "auditData",
+          "callee": "db.collection('users').findOne",
+          "lineNumber": 18
+        },
+        {
+          "caller": "auditData",
+          "callee": "db.collection",
+          "lineNumber": 18
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.error",
+          "lineNumber": 20
+        },
+        {
+          "caller": "auditData",
+          "callee": "user._id.toString",
+          "lineNumber": 23
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 24
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 25
+        },
+        {
+          "caller": "auditData",
+          "callee": "db.listCollections().toArray",
+          "lineNumber": 28
+        },
+        {
+          "caller": "auditData",
+          "callee": "db.listCollections",
+          "lineNumber": 28
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 31
+        },
+        {
+          "caller": "auditData",
+          "callee": "exclude.includes",
+          "lineNumber": 33
+        },
+        {
+          "caller": "auditData",
+          "callee": "db.collection",
+          "lineNumber": 35
+        },
+        {
+          "caller": "auditData",
+          "callee": "collection.countDocuments",
+          "lineNumber": 36
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 39
+        },
+        {
+          "caller": "auditData",
+          "callee": "collection.countDocuments",
+          "lineNumber": 46
+        },
+        {
+          "caller": "auditData",
+          "callee": "collection.countDocuments",
+          "lineNumber": 55
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 65
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 66
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 67
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 69
+        },
+        {
+          "caller": "auditData",
+          "callee": "collection.findOne",
+          "lineNumber": 71
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.log",
+          "lineNumber": 80
+        },
+        {
+          "caller": "auditData",
+          "callee": "console.error",
+          "lineNumber": 88
+        },
+        {
+          "caller": "auditData",
+          "callee": "client.close",
+          "lineNumber": 90
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/clear-transactions.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 31,
+      "functions": [
+        {
+          "name": "clearTransactions",
+          "startLine": 4,
+          "endLine": 37,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clearTransactions",
+          "callee": "console.log",
+          "lineNumber": 7
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "fetch",
+          "lineNumber": 8
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "listRes.json",
+          "lineNumber": 9
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "console.error",
+          "lineNumber": 12
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "console.log",
+          "lineNumber": 17
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "fetch",
+          "lineNumber": 22
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "console.error",
+          "lineNumber": 28
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "console.log",
+          "lineNumber": 32
+        },
+        {
+          "caller": "clearTransactions",
+          "callee": "console.error",
+          "lineNumber": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/list-transactions.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 17,
+      "functions": [
+        {
+          "name": "listTransactions",
+          "startLine": 3,
+          "endLine": 17,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "listTransactions",
+          "callee": "fetch",
+          "lineNumber": 5
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "res.json",
+          "lineNumber": 6
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.log",
+          "lineNumber": 7
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.log",
+          "lineNumber": 8
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.log",
+          "lineNumber": 9
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.log",
+          "lineNumber": 11
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.log",
+          "lineNumber": 12
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "JSON.stringify",
+          "lineNumber": 12
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "data.data.slice",
+          "lineNumber": 12
+        },
+        {
+          "caller": "listTransactions",
+          "callee": "console.error",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/seed-properties.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 48,
+      "functions": [
+        {
+          "name": "seed",
+          "startLine": 20,
+          "endLine": 54,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed",
+          "callee": "mongoose.connect",
+          "lineNumber": 22
+        },
+        {
+          "caller": "seed",
+          "callee": "console.log",
+          "lineNumber": 23
+        },
+        {
+          "caller": "seed",
+          "callee": "Property.findOne",
+          "lineNumber": 39
+        },
+        {
+          "caller": "seed",
+          "callee": "Property.create",
+          "lineNumber": 41
+        },
+        {
+          "caller": "seed",
+          "callee": "console.log",
+          "lineNumber": 42
+        },
+        {
+          "caller": "seed",
+          "callee": "console.log",
+          "lineNumber": 44
+        },
+        {
+          "caller": "seed",
+          "callee": "console.log",
+          "lineNumber": 48
+        },
+        {
+          "caller": "seed",
+          "callee": "process.exit",
+          "lineNumber": 49
+        },
+        {
+          "caller": "seed",
+          "callee": "console.error",
+          "lineNumber": 51
+        },
+        {
+          "caller": "seed",
+          "callee": "process.exit",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/test-mongoose.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "testMongoose",
+          "startLine": 6,
+          "endLine": 47,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 7
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "mongoose.connect",
+          "lineNumber": 21
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 22
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "mongoose.model",
+          "lineNumber": 31
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 34
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "NoteCategory.find({}).sort",
+          "lineNumber": 35
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "NoteCategory.find",
+          "lineNumber": 35
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 36
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 38
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.error",
+          "lineNumber": 42
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "mongoose.disconnect",
+          "lineNumber": 44
+        },
+        {
+          "caller": "testMongoose",
+          "callee": "console.log",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "server.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 52,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/anomaly/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 11,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "AnomalyLayout",
+          "startLine": 9,
+          "endLine": 11,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "metadata",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "AnomalyLayout",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/pdf-autofill/analyze-form/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 106,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "parseJsonArray",
+          "startLine": 10,
+          "endLine": 19,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "POST",
+          "startLine": 21,
+          "endLine": 106,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 12
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 12
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "m[1].trim",
+          "lineNumber": 13
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.trim",
+          "lineNumber": 13
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "JSON.parse",
+          "lineNumber": 14
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "Array.isArray",
+          "lineNumber": 15
+        },
+        {
+          "caller": "POST",
+          "callee": "request.formData",
+          "lineNumber": 23
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 24
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 27
+        },
+        {
+          "caller": "POST",
+          "callee": "Buffer.from",
+          "lineNumber": 30
+        },
+        {
+          "caller": "POST",
+          "callee": "file.arrayBuffer",
+          "lineNumber": 30
+        },
+        {
+          "caller": "POST",
+          "callee": "PDFDocument.load",
+          "lineNumber": 37
+        },
+        {
+          "caller": "POST",
+          "callee": "pdfDoc.getForm",
+          "lineNumber": 38
+        },
+        {
+          "caller": "POST",
+          "callee": "form.getFields",
+          "lineNumber": 39
+        },
+        {
+          "caller": "POST",
+          "callee": "fields.map",
+          "lineNumber": 43
+        },
+        {
+          "caller": "POST",
+          "callee": "field.getName",
+          "lineNumber": 44
+        },
+        {
+          "caller": "POST",
+          "callee": "field.constructor.name.replace('PDF', '').replace('Field', '').toLowerCase",
+          "lineNumber": 45
+        },
+        {
+          "caller": "POST",
+          "callee": "field.constructor.name.replace('PDF', '').replace",
+          "lineNumber": 45
+        },
+        {
+          "caller": "POST",
+          "callee": "field.constructor.name.replace",
+          "lineNumber": 45
+        },
+        {
+          "caller": "POST",
+          "callee": "console.warn",
+          "lineNumber": 49
+        },
+        {
+          "caller": "POST",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 55
+        },
+        {
+          "caller": "POST",
+          "callee": "buffer.toString",
+          "lineNumber": 56
+        },
+        {
+          "caller": "POST",
+          "callee": "acroFields.map(f => `- ${f.name} (${f.type})`).join",
+          "lineNumber": 60
+        },
+        {
+          "caller": "POST",
+          "callee": "acroFields.map",
+          "lineNumber": 60
+        },
+        {
+          "caller": "POST",
+          "callee": "model.generateContent",
+          "lineNumber": 84
+        },
+        {
+          "caller": "POST",
+          "callee": "parseJsonArray",
+          "lineNumber": 85
+        },
+        {
+          "caller": "POST",
+          "callee": "result.response.text",
+          "lineNumber": 85
+        },
+        {
+          "caller": "POST",
+          "callee": "console.warn",
+          "lineNumber": 87
+        },
+        {
+          "caller": "POST",
+          "callee": "acroFields.map",
+          "lineNumber": 92
+        },
+        {
+          "caller": "POST",
+          "callee": "f.name.replace",
+          "lineNumber": 94
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 101
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 103
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 104
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/pdf-autofill/extract/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "buildExtractPrompt",
+          "startLine": 11,
+          "endLine": 20,
+          "params": [
+            "roleLabel"
+          ]
+        },
+        {
+          "name": "parseJsonArray",
+          "startLine": 22,
+          "endLine": 31,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "extractFromFile",
+          "startLine": 33,
+          "endLine": 63,
+          "params": [
+            "file",
+            "genAI",
+            "roleLabel"
+          ]
+        },
+        {
+          "name": "POST",
+          "startLine": 65,
+          "endLine": 93,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 65,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildExtractPrompt",
+          "callee": "roleLabel.toUpperCase",
+          "lineNumber": 13
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 24
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 24
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "m[1].trim",
+          "lineNumber": 25
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.trim",
+          "lineNumber": 25
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "JSON.parse",
+          "lineNumber": 26
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "Array.isArray",
+          "lineNumber": 27
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "file.name.toLowerCase",
+          "lineNumber": 34
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "Buffer.from",
+          "lineNumber": 35
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "file.arrayBuffer",
+          "lineNumber": 35
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 37
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "buildExtractPrompt",
+          "lineNumber": 38
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 41
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 41
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 41
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "XLSX.read",
+          "lineNumber": 42
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "workbook.SheetNames.forEach",
+          "lineNumber": 44
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "XLSX.utils.sheet_to_csv",
+          "lineNumber": 45
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "model.generateContent",
+          "lineNumber": 47
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "textContent.substring",
+          "lineNumber": 47
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "parseJsonArray",
+          "lineNumber": 48
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "result.response.text",
+          "lineNumber": 48
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 52
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 52
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "mammoth.extractRawText",
+          "lineNumber": 53
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "model.generateContent",
+          "lineNumber": 54
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "textContent.substring",
+          "lineNumber": 54
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "parseJsonArray",
+          "lineNumber": 55
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "result.response.text",
+          "lineNumber": 55
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 59
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "name.endsWith",
+          "lineNumber": 59
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "model.generateContent",
+          "lineNumber": 61
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "buffer.toString",
+          "lineNumber": 61
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "parseJsonArray",
+          "lineNumber": 62
+        },
+        {
+          "caller": "extractFromFile",
+          "callee": "result.response.text",
+          "lineNumber": 62
+        },
+        {
+          "caller": "POST",
+          "callee": "request.formData",
+          "lineNumber": 67
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.getAll",
+          "lineNumber": 68
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 71
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "POST",
+          "callee": "JSON.parse",
+          "lineNumber": 75
+        },
+        {
+          "caller": "POST",
+          "callee": "extractFromFile",
+          "lineNumber": 83
+        },
+        {
+          "caller": "POST",
+          "callee": "facts.forEach",
+          "lineNumber": 85
+        },
+        {
+          "caller": "POST",
+          "callee": "allFacts.push",
+          "lineNumber": 85
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 88
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 90
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 91
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/pdf-autofill/fill/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 230,
+      "nonEmptyLines": 196,
+      "functions": [
+        {
+          "name": "fillAcroForm",
+          "startLine": 36,
+          "endLine": 97,
+          "params": [
+            "pdfDoc",
+            "mappings"
+          ]
+        },
+        {
+          "name": "fillFlatPDF",
+          "startLine": 103,
+          "endLine": 176,
+          "params": [
+            "pdfDoc",
+            "mappings",
+            "fields"
+          ]
+        },
+        {
+          "name": "POST",
+          "startLine": 180,
+          "endLine": 230,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 180,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fillAcroForm",
+          "callee": "pdfDoc.getForm",
+          "lineNumber": 37
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "form.getFields",
+          "lineNumber": 40
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "fieldMap.set",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.getName",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "console.log",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "fieldMap.keys",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "fieldMap.get",
+          "lineNumber": 55
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "mapping.fieldName.toLowerCase",
+          "lineNumber": 57
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "key.toLowerCase",
+          "lineNumber": 59
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "console.log",
+          "lineNumber": 66
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.setText",
+          "lineNumber": 72
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "mapping.suggestedValue.toLowerCase",
+          "lineNumber": 75
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.check",
+          "lineNumber": 76
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.uncheck",
+          "lineNumber": 76
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.getOptions().find",
+          "lineNumber": 79
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.getOptions",
+          "lineNumber": 79
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "o.toLowerCase().includes",
+          "lineNumber": 79
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "o.toLowerCase",
+          "lineNumber": 79
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "mapping.suggestedValue.toLowerCase",
+          "lineNumber": 79
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.select",
+          "lineNumber": 81
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.getOptions().find",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.getOptions",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "o.toLowerCase().includes",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "o.toLowerCase",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "mapping.suggestedValue.toLowerCase",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "field.select",
+          "lineNumber": 87
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "console.warn",
+          "lineNumber": 92
+        },
+        {
+          "caller": "fillAcroForm",
+          "callee": "console.log",
+          "lineNumber": 96
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pdfDoc.embedFont",
+          "lineNumber": 104
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "fieldDefs.set",
+          "lineNumber": 108
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pdfDoc.context.enumerateIndirectObjects",
+          "lineNumber": 115
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "obj.get",
+          "lineNumber": 118
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "PDFName.of",
+          "lineNumber": 118
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "type.asString",
+          "lineNumber": 119
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pageDicts.push",
+          "lineNumber": 120
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pageDicts.sort",
+          "lineNumber": 128
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pageDicts.forEach",
+          "lineNumber": 129
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pagesByIndex.set",
+          "lineNumber": 131
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "PDFPage.of",
+          "lineNumber": 131
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "console.log",
+          "lineNumber": 137
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "fieldDefs.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "console.log",
+          "lineNumber": 145
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "pagesByIndex.get",
+          "lineNumber": 150
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "console.log",
+          "lineNumber": 152
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "page.getSize",
+          "lineNumber": 157
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "page.drawText",
+          "lineNumber": 162
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "rgb",
+          "lineNumber": 167
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "console.warn",
+          "lineNumber": 171
+        },
+        {
+          "caller": "fillFlatPDF",
+          "callee": "console.log",
+          "lineNumber": 175
+        },
+        {
+          "caller": "POST",
+          "callee": "request.formData",
+          "lineNumber": 184
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 186
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 187
+        },
+        {
+          "caller": "POST",
+          "callee": "formData.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 191
+        },
+        {
+          "caller": "POST",
+          "callee": "Buffer.from",
+          "lineNumber": 194
+        },
+        {
+          "caller": "POST",
+          "callee": "file.arrayBuffer",
+          "lineNumber": 194
+        },
+        {
+          "caller": "POST",
+          "callee": "JSON.parse",
+          "lineNumber": 195
+        },
+        {
+          "caller": "POST",
+          "callee": "JSON.parse",
+          "lineNumber": 197
+        },
+        {
+          "caller": "POST",
+          "callee": "console.log",
+          "lineNumber": 199
+        },
+        {
+          "caller": "POST",
+          "callee": "PDFDocument.load",
+          "lineNumber": 201
+        },
+        {
+          "caller": "POST",
+          "callee": "fillAcroForm",
+          "lineNumber": 204
+        },
+        {
+          "caller": "POST",
+          "callee": "fillFlatPDF",
+          "lineNumber": 206
+        },
+        {
+          "caller": "POST",
+          "callee": "pdfDoc.save",
+          "lineNumber": 209
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 218
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 228
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/pdf-autofill/map-fields/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 109,
+      "nonEmptyLines": 92,
+      "functions": [
+        {
+          "name": "parseJsonArray",
+          "startLine": 9,
+          "endLine": 18,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "POST",
+          "startLine": 20,
+          "endLine": 109,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 11
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.match",
+          "lineNumber": 11
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "m[1].trim",
+          "lineNumber": 12
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "text.trim",
+          "lineNumber": 12
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "JSON.parse",
+          "lineNumber": 13
+        },
+        {
+          "caller": "parseJsonArray",
+          "callee": "Array.isArray",
+          "lineNumber": 14
+        },
+        {
+          "caller": "POST",
+          "callee": "request.json",
+          "lineNumber": 22
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 25
+        },
+        {
+          "caller": "POST",
+          "callee": "genAI.getGenerativeModel",
+          "lineNumber": 30
+        },
+        {
+          "caller": "POST",
+          "callee": "(fields as any[]).map",
+          "lineNumber": 34
+        },
+        {
+          "caller": "POST",
+          "callee": "JSON.stringify",
+          "lineNumber": 45
+        },
+        {
+          "caller": "POST",
+          "callee": "JSON.stringify",
+          "lineNumber": 48
+        },
+        {
+          "caller": "POST",
+          "callee": "model.generateContent",
+          "lineNumber": 62
+        },
+        {
+          "caller": "POST",
+          "callee": "result.response.text",
+          "lineNumber": 63
+        },
+        {
+          "caller": "POST",
+          "callee": "parseJsonArray",
+          "lineNumber": 64
+        },
+        {
+          "caller": "POST",
+          "callee": "(fields as any[]).map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "POST",
+          "callee": "(fields as any[]).map",
+          "lineNumber": 70
+        },
+        {
+          "caller": "POST",
+          "callee": "String(f.label).toLowerCase().trim",
+          "lineNumber": 70
+        },
+        {
+          "caller": "POST",
+          "callee": "String(f.label).toLowerCase",
+          "lineNumber": 70
+        },
+        {
+          "caller": "POST",
+          "callee": "String",
+          "lineNumber": 70
+        },
+        {
+          "caller": "POST",
+          "callee": "(fields as any[]).map",
+          "lineNumber": 75
+        },
+        {
+          "caller": "POST",
+          "callee": "mappings\n        .map((m: any) => {\n          if (nameSet.has(m.fieldName)) return m; // correct already\n          // Try matching by label (case-insensitive)\n          const corrected = labelToName.get(String(m.fieldName).toLowerCase().trim());\n          if (corrected) return {...m, fieldName: corrected};\n          return null; // drop unrecognised entries\n        })\n        .filter",
+          "lineNumber": 83
+        },
+        {
+          "caller": "POST",
+          "callee": "mappings\n        .map",
+          "lineNumber": 83
+        },
+        {
+          "caller": "POST",
+          "callee": "nameSet.has",
+          "lineNumber": 85
+        },
+        {
+          "caller": "POST",
+          "callee": "labelToName.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "POST",
+          "callee": "String(m.fieldName).toLowerCase().trim",
+          "lineNumber": 87
+        },
+        {
+          "caller": "POST",
+          "callee": "String(m.fieldName).toLowerCase",
+          "lineNumber": 87
+        },
+        {
+          "caller": "POST",
+          "callee": "String",
+          "lineNumber": 87
+        },
+        {
+          "caller": "POST",
+          "callee": "mappings.map",
+          "lineNumber": 95
+        },
+        {
+          "caller": "POST",
+          "callee": "covered.has",
+          "lineNumber": 98
+        },
+        {
+          "caller": "POST",
+          "callee": "mappings.push",
+          "lineNumber": 99
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 104
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 106
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/debug/drive-status/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "DriveDebugPage",
+          "startLine": 20,
+          "endLine": 51,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DriveDebugPage",
+          "line": 20,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DriveDebugPage",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "useState",
+          "lineNumber": 22
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "useEffect",
+          "lineNumber": 24
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "fetch('/api/debug/drive-status')\n      .then(res => res.json())\n      .then(setData)\n      .catch(err => setData({error: err.message}))\n      .finally",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "fetch('/api/debug/drive-status')\n      .then(res => res.json())\n      .then(setData)\n      .catch",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "fetch('/api/debug/drive-status')\n      .then(res => res.json())\n      .then",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "fetch('/api/debug/drive-status')\n      .then",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "fetch",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "res.json",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "setData",
+          "lineNumber": 28
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "setLoading",
+          "lineNumber": 29
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "JSON.stringify",
+          "lineNumber": 39
+        },
+        {
+          "caller": "DriveDebugPage",
+          "callee": "window.location.reload",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 16,
+      "functions": [
+        {
+          "name": "RootLayout",
+          "startLine": 11,
+          "endLine": 19,
+          "params": [
+            "{children}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "metadata",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "RootLayout",
+          "line": 11,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

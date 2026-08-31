@@ -1,0 +1,5515 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 13,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 13,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 13,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/app/anomaly/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 14,
+      "functions": [
+        {
+          "name": "AnomalyPage",
+          "startLine": 9,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "AnomalyPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AnomalyPage",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        },
+        {
+          "caller": "AnomalyPage",
+          "callee": "session?.user?.email?.toLowerCase",
+          "lineNumber": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/invoices/[id]/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "DELETE",
+          "startLine": 12,
+          "endLine": 42,
+          "params": [
+            "_req",
+            "{params}"
+          ]
+        },
+        {
+          "name": "PUT",
+          "startLine": 44,
+          "endLine": 81,
+          "params": [
+            "req",
+            "{params}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "runtime",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "DELETE",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "PUT",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DELETE",
+          "callee": "getServerSession",
+          "lineNumber": 14
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 16
+        },
+        {
+          "caller": "DELETE",
+          "callee": "dbConnect",
+          "lineNumber": 19
+        },
+        {
+          "caller": "DELETE",
+          "callee": "SHARED_ACCESS_EMAILS.includes",
+          "lineNumber": 24
+        },
+        {
+          "caller": "DELETE",
+          "callee": "Invoice.findOneAndDelete",
+          "lineNumber": 31
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 34
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 37
+        },
+        {
+          "caller": "DELETE",
+          "callee": "console.error",
+          "lineNumber": 39
+        },
+        {
+          "caller": "DELETE",
+          "callee": "NextResponse.json",
+          "lineNumber": 40
+        },
+        {
+          "caller": "PUT",
+          "callee": "getServerSession",
+          "lineNumber": 46
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 48
+        },
+        {
+          "caller": "PUT",
+          "callee": "req.json",
+          "lineNumber": 51
+        },
+        {
+          "caller": "PUT",
+          "callee": "dbConnect",
+          "lineNumber": 52
+        },
+        {
+          "caller": "PUT",
+          "callee": "SHARED_ACCESS_EMAILS.includes",
+          "lineNumber": 60
+        },
+        {
+          "caller": "PUT",
+          "callee": "Invoice.findOneAndUpdate",
+          "lineNumber": 66
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 73
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 76
+        },
+        {
+          "caller": "PUT",
+          "callee": "console.error",
+          "lineNumber": 78
+        },
+        {
+          "caller": "PUT",
+          "callee": "NextResponse.json",
+          "lineNumber": 79
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 4,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/api/invoices/route.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 52,
+      "functions": [
+        {
+          "name": "GET",
+          "startLine": 11,
+          "endLine": 38,
+          "params": [
+            "_req"
+          ]
+        },
+        {
+          "name": "POST",
+          "startLine": 40,
+          "endLine": 62,
+          "params": [
+            "req"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "runtime",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "GET",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "POST",
+          "line": 40,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GET",
+          "callee": "getServerSession",
+          "lineNumber": 13
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 15
+        },
+        {
+          "caller": "GET",
+          "callee": "dbConnect",
+          "lineNumber": 18
+        },
+        {
+          "caller": "GET",
+          "callee": "SHARED_ACCESS_EMAILS.includes",
+          "lineNumber": 22
+        },
+        {
+          "caller": "GET",
+          "callee": "Invoice.find(query).sort",
+          "lineNumber": 30
+        },
+        {
+          "caller": "GET",
+          "callee": "Invoice.find",
+          "lineNumber": 30
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 32
+        },
+        {
+          "caller": "GET",
+          "callee": "console.error",
+          "lineNumber": 34
+        },
+        {
+          "caller": "GET",
+          "callee": "NextResponse.json",
+          "lineNumber": 36
+        },
+        {
+          "caller": "POST",
+          "callee": "getServerSession",
+          "lineNumber": 42
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 44
+        },
+        {
+          "caller": "POST",
+          "callee": "dbConnect",
+          "lineNumber": 47
+        },
+        {
+          "caller": "POST",
+          "callee": "req.json",
+          "lineNumber": 48
+        },
+        {
+          "caller": "POST",
+          "callee": "Invoice.create",
+          "lineNumber": 51
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 56
+        },
+        {
+          "caller": "POST",
+          "callee": "console.error",
+          "lineNumber": 58
+        },
+        {
+          "caller": "POST",
+          "callee": "NextResponse.json",
+          "lineNumber": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 4,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/notes/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "NotesPage",
+          "startLine": 9,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "NotesPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "NotesPage",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/organization/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "OrganizationPage",
+          "startLine": 9,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "OrganizationPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OrganizationPage",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/pdf-autofill/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "PdfAutoFillPage",
+          "startLine": 9,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PdfAutoFillPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "PdfAutoFillPage",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/process-flow/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 15,
+      "functions": [
+        {
+          "name": "ProcessFlowPage",
+          "startLine": 9,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "ProcessFlowPage",
+          "line": 9,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProcessFlowPage",
+          "callee": "getServerSession",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/app/smart-invoices/page.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 157,
+      "functions": [
+        {
+          "name": "SmartInvoicesPage",
+          "startLine": 13,
+          "endLine": 178,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SmartInvoicesPage",
+          "line": 13,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useSession",
+          "lineNumber": 14
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useRouter",
+          "lineNumber": 15
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 16
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 19
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useEffect",
+          "lineNumber": 23
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "router.push",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useCallback",
+          "lineNumber": 33
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setSuccessMessage",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setTimeout",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setSuccessMessage",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setRefreshTrigger",
+          "lineNumber": 42
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useCallback",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setStats",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "useCallback",
+          "lineNumber": 49
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setAvailableYears",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "JSON.stringify",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "JSON.stringify",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "stats.amount.toFixed",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "stats.tax.toFixed",
+          "lineNumber": 101
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setSelectedYear",
+          "lineNumber": 114
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "availableYears.map",
+          "lineNumber": 117
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setSelectedYear",
+          "lineNumber": 125
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setShowHistory",
+          "lineNumber": 141
+        },
+        {
+          "caller": "SmartInvoicesPage",
+          "callee": "setShowHistory",
+          "lineNumber": 168
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/AccessDenied.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "AccessDenied",
+          "startLine": 8,
+          "endLine": 34,
+          "params": [
+            "{\n  message = 'You do not have permission to access this area.',\n}"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Invoices/InvoiceList.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 363,
+      "nonEmptyLines": 331,
+      "functions": [
+        {
+          "name": "InvoiceList",
+          "startLine": 20,
+          "endLine": 363,
+          "params": [
+            "{selectedYear, onStatsUpdate, onYearsLoaded}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvoiceList",
+          "line": 20,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InvoiceList",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useState",
+          "lineNumber": 22
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useState",
+          "lineNumber": 23
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useState",
+          "lineNumber": 26
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useCallback",
+          "lineNumber": 29
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "setIsLoading",
+          "lineNumber": 30
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "fetch",
+          "lineNumber": 32
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "res.json",
+          "lineNumber": 33
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "setInvoices",
+          "lineNumber": 37
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "Array.from(\n        new Set(fetchedInvoices.map(inv => new Date(inv.date || inv.createdAt).getFullYear().toString())),\n      ).sort",
+          "lineNumber": 40
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "Array.from",
+          "lineNumber": 40
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "fetchedInvoices.map",
+          "lineNumber": 41
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "new Date(inv.date || inv.createdAt).getFullYear().toString",
+          "lineNumber": 41
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "new Date(inv.date || inv.createdAt).getFullYear",
+          "lineNumber": 41
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "b.localeCompare",
+          "lineNumber": 42
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "onYearsLoaded",
+          "lineNumber": 44
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "setError",
+          "lineNumber": 46
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "setIsLoading",
+          "lineNumber": 48
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useEffect",
+          "lineNumber": 52
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "fetchInvoices",
+          "lineNumber": 53
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useMemo",
+          "lineNumber": 56
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "invoices.filter",
+          "lineNumber": 57
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "new Date(invoice.date || invoice.createdAt).getFullYear().toString",
+          "lineNumber": 59
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "new Date(invoice.date || invoice.createdAt).getFullYear",
+          "lineNumber": 59
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "useEffect",
+          "lineNumber": 65
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "filteredInvoices.reduce",
+          "lineNumber": 66
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "filteredInvoices.reduce",
+          "lineNumber": 67
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "onStatsUpdate",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "confirm",
+          "lineNumber": 72
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "fetch",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "setInvoices",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "prev.filter",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "alert",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleEditClick",
+          "callee": "setEditingId",
+          "lineNumber": 84
+        },
+        {
+          "caller": "handleEditClick",
+          "callee": "setEditFormData",
+          "lineNumber": 85
+        },
+        {
+          "caller": "handleEditChange",
+          "callee": "setEditFormData",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handleEditChange",
+          "callee": "parseFloat",
+          "lineNumber": 98
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "fetch",
+          "lineNumber": 104
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "JSON.stringify",
+          "lineNumber": 107
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "res.json",
+          "lineNumber": 112
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "setInvoices",
+          "lineNumber": 113
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "prev.map",
+          "lineNumber": 113
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "setEditingId",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleSaveEdit",
+          "callee": "alert",
+          "lineNumber": 116
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "headers.join",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "filteredInvoices.forEach",
+          "lineNumber": 124
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "new Date(invoice.date || invoice.createdAt).toLocaleDateString",
+          "lineNumber": 126
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "(invoice.vendorName || '').replace",
+          "lineNumber": 127
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "(invoice.category || '').replace",
+          "lineNumber": 128
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "(invoice.description || '').replace",
+          "lineNumber": 129
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "csvRows.push",
+          "lineNumber": 133
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "row.join",
+          "lineNumber": 133
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "csvRows.join",
+          "lineNumber": 136
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 138
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "document.createElement",
+          "lineNumber": 139
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "link.setAttribute",
+          "lineNumber": 140
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "link.setAttribute",
+          "lineNumber": 141
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "new Date().toISOString().split",
+          "lineNumber": 141
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "new Date().toISOString",
+          "lineNumber": 141
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "document.body.appendChild",
+          "lineNumber": 142
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "link.click",
+          "lineNumber": 143
+        },
+        {
+          "caller": "handleExportCSV",
+          "callee": "document.body.removeChild",
+          "lineNumber": 144
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "filteredInvoices.map",
+          "lineNumber": 209
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "new Date(invoice.date || invoice.createdAt).toLocaleDateString",
+          "lineNumber": 212
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "invoice.amount?.toFixed",
+          "lineNumber": 257
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "invoice.tax.toFixed",
+          "lineNumber": 273
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "handleSaveEdit",
+          "lineNumber": 310
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "setEditingId",
+          "lineNumber": 314
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "handleEditClick",
+          "lineNumber": 340
+        },
+        {
+          "caller": "InvoiceList",
+          "callee": "handleDelete",
+          "lineNumber": 346
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/Invoices/InvoiceScanner.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 334,
+      "nonEmptyLines": 304,
+      "functions": [
+        {
+          "name": "InvoiceScanner",
+          "startLine": 27,
+          "endLine": 334,
+          "params": [
+            "{onSaved}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvoiceScanner",
+          "line": 27,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useRef",
+          "lineNumber": 28
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "useState",
+          "lineNumber": 34
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setFile",
+          "lineNumber": 39
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setPreviewUrl",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setScanData",
+          "lineNumber": 41
+        },
+        {
+          "caller": "handleFileChange",
+          "callee": "setError",
+          "lineNumber": 42
+        },
+        {
+          "caller": "compressImage",
+          "callee": "document.createElement",
+          "lineNumber": 48
+        },
+        {
+          "caller": "compressImage",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 50
+        },
+        {
+          "caller": "compressImage",
+          "callee": "document.createElement",
+          "lineNumber": 54
+        },
+        {
+          "caller": "compressImage",
+          "callee": "canvas.getContext",
+          "lineNumber": 74
+        },
+        {
+          "caller": "compressImage",
+          "callee": "ctx?.drawImage",
+          "lineNumber": 75
+        },
+        {
+          "caller": "compressImage",
+          "callee": "canvas.toBlob",
+          "lineNumber": 77
+        },
+        {
+          "caller": "compressImage",
+          "callee": "resolve",
+          "lineNumber": 79
+        },
+        {
+          "caller": "compressImage",
+          "callee": "reject",
+          "lineNumber": 80
+        },
+        {
+          "caller": "handleScan",
+          "callee": "setIsScanning",
+          "lineNumber": 95
+        },
+        {
+          "caller": "handleScan",
+          "callee": "setError",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handleScan",
+          "callee": "compressImage",
+          "lineNumber": 99
+        },
+        {
+          "caller": "handleScan",
+          "callee": "formData.append",
+          "lineNumber": 101
+        },
+        {
+          "caller": "handleScan",
+          "callee": "fetch",
+          "lineNumber": 103
+        },
+        {
+          "caller": "handleScan",
+          "callee": "res.headers.get",
+          "lineNumber": 109
+        },
+        {
+          "caller": "handleScan",
+          "callee": "contentType.indexOf",
+          "lineNumber": 110
+        },
+        {
+          "caller": "handleScan",
+          "callee": "res.json",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleScan",
+          "callee": "res.text",
+          "lineNumber": 113
+        },
+        {
+          "caller": "handleScan",
+          "callee": "console.error",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleScan",
+          "callee": "text.substring",
+          "lineNumber": 115
+        },
+        {
+          "caller": "handleScan",
+          "callee": "setScanData",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleScan",
+          "callee": "console.error",
+          "lineNumber": 124
+        },
+        {
+          "caller": "handleScan",
+          "callee": "setError",
+          "lineNumber": 125
+        },
+        {
+          "caller": "handleScan",
+          "callee": "setIsScanning",
+          "lineNumber": 127
+        },
+        {
+          "caller": "handleSave",
+          "callee": "e.preventDefault",
+          "lineNumber": 132
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setIsSaving",
+          "lineNumber": 135
+        },
+        {
+          "caller": "handleSave",
+          "callee": "compressImage",
+          "lineNumber": 145
+        },
+        {
+          "caller": "handleSave",
+          "callee": "reader.readAsDataURL",
+          "lineNumber": 148
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetch",
+          "lineNumber": 158
+        },
+        {
+          "caller": "handleSave",
+          "callee": "JSON.stringify",
+          "lineNumber": 161
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setFile",
+          "lineNumber": 169
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setPreviewUrl",
+          "lineNumber": 170
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setScanData",
+          "lineNumber": 171
+        },
+        {
+          "caller": "handleSave",
+          "callee": "onSaved",
+          "lineNumber": 172
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setError",
+          "lineNumber": 175
+        },
+        {
+          "caller": "handleSave",
+          "callee": "setIsSaving",
+          "lineNumber": 177
+        },
+        {
+          "caller": "handleChange",
+          "callee": "setScanData",
+          "lineNumber": 183
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "setFile",
+          "lineNumber": 198
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "setPreviewUrl",
+          "lineNumber": 199
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "fileInputRef.current?.click",
+          "lineNumber": 208
+        },
+        {
+          "caller": "InvoiceScanner",
+          "callee": "setScanData",
+          "lineNumber": 318
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/ProcessFlow/ProcessFlowBuilder.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1438,
+      "nonEmptyLines": 1368,
+      "functions": [
+        {
+          "name": "ProcessFlowBuilder",
+          "startLine": 203,
+          "endLine": 1438,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProcessFlowBuilder",
+          "line": 203,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "useRef",
+          "lineNumber": 204
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "useEffect",
+          "lineNumber": 206
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.createElement",
+          "lineNumber": 210
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.head.appendChild",
+          "lineNumber": 213
+        },
+        {
+          "caller": "defaultLegend",
+          "callee": "Object.fromEntries",
+          "lineNumber": 254
+        },
+        {
+          "caller": "defaultLegend",
+          "callee": "THEMES.map",
+          "lineNumber": 254
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "defaultLegend",
+          "lineNumber": 259
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 268
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 269
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 270
+        },
+        {
+          "caller": "makeNode",
+          "callee": "opts.id.replace",
+          "lineNumber": 277
+        },
+        {
+          "caller": "makeNode",
+          "callee": "isNaN",
+          "lineNumber": 278
+        },
+        {
+          "caller": "makeNode",
+          "callee": "state.nodes.push",
+          "lineNumber": 283
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "nodeEls.get",
+          "lineNumber": 289
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "document.createElement",
+          "lineNumber": 291
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "canvas.appendChild",
+          "lineNumber": 298
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "nodeEls.set",
+          "lineNumber": 299
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "bindNode",
+          "lineNumber": 300
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "selNodes.has",
+          "lineNumber": 302
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "el.querySelector",
+          "lineNumber": 310
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "el.querySelector",
+          "lineNumber": 311
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "el.querySelector",
+          "lineNumber": 313
+        },
+        {
+          "caller": "nodeEl",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 315
+        },
+        {
+          "caller": "updateSelClasses",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 320
+        },
+        {
+          "caller": "updateSelClasses",
+          "callee": "nodeEls.get",
+          "lineNumber": 321
+        },
+        {
+          "caller": "updateSelClasses",
+          "callee": "selNodes.has",
+          "lineNumber": 322
+        },
+        {
+          "caller": "render",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 331
+        },
+        {
+          "caller": "render",
+          "callee": "nodeEls.forEach",
+          "lineNumber": 333
+        },
+        {
+          "caller": "render",
+          "callee": "state.nodes.find",
+          "lineNumber": 334
+        },
+        {
+          "caller": "render",
+          "callee": "el.remove",
+          "lineNumber": 334
+        },
+        {
+          "caller": "render",
+          "callee": "nodeEls.delete",
+          "lineNumber": 334
+        },
+        {
+          "caller": "render",
+          "callee": "drawEdges",
+          "lineNumber": 336
+        },
+        {
+          "caller": "render",
+          "callee": "renderLegend",
+          "lineNumber": 337
+        },
+        {
+          "caller": "render",
+          "callee": "inspector",
+          "lineNumber": 338
+        },
+        {
+          "caller": "render",
+          "callee": "sizeCanvas",
+          "lineNumber": 339
+        },
+        {
+          "caller": "snapshot",
+          "callee": "history.push",
+          "lineNumber": 347
+        },
+        {
+          "caller": "snapshot",
+          "callee": "JSON.stringify",
+          "lineNumber": 347
+        },
+        {
+          "caller": "snapshot",
+          "callee": "history.shift",
+          "lineNumber": 348
+        },
+        {
+          "caller": "snapshot",
+          "callee": "updateUndoBtns",
+          "lineNumber": 350
+        },
+        {
+          "caller": "updateUndoBtns",
+          "callee": "document.getElementById",
+          "lineNumber": 353
+        },
+        {
+          "caller": "updateUndoBtns",
+          "callee": "document.getElementById",
+          "lineNumber": 354
+        },
+        {
+          "caller": "applyState",
+          "callee": "nodeEls.forEach",
+          "lineNumber": 359
+        },
+        {
+          "caller": "applyState",
+          "callee": "el.remove",
+          "lineNumber": 359
+        },
+        {
+          "caller": "applyState",
+          "callee": "nodeEls.clear",
+          "lineNumber": 359
+        },
+        {
+          "caller": "applyState",
+          "callee": "document.getElementById('pfb-legend')?.remove",
+          "lineNumber": 360
+        },
+        {
+          "caller": "applyState",
+          "callee": "document.getElementById",
+          "lineNumber": 360
+        },
+        {
+          "caller": "applyState",
+          "callee": "defaultLegend",
+          "lineNumber": 361
+        },
+        {
+          "caller": "applyState",
+          "callee": "Math.max",
+          "lineNumber": 363
+        },
+        {
+          "caller": "applyState",
+          "callee": "state.nodes.map",
+          "lineNumber": 363
+        },
+        {
+          "caller": "applyState",
+          "callee": "n.id.match",
+          "lineNumber": 363
+        },
+        {
+          "caller": "applyState",
+          "callee": "Math.max",
+          "lineNumber": 364
+        },
+        {
+          "caller": "applyState",
+          "callee": "state.edges.map",
+          "lineNumber": 364
+        },
+        {
+          "caller": "applyState",
+          "callee": "e.id.match",
+          "lineNumber": 364
+        },
+        {
+          "caller": "applyState",
+          "callee": "document.getElementById",
+          "lineNumber": 366
+        },
+        {
+          "caller": "applyState",
+          "callee": "selNodes.clear",
+          "lineNumber": 367
+        },
+        {
+          "caller": "applyState",
+          "callee": "render",
+          "lineNumber": 368
+        },
+        {
+          "caller": "undo",
+          "callee": "redo.push",
+          "lineNumber": 372
+        },
+        {
+          "caller": "undo",
+          "callee": "JSON.stringify",
+          "lineNumber": 372
+        },
+        {
+          "caller": "undo",
+          "callee": "applyState",
+          "lineNumber": 373
+        },
+        {
+          "caller": "undo",
+          "callee": "JSON.parse",
+          "lineNumber": 373
+        },
+        {
+          "caller": "undo",
+          "callee": "history.pop",
+          "lineNumber": 373
+        },
+        {
+          "caller": "undo",
+          "callee": "updateUndoBtns",
+          "lineNumber": 374
+        },
+        {
+          "caller": "redoAction",
+          "callee": "history.push",
+          "lineNumber": 378
+        },
+        {
+          "caller": "redoAction",
+          "callee": "JSON.stringify",
+          "lineNumber": 378
+        },
+        {
+          "caller": "redoAction",
+          "callee": "applyState",
+          "lineNumber": 379
+        },
+        {
+          "caller": "redoAction",
+          "callee": "JSON.parse",
+          "lineNumber": 379
+        },
+        {
+          "caller": "redoAction",
+          "callee": "redo.pop",
+          "lineNumber": 379
+        },
+        {
+          "caller": "redoAction",
+          "callee": "updateUndoBtns",
+          "lineNumber": 380
+        },
+        {
+          "caller": "autoSides",
+          "callee": "Math.abs",
+          "lineNumber": 393
+        },
+        {
+          "caller": "autoSides",
+          "callee": "Math.abs",
+          "lineNumber": 393
+        },
+        {
+          "caller": "orthPath",
+          "callee": "stub",
+          "lineNumber": 403
+        },
+        {
+          "caller": "orthPath",
+          "callee": "stub",
+          "lineNumber": 403
+        },
+        {
+          "caller": "orthPath",
+          "callee": "pts.push",
+          "lineNumber": 406
+        },
+        {
+          "caller": "orthPath",
+          "callee": "pts.push",
+          "lineNumber": 407
+        },
+        {
+          "caller": "orthPath",
+          "callee": "pts.push",
+          "lineNumber": 408
+        },
+        {
+          "caller": "orthPath",
+          "callee": "pts.map(p=>p.x+','+p.y).join",
+          "lineNumber": 409
+        },
+        {
+          "caller": "orthPath",
+          "callee": "pts.map",
+          "lineNumber": 409
+        },
+        {
+          "caller": "parsePathPts",
+          "callee": "(d.match(/[ML]\\s*[\\d.,-]+\\s*[\\d.,-]+/g)||[]).map",
+          "lineNumber": 414
+        },
+        {
+          "caller": "parsePathPts",
+          "callee": "d.match",
+          "lineNumber": 414
+        },
+        {
+          "caller": "parsePathPts",
+          "callee": "cmd.slice(1).trim().split",
+          "lineNumber": 415
+        },
+        {
+          "caller": "parsePathPts",
+          "callee": "cmd.slice(1).trim",
+          "lineNumber": 415
+        },
+        {
+          "caller": "parsePathPts",
+          "callee": "cmd.slice",
+          "lineNumber": 415
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "parsePathPts",
+          "lineNumber": 428
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "parsePathPts",
+          "lineNumber": 429
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.abs",
+          "lineNumber": 433
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.abs",
+          "lineNumber": 434
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.min",
+          "lineNumber": 436
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.max",
+          "lineNumber": 436
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.min",
+          "lineNumber": 437
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.max",
+          "lineNumber": 437
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.min",
+          "lineNumber": 438
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.max",
+          "lineNumber": 438
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.min",
+          "lineNumber": 439
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "Math.max",
+          "lineNumber": 439
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "crossings.push",
+          "lineNumber": 442
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "crossings.forEach",
+          "lineNumber": 452
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "document.createElementNS",
+          "lineNumber": 454
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 455
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "String",
+          "lineNumber": 455
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 455
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "String",
+          "lineNumber": 455
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 456
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "String",
+          "lineNumber": 456
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 456
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 457
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "gap.setAttribute",
+          "lineNumber": 457
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "svg.appendChild",
+          "lineNumber": 459
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "document.createElementNS",
+          "lineNumber": 461
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "arc.setAttribute",
+          "lineNumber": 462
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "arc.setAttribute",
+          "lineNumber": 463
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "arc.setAttribute",
+          "lineNumber": 463
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "arc.setAttribute",
+          "lineNumber": 464
+        },
+        {
+          "caller": "drawBridges",
+          "callee": "svg.appendChild",
+          "lineNumber": 465
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "state.edges.forEach",
+          "lineNumber": 472
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "usedColors.add",
+          "lineNumber": 472
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "usedColors.add",
+          "lineNumber": 473
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "usedColors.forEach",
+          "lineNumber": 475
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "c.replace",
+          "lineNumber": 476
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "state.edges.forEach",
+          "lineNumber": 484
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "state.nodes.find",
+          "lineNumber": 485
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "state.nodes.find",
+          "lineNumber": 486
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "autoSides",
+          "lineNumber": 489
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "port",
+          "lineNumber": 490
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "port",
+          "lineNumber": 490
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "orthPath",
+          "lineNumber": 491
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pathData.push",
+          "lineNumber": 494
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "ec.replace",
+          "lineNumber": 495
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "stub",
+          "lineNumber": 500
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "stub",
+          "lineNumber": 500
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 506
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.setAttribute",
+          "lineNumber": 507
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 508
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.setAttribute",
+          "lineNumber": 509
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.setAttribute",
+          "lineNumber": 509
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.setAttribute",
+          "lineNumber": 510
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.setAttribute",
+          "lineNumber": 510
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.setAttribute",
+          "lineNumber": 511
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "hit.addEventListener",
+          "lineNumber": 512
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "startEdgeDrag",
+          "lineNumber": 512
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 513
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 514
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 514
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 515
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 515
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 516
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 516
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "pth.setAttribute",
+          "lineNumber": 517
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.appendChild",
+          "lineNumber": 518
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.appendChild",
+          "lineNumber": 518
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 522
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 523
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 523
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 523
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 523
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 524
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 524
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 525
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.setAttribute",
+          "lineNumber": 525
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "h.addEventListener",
+          "lineNumber": 527
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "startEdgeDrag",
+          "lineNumber": 527
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.appendChild",
+          "lineNumber": 528
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 533
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 534
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 534
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 534
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 534
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 535
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 535
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 535
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 535
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 536
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.setAttribute",
+          "lineNumber": 536
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "r.addEventListener",
+          "lineNumber": 538
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 538
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "selNodes.clear",
+          "lineNumber": 538
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "render",
+          "lineNumber": 538
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "document.createElementNS",
+          "lineNumber": 539
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 540
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 540
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 540
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "String",
+          "lineNumber": 540
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 541
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 541
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 542
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "t.setAttribute",
+          "lineNumber": 542
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.appendChild",
+          "lineNumber": 543
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "g.appendChild",
+          "lineNumber": 543
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "svg.appendChild",
+          "lineNumber": 545
+        },
+        {
+          "caller": "drawEdges",
+          "callee": "drawBridges",
+          "lineNumber": 549
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 555
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "Math.max",
+          "lineNumber": 555
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "Math.max",
+          "lineNumber": 555
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "svg.setAttribute",
+          "lineNumber": 557
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "String",
+          "lineNumber": 557
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "svg.setAttribute",
+          "lineNumber": 557
+        },
+        {
+          "caller": "sizeCanvas",
+          "callee": "String",
+          "lineNumber": 557
+        },
+        {
+          "caller": "bindNode",
+          "callee": "el.addEventListener",
+          "lineNumber": 562
+        },
+        {
+          "caller": "bindNode",
+          "callee": "tgt.classList.contains",
+          "lineNumber": 564
+        },
+        {
+          "caller": "bindNode",
+          "callee": "startEdge",
+          "lineNumber": 564
+        },
+        {
+          "caller": "bindNode",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 565
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.has",
+          "lineNumber": 569
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.delete",
+          "lineNumber": 569
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.add",
+          "lineNumber": 570
+        },
+        {
+          "caller": "bindNode",
+          "callee": "updateSelClasses",
+          "lineNumber": 572
+        },
+        {
+          "caller": "bindNode",
+          "callee": "inspector",
+          "lineNumber": 573
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.has",
+          "lineNumber": 575
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.clear",
+          "lineNumber": 576
+        },
+        {
+          "caller": "bindNode",
+          "callee": "selNodes.add",
+          "lineNumber": 576
+        },
+        {
+          "caller": "bindNode",
+          "callee": "updateSelClasses",
+          "lineNumber": 577
+        },
+        {
+          "caller": "bindNode",
+          "callee": "inspector",
+          "lineNumber": 578
+        },
+        {
+          "caller": "bindNode",
+          "callee": "[...selNodes].map",
+          "lineNumber": 582
+        },
+        {
+          "caller": "bindNode",
+          "callee": "state.nodes.find",
+          "lineNumber": 583
+        },
+        {
+          "caller": "mv",
+          "callee": "snapshot",
+          "lineNumber": 588
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 590
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 591
+        },
+        {
+          "caller": "mv",
+          "callee": "snapshots.forEach",
+          "lineNumber": 592
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.max",
+          "lineNumber": 593
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.max",
+          "lineNumber": 593
+        },
+        {
+          "caller": "mv",
+          "callee": "nodeEls.get",
+          "lineNumber": 594
+        },
+        {
+          "caller": "mv",
+          "callee": "drawEdges",
+          "lineNumber": 597
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 600
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 601
+        },
+        {
+          "caller": "up",
+          "callee": "sizeCanvas",
+          "lineNumber": 602
+        },
+        {
+          "caller": "bindNode",
+          "callee": "document.addEventListener",
+          "lineNumber": 604
+        },
+        {
+          "caller": "bindNode",
+          "callee": "document.addEventListener",
+          "lineNumber": 605
+        },
+        {
+          "caller": "startEdge",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 612
+        },
+        {
+          "caller": "startEdge",
+          "callee": "ev.preventDefault",
+          "lineNumber": 612
+        },
+        {
+          "caller": "startEdge",
+          "callee": "port",
+          "lineNumber": 613
+        },
+        {
+          "caller": "startEdge",
+          "callee": "document.createElementNS",
+          "lineNumber": 614
+        },
+        {
+          "caller": "startEdge",
+          "callee": "pth.setAttribute",
+          "lineNumber": 615
+        },
+        {
+          "caller": "startEdge",
+          "callee": "pth.setAttribute",
+          "lineNumber": 615
+        },
+        {
+          "caller": "startEdge",
+          "callee": "pth.setAttribute",
+          "lineNumber": 616
+        },
+        {
+          "caller": "startEdge",
+          "callee": "pth.setAttribute",
+          "lineNumber": 616
+        },
+        {
+          "caller": "startEdge",
+          "callee": "svg.appendChild",
+          "lineNumber": 617
+        },
+        {
+          "caller": "mv",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 619
+        },
+        {
+          "caller": "mv",
+          "callee": "pth.setAttribute",
+          "lineNumber": 620
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 623
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 623
+        },
+        {
+          "caller": "up",
+          "callee": "pth.remove",
+          "lineNumber": 624
+        },
+        {
+          "caller": "up",
+          "callee": "(document.elementFromPoint(e.clientX,e.clientY) as HTMLElement)?.closest",
+          "lineNumber": 625
+        },
+        {
+          "caller": "up",
+          "callee": "document.elementFromPoint",
+          "lineNumber": 625
+        },
+        {
+          "caller": "up",
+          "callee": "document.elementFromPoint",
+          "lineNumber": 627
+        },
+        {
+          "caller": "up",
+          "callee": "portEl?.classList.contains",
+          "lineNumber": 628
+        },
+        {
+          "caller": "up",
+          "callee": "snapshot",
+          "lineNumber": 629
+        },
+        {
+          "caller": "up",
+          "callee": "state.edges.push",
+          "lineNumber": 630
+        },
+        {
+          "caller": "up",
+          "callee": "render",
+          "lineNumber": 631
+        },
+        {
+          "caller": "startEdge",
+          "callee": "document.addEventListener",
+          "lineNumber": 634
+        },
+        {
+          "caller": "startEdge",
+          "callee": "document.addEventListener",
+          "lineNumber": 634
+        },
+        {
+          "caller": "startEdgeDrag",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 639
+        },
+        {
+          "caller": "startEdgeDrag",
+          "callee": "ev.preventDefault",
+          "lineNumber": 639
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.abs",
+          "lineNumber": 644
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.abs",
+          "lineNumber": 644
+        },
+        {
+          "caller": "mv",
+          "callee": "snapshot",
+          "lineNumber": 646
+        },
+        {
+          "caller": "mv",
+          "callee": "state.nodes.find",
+          "lineNumber": 650
+        },
+        {
+          "caller": "mv",
+          "callee": "state.nodes.find",
+          "lineNumber": 650
+        },
+        {
+          "caller": "mv",
+          "callee": "autoSides",
+          "lineNumber": 651
+        },
+        {
+          "caller": "mv",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 654
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 656
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 657
+        },
+        {
+          "caller": "mv",
+          "callee": "drawEdges",
+          "lineNumber": 658
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 661
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 662
+        },
+        {
+          "caller": "up",
+          "callee": "selNodes.clear",
+          "lineNumber": 663
+        },
+        {
+          "caller": "up",
+          "callee": "render",
+          "lineNumber": 663
+        },
+        {
+          "caller": "up",
+          "callee": "sizeCanvas",
+          "lineNumber": 664
+        },
+        {
+          "caller": "startEdgeDrag",
+          "callee": "document.addEventListener",
+          "lineNumber": 666
+        },
+        {
+          "caller": "startEdgeDrag",
+          "callee": "document.addEventListener",
+          "lineNumber": 667
+        },
+        {
+          "caller": "startLasso",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 672
+        },
+        {
+          "caller": "startLasso",
+          "callee": "document.createElement",
+          "lineNumber": 675
+        },
+        {
+          "caller": "startLasso",
+          "callee": "canvas.appendChild",
+          "lineNumber": 677
+        },
+        {
+          "caller": "mv",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 679
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.min",
+          "lineNumber": 681
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.min",
+          "lineNumber": 681
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.abs",
+          "lineNumber": 682
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.abs",
+          "lineNumber": 682
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 685
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 685
+        },
+        {
+          "caller": "up",
+          "callee": "canvas.getBoundingClientRect",
+          "lineNumber": 686
+        },
+        {
+          "caller": "up",
+          "callee": "Math.min",
+          "lineNumber": 688
+        },
+        {
+          "caller": "up",
+          "callee": "Math.min",
+          "lineNumber": 688
+        },
+        {
+          "caller": "up",
+          "callee": "Math.abs",
+          "lineNumber": 688
+        },
+        {
+          "caller": "up",
+          "callee": "Math.abs",
+          "lineNumber": 688
+        },
+        {
+          "caller": "up",
+          "callee": "lasso.remove",
+          "lineNumber": 689
+        },
+        {
+          "caller": "up",
+          "callee": "selNodes.clear",
+          "lineNumber": 691
+        },
+        {
+          "caller": "up",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 692
+        },
+        {
+          "caller": "up",
+          "callee": "selNodes.add",
+          "lineNumber": 693
+        },
+        {
+          "caller": "up",
+          "callee": "render",
+          "lineNumber": 696
+        },
+        {
+          "caller": "startLasso",
+          "callee": "document.addEventListener",
+          "lineNumber": 699
+        },
+        {
+          "caller": "startLasso",
+          "callee": "document.addEventListener",
+          "lineNumber": 700
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "cw.addEventListener",
+          "lineNumber": 704
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "selNodes.clear",
+          "lineNumber": 707
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "updateSelClasses",
+          "lineNumber": 707
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "inspector",
+          "lineNumber": 707
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "startLasso",
+          "lineNumber": 708
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 714
+        },
+        {
+          "caller": "inspector",
+          "callee": "state.edges.find",
+          "lineNumber": 716
+        },
+        {
+          "caller": "inspector",
+          "callee": "inspectEdge",
+          "lineNumber": 717
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 732
+        },
+        {
+          "caller": "inspector",
+          "callee": "THEMES.forEach",
+          "lineNumber": 733
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.createElement",
+          "lineNumber": 734
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 737
+        },
+        {
+          "caller": "inspector",
+          "callee": "selNodes.forEach",
+          "lineNumber": 738
+        },
+        {
+          "caller": "inspector",
+          "callee": "state.nodes.find",
+          "lineNumber": 738
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 739
+        },
+        {
+          "caller": "inspector",
+          "callee": "sw.appendChild",
+          "lineNumber": 741
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 743
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 744
+        },
+        {
+          "caller": "inspector",
+          "callee": "[...selNodes].forEach",
+          "lineNumber": 745
+        },
+        {
+          "caller": "inspector",
+          "callee": "delNodeQuiet",
+          "lineNumber": 745
+        },
+        {
+          "caller": "inspector",
+          "callee": "selNodes.clear",
+          "lineNumber": 746
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 746
+        },
+        {
+          "caller": "inspector",
+          "callee": "state.nodes.find",
+          "lineNumber": 751
+        },
+        {
+          "caller": "inspector",
+          "callee": "esc",
+          "lineNumber": 755
+        },
+        {
+          "caller": "inspector",
+          "callee": "esc",
+          "lineNumber": 756
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 783
+        },
+        {
+          "caller": "inspector",
+          "callee": "THEMES.forEach",
+          "lineNumber": 784
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.createElement",
+          "lineNumber": 785
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 788
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 788
+        },
+        {
+          "caller": "inspector",
+          "callee": "swrap.appendChild",
+          "lineNumber": 789
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 791
+        },
+        {
+          "caller": "inspector",
+          "callee": "BADGES.forEach",
+          "lineNumber": 792
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.createElement",
+          "lineNumber": 793
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 799
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 799
+        },
+        {
+          "caller": "inspector",
+          "callee": "bwrap.appendChild",
+          "lineNumber": 800
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 802
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 803
+        },
+        {
+          "caller": "inspector",
+          "callee": "nodeEl",
+          "lineNumber": 804
+        },
+        {
+          "caller": "inspector",
+          "callee": "drawEdges",
+          "lineNumber": 804
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 805
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 806
+        },
+        {
+          "caller": "inspector",
+          "callee": "nodeEl",
+          "lineNumber": 807
+        },
+        {
+          "caller": "inspector",
+          "callee": "drawEdges",
+          "lineNumber": 807
+        },
+        {
+          "caller": "inspector",
+          "callee": "sizeCanvas",
+          "lineNumber": 807
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 808
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 808
+        },
+        {
+          "caller": "inspector",
+          "callee": "nodeEl",
+          "lineNumber": 808
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 809
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 810
+        },
+        {
+          "caller": "inspector",
+          "callee": "nodeEl",
+          "lineNumber": 811
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 812
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 812
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 812
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 813
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 813
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 813
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 814
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 815
+        },
+        {
+          "caller": "inspector",
+          "callee": "nodeEl",
+          "lineNumber": 816
+        },
+        {
+          "caller": "inspector",
+          "callee": "drawEdges",
+          "lineNumber": 816
+        },
+        {
+          "caller": "inspector",
+          "callee": "sizeCanvas",
+          "lineNumber": 816
+        },
+        {
+          "caller": "inspector",
+          "callee": "document.getElementById",
+          "lineNumber": 817
+        },
+        {
+          "caller": "inspector",
+          "callee": "snapshot",
+          "lineNumber": 817
+        },
+        {
+          "caller": "inspector",
+          "callee": "delNodeQuiet",
+          "lineNumber": 817
+        },
+        {
+          "caller": "inspector",
+          "callee": "selNodes.clear",
+          "lineNumber": 817
+        },
+        {
+          "caller": "inspector",
+          "callee": "render",
+          "lineNumber": 817
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 821
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "esc",
+          "lineNumber": 824
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 842
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 842
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "drawEdges",
+          "lineNumber": 842
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 843
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 844
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "drawEdges",
+          "lineNumber": 845
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 846
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 847
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "drawEdges",
+          "lineNumber": 848
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 849
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 849
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "drawEdges",
+          "lineNumber": 849
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 849
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 850
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 850
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "drawEdges",
+          "lineNumber": 850
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "document.getElementById",
+          "lineNumber": 851
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "snapshot",
+          "lineNumber": 851
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "state.edges.filter",
+          "lineNumber": 851
+        },
+        {
+          "caller": "inspectEdge",
+          "callee": "render",
+          "lineNumber": 851
+        },
+        {
+          "caller": "esc",
+          "callee": "(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace",
+          "lineNumber": 854
+        },
+        {
+          "caller": "esc",
+          "callee": "(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace",
+          "lineNumber": 854
+        },
+        {
+          "caller": "esc",
+          "callee": "(s||'').replace(/&/g,'&amp;').replace",
+          "lineNumber": 854
+        },
+        {
+          "caller": "esc",
+          "callee": "(s||'').replace",
+          "lineNumber": 854
+        },
+        {
+          "caller": "delNodeQuiet",
+          "callee": "state.nodes.filter",
+          "lineNumber": 857
+        },
+        {
+          "caller": "delNodeQuiet",
+          "callee": "state.edges.filter",
+          "lineNumber": 858
+        },
+        {
+          "caller": "delNodeQuiet",
+          "callee": "nodeEls.get",
+          "lineNumber": 859
+        },
+        {
+          "caller": "delNodeQuiet",
+          "callee": "el?.remove",
+          "lineNumber": 859
+        },
+        {
+          "caller": "delNodeQuiet",
+          "callee": "nodeEls.delete",
+          "lineNumber": 859
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "/INPUT|TEXTAREA|SELECT/.test",
+          "lineNumber": 865
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "e.preventDefault",
+          "lineNumber": 869
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "redoAction",
+          "lineNumber": 869
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "undo",
+          "lineNumber": 869
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "e.preventDefault",
+          "lineNumber": 871
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "redoAction",
+          "lineNumber": 871
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "snapshot",
+          "lineNumber": 873
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "state.edges.filter",
+          "lineNumber": 874
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "[...selNodes].forEach",
+          "lineNumber": 875
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "delNodeQuiet",
+          "lineNumber": 875
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "selNodes.clear",
+          "lineNumber": 876
+        },
+        {
+          "caller": "keyHandler",
+          "callee": "render",
+          "lineNumber": 876
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.addEventListener",
+          "lineNumber": 879
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "document.getElementById",
+          "lineNumber": 883
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg?.remove",
+          "lineNumber": 884
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "document.createElement",
+          "lineNumber": 886
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "canvas.appendChild",
+          "lineNumber": 887
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "bindLegendDrag",
+          "lineNumber": 887
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "THEMES.filter",
+          "lineNumber": 893
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "hidden.includes",
+          "lineNumber": 893
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "visibleT.map(t=>{\n        const label=state.legend.labels[t.k]||t.name;\n        return `<div class=\"leg-item\" style=\"${isH?'display:inline-flex;margin-right:12px;margin-bottom:4px;':'margin-bottom:5px;'}align-items:center;gap:7px\">\n          <div class=\"leg-swatch\" style=\"background:${SWATCH[t.k]}\"></div>\n          <span class=\"leg-lbl\" contenteditable=\"true\" data-theme=\"${t.k}\" spellcheck=\"false\">${label}</span>\n          <button class=\"leg-remove\" data-remove=\"${t.k}\" title=\"Remove from legend\">×</button>\n        </div>`;\n      }).join",
+          "lineNumber": 894
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "visibleT.map",
+          "lineNumber": 894
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll('[data-lay]').forEach",
+          "lineNumber": 911
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll",
+          "lineNumber": 911
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(btn as HTMLElement).addEventListener",
+          "lineNumber": 912
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 912
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "snapshot",
+          "lineNumber": 912
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "renderLegend",
+          "lineNumber": 912
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelector",
+          "lineNumber": 914
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "rb.addEventListener",
+          "lineNumber": 915
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 915
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "snapshot",
+          "lineNumber": 915
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "renderLegend",
+          "lineNumber": 915
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll('[data-remove]').forEach",
+          "lineNumber": 916
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll",
+          "lineNumber": 916
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(btn as HTMLElement).addEventListener",
+          "lineNumber": 917
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 918
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "snapshot",
+          "lineNumber": 918
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "renderLegend",
+          "lineNumber": 920
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(btn as HTMLElement).addEventListener",
+          "lineNumber": 922
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 922
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll('.leg-lbl').forEach",
+          "lineNumber": 924
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "leg.querySelectorAll",
+          "lineNumber": 924
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(lbl as HTMLElement).addEventListener",
+          "lineNumber": 926
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "snapshot",
+          "lineNumber": 926
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(lbl as HTMLElement).addEventListener",
+          "lineNumber": 927
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(lbl as HTMLElement).textContent?.trim",
+          "lineNumber": 927
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(lbl as HTMLElement).addEventListener",
+          "lineNumber": 928
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 928
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "(lbl as HTMLElement).addEventListener",
+          "lineNumber": 929
+        },
+        {
+          "caller": "renderLegend",
+          "callee": "e.stopPropagation",
+          "lineNumber": 929
+        },
+        {
+          "caller": "bindLegendDrag",
+          "callee": "leg.addEventListener",
+          "lineNumber": 934
+        },
+        {
+          "caller": "bindLegendDrag",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 937
+        },
+        {
+          "caller": "mv",
+          "callee": "snapshot",
+          "lineNumber": 939
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 939
+        },
+        {
+          "caller": "mv",
+          "callee": "Math.round",
+          "lineNumber": 939
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 940
+        },
+        {
+          "caller": "up",
+          "callee": "document.removeEventListener",
+          "lineNumber": 940
+        },
+        {
+          "caller": "bindLegendDrag",
+          "callee": "document.addEventListener",
+          "lineNumber": 941
+        },
+        {
+          "caller": "bindLegendDrag",
+          "callee": "document.addEventListener",
+          "lineNumber": 941
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 954
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.edges.forEach",
+          "lineNumber": 955
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "outMap[e.from].push",
+          "lineNumber": 955
+        },
+        {
+          "caller": "pos",
+          "callee": "state.nodes.find",
+          "lineNumber": 957
+        },
+        {
+          "caller": "byPos",
+          "callee": "pos",
+          "lineNumber": 959
+        },
+        {
+          "caller": "byPos",
+          "callee": "pos",
+          "lineNumber": 959
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "Object.keys(outMap).forEach",
+          "lineNumber": 962
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "Object.keys",
+          "lineNumber": 962
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "outMap[k].sort",
+          "lineNumber": 962
+        },
+        {
+          "caller": "dfs",
+          "callee": "visited.has",
+          "lineNumber": 965
+        },
+        {
+          "caller": "dfs",
+          "callee": "visited.add",
+          "lineNumber": 966
+        },
+        {
+          "caller": "dfs",
+          "callee": "pos",
+          "lineNumber": 967
+        },
+        {
+          "caller": "dfs",
+          "callee": "rows.push",
+          "lineNumber": 968
+        },
+        {
+          "caller": "dfs",
+          "callee": "outMap[id].forEach",
+          "lineNumber": 969
+        },
+        {
+          "caller": "dfs",
+          "callee": "dfs",
+          "lineNumber": 969
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.nodes.filter(n=>indeg[n.id]===0).sort((a,b)=>byPos(a.id,b.id)).forEach",
+          "lineNumber": 971
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.nodes.filter(n=>indeg[n.id]===0).sort",
+          "lineNumber": 971
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.nodes.filter",
+          "lineNumber": 971
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "byPos",
+          "lineNumber": 971
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "dfs",
+          "lineNumber": 971
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 972
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "visited.has",
+          "lineNumber": 972
+        },
+        {
+          "caller": "diagramToOutline",
+          "callee": "dfs",
+          "lineNumber": 972
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "snapshot",
+          "lineNumber": 978
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "rows.forEach",
+          "lineNumber": 982
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "r.title.trim",
+          "lineNumber": 983
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "state.nodes.find",
+          "lineNumber": 984
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "usedIds.add",
+          "lineNumber": 990
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "rows.map",
+          "lineNumber": 992
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "state.edges.forEach",
+          "lineNumber": 995
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "keys.has",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "newEdges.push",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "keys.add",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "state.edges.forEach",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "usedIds.has",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "usedIds.has",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "keys.has",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "newEdges.push",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "keys.add",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "nodeEls.forEach",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "usedIds.has",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "el.remove",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "nodeEls.delete",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "selNodes.clear",
+          "lineNumber": 1017
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "autoLayout",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "render",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "applyOutline",
+          "callee": "fit",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "document.createElement",
+          "lineNumber": 1022
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "document.body.appendChild",
+          "lineNumber": 1022
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "document.createElement",
+          "lineNumber": 1023
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "document.body.appendChild",
+          "lineNumber": 1023
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "diagramToOutline",
+          "lineNumber": 1025
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelector",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "normalize",
+          "callee": "rows.forEach",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "normalize",
+          "callee": "Math.max",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "normalize",
+          "callee": "Math.min",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "markSel",
+          "callee": "[...rowsWrap.children].forEach",
+          "lineNumber": 1051
+        },
+        {
+          "caller": "markSel",
+          "callee": "c.classList.toggle",
+          "lineNumber": 1051
+        },
+        {
+          "caller": "openPalette",
+          "callee": "panel.querySelectorAll('.ol-pop').forEach",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "openPalette",
+          "callee": "panel.querySelectorAll",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "openPalette",
+          "callee": "p.remove",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "openPalette",
+          "callee": "document.createElement",
+          "lineNumber": 1055
+        },
+        {
+          "caller": "openPalette",
+          "callee": "THEMES.forEach",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "openPalette",
+          "callee": "document.createElement",
+          "lineNumber": 1057
+        },
+        {
+          "caller": "openPalette",
+          "callee": "s.addEventListener",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "openPalette",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "openPalette",
+          "callee": "pop.remove",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "openPalette",
+          "callee": "renderRows",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "openPalette",
+          "callee": "pop.appendChild",
+          "lineNumber": 1059
+        },
+        {
+          "caller": "openPalette",
+          "callee": "anchor.appendChild",
+          "lineNumber": 1061
+        },
+        {
+          "caller": "closer",
+          "callee": "pop.contains",
+          "lineNumber": 1062
+        },
+        {
+          "caller": "closer",
+          "callee": "pop.remove",
+          "lineNumber": 1062
+        },
+        {
+          "caller": "closer",
+          "callee": "document.removeEventListener",
+          "lineNumber": 1062
+        },
+        {
+          "caller": "openPalette",
+          "callee": "setTimeout",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "openPalette",
+          "callee": "document.addEventListener",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "renderRows",
+          "callee": "normalize",
+          "lineNumber": 1067
+        },
+        {
+          "caller": "renderRows",
+          "callee": "rows.forEach",
+          "lineNumber": 1069
+        },
+        {
+          "caller": "renderRows",
+          "callee": "document.createElement",
+          "lineNumber": 1070
+        },
+        {
+          "caller": "renderRows",
+          "callee": "esc",
+          "lineNumber": 1075
+        },
+        {
+          "caller": "renderRows",
+          "callee": "row.addEventListener",
+          "lineNumber": 1076
+        },
+        {
+          "caller": "renderRows",
+          "callee": "(ev.target as HTMLElement).closest",
+          "lineNumber": 1077
+        },
+        {
+          "caller": "renderRows",
+          "callee": "markSel",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "renderRows",
+          "callee": "row.querySelector",
+          "lineNumber": 1080
+        },
+        {
+          "caller": "renderRows",
+          "callee": "sw.addEventListener",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "renderRows",
+          "callee": "ev.stopPropagation",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "renderRows",
+          "callee": "markSel",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "renderRows",
+          "callee": "openPalette",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "renderRows",
+          "callee": "row.querySelector",
+          "lineNumber": 1082
+        },
+        {
+          "caller": "renderRows",
+          "callee": "inp.addEventListener",
+          "lineNumber": 1083
+        },
+        {
+          "caller": "renderRows",
+          "callee": "markSel",
+          "lineNumber": 1083
+        },
+        {
+          "caller": "renderRows",
+          "callee": "inp.addEventListener",
+          "lineNumber": 1084
+        },
+        {
+          "caller": "renderRows",
+          "callee": "inp.addEventListener",
+          "lineNumber": 1085
+        },
+        {
+          "caller": "renderRows",
+          "callee": "onRowKey",
+          "lineNumber": 1085
+        },
+        {
+          "caller": "renderRows",
+          "callee": "rowsWrap.appendChild",
+          "lineNumber": 1086
+        },
+        {
+          "caller": "renderRows",
+          "callee": "rowsWrap.children[sel]?.querySelector",
+          "lineNumber": 1089
+        },
+        {
+          "caller": "renderRows",
+          "callee": "inp.focus",
+          "lineNumber": 1090
+        },
+        {
+          "caller": "act",
+          "callee": "Math.min",
+          "lineNumber": 1096
+        },
+        {
+          "caller": "act",
+          "callee": "Math.max",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "act",
+          "callee": "rows.splice",
+          "lineNumber": 1100
+        },
+        {
+          "caller": "act",
+          "callee": "rows.splice",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "act",
+          "callee": "Math.max",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "act",
+          "callee": "renderRows",
+          "lineNumber": 1102
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "ev.preventDefault",
+          "lineNumber": 1107
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "act",
+          "lineNumber": 1107
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "ev.preventDefault",
+          "lineNumber": 1108
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "act",
+          "lineNumber": 1108
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "ev.preventDefault",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "act",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "ev.preventDefault",
+          "lineNumber": 1110
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "act",
+          "lineNumber": 1110
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "ev.preventDefault",
+          "lineNumber": 1111
+        },
+        {
+          "caller": "onRowKey",
+          "callee": "act",
+          "lineNumber": 1111
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelectorAll('.ol-toolbar [data-act]').forEach",
+          "lineNumber": 1114
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelectorAll",
+          "lineNumber": 1114
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "(b as HTMLElement).addEventListener",
+          "lineNumber": 1115
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "act",
+          "lineNumber": 1115
+        },
+        {
+          "caller": "close",
+          "callee": "panel.remove",
+          "lineNumber": 1118
+        },
+        {
+          "caller": "close",
+          "callee": "overlay.remove",
+          "lineNumber": 1118
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "overlay.addEventListener",
+          "lineNumber": 1119
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelector",
+          "lineNumber": 1120
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelector",
+          "lineNumber": 1121
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "panel.querySelector",
+          "lineNumber": 1122
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "applyOutline",
+          "lineNumber": 1123
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "close",
+          "lineNumber": 1124
+        },
+        {
+          "caller": "showOutlineModal",
+          "callee": "renderRows",
+          "lineNumber": 1127
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1134
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.edges.forEach",
+          "lineNumber": 1135
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "out[e.from]?.push",
+          "lineNumber": 1135
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.nodes.filter(n=>ind[n.id]===0).map",
+          "lineNumber": 1137
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.nodes.filter",
+          "lineNumber": 1137
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "roots.forEach",
+          "lineNumber": 1138
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "queue.shift",
+          "lineNumber": 1141
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "(out[id]||[]).forEach",
+          "lineNumber": 1142
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Math.max",
+          "lineNumber": 1142
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "queue.push",
+          "lineNumber": 1142
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1144
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1146
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "(levels[depth[n.id]]=levels[depth[n.id]]||[]).push",
+          "lineNumber": 1146
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Object.keys(levels).map(Number).sort",
+          "lineNumber": 1148
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Object.keys(levels).map",
+          "lineNumber": 1148
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Object.keys",
+          "lineNumber": 1148
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "keys.forEach",
+          "lineNumber": 1150
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "grp.forEach",
+          "lineNumber": 1152
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Math.max",
+          "lineNumber": 1153
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "Math.max",
+          "lineNumber": 1154
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "applyChainWrap",
+          "lineNumber": 1158
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "state.edges.forEach",
+          "lineNumber": 1159
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "render",
+          "lineNumber": 1160
+        },
+        {
+          "caller": "autoLayout",
+          "callee": "fit",
+          "lineNumber": 1160
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1165
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "state.edges.forEach",
+          "lineNumber": 1166
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "outMap[e.from]?.push",
+          "lineNumber": 1166
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "inMap[e.to]?.push",
+          "lineNumber": 1166
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "state.nodes.every",
+          "lineNumber": 1167
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "state.nodes.find",
+          "lineNumber": 1169
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "state.nodes.find",
+          "lineNumber": 1171
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "order.push",
+          "lineNumber": 1171
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "order.forEach",
+          "lineNumber": 1173
+        },
+        {
+          "caller": "applyChainWrap",
+          "callee": "Math.floor",
+          "lineNumber": 1174
+        },
+        {
+          "caller": "applyZoom",
+          "callee": "document.getElementById",
+          "lineNumber": 1182
+        },
+        {
+          "caller": "applyZoom",
+          "callee": "Math.round",
+          "lineNumber": 1182
+        },
+        {
+          "caller": "fit",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1186
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.min",
+          "lineNumber": 1186
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.min",
+          "lineNumber": 1186
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.max",
+          "lineNumber": 1186
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.max",
+          "lineNumber": 1186
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.min",
+          "lineNumber": 1187
+        },
+        {
+          "caller": "fit",
+          "callee": "Math.max",
+          "lineNumber": 1188
+        },
+        {
+          "caller": "fit",
+          "callee": "applyZoom",
+          "lineNumber": 1188
+        },
+        {
+          "caller": "fit",
+          "callee": "cw.scrollTo",
+          "lineNumber": 1189
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "alert",
+          "lineNumber": 1194
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.min",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.min",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.max",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.max",
+          "lineNumber": 1196
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "document.createElement",
+          "lineNumber": 1198
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "c.getContext",
+          "lineNumber": 1199
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.scale",
+          "lineNumber": 1199
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.fillRect",
+          "lineNumber": 1199
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.translate",
+          "lineNumber": 1200
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "state.edges.forEach",
+          "lineNumber": 1201
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "state.nodes.find",
+          "lineNumber": 1202
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "state.nodes.find",
+          "lineNumber": 1202
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "autoSides",
+          "lineNumber": 1205
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "port",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "port",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "stub",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "stub",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.setLineDash",
+          "lineNumber": 1209
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.setLineDash",
+          "lineNumber": 1210
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.setLineDash",
+          "lineNumber": 1211
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.beginPath",
+          "lineNumber": 1212
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.moveTo",
+          "lineNumber": 1212
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1213
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1214
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1214
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1214
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1214
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1215
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.stroke",
+          "lineNumber": 1215
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.setLineDash",
+          "lineNumber": 1215
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.atan2",
+          "lineNumber": 1216
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.beginPath",
+          "lineNumber": 1217
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.moveTo",
+          "lineNumber": 1217
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1218
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.cos",
+          "lineNumber": 1218
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.sin",
+          "lineNumber": 1218
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.lineTo",
+          "lineNumber": 1219
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.cos",
+          "lineNumber": 1219
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "Math.sin",
+          "lineNumber": 1219
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.closePath",
+          "lineNumber": 1220
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.fill",
+          "lineNumber": 1220
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "state.nodes.forEach",
+          "lineNumber": 1225
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "rr",
+          "lineNumber": 1227
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.fill",
+          "lineNumber": 1227
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.stroke",
+          "lineNumber": 1228
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "wrapText",
+          "lineNumber": 1231
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "wrapText",
+          "lineNumber": 1232
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "x.fillText",
+          "lineNumber": 1233
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "c.toBlob",
+          "lineNumber": 1235
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "document.createElement",
+          "lineNumber": 1235
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 1235
+        },
+        {
+          "caller": "exportPNG",
+          "callee": "a.click",
+          "lineNumber": 1235
+        },
+        {
+          "caller": "rr",
+          "callee": "c.beginPath",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.moveTo",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.arcTo",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.arcTo",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.arcTo",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.arcTo",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "rr",
+          "callee": "c.closePath",
+          "lineNumber": 1237
+        },
+        {
+          "caller": "wrapText",
+          "callee": "t.split('\\n').forEach",
+          "lineNumber": 1240
+        },
+        {
+          "caller": "wrapText",
+          "callee": "t.split",
+          "lineNumber": 1240
+        },
+        {
+          "caller": "wrapText",
+          "callee": "para.split",
+          "lineNumber": 1241
+        },
+        {
+          "caller": "wrapText",
+          "callee": "words.forEach",
+          "lineNumber": 1242
+        },
+        {
+          "caller": "wrapText",
+          "callee": "c.measureText",
+          "lineNumber": 1242
+        },
+        {
+          "caller": "wrapText",
+          "callee": "c.fillText",
+          "lineNumber": 1242
+        },
+        {
+          "caller": "wrapText",
+          "callee": "line.trim",
+          "lineNumber": 1242
+        },
+        {
+          "caller": "wrapText",
+          "callee": "c.fillText",
+          "lineNumber": 1243
+        },
+        {
+          "caller": "wrapText",
+          "callee": "line.trim",
+          "lineNumber": 1243
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1249
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.min",
+          "lineNumber": 1249
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "applyZoom",
+          "lineNumber": 1249
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1250
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.max",
+          "lineNumber": 1250
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "applyZoom",
+          "lineNumber": 1250
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1251
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1252
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1252
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "autoLayout",
+          "lineNumber": 1252
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1253
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1254
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1256
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1257
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "cw.getBoundingClientRect",
+          "lineNumber": 1258
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.max",
+          "lineNumber": 1259
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.round",
+          "lineNumber": 1259
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.max",
+          "lineNumber": 1260
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.round",
+          "lineNumber": 1260
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "makeNode",
+          "lineNumber": 1262
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "render",
+          "lineNumber": 1264
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "cw.scrollTo",
+          "lineNumber": 1265
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.max",
+          "lineNumber": 1265
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "Math.max",
+          "lineNumber": 1265
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1268
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1270
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1272
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "renderLegend",
+          "lineNumber": 1273
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1276
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1277
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1280
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1281
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1283
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1287
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1288
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "confirm",
+          "lineNumber": 1289
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1290
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "nodeEls.forEach",
+          "lineNumber": 1291
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "el.remove",
+          "lineNumber": 1291
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "nodeEls.clear",
+          "lineNumber": 1291
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById('pfb-legend')?.remove",
+          "lineNumber": 1292
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1292
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "defaultLegend",
+          "lineNumber": 1293
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "selNodes.clear",
+          "lineNumber": 1294
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "render",
+          "lineNumber": 1294
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1297
+        },
+        {
+          "caller": "stateToSave",
+          "callee": "defaultLegend",
+          "lineNumber": 1301
+        },
+        {
+          "caller": "loadState",
+          "callee": "applyState",
+          "lineNumber": 1303
+        },
+        {
+          "caller": "loadState",
+          "callee": "fit",
+          "lineNumber": 1304
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1307
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "window.prompt",
+          "lineNumber": 1308
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "name?.trim",
+          "lineNumber": 1309
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "name.trim",
+          "lineNumber": 1310
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1311
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "fetch",
+          "lineNumber": 1319
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "listRes.json",
+          "lineNumber": 1320
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "((listJson.flows||[]) as FlowListItem[]).find",
+          "lineNumber": 1321
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "fetch",
+          "lineNumber": 1324
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "JSON.stringify",
+          "lineNumber": 1327
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "stateToSave",
+          "lineNumber": 1327
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "res.json",
+          "lineNumber": 1329
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "console.error",
+          "lineNumber": 1335
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "alert",
+          "lineNumber": 1336
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "setTimeout",
+          "lineNumber": 1340
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1343
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.createElement",
+          "lineNumber": 1344
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.body.appendChild",
+          "lineNumber": 1344
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.createElement",
+          "lineNumber": 1345
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.body.appendChild",
+          "lineNumber": 1345
+        },
+        {
+          "caller": "close",
+          "callee": "panel.remove",
+          "lineNumber": 1349
+        },
+        {
+          "caller": "close",
+          "callee": "overlay.remove",
+          "lineNumber": 1349
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "overlay.addEventListener",
+          "lineNumber": 1350
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "panel.querySelector",
+          "lineNumber": 1351
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "panel.querySelector",
+          "lineNumber": 1352
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "fetch",
+          "lineNumber": 1354
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "res.json",
+          "lineNumber": 1355
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "flows.map(f=>`<div class=\"pfb-flow-item\" data-id=\"${f._id}\"><span>${esc(f.name)}</span><button class=\"pfb-del\" data-del=\"${f._id}\">Delete</button></div>`).join",
+          "lineNumber": 1358
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "flows.map",
+          "lineNumber": 1358
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "esc",
+          "lineNumber": 1358
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "list.querySelectorAll('.pfb-flow-item').forEach",
+          "lineNumber": 1360
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "list.querySelectorAll",
+          "lineNumber": 1360
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "(item as HTMLElement).addEventListener",
+          "lineNumber": 1361
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "(e.target as HTMLElement).closest",
+          "lineNumber": 1363
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "item.querySelector",
+          "lineNumber": 1365
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "confirm",
+          "lineNumber": 1366
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "fetch",
+          "lineNumber": 1367
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "(item as HTMLElement).remove",
+          "lineNumber": 1368
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "fetch",
+          "lineNumber": 1374
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "r.json",
+          "lineNumber": 1375
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1377
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "loadState",
+          "lineNumber": 1380
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "close",
+          "lineNumber": 1381
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "console.error",
+          "lineNumber": 1382
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "alert",
+          "lineNumber": 1382
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "console.error",
+          "lineNumber": 1386
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1390
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "JSON.stringify",
+          "lineNumber": 1391
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "stateToSave",
+          "lineNumber": 1391
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.createElement",
+          "lineNumber": 1392
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 1392
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "a.click",
+          "lineNumber": 1392
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.getElementById",
+          "lineNumber": 1394
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.createElement",
+          "lineNumber": 1395
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "snapshot",
+          "lineNumber": 1398
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "loadState",
+          "lineNumber": 1398
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "JSON.parse",
+          "lineNumber": 1398
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "alert",
+          "lineNumber": 1398
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "r.readAsText",
+          "lineNumber": 1399
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "inp.click",
+          "lineNumber": 1401
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1406
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1407
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1408
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1409
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1410
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1411
+        },
+        {
+          "caller": "seed",
+          "callee": "makeNode",
+          "lineNumber": 1412
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "seed",
+          "lineNumber": 1424
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "render",
+          "lineNumber": 1424
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "applyZoom",
+          "lineNumber": 1424
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "styleEl.remove",
+          "lineNumber": 1429
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.removeEventListener",
+          "lineNumber": 1430
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "nodeEls.forEach",
+          "lineNumber": 1431
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "el.remove",
+          "lineNumber": 1431
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "nodeEls.clear",
+          "lineNumber": 1431
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.querySelectorAll('.pfb-overlay,.pfb-panel,#pfb-legend').forEach",
+          "lineNumber": 1433
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "document.querySelectorAll",
+          "lineNumber": 1433
+        },
+        {
+          "caller": "ProcessFlowBuilder",
+          "callee": "el.remove",
+          "lineNumber": 1433
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/models/Invoice.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 41,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

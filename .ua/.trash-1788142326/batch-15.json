@@ -1,0 +1,69 @@
+{
+  "nodes": [
+    {
+      "id": "config:.env.local.example",
+      "type": "config",
+      "name": ".env.local.example",
+      "filePath": ".env.local.example",
+      "summary": "Template for local environment variables documenting required secrets (MongoDB URI, NextAuth secret, Google OAuth credentials) and optional supplier-risk intelligence API keys (News API, OpenSanctions, Alpha Vantage).",
+      "tags": ["configuration", "environment", "secrets", "security", "template"],
+      "complexity": "simple",
+      "languageNotes": "Comments annotate free-tier rate limits and signup URLs; several intelligence sources need no key at all."
+    },
+    {
+      "id": "config:.yarnrc.yml",
+      "type": "config",
+      "name": ".yarnrc.yml",
+      "filePath": ".yarnrc.yml",
+      "summary": "Yarn configuration setting nodeLinker to use a conventional node_modules install layout.",
+      "tags": ["configuration", "yarn", "build-system", "package-manager"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Minimal project readme placeholder for the portfolio website repository.",
+      "tags": ["documentation", "entry-point", "overview"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "NPM manifest for the react-resume-template portfolio app, declaring Next.js 13 scripts (build with --no-lint, dev, lint, sitemap) and a large dependency set spanning MongoDB/Mongoose, NextAuth, Lexical rich-text editing, PDF tooling, MQTT, Google Generative AI, and finance data libraries.",
+      "tags": ["configuration", "build-system", "dependencies", "nextjs", "npm"],
+      "complexity": "moderate",
+      "languageNotes": "Broad dependency surface reflects the multi-feature app: pdf-lib/jspdf/react-pdf for e-signing, mqtt for the ESP32 camera feed, yahoo-finance2 for finance, mammoth/xlsx for document import."
+    },
+    {
+      "id": "config:tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "tsconfig.json",
+      "summary": "TypeScript compiler configuration enabling strict mode, unused-locals/parameters checks, and the @/* path alias mapping to ./src, with the Next.js language-service plugin and JSX preserved for the Next compiler.",
+      "tags": ["configuration", "typescript", "build-system", "path-alias"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:vercel.json",
+      "type": "config",
+      "name": "vercel.json",
+      "filePath": "vercel.json",
+      "summary": "Vercel deployment configuration pinning the Next.js framework preset, build command and output directory, and rewriting /api/proxy/* to the Google Generative Language API.",
+      "tags": ["configuration", "deployment", "vercel", "infrastructure", "nextjs"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:vercel.json",
+      "target": "config:package.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

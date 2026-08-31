@@ -1,0 +1,1119 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/tasks/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/tasks/page.tsx",
+      "summary": "Next.js App Router page for the /tasks route; a thin client wrapper that mounts the TasksApp component.",
+      "tags": [
+        "entry-point",
+        "next-app-router",
+        "page",
+        "tasks"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "type": "file",
+      "name": "PromptLibraryModal.tsx",
+      "filePath": "src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "summary": "Modal UI for browsing, searching, creating, editing and copying reusable AI prompts, backed by the prompt-library API.",
+      "tags": [
+        "component",
+        "modal",
+        "prompt-library",
+        "crud-ui",
+        "search"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/PromptLibrary/api.ts",
+      "type": "file",
+      "name": "api.ts",
+      "filePath": "src/components/PromptLibrary/api.ts",
+      "summary": "Thin fetch wrapper exposing list/create/update/remove operations against the prompt-library REST endpoints.",
+      "tags": [
+        "api-client",
+        "fetch-wrapper",
+        "prompt-library",
+        "crud"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/ArchiveView.tsx",
+      "type": "file",
+      "name": "ArchiveView.tsx",
+      "filePath": "src/components/Tasks/ArchiveView.tsx",
+      "summary": "Overlay listing archived tasks with restore and permanent-purge actions.",
+      "tags": [
+        "component",
+        "tasks",
+        "archive",
+        "modal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "type": "file",
+      "name": "AttachmentGallery.tsx",
+      "filePath": "src/components/Tasks/AttachmentGallery.tsx",
+      "summary": "Renders task attachments as an image grid plus file chips, with a lightbox, open-in-new-window and remove handling.",
+      "tags": [
+        "component",
+        "tasks",
+        "attachments",
+        "gallery",
+        "lightbox"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/BoardView.tsx",
+      "type": "file",
+      "name": "BoardView.tsx",
+      "filePath": "src/components/Tasks/BoardView.tsx",
+      "summary": "Kanban board view of tasks with drag-and-drop between status columns and per-column quick-create composers.",
+      "tags": [
+        "component",
+        "tasks",
+        "kanban",
+        "drag-and-drop",
+        "view"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Tasks/CalendarView.tsx",
+      "type": "file",
+      "name": "CalendarView.tsx",
+      "filePath": "src/components/Tasks/CalendarView.tsx",
+      "summary": "Month-grid calendar view placing tasks on their due dates with prev/next month navigation.",
+      "tags": [
+        "component",
+        "tasks",
+        "calendar",
+        "view"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/CommandPalette.tsx",
+      "type": "file",
+      "name": "CommandPalette.tsx",
+      "filePath": "src/components/Tasks/CommandPalette.tsx",
+      "summary": "Keyboard-driven command palette for switching views, toggling modes and jumping to tasks by fuzzy title match.",
+      "tags": [
+        "component",
+        "tasks",
+        "command-palette",
+        "keyboard",
+        "search"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/ConfettiBurst.tsx",
+      "type": "file",
+      "name": "ConfettiBurst.tsx",
+      "filePath": "src/components/Tasks/ConfettiBurst.tsx",
+      "summary": "Transient confetti animation rendered at a screen coordinate when a task is completed.",
+      "tags": [
+        "component",
+        "tasks",
+        "animation",
+        "effect"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/ContextMenu.tsx",
+      "type": "file",
+      "name": "ContextMenu.tsx",
+      "filePath": "src/components/Tasks/ContextMenu.tsx",
+      "summary": "Positioned right-click context menu with outside-click and Escape dismissal, clamped to the viewport.",
+      "tags": [
+        "component",
+        "tasks",
+        "context-menu",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Tasks/DetailDrawer.tsx",
+      "type": "file",
+      "name": "DetailDrawer.tsx",
+      "filePath": "src/components/Tasks/DetailDrawer.tsx",
+      "summary": "Side drawer for editing a single task: title, status, priority, due date, recurrence, tags, subtasks, attachments, AI planning and linked notes.",
+      "tags": [
+        "component",
+        "tasks",
+        "detail-editor",
+        "drawer",
+        "forms"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Tasks/EmailDropModal.tsx",
+      "type": "file",
+      "name": "EmailDropModal.tsx",
+      "filePath": "src/components/Tasks/EmailDropModal.tsx",
+      "summary": "Modal that accepts a dropped .eml/.msg email file, extracts its text and turns it into a task draft.",
+      "tags": [
+        "component",
+        "tasks",
+        "email-import",
+        "modal",
+        "file-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/InsightsView.tsx",
+      "type": "file",
+      "name": "InsightsView.tsx",
+      "filePath": "src/components/Tasks/InsightsView.tsx",
+      "summary": "Analytics view summarizing task completion, streaks, overdue counts and category breakdowns.",
+      "tags": [
+        "component",
+        "tasks",
+        "analytics",
+        "dashboard",
+        "view"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "type": "file",
+      "name": "LinkedNoteSection.tsx",
+      "filePath": "src/components/Tasks/LinkedNoteSection.tsx",
+      "summary": "Task-detail section for linking a task to a Note, with quick-edit and note-picker modals.",
+      "tags": [
+        "component",
+        "tasks",
+        "notes-integration",
+        "linking"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/ListView.tsx",
+      "type": "file",
+      "name": "ListView.tsx",
+      "filePath": "src/components/Tasks/ListView.tsx",
+      "summary": "Sortable flat list view of tasks with drag-to-reorder rows rendered via TaskCard.",
+      "tags": [
+        "component",
+        "tasks",
+        "list",
+        "drag-and-drop",
+        "view"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Tasks/MatrixView.tsx",
+      "type": "file",
+      "name": "MatrixView.tsx",
+      "filePath": "src/components/Tasks/MatrixView.tsx",
+      "summary": "Eisenhower priority/urgency matrix view sorting tasks into four quadrants with drag-and-drop between them.",
+      "tags": [
+        "component",
+        "tasks",
+        "eisenhower-matrix",
+        "drag-and-drop",
+        "view"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/PromptLibrary/PromptLibraryModal.tsx:PromptLibraryModal",
+      "type": "function",
+      "name": "PromptLibraryModal",
+      "filePath": "src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "lineRange": [
+        32,
+        362
+      ],
+      "summary": "Main modal component managing prompt list state, search/sort/category filters and inline create/edit/delete flows.",
+      "tags": [
+        "component",
+        "modal",
+        "crud-ui",
+        "state"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/PromptLibrary/api.ts:request",
+      "type": "function",
+      "name": "request",
+      "filePath": "src/components/PromptLibrary/api.ts",
+      "lineRange": [
+        18,
+        28
+      ],
+      "summary": "Internal fetch helper that performs a JSON request and throws on non-OK responses.",
+      "tags": [
+        "fetch-wrapper",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/ArchiveView.tsx:ArchiveView",
+      "type": "function",
+      "name": "ArchiveView",
+      "filePath": "src/components/Tasks/ArchiveView.tsx",
+      "lineRange": [
+        16,
+        69
+      ],
+      "summary": "Renders the archived-tasks overlay with restore and purge buttons per task.",
+      "tags": [
+        "component",
+        "archive",
+        "modal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/AttachmentGallery.tsx:AttachmentGallery",
+      "type": "function",
+      "name": "AttachmentGallery",
+      "filePath": "src/components/Tasks/AttachmentGallery.tsx",
+      "lineRange": [
+        46,
+        156
+      ],
+      "summary": "Grid of image attachments and file chips with lightbox navigation and remove controls.",
+      "tags": [
+        "component",
+        "gallery",
+        "attachments"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/AttachmentGallery.tsx:PasteHint",
+      "type": "function",
+      "name": "PasteHint",
+      "filePath": "src/components/Tasks/AttachmentGallery.tsx",
+      "lineRange": [
+        158,
+        165
+      ],
+      "summary": "Small hint element prompting the user to paste images as attachments.",
+      "tags": [
+        "component",
+        "presentational",
+        "hint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/AttachmentGallery.tsx:openAttachmentInNewWindow",
+      "type": "function",
+      "name": "openAttachmentInNewWindow",
+      "filePath": "src/components/Tasks/AttachmentGallery.tsx",
+      "lineRange": [
+        33,
+        43
+      ],
+      "summary": "Opens an attachment URL or data blob in a new browser window/tab.",
+      "tags": [
+        "helper",
+        "attachments",
+        "browser"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/BoardView.tsx:BoardView",
+      "type": "function",
+      "name": "BoardView",
+      "filePath": "src/components/Tasks/BoardView.tsx",
+      "lineRange": [
+        183,
+        236
+      ],
+      "summary": "Kanban board container wiring dnd-kit sensors and status columns to task callbacks.",
+      "tags": [
+        "component",
+        "kanban",
+        "drag-and-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/BoardView.tsx:Column",
+      "type": "function",
+      "name": "Column",
+      "filePath": "src/components/Tasks/BoardView.tsx",
+      "lineRange": [
+        116,
+        181
+      ],
+      "summary": "Single droppable status column rendering its tasks and quick-create composer.",
+      "tags": [
+        "component",
+        "kanban",
+        "droppable"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/BoardView.tsx:ColumnComposer",
+      "type": "function",
+      "name": "ColumnComposer",
+      "filePath": "src/components/Tasks/BoardView.tsx",
+      "lineRange": [
+        60,
+        114
+      ],
+      "summary": "Inline quick-create input for adding a task directly to a board column.",
+      "tags": [
+        "component",
+        "form",
+        "quick-create"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/BoardView.tsx:DraggableCard",
+      "type": "function",
+      "name": "DraggableCard",
+      "filePath": "src/components/Tasks/BoardView.tsx",
+      "lineRange": [
+        38,
+        57
+      ],
+      "summary": "Wraps a task card with dnd-kit draggable behaviour for the board.",
+      "tags": [
+        "component",
+        "draggable"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/CalendarView.tsx:CalendarView",
+      "type": "function",
+      "name": "CalendarView",
+      "filePath": "src/components/Tasks/CalendarView.tsx",
+      "lineRange": [
+        21,
+        109
+      ],
+      "summary": "Month calendar grid that buckets tasks by due date and handles month navigation.",
+      "tags": [
+        "component",
+        "calendar",
+        "view"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/CommandPalette.tsx:CommandPalette",
+      "type": "function",
+      "name": "CommandPalette",
+      "filePath": "src/components/Tasks/CommandPalette.tsx",
+      "lineRange": [
+        41,
+        174
+      ],
+      "summary": "Command palette with fuzzy command and task matching plus keyboard navigation.",
+      "tags": [
+        "component",
+        "command-palette",
+        "keyboard"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/ConfettiBurst.tsx:ConfettiBurst",
+      "type": "function",
+      "name": "ConfettiBurst",
+      "filePath": "src/components/Tasks/ConfettiBurst.tsx",
+      "lineRange": [
+        16,
+        64
+      ],
+      "summary": "Generates randomized confetti pieces and clears itself after the animation completes.",
+      "tags": [
+        "component",
+        "animation",
+        "effect"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/ContextMenu.tsx:ContextMenu",
+      "type": "function",
+      "name": "ContextMenu",
+      "filePath": "src/components/Tasks/ContextMenu.tsx",
+      "lineRange": [
+        22,
+        66
+      ],
+      "summary": "Viewport-clamped context menu with outside-click and Escape dismissal.",
+      "tags": [
+        "component",
+        "context-menu",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/DetailDrawer.tsx:DetailDrawer",
+      "type": "function",
+      "name": "DetailDrawer",
+      "filePath": "src/components/Tasks/DetailDrawer.tsx",
+      "lineRange": [
+        64,
+        539
+      ],
+      "summary": "Task detail side drawer managing local edit state for every task field plus AI planning and paste-to-attach.",
+      "tags": [
+        "component",
+        "detail-editor",
+        "drawer",
+        "forms"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Tasks/EmailDropModal.tsx:EmailDropModal",
+      "type": "function",
+      "name": "EmailDropModal",
+      "filePath": "src/components/Tasks/EmailDropModal.tsx",
+      "lineRange": [
+        15,
+        173
+      ],
+      "summary": "Handles email file drop, parses it to text and produces a task draft from the content.",
+      "tags": [
+        "component",
+        "email-import",
+        "file-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/InsightsView.tsx:InsightsView",
+      "type": "function",
+      "name": "InsightsView",
+      "filePath": "src/components/Tasks/InsightsView.tsx",
+      "lineRange": [
+        15,
+        166
+      ],
+      "summary": "Computes and displays task analytics: completion rate, streaks, overdue and category stats.",
+      "tags": [
+        "component",
+        "analytics",
+        "dashboard"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/LinkedNoteSection.tsx:LinkedNoteSection",
+      "type": "function",
+      "name": "LinkedNoteSection",
+      "filePath": "src/components/Tasks/LinkedNoteSection.tsx",
+      "lineRange": [
+        17,
+        95
+      ],
+      "summary": "Task-detail section showing the linked note and opening link/quick-edit modals.",
+      "tags": [
+        "component",
+        "notes-integration",
+        "linking"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/ListView.tsx:ListView",
+      "type": "function",
+      "name": "ListView",
+      "filePath": "src/components/Tasks/ListView.tsx",
+      "lineRange": [
+        59,
+        214
+      ],
+      "summary": "Sortable task list with dnd-kit reordering rendering rows via TaskCard.",
+      "tags": [
+        "component",
+        "list",
+        "drag-and-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/ListView.tsx:SortableRow",
+      "type": "function",
+      "name": "SortableRow",
+      "filePath": "src/components/Tasks/ListView.tsx",
+      "lineRange": [
+        38,
+        57
+      ],
+      "summary": "dnd-kit sortable wrapper around a single task row.",
+      "tags": [
+        "component",
+        "sortable"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/MatrixView.tsx:MatrixView",
+      "type": "function",
+      "name": "MatrixView",
+      "filePath": "src/components/Tasks/MatrixView.tsx",
+      "lineRange": [
+        178,
+        315
+      ],
+      "summary": "Eisenhower matrix container placing tasks in four quadrants with cross-quadrant drag-and-drop.",
+      "tags": [
+        "component",
+        "eisenhower-matrix",
+        "drag-and-drop"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Tasks/MatrixView.tsx:quadrantOf",
+      "type": "function",
+      "name": "quadrantOf",
+      "filePath": "src/components/Tasks/MatrixView.tsx",
+      "lineRange": [
+        30,
+        38
+      ],
+      "summary": "Derives the priority/urgency quadrant key for a given task.",
+      "tags": [
+        "helper",
+        "classification"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Tasks/MatrixView.tsx:QuadrantBox",
+      "type": "function",
+      "name": "QuadrantBox",
+      "filePath": "src/components/Tasks/MatrixView.tsx",
+      "lineRange": [
+        129,
+        176
+      ],
+      "summary": "Single droppable quadrant rendering its tasks and label.",
+      "tags": [
+        "component",
+        "droppable"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Tasks/MatrixView.tsx:SortableCard",
+      "type": "function",
+      "name": "SortableCard",
+      "filePath": "src/components/Tasks/MatrixView.tsx",
+      "lineRange": [
+        97,
+        127
+      ],
+      "summary": "Sortable/draggable task card used inside a matrix quadrant.",
+      "tags": [
+        "component",
+        "sortable"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/app/tasks/page.tsx",
+      "target": "file:src/components/Tasks/TasksApp.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "target": "file:src/components/PromptLibrary/api.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/ArchiveView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "file:src/components/Tasks/TaskCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/CalendarView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/CommandPalette.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/PropertyCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/aiSubtasks.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/pasteImage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/EmailDropModal.tsx",
+      "target": "file:src/components/Tasks/emailParse.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/InsightsView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "target": "file:src/components/Tasks/NoteLinkModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "target": "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/ListView.tsx",
+      "target": "file:src/components/Tasks/TaskCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/ListView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "file:src/components/Tasks/TaskCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "file:src/components/Tasks/types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "target": "function:src/components/PromptLibrary/PromptLibraryModal.tsx:PromptLibraryModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "target": "function:src/components/PromptLibrary/PromptLibraryModal.tsx:PromptLibraryModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/PromptLibrary/api.ts",
+      "target": "function:src/components/PromptLibrary/api.ts:request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/ArchiveView.tsx",
+      "target": "function:src/components/Tasks/ArchiveView.tsx:ArchiveView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/ArchiveView.tsx",
+      "target": "function:src/components/Tasks/ArchiveView.tsx:ArchiveView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "function:src/components/Tasks/AttachmentGallery.tsx:AttachmentGallery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "function:src/components/Tasks/AttachmentGallery.tsx:AttachmentGallery",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "function:src/components/Tasks/AttachmentGallery.tsx:PasteHint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "function:src/components/Tasks/AttachmentGallery.tsx:PasteHint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/AttachmentGallery.tsx",
+      "target": "function:src/components/Tasks/AttachmentGallery.tsx:openAttachmentInNewWindow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "function:src/components/Tasks/BoardView.tsx:BoardView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "function:src/components/Tasks/BoardView.tsx:BoardView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "function:src/components/Tasks/BoardView.tsx:Column",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "function:src/components/Tasks/BoardView.tsx:ColumnComposer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/BoardView.tsx",
+      "target": "function:src/components/Tasks/BoardView.tsx:DraggableCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/CalendarView.tsx",
+      "target": "function:src/components/Tasks/CalendarView.tsx:CalendarView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/CalendarView.tsx",
+      "target": "function:src/components/Tasks/CalendarView.tsx:CalendarView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/CommandPalette.tsx",
+      "target": "function:src/components/Tasks/CommandPalette.tsx:CommandPalette",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/CommandPalette.tsx",
+      "target": "function:src/components/Tasks/CommandPalette.tsx:CommandPalette",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/ConfettiBurst.tsx",
+      "target": "function:src/components/Tasks/ConfettiBurst.tsx:ConfettiBurst",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/ConfettiBurst.tsx",
+      "target": "function:src/components/Tasks/ConfettiBurst.tsx:ConfettiBurst",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/ContextMenu.tsx",
+      "target": "function:src/components/Tasks/ContextMenu.tsx:ContextMenu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/ContextMenu.tsx",
+      "target": "function:src/components/Tasks/ContextMenu.tsx:ContextMenu",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "function:src/components/Tasks/DetailDrawer.tsx:DetailDrawer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "function:src/components/Tasks/DetailDrawer.tsx:DetailDrawer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/EmailDropModal.tsx",
+      "target": "function:src/components/Tasks/EmailDropModal.tsx:EmailDropModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/EmailDropModal.tsx",
+      "target": "function:src/components/Tasks/EmailDropModal.tsx:EmailDropModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/InsightsView.tsx",
+      "target": "function:src/components/Tasks/InsightsView.tsx:InsightsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/InsightsView.tsx",
+      "target": "function:src/components/Tasks/InsightsView.tsx:InsightsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "target": "function:src/components/Tasks/LinkedNoteSection.tsx:LinkedNoteSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "target": "function:src/components/Tasks/LinkedNoteSection.tsx:LinkedNoteSection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/ListView.tsx",
+      "target": "function:src/components/Tasks/ListView.tsx:ListView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/ListView.tsx",
+      "target": "function:src/components/Tasks/ListView.tsx:ListView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/ListView.tsx",
+      "target": "function:src/components/Tasks/ListView.tsx:SortableRow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:MatrixView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:MatrixView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:quadrantOf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:quadrantOf",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:QuadrantBox",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/MatrixView.tsx",
+      "target": "function:src/components/Tasks/MatrixView.tsx:SortableCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "function:src/components/Tasks/aiSubtasks.ts:planTask",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "function:src/components/Tasks/pasteImage.ts:attachmentFromPaste",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/EmailDropModal.tsx",
+      "target": "function:src/components/Tasks/emailParse.ts:fileToEmailText",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/EmailDropModal.tsx",
+      "target": "function:src/components/Tasks/emailParse.ts:isSupportedEmailFile",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Tasks/DetailDrawer.tsx",
+      "target": "function:src/components/Tasks/types.ts:nextOccurrence",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

@@ -1,0 +1,1568 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/api/ai-chat/sessions/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/ai-chat/sessions/route.ts",
+      "summary": "Next.js route handlers for CRUD operations on AI chat sessions, persisting conversation history per authenticated user in MongoDB.",
+      "tags": [
+        "api-handler",
+        "crud",
+        "ai-chat",
+        "mongodb",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/ai-chat/sessions/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/ai-chat/sessions/route.ts",
+      "lineRange": [
+        9,
+        48
+      ],
+      "summary": "Returns a single chat session by id or lists the user's session metadata, sorted by last update.",
+      "tags": [
+        "api-handler",
+        "read",
+        "mongodb"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/ai-chat/sessions/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/ai-chat/sessions/route.ts",
+      "lineRange": [
+        51,
+        74
+      ],
+      "summary": "Creates a new AI chat session document for the authenticated user.",
+      "tags": [
+        "api-handler",
+        "create",
+        "mongodb"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/ai-chat/sessions/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/ai-chat/sessions/route.ts",
+      "lineRange": [
+        77,
+        112
+      ],
+      "summary": "Updates an existing chat session (title or messages) owned by the user.",
+      "tags": [
+        "api-handler",
+        "update",
+        "mongodb"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/ai-chat/sessions/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/ai-chat/sessions/route.ts",
+      "lineRange": [
+        115,
+        144
+      ],
+      "summary": "Deletes a chat session by id after verifying user ownership.",
+      "tags": [
+        "api-handler",
+        "delete",
+        "mongodb"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "summary": "Admin-only endpoint that returns HiveMQ MQTT broker credentials for the ESP32 anomaly camera feed.",
+      "tags": [
+        "api-handler",
+        "mqtt",
+        "anomaly",
+        "authentication",
+        "credentials"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/anomaly/camera/mqtt-creds/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "lineRange": [
+        20,
+        43
+      ],
+      "summary": "Verifies the caller is the admin and returns MQTT broker connection credentials from environment config.",
+      "tags": [
+        "api-handler",
+        "mqtt",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/calendar/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/calendar/route.ts",
+      "summary": "Proxy route that fetches and creates Google Calendar events for the authenticated admin user via an external calendar service.",
+      "tags": [
+        "api-handler",
+        "calendar",
+        "proxy",
+        "google",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/calendar/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/calendar/route.ts",
+      "lineRange": [
+        9,
+        56
+      ],
+      "summary": "Fetches calendar events in a date range from the external calendar service for the admin user.",
+      "tags": [
+        "api-handler",
+        "calendar",
+        "proxy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/calendar/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/calendar/route.ts",
+      "lineRange": [
+        58,
+        105
+      ],
+      "summary": "Creates a new calendar event by forwarding the payload to the external calendar service.",
+      "tags": [
+        "api-handler",
+        "calendar",
+        "proxy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/debug/drive-status/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/debug/drive-status/route.ts",
+      "summary": "Diagnostic endpoint that reports the connection state of the user's Google Drive OAuth account and stored tokens.",
+      "tags": [
+        "api-handler",
+        "debug",
+        "google-drive",
+        "oauth",
+        "diagnostics"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/debug/drive-status/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/debug/drive-status/route.ts",
+      "lineRange": [
+        13,
+        68
+      ],
+      "summary": "Collects and returns the user's Drive OAuth account, stored token presence, and a live Drive about.get probe.",
+      "tags": [
+        "api-handler",
+        "debug",
+        "oauth",
+        "google-drive"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/drive/files/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/drive/files/route.ts",
+      "summary": "Comprehensive Google Drive file API supporting listing, resumable/multipart uploads, and deletion within a managed app folder.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "file-upload",
+        "resumable-upload",
+        "authentication"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/api/drive/files/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/drive/files/route.ts",
+      "lineRange": [
+        14,
+        58
+      ],
+      "summary": "Lists files in the managed app folder via the Drive client for the authenticated user.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/drive/files/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/drive/files/route.ts",
+      "lineRange": [
+        60,
+        260
+      ],
+      "summary": "Handles both resumable and multipart Google Drive uploads, ensuring the target folder and streaming file content.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "file-upload",
+        "resumable-upload"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/api/drive/files/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/drive/files/route.ts",
+      "lineRange": [
+        262,
+        306
+      ],
+      "summary": "Deletes a Drive file by id after authenticating the user.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/drive/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/drive/route.ts",
+      "summary": "Lightweight Google Drive route for listing, uploading, and deleting files using a session-provided access token.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "file-upload",
+        "authentication",
+        "crud"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/drive/route.ts:getDriveClient",
+      "type": "function",
+      "name": "getDriveClient",
+      "filePath": "src/app/api/drive/route.ts",
+      "lineRange": [
+        10,
+        14
+      ],
+      "summary": "Builds an authenticated googleapis Drive client from an OAuth access token.",
+      "tags": [
+        "helper",
+        "google-drive",
+        "oauth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/drive/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/drive/route.ts",
+      "lineRange": [
+        16,
+        38
+      ],
+      "summary": "Lists Drive files matching an optional query using a session access token.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/drive/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/drive/route.ts",
+      "lineRange": [
+        40,
+        79
+      ],
+      "summary": "Uploads a multipart form file to Google Drive as a readable stream.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "file-upload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/drive/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/drive/route.ts",
+      "lineRange": [
+        81,
+        103
+      ],
+      "summary": "Deletes a Drive file by id using a session access token.",
+      "tags": [
+        "api-handler",
+        "google-drive",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/finance/properties/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/finance/properties/route.ts",
+      "summary": "Returns the list of finance properties from MongoDB for the authenticated admin user.",
+      "tags": [
+        "api-handler",
+        "finance",
+        "mongodb",
+        "authentication",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/finance/properties/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/finance/properties/route.ts",
+      "lineRange": [
+        9,
+        23
+      ],
+      "summary": "Authenticates the admin and returns all finance Property documents sorted by creation.",
+      "tags": [
+        "api-handler",
+        "finance",
+        "read",
+        "mongodb"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/api/gantt/ai/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/gantt/ai/route.ts",
+      "summary": "Uses Google Gemini to generate or modify Gantt chart task structures from a natural-language prompt.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "gantt",
+        "generation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/gantt/ai/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/gantt/ai/route.ts",
+      "lineRange": [
+        7,
+        80
+      ],
+      "summary": "Builds a Gemini prompt from the current Gantt state plus user instruction and returns parsed task JSON.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "gantt"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/gemini/email-parser/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/gemini/email-parser/route.ts",
+      "summary": "Parses raw email text into structured data (sender, dates, action items) using a Gemini model.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "email-parsing",
+        "extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/gemini/email-parser/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/gemini/email-parser/route.ts",
+      "lineRange": [
+        12,
+        57
+      ],
+      "summary": "Sends email text to Gemini with an extraction prompt and returns the parsed structured result.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "extraction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/gemini/generate/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/gemini/generate/route.ts",
+      "summary": "Core Gemini chat endpoint handling multi-turn history, image and file attachments, and remote content fetching.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "chat",
+        "attachments"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/gemini/generate/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/gemini/generate/route.ts",
+      "lineRange": [
+        7,
+        168
+      ],
+      "summary": "Runs a Gemini chat turn with prior history, inline images, and fetched file/URL attachments, returning the model reply.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "chat",
+        "attachments"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/api/gemini/todo-features/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/gemini/todo-features/route.ts",
+      "summary": "Gemini-backed endpoint providing AI features for the todo module: task breakdown, prioritization, and summarization.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "todo",
+        "generation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/gemini/todo-features/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/gemini/todo-features/route.ts",
+      "lineRange": [
+        13,
+        95
+      ],
+      "summary": "Dispatches on a feature flag to run Gemini task-breakdown, prioritization, or summarization prompts for the todo module.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "gemini",
+        "todo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/openai/generate/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/openai/generate/route.ts",
+      "summary": "Proxies chat completion requests to the OpenAI API for the authenticated admin user.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "openai",
+        "proxy",
+        "generation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/openai/generate/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/openai/generate/route.ts",
+      "lineRange": [
+        6,
+        55
+      ],
+      "summary": "Validates the session and forwards a chat-completion request to the OpenAI API, returning its response.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "openai",
+        "proxy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/openai/transcribe/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/openai/transcribe/route.ts",
+      "summary": "Forwards uploaded audio to the OpenAI transcription API and returns the transcribed text.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "openai",
+        "transcription",
+        "file-upload"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/openai/transcribe/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/openai/transcribe/route.ts",
+      "lineRange": [
+        6,
+        48
+      ],
+      "summary": "Receives an audio upload and forwards it to the OpenAI transcription endpoint, returning the transcript.",
+      "tags": [
+        "api-handler",
+        "ai",
+        "openai",
+        "transcription"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "summary": "Per-template CRUD handlers for PDF autofill templates stored in a Neon Postgres database.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "crud",
+        "postgres"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "lineRange": [
+        7,
+        29
+      ],
+      "summary": "Fetches a single PDF autofill template by numeric id from Neon Postgres.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "lineRange": [
+        32,
+        63
+      ],
+      "summary": "Updates a PDF autofill template's name and field mapping JSON by id.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "lineRange": [
+        66,
+        74
+      ],
+      "summary": "Deletes a PDF autofill template by id.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "delete"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/templates/route.ts",
+      "summary": "Lists and creates PDF autofill templates in Neon Postgres, lazily creating the backing table on first use.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "postgres",
+        "schema-init"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/route.ts:ensureTable",
+      "type": "function",
+      "name": "ensureTable",
+      "filePath": "src/app/api/pdf-autofill/templates/route.ts",
+      "lineRange": [
+        6,
+        21
+      ],
+      "summary": "Lazily creates the pdf_autofill_templates Postgres table if it does not yet exist.",
+      "tags": [
+        "helper",
+        "neon",
+        "schema-init"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/pdf-autofill/templates/route.ts",
+      "lineRange": [
+        24,
+        49
+      ],
+      "summary": "Ensures the table exists then returns all PDF autofill templates.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/templates/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/pdf-autofill/templates/route.ts",
+      "lineRange": [
+        52,
+        86
+      ],
+      "summary": "Inserts a new PDF autofill template row from the request body.",
+      "tags": [
+        "api-handler",
+        "pdf-autofill",
+        "neon",
+        "create"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/process-flow/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/process-flow/route.ts",
+      "summary": "CRUD route for process-flow diagrams persisted per user in MongoDB, with list and single-document retrieval.",
+      "tags": [
+        "api-handler",
+        "process-flow",
+        "mongodb",
+        "crud",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/process-flow/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/process-flow/route.ts",
+      "lineRange": [
+        9,
+        38
+      ],
+      "summary": "Returns a single process-flow document by id or the user's list of flow summaries.",
+      "tags": [
+        "api-handler",
+        "process-flow",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/process-flow/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/process-flow/route.ts",
+      "lineRange": [
+        40,
+        72
+      ],
+      "summary": "Upserts a process-flow document for the user, creating or updating by name.",
+      "tags": [
+        "api-handler",
+        "process-flow",
+        "mongodb",
+        "upsert"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/process-flow/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/process-flow/route.ts",
+      "lineRange": [
+        74,
+        91
+      ],
+      "summary": "Deletes a process-flow document by id after verifying ownership.",
+      "tags": [
+        "api-handler",
+        "process-flow",
+        "mongodb",
+        "delete"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "file:src/models/AIChatSession.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/ai-chat/sessions/route.ts",
+      "target": "function:src/app/api/ai-chat/sessions/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "target": "function:src/app/api/anomaly/camera/mqtt-creds/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "target": "function:src/app/api/anomaly/camera/mqtt-creds/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/calendar/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/calendar/route.ts",
+      "target": "function:src/app/api/calendar/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/calendar/route.ts",
+      "target": "function:src/app/api/calendar/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/calendar/route.ts",
+      "target": "function:src/app/api/calendar/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/calendar/route.ts",
+      "target": "function:src/app/api/calendar/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/debug/drive-status/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/debug/drive-status/route.ts",
+      "target": "file:src/lib/googleDrive.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/debug/drive-status/route.ts",
+      "target": "file:src/lib/mongodb.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/debug/drive-status/route.ts",
+      "target": "function:src/app/api/debug/drive-status/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/debug/drive-status/route.ts",
+      "target": "function:src/app/api/debug/drive-status/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "file:src/lib/googleDrive.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/files/route.ts",
+      "target": "function:src/app/api/drive/files/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:getDriveClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/drive/route.ts",
+      "target": "function:src/app/api/drive/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/route.ts:GET",
+      "target": "function:src/app/api/drive/route.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/route.ts:POST",
+      "target": "function:src/app/api/drive/route.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/route.ts:DELETE",
+      "target": "function:src/app/api/drive/route.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/finance/properties/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/finance/properties/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/finance/properties/route.ts",
+      "target": "file:src/models/Property.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/finance/properties/route.ts",
+      "target": "function:src/app/api/finance/properties/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/finance/properties/route.ts",
+      "target": "function:src/app/api/finance/properties/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/gantt/ai/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/gantt/ai/route.ts",
+      "target": "function:src/app/api/gantt/ai/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/gantt/ai/route.ts",
+      "target": "function:src/app/api/gantt/ai/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/gemini/email-parser/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/gemini/email-parser/route.ts",
+      "target": "function:src/app/api/gemini/email-parser/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/gemini/email-parser/route.ts",
+      "target": "function:src/app/api/gemini/email-parser/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/gemini/generate/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/gemini/generate/route.ts",
+      "target": "function:src/app/api/gemini/generate/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/gemini/generate/route.ts",
+      "target": "function:src/app/api/gemini/generate/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/gemini/todo-features/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/gemini/todo-features/route.ts",
+      "target": "function:src/app/api/gemini/todo-features/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/gemini/todo-features/route.ts",
+      "target": "function:src/app/api/gemini/todo-features/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/openai/generate/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/openai/generate/route.ts",
+      "target": "function:src/app/api/openai/generate/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/openai/generate/route.ts",
+      "target": "function:src/app/api/openai/generate/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/openai/transcribe/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/openai/transcribe/route.ts",
+      "target": "function:src/app/api/openai/transcribe/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/openai/transcribe/route.ts",
+      "target": "function:src/app/api/openai/transcribe/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:ensureTable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/pdf-autofill/templates/route.ts",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/route.ts:GET",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:ensureTable",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/route.ts:POST",
+      "target": "function:src/app/api/pdf-autofill/templates/route.ts:ensureTable",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "file:src/models/ProcessFlow.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/process-flow/route.ts",
+      "target": "function:src/app/api/process-flow/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/debug/drive-status/route.ts:GET",
+      "target": "function:src/lib/googleDrive.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/debug/drive-status/route.ts:GET",
+      "target": "function:src/lib/mongodb.ts:getClientPromise",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/files/route.ts:GET",
+      "target": "function:src/lib/googleDrive.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/files/route.ts:POST",
+      "target": "function:src/lib/googleDrive.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/files/route.ts:POST",
+      "target": "function:src/lib/googleDrive.ts:ensureFolder",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/files/route.ts:POST",
+      "target": "function:src/lib/googleDrive.ts:getOAuth2Client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/drive/files/route.ts:DELETE",
+      "target": "function:src/lib/googleDrive.ts:getDriveClient",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:GET",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:PUT",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/[id]/route.ts:DELETE",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/route.ts:ensureTable",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/route.ts:GET",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/pdf-autofill/templates/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/ai-chat/sessions/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/ai-chat/sessions/route.ts:POST",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/ai-chat/sessions/route.ts:PUT",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/ai-chat/sessions/route.ts:DELETE",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/finance/properties/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/process-flow/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/process-flow/route.ts:POST",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/process-flow/route.ts:DELETE",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

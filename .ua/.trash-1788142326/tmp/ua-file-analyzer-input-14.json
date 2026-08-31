@@ -1,0 +1,69 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {
+      "path": "src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "language": "typescript",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "language": "typescript",
+      "sizeLines": 1407,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/HighPerformanceTable/types.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/components/Notes/HighPerformanceTable/AddColumnModal.tsx": [
+      "src/components/Notes/HighPerformanceTable/types.ts"
+    ],
+    "src/components/Notes/HighPerformanceTable/EditRowModal.tsx": [
+      "src/components/Notes/HighPerformanceTable/types.ts"
+    ],
+    "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx": [
+      "src/components/Notes/HighPerformanceTable/types.ts"
+    ],
+    "src/components/Notes/HighPerformanceTable/SortableHeader.tsx": [
+      "src/components/Notes/HighPerformanceTable/types.ts"
+    ],
+    "src/components/Notes/HighPerformanceTable/TableApp.tsx": [
+      "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "src/components/Notes/HighPerformanceTable/types.ts"
+    ],
+    "src/components/Notes/HighPerformanceTable/TableAppModal.tsx": [
+      "src/components/Notes/HighPerformanceTable/TableApp.tsx"
+    ],
+    "src/components/Notes/HighPerformanceTable/types.ts": []
+  }
+}

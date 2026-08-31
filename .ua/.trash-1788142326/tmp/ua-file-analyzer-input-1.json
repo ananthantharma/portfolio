@@ -1,0 +1,313 @@
+{
+  "projectRoot": "C:\\Users\\anant\\OneDrive\\Desktop\\Coding - Gemini\\My-Portfolio-Website-main",
+  "batchFiles": [
+    {
+      "path": "src/app/api/ai-chat/sessions/route.ts",
+      "language": "typescript",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "language": "typescript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/calendar/route.ts",
+      "language": "typescript",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/debug/drive-status/route.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/drive/files/route.ts",
+      "language": "typescript",
+      "sizeLines": 306,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/drive/route.ts",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/finance/properties/route.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/gantt/ai/route.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/gemini/email-parser/route.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/gemini/generate/route.ts",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/gemini/todo-features/route.ts",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/openai/generate/route.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/openai/transcribe/route.ts",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/pdf-autofill/templates/route.ts",
+      "language": "typescript",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/process-flow/route.ts",
+      "language": "typescript",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/prompts/library/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/prompts/library/route.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/prompts/organize/route.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/prompts/rewrite/route.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/proxy/[...path]/route.ts",
+      "language": "typescript",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/documents/[id]/route.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/documents/route.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/fields/route.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/migrate/route.ts",
+      "language": "typescript",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/recipients/route.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/send/route.ts",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/signing/sign/route.ts",
+      "language": "typescript",
+      "sizeLines": 186,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/sourcing/config/route.ts",
+      "language": "typescript",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/sourcing/events/route.ts",
+      "language": "typescript",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/app/api/upload/route.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/app/api/ai-chat/sessions/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/AIChatSession.ts"
+    ],
+    "src/app/api/anomaly/camera/mqtt-creds/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/calendar/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/debug/drive-status/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/googleDrive.ts",
+      "src/lib/mongodb.ts"
+    ],
+    "src/app/api/drive/files/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/googleDrive.ts"
+    ],
+    "src/app/api/drive/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/finance/properties/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/Property.ts"
+    ],
+    "src/app/api/gantt/ai/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/gemini/email-parser/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/gemini/generate/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/gemini/todo-features/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/openai/generate/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/openai/transcribe/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/pdf-autofill/templates/[id]/route.ts": [
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/pdf-autofill/templates/route.ts": [
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/process-flow/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/ProcessFlow.ts"
+    ],
+    "src/app/api/prompts/library/[id]/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/PromptLibraryItem.ts"
+    ],
+    "src/app/api/prompts/library/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/PromptLibraryItem.ts"
+    ],
+    "src/app/api/prompts/organize/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/SavedPrompt.ts"
+    ],
+    "src/app/api/prompts/rewrite/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/SavedPrompt.ts"
+    ],
+    "src/app/api/proxy/[...path]/route.ts": [
+      "src/lib/auth.ts"
+    ],
+    "src/app/api/signing/documents/[id]/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/documents/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/fields/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/migrate/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/recipients/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/send/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/signing/sign/route.ts": [
+      "src/lib/neon.ts"
+    ],
+    "src/app/api/sourcing/config/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/SourcingConfig.ts"
+    ],
+    "src/app/api/sourcing/events/route.ts": [
+      "src/lib/auth.ts",
+      "src/lib/dbConnect.ts",
+      "src/models/SourcingEvent.ts"
+    ],
+    "src/app/api/upload/route.ts": [
+      "src/lib/auth.ts"
+    ]
+  }
+}

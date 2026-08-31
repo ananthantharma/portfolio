@@ -1,0 +1,302 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/components/CircuitBoardLoader.tsx",
+      "type": "file",
+      "name": "CircuitBoardLoader.tsx",
+      "filePath": "src/components/CircuitBoardLoader.tsx",
+      "summary": "Animated SVG/canvas circuit-board loading and intro visual for the hero area, featuring a scrambled 'hacker' text effect and animated timeline/education cards driven by requestAnimationFrame.",
+      "tags": ["component", "animation", "hero", "svg-canvas", "visual-effect"],
+      "complexity": "complex",
+      "languageNotes": "Uses useRef to hold animation frame ids and mutable iteration counters so the RAF loop reads fresh values without re-rendering."
+    },
+    {
+      "id": "file:src/components/Icon/DribbbleIcon.tsx",
+      "type": "file",
+      "name": "DribbbleIcon.tsx",
+      "filePath": "src/components/Icon/DribbbleIcon.tsx",
+      "summary": "Dribbble brand SVG icon component wrapping the shared Icon primitive with vector path data.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/FacebookIcon.tsx",
+      "type": "file",
+      "name": "FacebookIcon.tsx",
+      "filePath": "src/components/Icon/FacebookIcon.tsx",
+      "summary": "Facebook brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/GithubIcon.tsx",
+      "type": "file",
+      "name": "GithubIcon.tsx",
+      "filePath": "src/components/Icon/GithubIcon.tsx",
+      "summary": "GitHub brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/Icon.tsx",
+      "type": "file",
+      "name": "Icon.tsx",
+      "filePath": "src/components/Icon/Icon.tsx",
+      "summary": "Shared SVG wrapper primitive that standardizes viewBox, fill, ref forwarding and className handling for all brand icon components; exports the IconProps type.",
+      "tags": ["component", "icon", "primitive", "type-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/InstagramIcon.tsx",
+      "type": "file",
+      "name": "InstagramIcon.tsx",
+      "filePath": "src/components/Icon/InstagramIcon.tsx",
+      "summary": "Instagram brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/LinkedInIcon.tsx",
+      "type": "file",
+      "name": "LinkedInIcon.tsx",
+      "filePath": "src/components/Icon/LinkedInIcon.tsx",
+      "summary": "LinkedIn brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/QuoteIcon.tsx",
+      "type": "file",
+      "name": "QuoteIcon.tsx",
+      "filePath": "src/components/Icon/QuoteIcon.tsx",
+      "summary": "Decorative quotation-mark SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/StackOverflowIcon.tsx",
+      "type": "file",
+      "name": "StackOverflowIcon.tsx",
+      "filePath": "src/components/Icon/StackOverflowIcon.tsx",
+      "summary": "Stack Overflow brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Icon/TwitterIcon.tsx",
+      "type": "file",
+      "name": "TwitterIcon.tsx",
+      "filePath": "src/components/Icon/TwitterIcon.tsx",
+      "summary": "Twitter brand SVG icon component wrapping the shared Icon primitive.",
+      "tags": ["component", "icon", "svg", "presentational"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Layout/Section.tsx",
+      "type": "file",
+      "name": "Section.tsx",
+      "filePath": "src/components/Layout/Section.tsx",
+      "summary": "Layout primitive that renders a page <section> with a scroll-anchor id from SectionId and consistent padding/centering, used by Hero and Contact.",
+      "tags": ["component", "layout", "primitive", "wrapper"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/PasswordItem.tsx",
+      "type": "file",
+      "name": "PasswordItem.tsx",
+      "filePath": "src/components/PasswordItem.tsx",
+      "summary": "Legacy vault list-row component that displays a single password entry with show/hide, clipboard copy, inline edit form and delete actions.",
+      "tags": ["component", "vault", "form", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Sections/Contact/ContactForm.tsx",
+      "type": "file",
+      "name": "ContactForm.tsx",
+      "filePath": "src/components/Sections/Contact/ContactForm.tsx",
+      "summary": "Controlled contact form component that posts name/email/message to /api/contact and renders idle, sending, success and error states.",
+      "tags": ["component", "form", "contact", "api-consumer"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Sections/Contact/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "src/components/Sections/Contact/index.tsx",
+      "summary": "Contact section that lays out the ContactForm alongside contact details, mapping ContactType values to icons and links from the data module.",
+      "tags": ["component", "section", "contact", "entry-point"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Sections/Footer.tsx",
+      "type": "file",
+      "name": "Footer.tsx",
+      "filePath": "src/components/Sections/Footer.tsx",
+      "summary": "Page footer with a scroll-to-hero button, social icon links, attribution and a privacy policy link.",
+      "tags": ["component", "section", "footer", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Sections/Hero.tsx",
+      "type": "file",
+      "name": "Hero.tsx",
+      "filePath": "src/components/Sections/Hero.tsx",
+      "summary": "Landing hero section rendering an animated canvas starfield/comet background with mouse-driven parallax, credential badges, intro copy and call-to-action buttons.",
+      "tags": ["component", "section", "hero", "animation", "svg-canvas"],
+      "complexity": "complex",
+      "languageNotes": "Canvas render loop reads a mousePosRef ref to avoid recreating the animation on every mouse move."
+    },
+    {
+      "id": "file:src/components/Socials.tsx",
+      "type": "file",
+      "name": "Socials.tsx",
+      "filePath": "src/components/Socials.tsx",
+      "summary": "Renders a row of accessible social media icon links from the socialLinks data array.",
+      "tags": ["component", "presentational", "navigation", "social"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/TimelineBox.tsx",
+      "type": "file",
+      "name": "TimelineBox.tsx",
+      "filePath": "src/components/TimelineBox.tsx",
+      "summary": "Scrollable card list that renders a titled timeline of TimelineItem entries (work or education) with logos and staggered fade-in animation.",
+      "tags": ["component", "timeline", "presentational", "resume"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Vault/PasswordModal.tsx",
+      "type": "file",
+      "name": "PasswordModal.tsx",
+      "filePath": "src/components/Vault/PasswordModal.tsx",
+      "summary": "Add/edit modal for vault entries with per-type tabs (password, card, note, identity, API key), dynamic field sets and an async onSave submit handler.",
+      "tags": ["component", "vault", "modal", "form"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Vault/VaultDashboard.tsx",
+      "type": "file",
+      "name": "VaultDashboard.tsx",
+      "filePath": "src/components/Vault/VaultDashboard.tsx",
+      "summary": "Main secure-vault UI: sidebar navigation by item type, search, grid/list views, favorites, security badges and per-entry copy/edit/delete actions over a VaultEntry list.",
+      "tags": ["component", "vault", "dashboard", "data-model"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/WorkTimeline.tsx",
+      "type": "file",
+      "name": "WorkTimeline.tsx",
+      "filePath": "src/components/WorkTimeline.tsx",
+      "summary": "Compact vertical work-history timeline rendered from the heroTimeline data array.",
+      "tags": ["component", "timeline", "presentational", "resume"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/data/data.tsx",
+      "type": "file",
+      "name": "data.tsx",
+      "filePath": "src/data/data.tsx",
+      "summary": "Central content module exporting all portfolio data — page meta, section ids, hero copy, timeline, skills, education, experience, contact details and social links — consumed across the site.",
+      "tags": ["data-model", "content", "configuration", "barrel"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/data/dataDef.ts",
+      "type": "file",
+      "name": "dataDef.ts",
+      "filePath": "src/data/dataDef.ts",
+      "summary": "Shared TypeScript type definitions for site content and the secure vault, including HomepageMeta, Hero, TimelineItem, ContactType, Social and the VaultEntry/VaultItemType model.",
+      "tags": ["type-definition", "data-model", "vault", "schema-definition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/images/header-background.webp",
+      "type": "file",
+      "name": "header-background.webp",
+      "filePath": "src/images/header-background.webp",
+      "summary": "Hero header background image asset imported by the data module as the hero imageSrc.",
+      "tags": ["asset", "image", "hero", "static"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/dashboard.tsx",
+      "type": "file",
+      "name": "dashboard.tsx",
+      "filePath": "src/pages/dashboard.tsx",
+      "summary": "Next.js page for the secure vault: gates access via next-auth session and a secureLoginEnabled flag, fetches entries from /api/passwords and wires CRUD handlers into VaultDashboard and PasswordModal.",
+      "tags": ["entry-point", "page", "vault", "api-consumer", "authentication"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/pages/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "src/pages/index.tsx",
+      "summary": "Next.js home page composing the Header (dynamically imported, client-only), Hero, Contact and Footer sections inside the Page layout with homepage meta.",
+      "tags": ["entry-point", "page", "composition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Vault/VaultDashboard.tsx:VaultDashboard",
+      "type": "function",
+      "name": "VaultDashboard",
+      "filePath": "src/components/Vault/VaultDashboard.tsx",
+      "lineRange": [348, 584],
+      "summary": "Memoized vault dashboard component: manages active nav section, search query and view mode, derives filtered/favorite entry lists and renders the sidebar, toolbar and entry cards.",
+      "tags": ["component", "vault", "dashboard", "state-management"],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/components/CircuitBoardLoader.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/CircuitBoardLoader.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/DribbbleIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/FacebookIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/GithubIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/InstagramIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/LinkedInIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/QuoteIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/StackOverflowIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Icon/TwitterIcon.tsx", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Layout/Section.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/PasswordItem.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Icon/FacebookIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Icon/GithubIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Icon/InstagramIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Icon/LinkedInIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Icon/TwitterIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Layout/Section.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/components/Sections/Contact/ContactForm.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Contact/index.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Footer.tsx", "target": "file:src/components/Socials.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Footer.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Hero.tsx", "target": "file:src/components/Layout/Section.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Sections/Hero.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Socials.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/TimelineBox.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Vault/PasswordModal.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Vault/VaultDashboard.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/WorkTimeline.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/components/Icon/GithubIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/components/Icon/InstagramIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/components/Icon/LinkedInIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/components/Icon/TwitterIcon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/data.tsx", "target": "file:src/images/header-background.webp", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/data/dataDef.ts", "target": "file:src/components/Icon/Icon.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/dashboard.tsx", "target": "file:src/components/AccessDenied.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/dashboard.tsx", "target": "file:src/components/Sections/Header.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/dashboard.tsx", "target": "file:src/components/Vault/PasswordModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/dashboard.tsx", "target": "file:src/components/Vault/VaultDashboard.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/dashboard.tsx", "target": "file:src/data/dataDef.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/index.tsx", "target": "file:src/components/Layout/Page.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/index.tsx", "target": "file:src/components/Sections/Contact/index.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/index.tsx", "target": "file:src/components/Sections/Footer.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/index.tsx", "target": "file:src/components/Sections/Hero.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/pages/index.tsx", "target": "file:src/data/data.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Vault/VaultDashboard.tsx", "target": "function:src/components/Vault/VaultDashboard.tsx:VaultDashboard", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Vault/VaultDashboard.tsx", "target": "function:src/components/Vault/VaultDashboard.tsx:VaultDashboard", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/pages/dashboard.tsx", "target": "function:src/components/Vault/VaultDashboard.tsx:VaultDashboard", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

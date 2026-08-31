@@ -1,0 +1,307 @@
+{
+  "projectRoot": "C:/Users/anant/OneDrive/Desktop/Coding - Gemini/My-Portfolio-Website-main",
+  "batchFiles": [
+    {
+      "path": "src/app/tasks/page.tsx",
+      "language": "typescript",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "language": "typescript",
+      "sizeLines": 362,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/PromptLibrary/api.ts",
+      "language": "typescript",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/ArchiveView.tsx",
+      "language": "typescript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/AttachmentGallery.tsx",
+      "language": "typescript",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/BoardView.tsx",
+      "language": "typescript",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/CalendarView.tsx",
+      "language": "typescript",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/CommandPalette.tsx",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/ConfettiBurst.tsx",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/ContextMenu.tsx",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/DetailDrawer.tsx",
+      "language": "typescript",
+      "sizeLines": 539,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/EmailDropModal.tsx",
+      "language": "typescript",
+      "sizeLines": 173,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/InsightsView.tsx",
+      "language": "typescript",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/LinkedNoteSection.tsx",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/ListView.tsx",
+      "language": "typescript",
+      "sizeLines": 214,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/MatrixView.tsx",
+      "language": "typescript",
+      "sizeLines": 315,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/NoteLinkModal.tsx",
+      "language": "typescript",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/NoteQuickEditModal.tsx",
+      "language": "typescript",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/PropertyCard.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/SavedViewsBar.tsx",
+      "language": "typescript",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/TaskCard.tsx",
+      "language": "typescript",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/TaskWindow.tsx",
+      "language": "typescript",
+      "sizeLines": 669,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/TasksApp.tsx",
+      "language": "typescript",
+      "sizeLines": 1415,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/TemplatesModal.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/UndoToast.tsx",
+      "language": "typescript",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/aiSubtasks.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/api.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/emailParse.ts",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/notesApi.ts",
+      "language": "typescript",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/pasteImage.ts",
+      "language": "typescript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Tasks/types.ts",
+      "language": "typescript",
+      "sizeLines": 486,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/app/tasks/page.tsx": [
+      "src/components/Tasks/TasksApp.tsx"
+    ],
+    "src/components/PromptLibrary/PromptLibraryModal.tsx": [
+      "src/components/PromptLibrary/api.ts"
+    ],
+    "src/components/PromptLibrary/api.ts": [],
+    "src/components/Tasks/ArchiveView.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/AttachmentGallery.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/BoardView.tsx": [
+      "src/components/Tasks/TaskCard.tsx",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/CalendarView.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/CommandPalette.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/ConfettiBurst.tsx": [],
+    "src/components/Tasks/ContextMenu.tsx": [],
+    "src/components/Tasks/DetailDrawer.tsx": [
+      "src/components/Tasks/AttachmentGallery.tsx",
+      "src/components/Tasks/LinkedNoteSection.tsx",
+      "src/components/Tasks/PropertyCard.tsx",
+      "src/components/Tasks/aiSubtasks.ts",
+      "src/components/Tasks/pasteImage.ts",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/EmailDropModal.tsx": [
+      "src/components/Tasks/emailParse.ts"
+    ],
+    "src/components/Tasks/InsightsView.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/LinkedNoteSection.tsx": [
+      "src/components/Tasks/NoteLinkModal.tsx",
+      "src/components/Tasks/NoteQuickEditModal.tsx",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/ListView.tsx": [
+      "src/components/Tasks/TaskCard.tsx",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/MatrixView.tsx": [
+      "src/components/Tasks/TaskCard.tsx",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/NoteLinkModal.tsx": [
+      "src/components/Tasks/notesApi.ts"
+    ],
+    "src/components/Tasks/NoteQuickEditModal.tsx": [
+      "src/components/Notes/RichTextEditor.tsx",
+      "src/components/Tasks/notesApi.ts"
+    ],
+    "src/components/Tasks/PropertyCard.tsx": [],
+    "src/components/Tasks/SavedViewsBar.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/TaskCard.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/TaskWindow.tsx": [
+      "src/components/Tasks/AttachmentGallery.tsx",
+      "src/components/Tasks/LinkedNoteSection.tsx",
+      "src/components/Tasks/PropertyCard.tsx",
+      "src/components/Tasks/aiSubtasks.ts",
+      "src/components/Tasks/api.ts",
+      "src/components/Tasks/emailParse.ts",
+      "src/components/Tasks/pasteImage.ts",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/TasksApp.tsx": [
+      "src/components/Anomaly/InAppBrowser.tsx",
+      "src/components/Notes/ContactListModal.tsx",
+      "src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "src/components/Tasks/ArchiveView.tsx",
+      "src/components/Tasks/BoardView.tsx",
+      "src/components/Tasks/BookmarksModal.tsx",
+      "src/components/Tasks/CalendarView.tsx",
+      "src/components/Tasks/CommandPalette.tsx",
+      "src/components/Tasks/ConfettiBurst.tsx",
+      "src/components/Tasks/ContextMenu.tsx",
+      "src/components/Tasks/DetailDrawer.tsx",
+      "src/components/Tasks/EmailDropModal.tsx",
+      "src/components/Tasks/InsightsView.tsx",
+      "src/components/Tasks/ListView.tsx",
+      "src/components/Tasks/MatrixView.tsx",
+      "src/components/Tasks/SavedViewsBar.tsx",
+      "src/components/Tasks/TaskWindow.tsx",
+      "src/components/Tasks/TemplatesModal.tsx",
+      "src/components/Tasks/UndoToast.tsx",
+      "src/components/Tasks/api.ts",
+      "src/components/Tasks/emailParse.ts",
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/TemplatesModal.tsx": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/UndoToast.tsx": [],
+    "src/components/Tasks/aiSubtasks.ts": [],
+    "src/components/Tasks/api.ts": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/emailParse.ts": [],
+    "src/components/Tasks/notesApi.ts": [],
+    "src/components/Tasks/pasteImage.ts": [
+      "src/components/Tasks/types.ts"
+    ],
+    "src/components/Tasks/types.ts": []
+  }
+}

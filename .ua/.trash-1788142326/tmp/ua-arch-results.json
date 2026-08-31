@@ -1,0 +1,2214 @@
+{
+  "scriptCompleted": true,
+  "commonPrefix": "",
+  "directoryGroups": {
+    "app/api": [
+      "file:src/app/api/ai-chat/sessions/route.ts",
+      "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "file:src/app/api/calendar/route.ts",
+      "file:src/app/api/debug/drive-status/route.ts",
+      "file:src/app/api/drive/files/route.ts",
+      "file:src/app/api/drive/route.ts",
+      "file:src/app/api/finance/properties/route.ts",
+      "file:src/app/api/gantt/ai/route.ts",
+      "file:src/app/api/gemini/email-parser/route.ts",
+      "file:src/app/api/gemini/generate/route.ts",
+      "file:src/app/api/gemini/todo-features/route.ts",
+      "file:src/app/api/openai/generate/route.ts",
+      "file:src/app/api/openai/transcribe/route.ts",
+      "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "file:src/app/api/pdf-autofill/templates/route.ts",
+      "file:src/app/api/process-flow/route.ts",
+      "file:src/app/api/prompts/library/[id]/route.ts",
+      "file:src/app/api/prompts/library/route.ts",
+      "file:src/app/api/prompts/organize/route.ts",
+      "file:src/app/api/prompts/rewrite/route.ts",
+      "file:src/app/api/proxy/[...path]/route.ts",
+      "file:src/app/api/signing/documents/[id]/route.ts",
+      "file:src/app/api/signing/documents/route.ts",
+      "file:src/app/api/signing/fields/route.ts",
+      "file:src/app/api/signing/migrate/route.ts",
+      "file:src/app/api/signing/recipients/route.ts",
+      "file:src/app/api/signing/send/route.ts",
+      "file:src/app/api/signing/sign/route.ts",
+      "file:src/app/api/sourcing/config/route.ts",
+      "file:src/app/api/sourcing/events/route.ts",
+      "file:src/app/api/upload/route.ts",
+      "file:src/app/api/attachments/[id]/route.ts",
+      "file:src/app/api/attachments/route.ts",
+      "file:src/app/api/contacts/[id]/route.ts",
+      "file:src/app/api/contacts/route.ts",
+      "file:src/app/api/debug/fix-gantt/route.ts",
+      "file:src/app/api/finance/transactions/[id]/route.ts",
+      "file:src/app/api/finance/transactions/route.ts",
+      "file:src/app/api/finance/transactions/upload/route.ts",
+      "file:src/app/api/gantt/route.ts",
+      "file:src/app/api/notes/categories/[id]/route.ts",
+      "file:src/app/api/notes/categories/reorder/route.ts",
+      "file:src/app/api/notes/categories/route.ts",
+      "file:src/app/api/notes/pages/[id]/attachments/route.ts",
+      "file:src/app/api/notes/pages/[id]/route.ts",
+      "file:src/app/api/notes/pages/reorder/route.ts",
+      "file:src/app/api/notes/pages/route.ts",
+      "file:src/app/api/notes/sections/[id]/route.ts",
+      "file:src/app/api/notes/sections/reorder/route.ts",
+      "file:src/app/api/notes/sections/route.ts",
+      "file:src/app/api/notes/stats/route.ts",
+      "file:src/app/api/todos/[id]/route.ts",
+      "file:src/app/api/todos/attachment/route.ts",
+      "file:src/app/api/todos/reorder/route.ts",
+      "file:src/app/api/todos/route.ts",
+      "file:src/app/api/user/settings/route.ts",
+      "file:src/app/api/finance/budget/[id]/route.ts",
+      "file:src/app/api/finance/budget/route.ts",
+      "file:src/app/api/invoices/scan/route.ts",
+      "file:src/app/api/invoices/[id]/route.ts",
+      "file:src/app/api/invoices/route.ts",
+      "file:src/app/api/pdf-autofill/analyze-form/route.ts",
+      "file:src/app/api/pdf-autofill/extract/route.ts",
+      "file:src/app/api/pdf-autofill/fill/route.ts",
+      "file:src/app/api/pdf-autofill/map-fields/route.ts"
+    ],
+    "app/tasks": [
+      "file:src/app/tasks/page.tsx"
+    ],
+    "components/PromptLibrary": [
+      "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "file:src/components/PromptLibrary/api.ts"
+    ],
+    "components/Tasks": [
+      "file:src/components/Tasks/ArchiveView.tsx",
+      "file:src/components/Tasks/AttachmentGallery.tsx",
+      "file:src/components/Tasks/BoardView.tsx",
+      "file:src/components/Tasks/CalendarView.tsx",
+      "file:src/components/Tasks/CommandPalette.tsx",
+      "file:src/components/Tasks/ConfettiBurst.tsx",
+      "file:src/components/Tasks/ContextMenu.tsx",
+      "file:src/components/Tasks/DetailDrawer.tsx",
+      "file:src/components/Tasks/EmailDropModal.tsx",
+      "file:src/components/Tasks/InsightsView.tsx",
+      "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "file:src/components/Tasks/ListView.tsx",
+      "file:src/components/Tasks/MatrixView.tsx",
+      "file:src/components/Tasks/NoteLinkModal.tsx",
+      "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "file:src/components/Tasks/PropertyCard.tsx",
+      "file:src/components/Tasks/SavedViewsBar.tsx",
+      "file:src/components/Tasks/TaskCard.tsx",
+      "file:src/components/Tasks/TaskWindow.tsx",
+      "file:src/components/Tasks/TasksApp.tsx",
+      "file:src/components/Tasks/TemplatesModal.tsx",
+      "file:src/components/Tasks/UndoToast.tsx",
+      "file:src/components/Tasks/aiSubtasks.ts",
+      "file:src/components/Tasks/api.ts",
+      "file:src/components/Tasks/emailParse.ts",
+      "file:src/components/Tasks/notesApi.ts",
+      "file:src/components/Tasks/pasteImage.ts",
+      "file:src/components/Tasks/types.ts",
+      "file:src/components/Tasks/BookmarksModal.tsx"
+    ],
+    "lib": [
+      "file:src/lib/auth.ts",
+      "file:src/lib/googleDrive.ts",
+      "file:src/lib/mongodb.ts",
+      "file:src/lib/neon.ts",
+      "file:src/lib/dbConnect.ts",
+      "file:src/lib/gridfs.ts",
+      "file:src/lib/categories.ts",
+      "file:src/lib/contact-constants.ts",
+      "file:src/lib/gemini.ts",
+      "file:src/lib/openai.ts"
+    ],
+    "models": [
+      "file:src/models/AIChatSession.ts",
+      "file:src/models/ProcessFlow.ts",
+      "file:src/models/PromptLibraryItem.ts",
+      "file:src/models/Property.ts",
+      "file:src/models/RiskAlert.ts",
+      "file:src/models/RiskQuestionnaire.ts",
+      "file:src/models/SavedPrompt.ts",
+      "file:src/models/SourcingConfig.ts",
+      "file:src/models/SourcingEvent.ts",
+      "file:src/models/Supplier.ts",
+      "file:src/models/AccessLog.ts",
+      "file:src/models/Attachment.ts",
+      "file:src/models/Contact.ts",
+      "file:src/models/GanttChart.ts",
+      "file:src/models/Investment.ts",
+      "file:src/models/NoteCategory.ts",
+      "file:src/models/NotePage.ts",
+      "file:src/models/NoteSection.ts",
+      "file:src/models/Password.ts",
+      "file:src/models/TableDoc.ts",
+      "file:src/models/ToDo.ts",
+      "file:src/models/Transaction.ts",
+      "file:src/models/User.ts",
+      "file:src/models/BudgetItem.ts",
+      "file:src/models/Invoice.ts",
+      "file:src/models/Bookmark.ts",
+      "file:src/models/PdfTemplate.ts"
+    ],
+    "pages/api": [
+      "file:src/pages/api/admin/users/[id]/delete.ts",
+      "file:src/pages/api/admin/users/create.ts",
+      "file:src/pages/api/auth/[...nextauth].ts",
+      "file:src/pages/api/bookmarks.ts",
+      "file:src/pages/api/bookmarks/[id].ts",
+      "file:src/pages/api/categories/update.ts",
+      "file:src/pages/api/debug/auth-check.ts",
+      "file:src/pages/api/finance/stock-price/index.ts",
+      "file:src/pages/api/gemini/assess.ts",
+      "file:src/pages/api/sourcing/parse-clipboard.ts",
+      "file:src/pages/api/supplier-risk/alerts.ts",
+      "file:src/pages/api/supplier-risk/dashboard.ts",
+      "file:src/pages/api/supplier-risk/intelligence.ts",
+      "file:src/pages/api/supplier-risk/questionnaires.ts",
+      "file:src/pages/api/supplier-risk/seed.ts",
+      "file:src/pages/api/supplier-risk/suppliers/[id].ts",
+      "file:src/pages/api/supplier-risk/suppliers/index.ts",
+      "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "file:src/pages/api/database-stats.ts",
+      "file:src/pages/api/finance/investments/[id].ts",
+      "file:src/pages/api/finance/investments/index.ts",
+      "file:src/pages/api/finance/investments/sell.ts",
+      "file:src/pages/api/passwords/[id].ts",
+      "file:src/pages/api/passwords/index.ts",
+      "file:src/pages/api/sys-pulse.ts",
+      "file:src/pages/api/tables/[id].ts",
+      "file:src/pages/api/tables/index.ts",
+      "file:src/pages/api/finance/categorize.ts",
+      "file:src/pages/api/.gitkeep",
+      "file:src/pages/api/contact.ts",
+      "file:src/pages/api/tables/generate.ts"
+    ],
+    "components/Finance": [
+      "file:src/components/Finance/TransactionModal.tsx",
+      "file:src/components/Finance/ActivityFeed.tsx",
+      "file:src/components/Finance/BudgetItemModal.tsx",
+      "file:src/components/Finance/BudgetListModal.tsx",
+      "file:src/components/Finance/BudgetOverview.tsx",
+      "file:src/components/Finance/BudgetTable.tsx",
+      "file:src/components/Finance/CSVUploader.tsx",
+      "file:src/components/Finance/CategoryDetailModal.tsx",
+      "file:src/components/Finance/CategoryPicker.tsx",
+      "file:src/components/Finance/FinanceCharts.tsx",
+      "file:src/components/Finance/InvestmentHistoryModal.tsx",
+      "file:src/components/Finance/InvestmentManager.tsx",
+      "file:src/components/Finance/InvestmentModal.tsx",
+      "file:src/components/Finance/MetricCard.tsx",
+      "file:src/components/Finance/MonthSelector.tsx",
+      "file:src/components/Finance/SellInvestmentModal.tsx",
+      "file:src/components/Finance/SpendTrendChart.tsx",
+      "file:src/components/Finance/TopCategorySpend.tsx",
+      "file:src/components/Finance/TransactionEditModal.tsx",
+      "file:src/components/Finance/TransactionList.tsx",
+      "file:src/components/Finance/TransactionTable.tsx",
+      "file:src/components/Finance/UpcomingExpenses.tsx",
+      "file:src/components/Finance/StatCard.tsx",
+      "file:src/components/Finance/SummaryCards.tsx"
+    ],
+    "components/Notes": [
+      "file:src/components/Notes/EmailTaskModal.tsx",
+      "file:src/components/Notes/MovePageModal.tsx",
+      "file:src/components/Notes/SearchModal.tsx",
+      "file:src/components/Notes/SectionDashboard.tsx",
+      "file:src/components/Notes/SmartInput.tsx",
+      "file:src/components/Notes/TaskFormModal.tsx",
+      "file:src/components/Notes/ToDoBoard.tsx",
+      "file:src/components/Notes/ToDoListModal.tsx",
+      "file:src/components/Notes/AssessmentModal.tsx",
+      "file:src/components/Notes/AttachmentManager.tsx",
+      "file:src/components/Notes/AudioRecorderModal.tsx",
+      "file:src/components/Notes/BadgeSettingsContext.tsx",
+      "file:src/components/Notes/BadgeSettingsModal.tsx",
+      "file:src/components/Notes/BookmarkListModal.tsx",
+      "file:src/components/Notes/CategoryList.tsx",
+      "file:src/components/Notes/ColorPicker.tsx",
+      "file:src/components/Notes/CommandPalette.tsx",
+      "file:src/components/Notes/ContactFormModal.tsx",
+      "file:src/components/Notes/ContactListModal.tsx",
+      "file:src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "file:src/components/Notes/ExecutiveModal.tsx",
+      "file:src/components/Notes/FlaggedItemsModal.tsx",
+      "file:src/components/Notes/GoogleCalendarModal.tsx",
+      "file:src/components/Notes/GoogleDriveModal.tsx",
+      "file:src/components/Notes/Humanizer.tsx",
+      "file:src/components/Notes/IconPicker.tsx",
+      "file:src/components/Notes/ImageExtractionModal.tsx",
+      "file:src/components/Notes/LogicStyleRefiner.tsx",
+      "file:src/components/Notes/NoteEditor.tsx",
+      "file:src/components/Notes/NotesLayout.tsx",
+      "file:src/components/Notes/PageList.tsx",
+      "file:src/components/Notes/PromptEditorModal.tsx",
+      "file:src/components/Notes/RewriteModal.tsx",
+      "file:src/components/Notes/SectionList.tsx",
+      "file:src/components/Notes/SectionPageList.tsx",
+      "file:src/components/Notes/SimpleRewriteModal.tsx",
+      "file:src/components/Notes/SimpleRewriteOpenAIModal.tsx",
+      "file:src/components/Notes/SortableItem.tsx",
+      "file:src/components/Notes/SourcingEventModal.tsx",
+      "file:src/components/Notes/SourcingListModal.tsx",
+      "file:src/components/Notes/ToDoModal.tsx",
+      "file:src/components/Notes/TruthTeller.tsx",
+      "file:src/components/Notes/DrawingNode.tsx",
+      "file:src/components/Notes/ImageNode.tsx",
+      "file:src/components/Notes/ImagePastePlugin.tsx",
+      "file:src/components/Notes/RichTextEditor.tsx",
+      "file:src/components/Notes/TableActionsPlugin.tsx",
+      "file:src/components/Notes/UnifiedAIChatModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "file:src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/types.ts",
+      "file:src/components/Notes/AISuggestions.tsx",
+      "file:src/components/Notes/ColoredTableCellNode.tsx",
+      "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "file:src/components/Notes/NotesSkeleton.tsx"
+    ],
+    "pages/admin": [
+      "file:src/pages/admin/index.tsx"
+    ],
+    "app/finance": [
+      "file:src/app/finance/page.tsx",
+      "file:src/app/finance/layout.tsx"
+    ],
+    "components": [
+      "file:src/components/CircuitBoardLoader.tsx",
+      "file:src/components/PasswordItem.tsx",
+      "file:src/components/Socials.tsx",
+      "file:src/components/TimelineBox.tsx",
+      "file:src/components/WorkTimeline.tsx",
+      "file:src/components/StandaloneRewriteModal.tsx",
+      "file:src/components/ApiKeyInput.tsx",
+      "file:src/components/ChatInterface.tsx",
+      "file:src/components/OpenAIApiKeyInput.tsx",
+      "file:src/components/OpenAIChatInterface.tsx",
+      "file:src/components/UserProfileMenu.tsx",
+      "file:src/components/AccessDenied.tsx",
+      "file:src/components/.gitkeep",
+      "file:src/components/Base.tsx",
+      "file:src/components/ChatInterface.css"
+    ],
+    "components/Icon": [
+      "file:src/components/Icon/DribbbleIcon.tsx",
+      "file:src/components/Icon/FacebookIcon.tsx",
+      "file:src/components/Icon/GithubIcon.tsx",
+      "file:src/components/Icon/Icon.tsx",
+      "file:src/components/Icon/InstagramIcon.tsx",
+      "file:src/components/Icon/LinkedInIcon.tsx",
+      "file:src/components/Icon/QuoteIcon.tsx",
+      "file:src/components/Icon/StackOverflowIcon.tsx",
+      "file:src/components/Icon/TwitterIcon.tsx"
+    ],
+    "components/Layout": [
+      "file:src/components/Layout/Section.tsx",
+      "file:src/components/Layout/Page.tsx"
+    ],
+    "components/Sections": [
+      "file:src/components/Sections/Contact/ContactForm.tsx",
+      "file:src/components/Sections/Contact/index.tsx",
+      "file:src/components/Sections/Footer.tsx",
+      "file:src/components/Sections/Hero.tsx",
+      "file:src/components/Sections/Header.tsx",
+      "file:src/components/Sections/StarField.tsx"
+    ],
+    "components/Vault": [
+      "file:src/components/Vault/PasswordModal.tsx",
+      "file:src/components/Vault/VaultDashboard.tsx"
+    ],
+    "data": [
+      "file:src/data/data.tsx",
+      "file:src/data/dataDef.ts"
+    ],
+    "images": [
+      "file:src/images/header-background.webp",
+      "file:src/images/.gitkeep",
+      "file:src/images/testimonial.webp"
+    ],
+    "pages": [
+      "file:src/pages/dashboard.tsx",
+      "file:src/pages/index.tsx",
+      "file:src/pages/bookmarks.tsx",
+      "file:src/pages/chat.tsx",
+      "file:src/pages/open.tsx",
+      "file:src/pages/privacy.tsx",
+      "file:src/pages/_app.tsx",
+      "file:src/pages/_document.tsx",
+      "file:src/pages/login.tsx"
+    ],
+    "components/Anomaly": [
+      "file:src/components/Anomaly/CameraModal.tsx",
+      "file:src/components/Anomaly/AnomalyApp.tsx",
+      "file:src/components/Anomaly/BookmarksModal.tsx",
+      "file:src/components/Anomaly/CommandPalette.tsx",
+      "file:src/components/Anomaly/EditorPanel.tsx",
+      "file:src/components/Anomaly/HomeView.tsx",
+      "file:src/components/Anomaly/IconPicker.tsx",
+      "file:src/components/Anomaly/InAppBrowser.tsx",
+      "file:src/components/Anomaly/MovePageModal.tsx",
+      "file:src/components/Anomaly/PageList.tsx",
+      "file:src/components/Anomaly/Sidebar.tsx",
+      "file:src/components/Anomaly/api.ts",
+      "file:src/components/Anomaly/bookmarksApi.ts",
+      "file:src/components/Anomaly/icons.ts",
+      "file:src/components/Anomaly/types.ts",
+      "file:src/components/Anomaly/Guard.tsx"
+    ],
+    "components/Organization": [
+      "file:src/components/Organization/OrgAISidebar.tsx",
+      "file:src/components/Organization/OrgCalendarView.tsx",
+      "file:src/components/Organization/OrgContactsView.tsx",
+      "file:src/components/Organization/OrgDashboard.tsx",
+      "file:src/components/Organization/OrgFilesView.tsx",
+      "file:src/components/Organization/OrgTasksView.tsx",
+      "file:src/components/Organization/OrganizationLayout.tsx",
+      "file:src/components/Organization/OrgNotesView.tsx"
+    ],
+    "hooks": [
+      "file:src/hooks/useDetectOutsideClick.ts",
+      "file:src/hooks/useNavObserver.tsx",
+      "file:src/hooks/useInterval.ts",
+      "file:src/hooks/useWindow.ts"
+    ],
+    "app/drive": [
+      "file:src/app/drive/page.tsx"
+    ],
+    "app/gantt": [
+      "file:src/app/gantt/page.tsx"
+    ],
+    "app/anomaly": [
+      "file:src/app/anomaly/page.tsx",
+      "file:src/app/anomaly/layout.tsx"
+    ],
+    "app/notes": [
+      "file:src/app/notes/page.tsx",
+      "file:src/app/notes/layout.tsx",
+      "file:src/app/notes/loading.tsx"
+    ],
+    "app/organization": [
+      "file:src/app/organization/page.tsx",
+      "file:src/app/organization/layout.tsx"
+    ],
+    "app/pdf-autofill": [
+      "file:src/app/pdf-autofill/page.tsx",
+      "file:src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "file:src/app/pdf-autofill/TemplateEditor.tsx"
+    ],
+    "app/process-flow": [
+      "file:src/app/process-flow/page.tsx",
+      "file:src/app/process-flow/layout.tsx"
+    ],
+    "app/smart-invoices": [
+      "file:src/app/smart-invoices/page.tsx"
+    ],
+    "components/Invoices": [
+      "file:src/components/Invoices/InvoiceList.tsx",
+      "file:src/components/Invoices/InvoiceScanner.tsx"
+    ],
+    "components/ProcessFlow": [
+      "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx"
+    ],
+    "components/SupplierRisk": [
+      "file:src/components/SupplierRisk/AlertItem.tsx",
+      "file:src/components/SupplierRisk/RiskBadge.tsx",
+      "file:src/components/SupplierRisk/RiskDistributionChart.tsx",
+      "file:src/components/SupplierRisk/RiskRadarChart.tsx",
+      "file:src/components/SupplierRisk/StatCard.tsx",
+      "file:src/components/SupplierRisk/SupplierIntelligence.tsx",
+      "file:src/components/SupplierRisk/SupplierModal.tsx",
+      "file:src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ],
+    "pages/supplier-risk": [
+      "file:src/pages/supplier-risk/alerts.tsx",
+      "file:src/pages/supplier-risk/index.tsx",
+      "file:src/pages/supplier-risk/onboarding.tsx",
+      "file:src/pages/supplier-risk/suppliers/[id].tsx",
+      "file:src/pages/supplier-risk/suppliers/index.tsx"
+    ],
+    "(root)": [
+      "config:.env.local.example",
+      "config:.yarnrc.yml",
+      "document:README.md",
+      "config:package.json",
+      "config:tsconfig.json",
+      "config:vercel.json",
+      "file:.npmrc",
+      "file:.prettierignore",
+      "file:next-env.d.ts",
+      "file:next-sitemap.js",
+      "config:next.config.js",
+      "file:postcss.config.js",
+      "file:server.js",
+      "file:src/config.ts",
+      "file:src/globalStyles.scss",
+      "file:src/types.d.ts",
+      "config:stylelint.config.js",
+      "config:tailwind.config.js"
+    ],
+    ".claude": [
+      "config:.claude/launch.json",
+      "config:.claude/settings.local.json"
+    ],
+    ".github": [
+      "config:.github/FUNDING.yml"
+    ],
+    "public": [
+      "file:public/site.webmanifest"
+    ],
+    "scripts": [
+      "file:scripts/audit-data-ownership.js",
+      "file:scripts/clear-transactions.js",
+      "file:scripts/list-transactions.js",
+      "file:scripts/seed-properties.js",
+      "file:scripts/test-mongoose.js"
+    ],
+    "app/debug": [
+      "file:src/app/debug/drive-status/page.tsx"
+    ],
+    "app": [
+      "file:src/app/layout.tsx",
+      "file:src/app/providers.tsx"
+    ],
+    "app/sign": [
+      "file:src/app/sign/[token]/layout.tsx",
+      "file:src/app/sign/[token]/page.tsx"
+    ],
+    "app/signing": [
+      "file:src/app/signing/[id]/page.tsx",
+      "file:src/app/signing/layout.tsx",
+      "file:src/app/signing/page.tsx"
+    ],
+    "types": [
+      "file:src/types/next-auth.d.ts",
+      "file:src/types/quill-better-table.d.ts"
+    ]
+  },
+  "nodeTypeGroups": {
+    "file": [
+      "file:src/app/api/ai-chat/sessions/route.ts",
+      "file:src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "file:src/app/api/calendar/route.ts",
+      "file:src/app/api/debug/drive-status/route.ts",
+      "file:src/app/api/drive/files/route.ts",
+      "file:src/app/api/drive/route.ts",
+      "file:src/app/api/finance/properties/route.ts",
+      "file:src/app/api/gantt/ai/route.ts",
+      "file:src/app/api/gemini/email-parser/route.ts",
+      "file:src/app/api/gemini/generate/route.ts",
+      "file:src/app/api/gemini/todo-features/route.ts",
+      "file:src/app/api/openai/generate/route.ts",
+      "file:src/app/api/openai/transcribe/route.ts",
+      "file:src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "file:src/app/api/pdf-autofill/templates/route.ts",
+      "file:src/app/api/process-flow/route.ts",
+      "file:src/app/api/prompts/library/[id]/route.ts",
+      "file:src/app/api/prompts/library/route.ts",
+      "file:src/app/api/prompts/organize/route.ts",
+      "file:src/app/api/prompts/rewrite/route.ts",
+      "file:src/app/api/proxy/[...path]/route.ts",
+      "file:src/app/api/signing/documents/[id]/route.ts",
+      "file:src/app/api/signing/documents/route.ts",
+      "file:src/app/api/signing/fields/route.ts",
+      "file:src/app/api/signing/migrate/route.ts",
+      "file:src/app/api/signing/recipients/route.ts",
+      "file:src/app/api/signing/send/route.ts",
+      "file:src/app/api/signing/sign/route.ts",
+      "file:src/app/api/sourcing/config/route.ts",
+      "file:src/app/api/sourcing/events/route.ts",
+      "file:src/app/api/upload/route.ts",
+      "file:src/app/tasks/page.tsx",
+      "file:src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "file:src/components/PromptLibrary/api.ts",
+      "file:src/components/Tasks/ArchiveView.tsx",
+      "file:src/components/Tasks/AttachmentGallery.tsx",
+      "file:src/components/Tasks/BoardView.tsx",
+      "file:src/components/Tasks/CalendarView.tsx",
+      "file:src/components/Tasks/CommandPalette.tsx",
+      "file:src/components/Tasks/ConfettiBurst.tsx",
+      "file:src/components/Tasks/ContextMenu.tsx",
+      "file:src/components/Tasks/DetailDrawer.tsx",
+      "file:src/components/Tasks/EmailDropModal.tsx",
+      "file:src/components/Tasks/InsightsView.tsx",
+      "file:src/components/Tasks/LinkedNoteSection.tsx",
+      "file:src/components/Tasks/ListView.tsx",
+      "file:src/components/Tasks/MatrixView.tsx",
+      "file:src/components/Tasks/NoteLinkModal.tsx",
+      "file:src/components/Tasks/NoteQuickEditModal.tsx",
+      "file:src/components/Tasks/PropertyCard.tsx",
+      "file:src/components/Tasks/SavedViewsBar.tsx",
+      "file:src/components/Tasks/TaskCard.tsx",
+      "file:src/components/Tasks/TaskWindow.tsx",
+      "file:src/components/Tasks/TasksApp.tsx",
+      "file:src/components/Tasks/TemplatesModal.tsx",
+      "file:src/components/Tasks/UndoToast.tsx",
+      "file:src/components/Tasks/aiSubtasks.ts",
+      "file:src/components/Tasks/api.ts",
+      "file:src/components/Tasks/emailParse.ts",
+      "file:src/components/Tasks/notesApi.ts",
+      "file:src/components/Tasks/pasteImage.ts",
+      "file:src/components/Tasks/types.ts",
+      "file:src/lib/auth.ts",
+      "file:src/lib/googleDrive.ts",
+      "file:src/lib/mongodb.ts",
+      "file:src/lib/neon.ts",
+      "file:src/models/AIChatSession.ts",
+      "file:src/models/ProcessFlow.ts",
+      "file:src/models/PromptLibraryItem.ts",
+      "file:src/models/Property.ts",
+      "file:src/models/RiskAlert.ts",
+      "file:src/models/RiskQuestionnaire.ts",
+      "file:src/models/SavedPrompt.ts",
+      "file:src/models/SourcingConfig.ts",
+      "file:src/models/SourcingEvent.ts",
+      "file:src/models/Supplier.ts",
+      "file:src/pages/api/admin/users/[id]/delete.ts",
+      "file:src/pages/api/admin/users/create.ts",
+      "file:src/pages/api/auth/[...nextauth].ts",
+      "file:src/pages/api/bookmarks.ts",
+      "file:src/pages/api/bookmarks/[id].ts",
+      "file:src/pages/api/categories/update.ts",
+      "file:src/pages/api/debug/auth-check.ts",
+      "file:src/pages/api/finance/stock-price/index.ts",
+      "file:src/pages/api/gemini/assess.ts",
+      "file:src/pages/api/sourcing/parse-clipboard.ts",
+      "file:src/pages/api/supplier-risk/alerts.ts",
+      "file:src/pages/api/supplier-risk/dashboard.ts",
+      "file:src/pages/api/supplier-risk/intelligence.ts",
+      "file:src/pages/api/supplier-risk/questionnaires.ts",
+      "file:src/pages/api/supplier-risk/seed.ts",
+      "file:src/pages/api/supplier-risk/suppliers/[id].ts",
+      "file:src/pages/api/supplier-risk/suppliers/index.ts",
+      "file:src/app/api/attachments/[id]/route.ts",
+      "file:src/app/api/attachments/route.ts",
+      "file:src/app/api/contacts/[id]/route.ts",
+      "file:src/app/api/contacts/route.ts",
+      "file:src/app/api/debug/fix-gantt/route.ts",
+      "file:src/app/api/finance/transactions/[id]/route.ts",
+      "file:src/app/api/finance/transactions/route.ts",
+      "file:src/app/api/finance/transactions/upload/route.ts",
+      "file:src/app/api/gantt/route.ts",
+      "file:src/app/api/notes/categories/[id]/route.ts",
+      "file:src/app/api/notes/categories/reorder/route.ts",
+      "file:src/app/api/notes/categories/route.ts",
+      "file:src/app/api/notes/pages/[id]/attachments/route.ts",
+      "file:src/app/api/notes/pages/[id]/route.ts",
+      "file:src/app/api/notes/pages/reorder/route.ts",
+      "file:src/app/api/notes/pages/route.ts",
+      "file:src/app/api/notes/sections/[id]/route.ts",
+      "file:src/app/api/notes/sections/reorder/route.ts",
+      "file:src/app/api/notes/sections/route.ts",
+      "file:src/app/api/notes/stats/route.ts",
+      "file:src/app/api/todos/[id]/route.ts",
+      "file:src/app/api/todos/attachment/route.ts",
+      "file:src/app/api/todos/reorder/route.ts",
+      "file:src/app/api/todos/route.ts",
+      "file:src/app/api/user/settings/route.ts",
+      "file:src/components/Finance/TransactionModal.tsx",
+      "file:src/components/Notes/EmailTaskModal.tsx",
+      "file:src/components/Notes/MovePageModal.tsx",
+      "file:src/components/Notes/SearchModal.tsx",
+      "file:src/components/Notes/SectionDashboard.tsx",
+      "file:src/components/Notes/SmartInput.tsx",
+      "file:src/components/Notes/TaskFormModal.tsx",
+      "file:src/components/Notes/ToDoBoard.tsx",
+      "file:src/components/Notes/ToDoListModal.tsx",
+      "file:src/lib/dbConnect.ts",
+      "file:src/lib/gridfs.ts",
+      "file:src/models/AccessLog.ts",
+      "file:src/models/Attachment.ts",
+      "file:src/models/Contact.ts",
+      "file:src/models/GanttChart.ts",
+      "file:src/models/Investment.ts",
+      "file:src/models/NoteCategory.ts",
+      "file:src/models/NotePage.ts",
+      "file:src/models/NoteSection.ts",
+      "file:src/models/Password.ts",
+      "file:src/models/TableDoc.ts",
+      "file:src/models/ToDo.ts",
+      "file:src/models/Transaction.ts",
+      "file:src/models/User.ts",
+      "file:src/pages/admin/index.tsx",
+      "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "file:src/pages/api/database-stats.ts",
+      "file:src/pages/api/finance/investments/[id].ts",
+      "file:src/pages/api/finance/investments/index.ts",
+      "file:src/pages/api/finance/investments/sell.ts",
+      "file:src/pages/api/passwords/[id].ts",
+      "file:src/pages/api/passwords/index.ts",
+      "file:src/pages/api/sys-pulse.ts",
+      "file:src/pages/api/tables/[id].ts",
+      "file:src/pages/api/tables/index.ts",
+      "file:src/app/api/finance/budget/[id]/route.ts",
+      "file:src/app/api/finance/budget/route.ts",
+      "file:src/app/finance/page.tsx",
+      "file:src/components/Finance/ActivityFeed.tsx",
+      "file:src/components/Finance/BudgetItemModal.tsx",
+      "file:src/components/Finance/BudgetListModal.tsx",
+      "file:src/components/Finance/BudgetOverview.tsx",
+      "file:src/components/Finance/BudgetTable.tsx",
+      "file:src/components/Finance/CSVUploader.tsx",
+      "file:src/components/Finance/CategoryDetailModal.tsx",
+      "file:src/components/Finance/CategoryPicker.tsx",
+      "file:src/components/Finance/FinanceCharts.tsx",
+      "file:src/components/Finance/InvestmentHistoryModal.tsx",
+      "file:src/components/Finance/InvestmentManager.tsx",
+      "file:src/components/Finance/InvestmentModal.tsx",
+      "file:src/components/Finance/MetricCard.tsx",
+      "file:src/components/Finance/MonthSelector.tsx",
+      "file:src/components/Finance/SellInvestmentModal.tsx",
+      "file:src/components/Finance/SpendTrendChart.tsx",
+      "file:src/components/Finance/TopCategorySpend.tsx",
+      "file:src/components/Finance/TransactionEditModal.tsx",
+      "file:src/components/Finance/TransactionList.tsx",
+      "file:src/components/Finance/TransactionTable.tsx",
+      "file:src/components/Finance/UpcomingExpenses.tsx",
+      "file:src/lib/categories.ts",
+      "file:src/models/BudgetItem.ts",
+      "file:src/components/CircuitBoardLoader.tsx",
+      "file:src/components/Icon/DribbbleIcon.tsx",
+      "file:src/components/Icon/FacebookIcon.tsx",
+      "file:src/components/Icon/GithubIcon.tsx",
+      "file:src/components/Icon/Icon.tsx",
+      "file:src/components/Icon/InstagramIcon.tsx",
+      "file:src/components/Icon/LinkedInIcon.tsx",
+      "file:src/components/Icon/QuoteIcon.tsx",
+      "file:src/components/Icon/StackOverflowIcon.tsx",
+      "file:src/components/Icon/TwitterIcon.tsx",
+      "file:src/components/Layout/Section.tsx",
+      "file:src/components/PasswordItem.tsx",
+      "file:src/components/Sections/Contact/ContactForm.tsx",
+      "file:src/components/Sections/Contact/index.tsx",
+      "file:src/components/Sections/Footer.tsx",
+      "file:src/components/Sections/Hero.tsx",
+      "file:src/components/Socials.tsx",
+      "file:src/components/TimelineBox.tsx",
+      "file:src/components/Vault/PasswordModal.tsx",
+      "file:src/components/Vault/VaultDashboard.tsx",
+      "file:src/components/WorkTimeline.tsx",
+      "file:src/data/data.tsx",
+      "file:src/data/dataDef.ts",
+      "file:src/images/header-background.webp",
+      "file:src/pages/dashboard.tsx",
+      "file:src/pages/index.tsx",
+      "file:src/components/Anomaly/CameraModal.tsx",
+      "file:src/components/Notes/AssessmentModal.tsx",
+      "file:src/components/Notes/AttachmentManager.tsx",
+      "file:src/components/Notes/AudioRecorderModal.tsx",
+      "file:src/components/Notes/BadgeSettingsContext.tsx",
+      "file:src/components/Notes/BadgeSettingsModal.tsx",
+      "file:src/components/Notes/BookmarkListModal.tsx",
+      "file:src/components/Notes/CategoryList.tsx",
+      "file:src/components/Notes/ColorPicker.tsx",
+      "file:src/components/Notes/CommandPalette.tsx",
+      "file:src/components/Notes/ContactFormModal.tsx",
+      "file:src/components/Notes/ContactListModal.tsx",
+      "file:src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "file:src/components/Notes/ExecutiveModal.tsx",
+      "file:src/components/Notes/FlaggedItemsModal.tsx",
+      "file:src/components/Notes/GoogleCalendarModal.tsx",
+      "file:src/components/Notes/GoogleDriveModal.tsx",
+      "file:src/components/Notes/Humanizer.tsx",
+      "file:src/components/Notes/IconPicker.tsx",
+      "file:src/components/Notes/ImageExtractionModal.tsx",
+      "file:src/components/Notes/LogicStyleRefiner.tsx",
+      "file:src/components/Notes/NoteEditor.tsx",
+      "file:src/components/Notes/NotesLayout.tsx",
+      "file:src/components/Notes/PageList.tsx",
+      "file:src/components/Notes/PromptEditorModal.tsx",
+      "file:src/components/Notes/RewriteModal.tsx",
+      "file:src/components/Notes/SectionList.tsx",
+      "file:src/components/Notes/SectionPageList.tsx",
+      "file:src/components/Notes/SimpleRewriteModal.tsx",
+      "file:src/components/Notes/SimpleRewriteOpenAIModal.tsx",
+      "file:src/components/Notes/SortableItem.tsx",
+      "file:src/components/Notes/SourcingEventModal.tsx",
+      "file:src/components/Notes/SourcingListModal.tsx",
+      "file:src/components/Notes/ToDoModal.tsx",
+      "file:src/components/Notes/TruthTeller.tsx",
+      "file:src/components/Organization/OrgAISidebar.tsx",
+      "file:src/components/Organization/OrgCalendarView.tsx",
+      "file:src/components/Organization/OrgContactsView.tsx",
+      "file:src/components/Organization/OrgDashboard.tsx",
+      "file:src/components/Organization/OrgFilesView.tsx",
+      "file:src/components/Organization/OrgTasksView.tsx",
+      "file:src/components/Organization/OrganizationLayout.tsx",
+      "file:src/components/StandaloneRewriteModal.tsx",
+      "file:src/hooks/useDetectOutsideClick.ts",
+      "file:src/lib/contact-constants.ts",
+      "file:src/components/Anomaly/AnomalyApp.tsx",
+      "file:src/components/Anomaly/BookmarksModal.tsx",
+      "file:src/components/Anomaly/CommandPalette.tsx",
+      "file:src/components/Anomaly/EditorPanel.tsx",
+      "file:src/components/Anomaly/HomeView.tsx",
+      "file:src/components/Anomaly/IconPicker.tsx",
+      "file:src/components/Anomaly/InAppBrowser.tsx",
+      "file:src/components/Anomaly/MovePageModal.tsx",
+      "file:src/components/Anomaly/PageList.tsx",
+      "file:src/components/Anomaly/Sidebar.tsx",
+      "file:src/components/Anomaly/api.ts",
+      "file:src/components/Anomaly/bookmarksApi.ts",
+      "file:src/components/Anomaly/icons.ts",
+      "file:src/components/Anomaly/types.ts",
+      "file:src/components/Notes/DrawingNode.tsx",
+      "file:src/components/Notes/ImageNode.tsx",
+      "file:src/components/Notes/ImagePastePlugin.tsx",
+      "file:src/components/Notes/RichTextEditor.tsx",
+      "file:src/components/Notes/TableActionsPlugin.tsx",
+      "file:src/components/Organization/OrgNotesView.tsx",
+      "file:src/components/Tasks/BookmarksModal.tsx",
+      "file:src/app/api/invoices/scan/route.ts",
+      "file:src/app/drive/page.tsx",
+      "file:src/app/finance/layout.tsx",
+      "file:src/app/gantt/page.tsx",
+      "file:src/components/ApiKeyInput.tsx",
+      "file:src/components/ChatInterface.tsx",
+      "file:src/components/Layout/Page.tsx",
+      "file:src/components/Notes/UnifiedAIChatModal.tsx",
+      "file:src/components/OpenAIApiKeyInput.tsx",
+      "file:src/components/OpenAIChatInterface.tsx",
+      "file:src/components/Sections/Header.tsx",
+      "file:src/components/UserProfileMenu.tsx",
+      "file:src/hooks/useNavObserver.tsx",
+      "file:src/lib/gemini.ts",
+      "file:src/lib/openai.ts",
+      "file:src/pages/api/finance/categorize.ts",
+      "file:src/pages/bookmarks.tsx",
+      "file:src/pages/chat.tsx",
+      "file:src/pages/open.tsx",
+      "file:src/pages/privacy.tsx",
+      "file:src/app/anomaly/page.tsx",
+      "file:src/app/api/invoices/[id]/route.ts",
+      "file:src/app/api/invoices/route.ts",
+      "file:src/app/notes/page.tsx",
+      "file:src/app/organization/page.tsx",
+      "file:src/app/pdf-autofill/page.tsx",
+      "file:src/app/process-flow/page.tsx",
+      "file:src/app/smart-invoices/page.tsx",
+      "file:src/components/AccessDenied.tsx",
+      "file:src/components/Invoices/InvoiceList.tsx",
+      "file:src/components/Invoices/InvoiceScanner.tsx",
+      "file:src/components/ProcessFlow/ProcessFlowBuilder.tsx",
+      "file:src/models/Invoice.ts",
+      "file:src/components/SupplierRisk/AlertItem.tsx",
+      "file:src/components/SupplierRisk/RiskBadge.tsx",
+      "file:src/components/SupplierRisk/RiskDistributionChart.tsx",
+      "file:src/components/SupplierRisk/RiskRadarChart.tsx",
+      "file:src/components/SupplierRisk/StatCard.tsx",
+      "file:src/components/SupplierRisk/SupplierIntelligence.tsx",
+      "file:src/components/SupplierRisk/SupplierModal.tsx",
+      "file:src/components/SupplierRisk/SupplierRiskLayout.tsx",
+      "file:src/pages/supplier-risk/alerts.tsx",
+      "file:src/pages/supplier-risk/index.tsx",
+      "file:src/pages/supplier-risk/onboarding.tsx",
+      "file:src/pages/supplier-risk/suppliers/[id].tsx",
+      "file:src/pages/supplier-risk/suppliers/index.tsx",
+      "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "file:src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "file:src/components/Notes/HighPerformanceTable/types.ts",
+      "file:.npmrc",
+      "file:.prettierignore",
+      "file:next-env.d.ts",
+      "file:next-sitemap.js",
+      "file:postcss.config.js",
+      "file:public/site.webmanifest",
+      "file:scripts/audit-data-ownership.js",
+      "file:scripts/clear-transactions.js",
+      "file:scripts/list-transactions.js",
+      "file:scripts/seed-properties.js",
+      "file:scripts/test-mongoose.js",
+      "file:server.js",
+      "file:src/app/anomaly/layout.tsx",
+      "file:src/app/api/pdf-autofill/analyze-form/route.ts",
+      "file:src/app/api/pdf-autofill/extract/route.ts",
+      "file:src/app/api/pdf-autofill/fill/route.ts",
+      "file:src/app/api/pdf-autofill/map-fields/route.ts",
+      "file:src/app/debug/drive-status/page.tsx",
+      "file:src/app/layout.tsx",
+      "file:src/app/notes/layout.tsx",
+      "file:src/app/notes/loading.tsx",
+      "file:src/app/organization/layout.tsx",
+      "file:src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "file:src/app/pdf-autofill/TemplateEditor.tsx",
+      "file:src/app/process-flow/layout.tsx",
+      "file:src/app/providers.tsx",
+      "file:src/app/sign/[token]/layout.tsx",
+      "file:src/app/sign/[token]/page.tsx",
+      "file:src/app/signing/[id]/page.tsx",
+      "file:src/app/signing/layout.tsx",
+      "file:src/app/signing/page.tsx",
+      "file:src/components/.gitkeep",
+      "file:src/components/Anomaly/Guard.tsx",
+      "file:src/components/Base.tsx",
+      "file:src/components/ChatInterface.css",
+      "file:src/components/Finance/StatCard.tsx",
+      "file:src/components/Finance/SummaryCards.tsx",
+      "file:src/components/Notes/AISuggestions.tsx",
+      "file:src/components/Notes/ColoredTableCellNode.tsx",
+      "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "file:src/components/Notes/NotesSkeleton.tsx",
+      "file:src/components/Sections/StarField.tsx",
+      "file:src/config.ts",
+      "file:src/globalStyles.scss",
+      "file:src/hooks/useInterval.ts",
+      "file:src/hooks/useWindow.ts",
+      "file:src/images/.gitkeep",
+      "file:src/images/testimonial.webp",
+      "file:src/models/Bookmark.ts",
+      "file:src/models/PdfTemplate.ts",
+      "file:src/pages/_app.tsx",
+      "file:src/pages/_document.tsx",
+      "file:src/pages/api/.gitkeep",
+      "file:src/pages/api/contact.ts",
+      "file:src/pages/api/tables/generate.ts",
+      "file:src/pages/login.tsx",
+      "file:src/types.d.ts",
+      "file:src/types/next-auth.d.ts",
+      "file:src/types/quill-better-table.d.ts"
+    ],
+    "config": [
+      "config:.env.local.example",
+      "config:.yarnrc.yml",
+      "config:package.json",
+      "config:tsconfig.json",
+      "config:vercel.json",
+      "config:.claude/launch.json",
+      "config:.claude/settings.local.json",
+      "config:.github/FUNDING.yml",
+      "config:next.config.js",
+      "config:stylelint.config.js",
+      "config:tailwind.config.js"
+    ],
+    "document": [
+      "document:README.md"
+    ]
+  },
+  "crossCategoryEdges": [
+    {
+      "fromType": "config",
+      "toType": "file",
+      "edgeType": "configures",
+      "count": 3
+    }
+  ],
+  "interGroupImports": [
+    {
+      "from": "app/api",
+      "to": "lib",
+      "count": 99
+    },
+    {
+      "from": "app/api",
+      "to": "models",
+      "count": 59
+    },
+    {
+      "from": "pages/api",
+      "to": "lib",
+      "count": 47
+    },
+    {
+      "from": "components/Notes",
+      "to": "models",
+      "count": 21
+    },
+    {
+      "from": "pages/api",
+      "to": "models",
+      "count": 20
+    },
+    {
+      "from": "components/Organization",
+      "to": "components/Notes",
+      "count": 18
+    },
+    {
+      "from": "pages/supplier-risk",
+      "to": "components/SupplierRisk",
+      "count": 17
+    },
+    {
+      "from": "app/finance",
+      "to": "components/Finance",
+      "count": 13
+    },
+    {
+      "from": "pages",
+      "to": "components/Sections",
+      "count": 8
+    },
+    {
+      "from": "components/Finance",
+      "to": "lib",
+      "count": 7
+    },
+    {
+      "from": "components/Finance",
+      "to": "models",
+      "count": 6
+    },
+    {
+      "from": "components",
+      "to": "data",
+      "count": 6
+    },
+    {
+      "from": "components/Sections",
+      "to": "components/Icon",
+      "count": 5
+    },
+    {
+      "from": "components/Sections",
+      "to": "data",
+      "count": 5
+    },
+    {
+      "from": "data",
+      "to": "components/Icon",
+      "count": 5
+    },
+    {
+      "from": "pages",
+      "to": "components",
+      "count": 5
+    },
+    {
+      "from": "pages",
+      "to": "components/Layout",
+      "count": 5
+    },
+    {
+      "from": "components/Notes",
+      "to": "lib",
+      "count": 4
+    },
+    {
+      "from": "components/Tasks",
+      "to": "components/Notes",
+      "count": 2
+    },
+    {
+      "from": "components/Tasks",
+      "to": "components/Anomaly",
+      "count": 2
+    },
+    {
+      "from": "models",
+      "to": "lib",
+      "count": 2
+    },
+    {
+      "from": "pages/admin",
+      "to": "models",
+      "count": 2
+    },
+    {
+      "from": "app/finance",
+      "to": "components",
+      "count": 2
+    },
+    {
+      "from": "components/Sections",
+      "to": "components/Layout",
+      "count": 2
+    },
+    {
+      "from": "components/Sections",
+      "to": "components",
+      "count": 2
+    },
+    {
+      "from": "components/Vault",
+      "to": "data",
+      "count": 2
+    },
+    {
+      "from": "pages",
+      "to": "components/Vault",
+      "count": 2
+    },
+    {
+      "from": "pages",
+      "to": "data",
+      "count": 2
+    },
+    {
+      "from": "components/Organization",
+      "to": "components",
+      "count": 2
+    },
+    {
+      "from": "components",
+      "to": "lib",
+      "count": 2
+    },
+    {
+      "from": "app/anomaly",
+      "to": "components/Anomaly",
+      "count": 2
+    },
+    {
+      "from": "app/notes",
+      "to": "components/Notes",
+      "count": 2
+    },
+    {
+      "from": "app/smart-invoices",
+      "to": "components/Invoices",
+      "count": 2
+    },
+    {
+      "from": "components/SupplierRisk",
+      "to": "models",
+      "count": 2
+    },
+    {
+      "from": "app/tasks",
+      "to": "components/Tasks",
+      "count": 1
+    },
+    {
+      "from": "components/Tasks",
+      "to": "components/PromptLibrary",
+      "count": 1
+    },
+    {
+      "from": "pages/admin",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/finance",
+      "to": "components/Sections",
+      "count": 1
+    },
+    {
+      "from": "app/finance",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/finance",
+      "to": "models",
+      "count": 1
+    },
+    {
+      "from": "components/Layout",
+      "to": "data",
+      "count": 1
+    },
+    {
+      "from": "data",
+      "to": "images",
+      "count": 1
+    },
+    {
+      "from": "components/Notes",
+      "to": "components/Organization",
+      "count": 1
+    },
+    {
+      "from": "components/Notes",
+      "to": "hooks",
+      "count": 1
+    },
+    {
+      "from": "components/Notes",
+      "to": "components/Anomaly",
+      "count": 1
+    },
+    {
+      "from": "components/Notes",
+      "to": "components/PromptLibrary",
+      "count": 1
+    },
+    {
+      "from": "components/Notes",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "components/Anomaly",
+      "to": "components/Notes",
+      "count": 1
+    },
+    {
+      "from": "app/drive",
+      "to": "components/Sections",
+      "count": 1
+    },
+    {
+      "from": "app/gantt",
+      "to": "components/Sections",
+      "count": 1
+    },
+    {
+      "from": "components/Sections",
+      "to": "hooks",
+      "count": 1
+    },
+    {
+      "from": "hooks",
+      "to": "components/Sections",
+      "count": 1
+    },
+    {
+      "from": "hooks",
+      "to": "data",
+      "count": 1
+    },
+    {
+      "from": "app/anomaly",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/anomaly",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/notes",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/notes",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/organization",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/organization",
+      "to": "components/Organization",
+      "count": 1
+    },
+    {
+      "from": "app/organization",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/pdf-autofill",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/pdf-autofill",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/process-flow",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/process-flow",
+      "to": "components/ProcessFlow",
+      "count": 1
+    },
+    {
+      "from": "app/process-flow",
+      "to": "lib",
+      "count": 1
+    },
+    {
+      "from": "app/smart-invoices",
+      "to": "components",
+      "count": 1
+    },
+    {
+      "from": "app/smart-invoices",
+      "to": "components/Sections",
+      "count": 1
+    },
+    {
+      "from": "components/Invoices",
+      "to": "models",
+      "count": 1
+    },
+    {
+      "from": "app",
+      "to": "(root)",
+      "count": 1
+    },
+    {
+      "from": "pages",
+      "to": "(root)",
+      "count": 1
+    }
+  ],
+  "intraGroupDensity": {
+    "app/api": {
+      "internalEdges": 0,
+      "totalEdges": 158,
+      "density": 0
+    },
+    "app/tasks": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "components/PromptLibrary": {
+      "internalEdges": 1,
+      "totalEdges": 3,
+      "density": 0.333
+    },
+    "components/Tasks": {
+      "internalEdges": 55,
+      "totalEdges": 61,
+      "density": 0.902
+    },
+    "lib": {
+      "internalEdges": 2,
+      "totalEdges": 170,
+      "density": 0.012
+    },
+    "models": {
+      "internalEdges": 1,
+      "totalEdges": 115,
+      "density": 0.009
+    },
+    "pages/api": {
+      "internalEdges": 0,
+      "totalEdges": 67,
+      "density": 0
+    },
+    "components/Finance": {
+      "internalEdges": 7,
+      "totalEdges": 33,
+      "density": 0.212
+    },
+    "components/Notes": {
+      "internalEdges": 68,
+      "totalEdges": 121,
+      "density": 0.562
+    },
+    "pages/admin": {
+      "internalEdges": 0,
+      "totalEdges": 3,
+      "density": 0
+    },
+    "app/finance": {
+      "internalEdges": 0,
+      "totalEdges": 18,
+      "density": 0
+    },
+    "components": {
+      "internalEdges": 1,
+      "totalEdges": 27,
+      "density": 0.037
+    },
+    "components/Icon": {
+      "internalEdges": 8,
+      "totalEdges": 18,
+      "density": 0.444
+    },
+    "components/Layout": {
+      "internalEdges": 0,
+      "totalEdges": 8,
+      "density": 0
+    },
+    "components/Sections": {
+      "internalEdges": 1,
+      "totalEdges": 29,
+      "density": 0.034
+    },
+    "components/Vault": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    },
+    "data": {
+      "internalEdges": 1,
+      "totalEdges": 24,
+      "density": 0.042
+    },
+    "images": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "pages": {
+      "internalEdges": 0,
+      "totalEdges": 23,
+      "density": 0
+    },
+    "components/Anomaly": {
+      "internalEdges": 27,
+      "totalEdges": 33,
+      "density": 0.818
+    },
+    "components/Organization": {
+      "internalEdges": 10,
+      "totalEdges": 32,
+      "density": 0.313
+    },
+    "hooks": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    },
+    "app/drive": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "app/gantt": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "app/anomaly": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    },
+    "app/notes": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    },
+    "app/organization": {
+      "internalEdges": 0,
+      "totalEdges": 3,
+      "density": 0
+    },
+    "app/pdf-autofill": {
+      "internalEdges": 1,
+      "totalEdges": 3,
+      "density": 0.333
+    },
+    "app/process-flow": {
+      "internalEdges": 0,
+      "totalEdges": 3,
+      "density": 0
+    },
+    "app/smart-invoices": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    },
+    "components/Invoices": {
+      "internalEdges": 0,
+      "totalEdges": 3,
+      "density": 0
+    },
+    "components/ProcessFlow": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "components/SupplierRisk": {
+      "internalEdges": 0,
+      "totalEdges": 19,
+      "density": 0
+    },
+    "pages/supplier-risk": {
+      "internalEdges": 0,
+      "totalEdges": 17,
+      "density": 0
+    },
+    "(root)": {
+      "internalEdges": 0,
+      "totalEdges": 2,
+      "density": 0
+    },
+    ".claude": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    ".github": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "public": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "scripts": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "app/debug": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "app": {
+      "internalEdges": 1,
+      "totalEdges": 2,
+      "density": 0.5
+    },
+    "app/sign": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "app/signing": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "types": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    }
+  },
+  "patternMatches": {
+    "lib": "service",
+    "models": "data",
+    "components": "ui",
+    "data": "data",
+    "images": "assets",
+    "pages": "ui",
+    "hooks": "hooks",
+    ".github": "ci-cd",
+    "public": "assets",
+    "scripts": "infrastructure",
+    "types": "types"
+  },
+  "filePatternMatches": {
+    "file:src/pages/api/finance/stock-price/index.ts": "entry",
+    "file:src/pages/api/supplier-risk/suppliers/index.ts": "entry",
+    "file:src/pages/admin/index.tsx": "entry",
+    "file:src/pages/api/finance/investments/index.ts": "entry",
+    "file:src/pages/api/passwords/index.ts": "entry",
+    "file:src/pages/api/tables/index.ts": "entry",
+    "file:src/components/Sections/Contact/index.tsx": "entry",
+    "file:src/pages/index.tsx": "entry",
+    "file:src/pages/supplier-risk/index.tsx": "entry",
+    "file:src/pages/supplier-risk/suppliers/index.tsx": "entry",
+    "document:README.md": "documentation",
+    "config:package.json": "config",
+    "config:tsconfig.json": "config",
+    "config:vercel.json": "config",
+    "file:next-env.d.ts": "types",
+    "config:next.config.js": "config",
+    "file:postcss.config.js": "config",
+    "file:src/types.d.ts": "types",
+    "file:src/types/next-auth.d.ts": "types",
+    "file:src/types/quill-better-table.d.ts": "types",
+    "config:tailwind.config.js": "config"
+  },
+  "deploymentTopology": {
+    "hasDockerfile": false,
+    "hasCompose": false,
+    "hasK8s": false,
+    "hasTerraform": false,
+    "hasCI": false,
+    "infraFiles": [
+      "vercel.json"
+    ]
+  },
+  "dataPipeline": {
+    "schemaFiles": [],
+    "migrationFiles": [],
+    "dataModelFiles": [
+      "src/models/AIChatSession.ts",
+      "src/models/ProcessFlow.ts",
+      "src/models/PromptLibraryItem.ts",
+      "src/models/Property.ts",
+      "src/models/RiskAlert.ts",
+      "src/models/RiskQuestionnaire.ts",
+      "src/models/SavedPrompt.ts",
+      "src/models/SourcingConfig.ts",
+      "src/models/SourcingEvent.ts",
+      "src/models/Supplier.ts",
+      "src/models/AccessLog.ts",
+      "src/models/Attachment.ts",
+      "src/models/Contact.ts",
+      "src/models/GanttChart.ts",
+      "src/models/Investment.ts",
+      "src/models/NoteCategory.ts",
+      "src/models/NotePage.ts",
+      "src/models/NoteSection.ts",
+      "src/models/Password.ts",
+      "src/models/TableDoc.ts",
+      "src/models/ToDo.ts",
+      "src/models/Transaction.ts",
+      "src/models/User.ts",
+      "src/models/BudgetItem.ts",
+      "src/data/dataDef.ts",
+      "src/models/Invoice.ts",
+      "src/models/Bookmark.ts",
+      "src/models/PdfTemplate.ts"
+    ],
+    "apiHandlerFiles": [
+      "src/app/api/ai-chat/sessions/route.ts",
+      "src/app/api/anomaly/camera/mqtt-creds/route.ts",
+      "src/app/api/calendar/route.ts",
+      "src/app/api/debug/drive-status/route.ts",
+      "src/app/api/drive/files/route.ts",
+      "src/app/api/drive/route.ts",
+      "src/app/api/finance/properties/route.ts",
+      "src/app/api/gantt/ai/route.ts",
+      "src/app/api/gemini/email-parser/route.ts",
+      "src/app/api/gemini/generate/route.ts",
+      "src/app/api/gemini/todo-features/route.ts",
+      "src/app/api/openai/generate/route.ts",
+      "src/app/api/openai/transcribe/route.ts",
+      "src/app/api/pdf-autofill/templates/[id]/route.ts",
+      "src/app/api/pdf-autofill/templates/route.ts",
+      "src/app/api/process-flow/route.ts",
+      "src/app/api/prompts/library/[id]/route.ts",
+      "src/app/api/prompts/library/route.ts",
+      "src/app/api/prompts/organize/route.ts",
+      "src/app/api/prompts/rewrite/route.ts",
+      "src/app/api/proxy/[...path]/route.ts",
+      "src/app/api/signing/documents/[id]/route.ts",
+      "src/app/api/signing/documents/route.ts",
+      "src/app/api/signing/fields/route.ts",
+      "src/app/api/signing/migrate/route.ts",
+      "src/app/api/signing/recipients/route.ts",
+      "src/app/api/signing/send/route.ts",
+      "src/app/api/signing/sign/route.ts",
+      "src/app/api/sourcing/config/route.ts",
+      "src/app/api/sourcing/events/route.ts",
+      "src/app/api/upload/route.ts",
+      "src/pages/api/admin/users/[id]/delete.ts",
+      "src/pages/api/admin/users/create.ts",
+      "src/pages/api/auth/[...nextauth].ts",
+      "src/pages/api/bookmarks.ts",
+      "src/pages/api/bookmarks/[id].ts",
+      "src/pages/api/categories/update.ts",
+      "src/pages/api/debug/auth-check.ts",
+      "src/pages/api/finance/stock-price/index.ts",
+      "src/pages/api/gemini/assess.ts",
+      "src/pages/api/sourcing/parse-clipboard.ts",
+      "src/pages/api/supplier-risk/alerts.ts",
+      "src/pages/api/supplier-risk/dashboard.ts",
+      "src/pages/api/supplier-risk/intelligence.ts",
+      "src/pages/api/supplier-risk/questionnaires.ts",
+      "src/pages/api/supplier-risk/seed.ts",
+      "src/pages/api/supplier-risk/suppliers/[id].ts",
+      "src/pages/api/supplier-risk/suppliers/index.ts",
+      "src/app/api/attachments/[id]/route.ts",
+      "src/app/api/attachments/route.ts",
+      "src/app/api/contacts/[id]/route.ts",
+      "src/app/api/contacts/route.ts",
+      "src/app/api/debug/fix-gantt/route.ts",
+      "src/app/api/finance/transactions/[id]/route.ts",
+      "src/app/api/finance/transactions/route.ts",
+      "src/app/api/finance/transactions/upload/route.ts",
+      "src/app/api/gantt/route.ts",
+      "src/app/api/notes/categories/[id]/route.ts",
+      "src/app/api/notes/categories/reorder/route.ts",
+      "src/app/api/notes/categories/route.ts",
+      "src/app/api/notes/pages/[id]/attachments/route.ts",
+      "src/app/api/notes/pages/[id]/route.ts",
+      "src/app/api/notes/pages/reorder/route.ts",
+      "src/app/api/notes/pages/route.ts",
+      "src/app/api/notes/sections/[id]/route.ts",
+      "src/app/api/notes/sections/reorder/route.ts",
+      "src/app/api/notes/sections/route.ts",
+      "src/app/api/notes/stats/route.ts",
+      "src/app/api/todos/[id]/route.ts",
+      "src/app/api/todos/attachment/route.ts",
+      "src/app/api/todos/reorder/route.ts",
+      "src/app/api/todos/route.ts",
+      "src/app/api/user/settings/route.ts",
+      "src/pages/api/admin/users/[id]/permissions.ts",
+      "src/pages/api/database-stats.ts",
+      "src/pages/api/finance/investments/[id].ts",
+      "src/pages/api/finance/investments/index.ts",
+      "src/pages/api/finance/investments/sell.ts",
+      "src/pages/api/passwords/[id].ts",
+      "src/pages/api/passwords/index.ts",
+      "src/pages/api/sys-pulse.ts",
+      "src/pages/api/tables/[id].ts",
+      "src/pages/api/tables/index.ts",
+      "src/app/api/finance/budget/[id]/route.ts",
+      "src/app/api/finance/budget/route.ts",
+      "src/app/api/invoices/scan/route.ts",
+      "src/pages/api/finance/categorize.ts",
+      "src/app/api/invoices/[id]/route.ts",
+      "src/app/api/invoices/route.ts",
+      "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "server.js",
+      "src/app/api/pdf-autofill/analyze-form/route.ts",
+      "src/app/api/pdf-autofill/extract/route.ts",
+      "src/app/api/pdf-autofill/fill/route.ts",
+      "src/app/api/pdf-autofill/map-fields/route.ts",
+      "src/pages/api/.gitkeep",
+      "src/pages/api/contact.ts",
+      "src/pages/api/tables/generate.ts"
+    ]
+  },
+  "docCoverage": {
+    "groupsWithDocs": 1,
+    "totalGroups": 44,
+    "coverageRatio": 0.02,
+    "undocumentedGroups": [
+      "app/api",
+      "app/tasks",
+      "components/PromptLibrary",
+      "components/Tasks",
+      "lib",
+      "models",
+      "pages/api",
+      "components/Finance",
+      "components/Notes",
+      "pages/admin",
+      "app/finance",
+      "components",
+      "components/Icon",
+      "components/Layout",
+      "components/Sections",
+      "components/Vault",
+      "data",
+      "images",
+      "pages",
+      "components/Anomaly",
+      "components/Organization",
+      "hooks",
+      "app/drive",
+      "app/gantt",
+      "app/anomaly",
+      "app/notes",
+      "app/organization",
+      "app/pdf-autofill",
+      "app/process-flow",
+      "app/smart-invoices",
+      "components/Invoices",
+      "components/ProcessFlow",
+      "components/SupplierRisk",
+      "pages/supplier-risk",
+      ".claude",
+      ".github",
+      "public",
+      "scripts",
+      "app/debug",
+      "app",
+      "app/sign",
+      "app/signing",
+      "types"
+    ]
+  },
+  "dependencyDirection": [
+    {
+      "dependent": "app/api",
+      "dependsOn": "lib",
+      "count": 99,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/api",
+      "dependsOn": "models",
+      "count": 59,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages/api",
+      "dependsOn": "lib",
+      "count": 47,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Notes",
+      "dependsOn": "models",
+      "count": 21,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages/api",
+      "dependsOn": "models",
+      "count": 20,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Organization",
+      "dependsOn": "components/Notes",
+      "count": 18,
+      "reverse": 1
+    },
+    {
+      "dependent": "pages/supplier-risk",
+      "dependsOn": "components/SupplierRisk",
+      "count": 17,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/finance",
+      "dependsOn": "components/Finance",
+      "count": 13,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "components/Sections",
+      "count": 8,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Finance",
+      "dependsOn": "lib",
+      "count": 7,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Finance",
+      "dependsOn": "models",
+      "count": 6,
+      "reverse": 0
+    },
+    {
+      "dependent": "components",
+      "dependsOn": "data",
+      "count": 6,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Sections",
+      "dependsOn": "components/Icon",
+      "count": 5,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Sections",
+      "dependsOn": "data",
+      "count": 5,
+      "reverse": 0
+    },
+    {
+      "dependent": "data",
+      "dependsOn": "components/Icon",
+      "count": 5,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "components",
+      "count": 5,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "components/Layout",
+      "count": 5,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Notes",
+      "dependsOn": "lib",
+      "count": 4,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Tasks",
+      "dependsOn": "components/Notes",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Tasks",
+      "dependsOn": "components/Anomaly",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "models",
+      "dependsOn": "lib",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages/admin",
+      "dependsOn": "models",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/finance",
+      "dependsOn": "components",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Sections",
+      "dependsOn": "components/Layout",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Sections",
+      "dependsOn": "components",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Vault",
+      "dependsOn": "data",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "components/Vault",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "data",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Organization",
+      "dependsOn": "components",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components",
+      "dependsOn": "lib",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/anomaly",
+      "dependsOn": "components/Anomaly",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/notes",
+      "dependsOn": "components/Notes",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/smart-invoices",
+      "dependsOn": "components/Invoices",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/SupplierRisk",
+      "dependsOn": "models",
+      "count": 2,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/tasks",
+      "dependsOn": "components/Tasks",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Tasks",
+      "dependsOn": "components/PromptLibrary",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages/admin",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/finance",
+      "dependsOn": "components/Sections",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/finance",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/finance",
+      "dependsOn": "models",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Layout",
+      "dependsOn": "data",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "data",
+      "dependsOn": "images",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Notes",
+      "dependsOn": "hooks",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Notes",
+      "dependsOn": "components/PromptLibrary",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Notes",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/drive",
+      "dependsOn": "components/Sections",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/gantt",
+      "dependsOn": "components/Sections",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "hooks",
+      "dependsOn": "data",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/anomaly",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/anomaly",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/notes",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/notes",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/organization",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/organization",
+      "dependsOn": "components/Organization",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/organization",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/pdf-autofill",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/pdf-autofill",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/process-flow",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/process-flow",
+      "dependsOn": "components/ProcessFlow",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/process-flow",
+      "dependsOn": "lib",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/smart-invoices",
+      "dependsOn": "components",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app/smart-invoices",
+      "dependsOn": "components/Sections",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "components/Invoices",
+      "dependsOn": "models",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "app",
+      "dependsOn": "(root)",
+      "count": 1,
+      "reverse": 0
+    },
+    {
+      "dependent": "pages",
+      "dependsOn": "(root)",
+      "count": 1,
+      "reverse": 0
+    }
+  ],
+  "fileStats": {
+    "totalFileNodes": 395,
+    "filesPerGroup": {
+      "app/api": 65,
+      "app/tasks": 1,
+      "components/PromptLibrary": 2,
+      "components/Tasks": 29,
+      "lib": 10,
+      "models": 27,
+      "pages/api": 31,
+      "components/Finance": 24,
+      "components/Notes": 59,
+      "pages/admin": 1,
+      "app/finance": 2,
+      "components": 15,
+      "components/Icon": 9,
+      "components/Layout": 2,
+      "components/Sections": 6,
+      "components/Vault": 2,
+      "data": 2,
+      "images": 3,
+      "pages": 9,
+      "components/Anomaly": 16,
+      "components/Organization": 8,
+      "hooks": 4,
+      "app/drive": 1,
+      "app/gantt": 1,
+      "app/anomaly": 2,
+      "app/notes": 3,
+      "app/organization": 2,
+      "app/pdf-autofill": 3,
+      "app/process-flow": 2,
+      "app/smart-invoices": 1,
+      "components/Invoices": 2,
+      "components/ProcessFlow": 1,
+      "components/SupplierRisk": 8,
+      "pages/supplier-risk": 5,
+      "(root)": 18,
+      ".claude": 2,
+      ".github": 1,
+      "public": 1,
+      "scripts": 5,
+      "app/debug": 1,
+      "app": 2,
+      "app/sign": 2,
+      "app/signing": 3,
+      "types": 2
+    },
+    "nodeTypeCounts": {
+      "file": 383,
+      "config": 11,
+      "document": 1
+    }
+  },
+  "fileFanIn": {
+    "file:src/lib/auth.ts": 75,
+    "file:src/lib/dbConnect.ts": 57,
+    "file:src/models/NotePage.ts": 21,
+    "file:src/components/Tasks/types.ts": 17,
+    "file:src/models/NoteSection.ts": 12,
+    "file:src/models/ToDo.ts": 11,
+    "file:src/lib/categories.ts": 10,
+    "file:src/data/data.tsx": 10,
+    "file:src/components/Sections/Header.tsx": 10,
+    "file:src/lib/neon.ts": 9,
+    "file:src/models/NoteCategory.ts": 9,
+    "file:src/models/BudgetItem.ts": 9,
+    "file:src/components/Icon/Icon.tsx": 9,
+    "file:src/lib/mongodb.ts": 8,
+    "file:src/data/dataDef.ts": 8,
+    "file:src/components/Notes/BadgeSettingsContext.tsx": 8,
+    "file:src/components/Anomaly/types.ts": 8,
+    "file:src/components/AccessDenied.tsx": 8,
+    "file:src/models/RiskAlert.ts": 6,
+    "file:src/models/Supplier.ts": 6,
+    "file:src/components/Notes/IconPicker.tsx": 6,
+    "file:src/components/Anomaly/api.ts": 5,
+    "file:src/components/Layout/Page.tsx": 5,
+    "file:src/components/SupplierRisk/SupplierRiskLayout.tsx": 5,
+    "file:src/components/Notes/HighPerformanceTable/types.ts": 5,
+    "file:src/models/Investment.ts": 4,
+    "file:src/models/Transaction.ts": 4,
+    "file:src/components/Notes/ColorPicker.tsx": 4,
+    "file:src/components/Notes/SortableItem.tsx": 4,
+    "file:src/components/Organization/OrganizationLayout.tsx": 4
+  },
+  "fileFanOut": {
+    "file:src/components/Notes/NotesLayout.tsx": 30,
+    "file:src/components/Organization/OrganizationLayout.tsx": 25,
+    "file:src/components/Tasks/TasksApp.tsx": 22,
+    "file:src/app/finance/page.tsx": 17,
+    "file:src/app/api/finance/transactions/route.ts": 11,
+    "file:src/components/Anomaly/AnomalyApp.tsx": 11,
+    "file:src/components/Sections/Contact/index.tsx": 9,
+    "file:src/components/Notes/NoteEditor.tsx": 9,
+    "file:src/components/Tasks/TaskWindow.tsx": 8,
+    "file:src/components/Tasks/DetailDrawer.tsx": 6,
+    "file:src/app/api/notes/categories/route.ts": 6,
+    "file:src/app/api/notes/pages/route.ts": 6,
+    "file:src/components/Notes/ToDoListModal.tsx": 6,
+    "file:src/data/data.tsx": 6,
+    "file:src/components/Notes/SectionPageList.tsx": 6,
+    "file:src/pages/supplier-risk/suppliers/[id].tsx": 6,
+    "file:src/app/api/notes/sections/route.ts": 5,
+    "file:src/app/api/todos/route.ts": 5,
+    "file:src/pages/dashboard.tsx": 5,
+    "file:src/pages/index.tsx": 5,
+    "file:src/components/Notes/CategoryList.tsx": 5,
+    "file:src/components/Notes/PageList.tsx": 5,
+    "file:src/components/Notes/SectionList.tsx": 5,
+    "file:src/pages/supplier-risk/index.tsx": 5,
+    "file:src/pages/api/supplier-risk/dashboard.ts": 4,
+    "file:src/pages/api/supplier-risk/questionnaires.ts": 4,
+    "file:src/pages/api/supplier-risk/seed.ts": 4,
+    "file:src/pages/api/supplier-risk/suppliers/[id].ts": 4,
+    "file:src/app/api/notes/categories/[id]/route.ts": 4,
+    "file:src/app/api/notes/sections/[id]/route.ts": 4
+  }
+}

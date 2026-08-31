@@ -1,0 +1,140 @@
+{
+  "batchIndex": 13,
+  "files": [
+    {
+      "path": "src/components/SupplierRisk/AlertItem.tsx",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskBadge.tsx",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskDistributionChart.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskRadarChart.tsx",
+      "language": "typescript",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/StatCard.tsx",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierIntelligence.tsx",
+      "language": "typescript",
+      "sizeLines": 876,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierModal.tsx",
+      "language": "typescript",
+      "sizeLines": 268,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierRiskLayout.tsx",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/supplier-risk/alerts.tsx",
+      "language": "typescript",
+      "sizeLines": 176,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/supplier-risk/index.tsx",
+      "language": "typescript",
+      "sizeLines": 262,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/supplier-risk/onboarding.tsx",
+      "language": "typescript",
+      "sizeLines": 272,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/supplier-risk/suppliers/[id].tsx",
+      "language": "typescript",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/supplier-risk/suppliers/index.tsx",
+      "language": "typescript",
+      "sizeLines": 251,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/components/SupplierRisk/AlertItem.tsx": [
+      "src/models/RiskAlert.ts"
+    ],
+    "src/components/SupplierRisk/RiskBadge.tsx": [
+      "src/models/Supplier.ts"
+    ],
+    "src/components/SupplierRisk/RiskDistributionChart.tsx": [],
+    "src/components/SupplierRisk/RiskRadarChart.tsx": [],
+    "src/components/SupplierRisk/StatCard.tsx": [],
+    "src/components/SupplierRisk/SupplierIntelligence.tsx": [],
+    "src/components/SupplierRisk/SupplierModal.tsx": [],
+    "src/components/SupplierRisk/SupplierRiskLayout.tsx": [],
+    "src/pages/supplier-risk/alerts.tsx": [
+      "src/components/SupplierRisk/AlertItem.tsx",
+      "src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ],
+    "src/pages/supplier-risk/index.tsx": [
+      "src/components/SupplierRisk/AlertItem.tsx",
+      "src/components/SupplierRisk/RiskBadge.tsx",
+      "src/components/SupplierRisk/RiskDistributionChart.tsx",
+      "src/components/SupplierRisk/StatCard.tsx",
+      "src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ],
+    "src/pages/supplier-risk/onboarding.tsx": [
+      "src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ],
+    "src/pages/supplier-risk/suppliers/[id].tsx": [
+      "src/components/SupplierRisk/AlertItem.tsx",
+      "src/components/SupplierRisk/RiskBadge.tsx",
+      "src/components/SupplierRisk/RiskRadarChart.tsx",
+      "src/components/SupplierRisk/SupplierIntelligence.tsx",
+      "src/components/SupplierRisk/SupplierModal.tsx",
+      "src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ],
+    "src/pages/supplier-risk/suppliers/index.tsx": [
+      "src/components/SupplierRisk/RiskBadge.tsx",
+      "src/components/SupplierRisk/SupplierModal.tsx",
+      "src/components/SupplierRisk/SupplierRiskLayout.tsx"
+    ]
+  },
+  "neighborMap": {
+    "src/components/SupplierRisk/AlertItem.tsx": [
+      {
+        "path": "src/models/RiskAlert.ts",
+        "batchIndex": 3,
+        "symbols": []
+      }
+    ],
+    "src/components/SupplierRisk/RiskBadge.tsx": [
+      {
+        "path": "src/models/Supplier.ts",
+        "batchIndex": 3,
+        "symbols": []
+      }
+    ]
+  }
+}

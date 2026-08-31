@@ -1,0 +1,531 @@
+{
+  "batchIndex": 8,
+  "files": [
+    {
+      "path": "src/components/Anomaly/CameraModal.tsx",
+      "language": "typescript",
+      "sizeLines": 263,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/AssessmentModal.tsx",
+      "language": "typescript",
+      "sizeLines": 256,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/AttachmentManager.tsx",
+      "language": "typescript",
+      "sizeLines": 370,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/AudioRecorderModal.tsx",
+      "language": "typescript",
+      "sizeLines": 634,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/BadgeSettingsContext.tsx",
+      "language": "typescript",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/BadgeSettingsModal.tsx",
+      "language": "typescript",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/BookmarkListModal.tsx",
+      "language": "typescript",
+      "sizeLines": 951,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/CategoryList.tsx",
+      "language": "typescript",
+      "sizeLines": 631,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ColorPicker.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/CommandPalette.tsx",
+      "language": "typescript",
+      "sizeLines": 421,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ContactFormModal.tsx",
+      "language": "typescript",
+      "sizeLines": 343,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ContactListModal.tsx",
+      "language": "typescript",
+      "sizeLines": 661,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "language": "typescript",
+      "sizeLines": 745,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ExecutiveModal.tsx",
+      "language": "typescript",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/FlaggedItemsModal.tsx",
+      "language": "typescript",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/GoogleCalendarModal.tsx",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/GoogleDriveModal.tsx",
+      "language": "typescript",
+      "sizeLines": 270,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/Humanizer.tsx",
+      "language": "typescript",
+      "sizeLines": 575,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/IconPicker.tsx",
+      "language": "typescript",
+      "sizeLines": 513,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/ImageExtractionModal.tsx",
+      "language": "typescript",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/LogicStyleRefiner.tsx",
+      "language": "typescript",
+      "sizeLines": 734,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/NoteEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 2383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/components/Notes/NotesLayout.tsx",
+      "language": "typescript",
+      "sizeLines": 2093,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/components/Anomaly/CameraModal.tsx": [],
+    "src/components/Notes/AssessmentModal.tsx": [],
+    "src/components/Notes/AttachmentManager.tsx": [],
+    "src/components/Notes/AudioRecorderModal.tsx": [],
+    "src/components/Notes/BadgeSettingsContext.tsx": [],
+    "src/components/Notes/BadgeSettingsModal.tsx": [
+      "src/components/Notes/BadgeSettingsContext.tsx"
+    ],
+    "src/components/Notes/BookmarkListModal.tsx": [],
+    "src/components/Notes/CategoryList.tsx": [
+      "src/components/Notes/BadgeSettingsContext.tsx",
+      "src/components/Notes/ColorPicker.tsx",
+      "src/components/Notes/IconPicker.tsx",
+      "src/components/Notes/SortableItem.tsx",
+      "src/models/NoteCategory.ts"
+    ],
+    "src/components/Notes/ColorPicker.tsx": [],
+    "src/components/Notes/CommandPalette.tsx": [
+      "src/models/NotePage.ts"
+    ],
+    "src/components/Notes/ContactFormModal.tsx": [
+      "src/components/Notes/IconPicker.tsx",
+      "src/lib/contact-constants.ts"
+    ],
+    "src/components/Notes/ContactListModal.tsx": [
+      "src/components/Notes/ContactFormModal.tsx",
+      "src/lib/contact-constants.ts"
+    ],
+    "src/components/Notes/ContractRedlineAnalyzer.tsx": [],
+    "src/components/Notes/ExecutiveModal.tsx": [],
+    "src/components/Notes/FlaggedItemsModal.tsx": [
+      "src/models/NotePage.ts"
+    ],
+    "src/components/Notes/GoogleCalendarModal.tsx": [
+      "src/components/Organization/OrgCalendarView.tsx"
+    ],
+    "src/components/Notes/GoogleDriveModal.tsx": [],
+    "src/components/Notes/Humanizer.tsx": [],
+    "src/components/Notes/IconPicker.tsx": [],
+    "src/components/Notes/ImageExtractionModal.tsx": [],
+    "src/components/Notes/LogicStyleRefiner.tsx": [],
+    "src/components/Notes/NoteEditor.tsx": [
+      "src/components/Notes/AttachmentManager.tsx",
+      "src/components/Notes/BadgeSettingsContext.tsx",
+      "src/components/Notes/ExecutiveModal.tsx",
+      "src/components/Notes/PromptEditorModal.tsx",
+      "src/components/Notes/RewriteModal.tsx",
+      "src/components/Notes/RichTextEditor.tsx",
+      "src/components/Notes/ToDoModal.tsx",
+      "src/hooks/useDetectOutsideClick.ts",
+      "src/models/NotePage.ts"
+    ],
+    "src/components/Notes/NotesLayout.tsx": [
+      "src/components/Anomaly/CameraModal.tsx",
+      "src/components/Notes/AssessmentModal.tsx",
+      "src/components/Notes/AudioRecorderModal.tsx",
+      "src/components/Notes/BadgeSettingsContext.tsx",
+      "src/components/Notes/BadgeSettingsModal.tsx",
+      "src/components/Notes/BookmarkListModal.tsx",
+      "src/components/Notes/CategoryList.tsx",
+      "src/components/Notes/CommandPalette.tsx",
+      "src/components/Notes/ContactListModal.tsx",
+      "src/components/Notes/ContractRedlineAnalyzer.tsx",
+      "src/components/Notes/ExecutiveModal.tsx",
+      "src/components/Notes/FlaggedItemsModal.tsx",
+      "src/components/Notes/GoogleCalendarModal.tsx",
+      "src/components/Notes/GoogleDriveModal.tsx",
+      "src/components/Notes/Humanizer.tsx",
+      "src/components/Notes/IconPicker.tsx",
+      "src/components/Notes/ImageExtractionModal.tsx",
+      "src/components/Notes/LogicStyleRefiner.tsx",
+      "src/components/Notes/MovePageModal.tsx",
+      "src/components/Notes/NoteEditor.tsx",
+      "src/components/Notes/SectionDashboard.tsx",
+      "src/components/Notes/SectionPageList.tsx",
+      "src/components/Notes/ToDoListModal.tsx",
+      "src/components/Notes/TruthTeller.tsx",
+      "src/components/Notes/UnifiedAIChatModal.tsx",
+      "src/components/PromptLibrary/PromptLibraryModal.tsx",
+      "src/components/StandaloneRewriteModal.tsx",
+      "src/models/NoteCategory.ts",
+      "src/models/NotePage.ts",
+      "src/models/NoteSection.ts"
+    ]
+  },
+  "neighborMap": {
+    "src/components/Anomaly/CameraModal.tsx": [
+      {
+        "path": "src/components/Anomaly/AnomalyApp.tsx",
+        "batchIndex": 10,
+        "symbols": [
+          "AnomalyApp"
+        ]
+      }
+    ],
+    "src/components/Notes/AssessmentModal.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/BadgeSettingsContext.tsx": [
+      {
+        "path": "src/components/Notes/PageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionPageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/BadgeSettingsModal.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/BookmarkListModal.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/CategoryList.tsx": [
+      {
+        "path": "src/components/Notes/SortableItem.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "SortableItem"
+        ]
+      },
+      {
+        "path": "src/models/NoteCategory.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/components/Notes/ColorPicker.tsx": [
+      {
+        "path": "src/components/Notes/PageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionPageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      }
+    ],
+    "src/components/Notes/CommandPalette.tsx": [
+      {
+        "path": "src/models/NotePage.ts",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/ContactFormModal.tsx": [
+      {
+        "path": "src/lib/contact-constants.ts",
+        "batchIndex": 9,
+        "symbols": [
+          "CONTACT_POSITIONS",
+          "CONTACT_DEPARTMENTS",
+          "CONTACT_TYPES"
+        ]
+      }
+    ],
+    "src/components/Notes/ContactListModal.tsx": [
+      {
+        "path": "src/lib/contact-constants.ts",
+        "batchIndex": 9,
+        "symbols": [
+          "CONTACT_POSITIONS",
+          "CONTACT_DEPARTMENTS",
+          "CONTACT_TYPES"
+        ]
+      },
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      },
+      {
+        "path": "src/components/Tasks/TasksApp.tsx",
+        "batchIndex": 2,
+        "symbols": [
+          "TasksApp"
+        ]
+      }
+    ],
+    "src/components/Notes/ExecutiveModal.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/FlaggedItemsModal.tsx": [
+      {
+        "path": "src/models/NotePage.ts",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/GoogleCalendarModal.tsx": [
+      {
+        "path": "src/components/Organization/OrgCalendarView.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrgCalendarView"
+        ]
+      }
+    ],
+    "src/components/Notes/IconPicker.tsx": [
+      {
+        "path": "src/components/Notes/PageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionPageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      }
+    ],
+    "src/components/Notes/ImageExtractionModal.tsx": [
+      {
+        "path": "src/components/Organization/OrganizationLayout.tsx",
+        "batchIndex": 9,
+        "symbols": [
+          "OrganizationLayout"
+        ]
+      }
+    ],
+    "src/components/Notes/NoteEditor.tsx": [
+      {
+        "path": "src/components/Notes/PromptEditorModal.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/RewriteModal.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/RichTextEditor.tsx",
+        "batchIndex": 10,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/ToDoModal.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/hooks/useDetectOutsideClick.ts",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/models/NotePage.ts",
+        "batchIndex": 5,
+        "symbols": []
+      }
+    ],
+    "src/components/Notes/NotesLayout.tsx": [
+      {
+        "path": "src/components/Notes/MovePageModal.tsx",
+        "batchIndex": 4,
+        "symbols": [
+          "MovePageModal"
+        ]
+      },
+      {
+        "path": "src/components/Notes/SectionDashboard.tsx",
+        "batchIndex": 4,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/SectionPageList.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/ToDoListModal.tsx",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/TruthTeller.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/components/Notes/UnifiedAIChatModal.tsx",
+        "batchIndex": 11,
+        "symbols": []
+      },
+      {
+        "path": "src/components/PromptLibrary/PromptLibraryModal.tsx",
+        "batchIndex": 2,
+        "symbols": [
+          "PromptLibraryModal"
+        ]
+      },
+      {
+        "path": "src/components/StandaloneRewriteModal.tsx",
+        "batchIndex": 9,
+        "symbols": []
+      },
+      {
+        "path": "src/models/NoteCategory.ts",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/models/NotePage.ts",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/models/NoteSection.ts",
+        "batchIndex": 5,
+        "symbols": []
+      },
+      {
+        "path": "src/app/notes/page.tsx",
+        "batchIndex": 12,
+        "symbols": [
+          "dynamic",
+          "NotesPage"
+        ]
+      }
+    ]
+  }
+}

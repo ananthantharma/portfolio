@@ -6,6 +6,7 @@ export interface IPromptLibraryItem extends Document {
   description: string;
   content: string;
   category: string;
+  favorite: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +18,7 @@ const PromptLibraryItemSchema = new Schema<IPromptLibraryItem>(
     description: {type: String, default: ''},
     content: {type: String, default: ''},
     category: {type: String, required: true, default: 'General'},
+    favorite: {type: Boolean, default: false},
   },
   {timestamps: true},
 );

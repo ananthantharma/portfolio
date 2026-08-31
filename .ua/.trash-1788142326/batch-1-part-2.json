@@ -1,0 +1,1578 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/api/prompts/library/[id]/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/prompts/library/[id]/route.ts",
+      "summary": "Update and delete handlers for individual prompt library items owned by the authenticated user.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "crud",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/prompts/library/[id]/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/prompts/library/[id]/route.ts",
+      "lineRange": [
+        13,
+        43
+      ],
+      "summary": "Updates a prompt library item by id for the authenticated owner.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/prompts/library/[id]/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/prompts/library/[id]/route.ts",
+      "lineRange": [
+        46,
+        67
+      ],
+      "summary": "Deletes a prompt library item by id for the authenticated owner.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/prompts/library/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/prompts/library/route.ts",
+      "summary": "Lists and creates saved prompt library items scoped to the authenticated user in MongoDB.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "crud",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/prompts/library/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/prompts/library/route.ts",
+      "lineRange": [
+        13,
+        30
+      ],
+      "summary": "Lists the authenticated user's prompt library items sorted by recency.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/prompts/library/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/prompts/library/route.ts",
+      "lineRange": [
+        33,
+        57
+      ],
+      "summary": "Creates a new prompt library item for the authenticated user.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "create"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/prompts/organize/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/prompts/organize/route.ts",
+      "summary": "Stores and retrieves the user's prompt-organization state (folders/tags) for the prompt tools.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "persistence",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/prompts/organize/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/prompts/organize/route.ts",
+      "lineRange": [
+        8,
+        31
+      ],
+      "summary": "Returns the user's saved prompt-organization document, creating a default if absent.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/prompts/organize/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/prompts/organize/route.ts",
+      "lineRange": [
+        33,
+        52
+      ],
+      "summary": "Persists the user's updated prompt-organization state.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/prompts/rewrite/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/prompts/rewrite/route.ts",
+      "summary": "Stores and retrieves the user's saved prompt-rewrite configuration for the prompt tools.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "persistence",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/prompts/rewrite/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/prompts/rewrite/route.ts",
+      "lineRange": [
+        8,
+        31
+      ],
+      "summary": "Returns the user's saved prompt-rewrite settings document, creating a default if absent.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/prompts/rewrite/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/prompts/rewrite/route.ts",
+      "lineRange": [
+        33,
+        52
+      ],
+      "summary": "Persists the user's updated prompt-rewrite settings.",
+      "tags": [
+        "api-handler",
+        "prompts",
+        "mongodb",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/proxy/[...path]/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/proxy/[...path]/route.ts",
+      "summary": "Catch-all authenticated proxy that forwards GET/POST requests to configured upstream APIs, injecting server-side API keys.",
+      "tags": [
+        "api-handler",
+        "proxy",
+        "catch-all",
+        "authentication",
+        "api-keys"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/proxy/[...path]/route.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/app/api/proxy/[...path]/route.ts",
+      "lineRange": [
+        8,
+        118
+      ],
+      "summary": "Shared GET/POST proxy that resolves the upstream target and API key by path segment, forwards the request, and returns JSON.",
+      "tags": [
+        "proxy",
+        "catch-all",
+        "authentication",
+        "api-keys"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/api/signing/documents/[id]/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/documents/[id]/route.ts",
+      "summary": "Per-document handlers to fetch, update, and delete e-signing documents and their related fields/recipients in Neon Postgres.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "crud",
+        "postgres"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/documents/[id]/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/signing/documents/[id]/route.ts",
+      "lineRange": [
+        8,
+        46
+      ],
+      "summary": "Loads an e-signing document with its fields and recipients for the owner.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/documents/[id]/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/signing/documents/[id]/route.ts",
+      "lineRange": [
+        49,
+        83
+      ],
+      "summary": "Updates an e-signing document's metadata or status for the owner.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/documents/[id]/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/signing/documents/[id]/route.ts",
+      "lineRange": [
+        86,
+        102
+      ],
+      "summary": "Deletes an e-signing document and its related rows for the owner.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/signing/documents/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/documents/route.ts",
+      "summary": "Lists e-signing documents for the user and creates new ones, uploading the source PDF to blob storage.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "blob-storage",
+        "file-upload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/documents/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/signing/documents/route.ts",
+      "lineRange": [
+        9,
+        33
+      ],
+      "summary": "Lists the authenticated user's e-signing documents.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/documents/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/documents/route.ts",
+      "lineRange": [
+        36,
+        71
+      ],
+      "summary": "Creates an e-signing document, uploading its source PDF to blob storage and inserting the row.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "file-upload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/signing/fields/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/fields/route.ts",
+      "summary": "Create, update, and delete signature-field placements on e-signing documents in Neon Postgres.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "crud",
+        "postgres"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/fields/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/fields/route.ts",
+      "lineRange": [
+        8,
+        34
+      ],
+      "summary": "Bulk-inserts signature-field placements for an e-signing document.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "create"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/fields/route.ts:PUT",
+      "type": "function",
+      "name": "PUT",
+      "filePath": "src/app/api/signing/fields/route.ts",
+      "lineRange": [
+        37,
+        70
+      ],
+      "summary": "Updates a signature field's position, size, or assignment.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/fields/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/signing/fields/route.ts",
+      "lineRange": [
+        73,
+        94
+      ],
+      "summary": "Deletes a signature field by id.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/signing/migrate/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/migrate/route.ts",
+      "summary": "Admin migration endpoint that creates or alters the e-signing database tables in Neon Postgres.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "migration",
+        "neon",
+        "schema"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/migrate/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/migrate/route.ts",
+      "lineRange": [
+        7,
+        70
+      ],
+      "summary": "Admin-guarded migration that creates the signing_documents, signing_fields, and signing_recipients tables.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "migration",
+        "neon"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/signing/recipients/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/recipients/route.ts",
+      "summary": "Adds and removes recipients (signers) for an e-signing document, generating per-recipient signing tokens.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "recipients",
+        "tokens"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/recipients/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/recipients/route.ts",
+      "lineRange": [
+        8,
+        43
+      ],
+      "summary": "Adds a recipient to an e-signing document and generates their unique signing token.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "tokens"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/recipients/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/signing/recipients/route.ts",
+      "lineRange": [
+        46,
+        71
+      ],
+      "summary": "Removes a recipient from an e-signing document by id.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "neon",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/signing/send/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/send/route.ts",
+      "summary": "Sends an e-signing document to its recipients by email and marks the document and recipients as sent.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "email",
+        "neon",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/send/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/send/route.ts",
+      "lineRange": [
+        8,
+        131
+      ],
+      "summary": "Validates a document is ready, emails each recipient their signing link, and marks the document and recipients sent.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "email",
+        "workflow"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/api/signing/sign/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/signing/sign/route.ts",
+      "summary": "Public token-based endpoint that loads a document for a recipient and applies their signature into the PDF on submission.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "pdf",
+        "signature",
+        "public-token"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/sign/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/signing/sign/route.ts",
+      "lineRange": [
+        6,
+        71
+      ],
+      "summary": "Resolves a signing token to its document, fields, and recipient for the public signing page.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "public-token",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/signing/sign/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/signing/sign/route.ts",
+      "lineRange": [
+        74,
+        186
+      ],
+      "summary": "Applies the recipient's signature image and text into the PDF with pdf-lib, stores the signed PDF, and records completion.",
+      "tags": [
+        "api-handler",
+        "e-signing",
+        "pdf",
+        "signature"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/api/sourcing/config/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/sourcing/config/route.ts",
+      "summary": "Reads and upserts the supplier-sourcing/risk configuration for the authenticated user in MongoDB.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "configuration",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/sourcing/config/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/sourcing/config/route.ts",
+      "lineRange": [
+        8,
+        29
+      ],
+      "summary": "Returns the user's sourcing configuration, creating a default document when none exists.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/sourcing/config/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/sourcing/config/route.ts",
+      "lineRange": [
+        31,
+        52
+      ],
+      "summary": "Upserts the user's sourcing configuration.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "upsert"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/sourcing/events/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/sourcing/events/route.ts",
+      "summary": "CRUD route for supplier-sourcing risk events persisted per user in MongoDB, with a document-count guard.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "crud",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/sourcing/events/route.ts:GET",
+      "type": "function",
+      "name": "GET",
+      "filePath": "src/app/api/sourcing/events/route.ts",
+      "lineRange": [
+        8,
+        32
+      ],
+      "summary": "Lists the user's sourcing risk events, or returns just a count when requested.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "read"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/sourcing/events/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/sourcing/events/route.ts",
+      "lineRange": [
+        34,
+        62
+      ],
+      "summary": "Upserts a sourcing risk event for the user by id or name.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "upsert"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/sourcing/events/route.ts:DELETE",
+      "type": "function",
+      "name": "DELETE",
+      "filePath": "src/app/api/sourcing/events/route.ts",
+      "lineRange": [
+        64,
+        86
+      ],
+      "summary": "Deletes a sourcing risk event by id after verifying ownership.",
+      "tags": [
+        "api-handler",
+        "sourcing",
+        "mongodb",
+        "delete"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/upload/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/upload/route.ts",
+      "summary": "Authenticated endpoint that streams an uploaded file to Vercel Blob storage and returns its public URL.",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "blob-storage",
+        "authentication",
+        "vercel"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/upload/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/upload/route.ts",
+      "lineRange": [
+        7,
+        31
+      ],
+      "summary": "Authenticates the user and streams the request body to Vercel Blob, returning the stored file URL.",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "blob-storage"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "file:src/models/PromptLibraryItem.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "function:src/app/api/prompts/library/[id]/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "function:src/app/api/prompts/library/[id]/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "function:src/app/api/prompts/library/[id]/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/library/[id]/route.ts",
+      "target": "function:src/app/api/prompts/library/[id]/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "file:src/models/PromptLibraryItem.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "function:src/app/api/prompts/library/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "function:src/app/api/prompts/library/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "function:src/app/api/prompts/library/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/library/route.ts",
+      "target": "function:src/app/api/prompts/library/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "file:src/models/SavedPrompt.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "function:src/app/api/prompts/organize/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "function:src/app/api/prompts/organize/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "function:src/app/api/prompts/organize/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/organize/route.ts",
+      "target": "function:src/app/api/prompts/organize/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "file:src/models/SavedPrompt.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "function:src/app/api/prompts/rewrite/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "function:src/app/api/prompts/rewrite/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "function:src/app/api/prompts/rewrite/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/prompts/rewrite/route.ts",
+      "target": "function:src/app/api/prompts/rewrite/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/proxy/[...path]/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/proxy/[...path]/route.ts",
+      "target": "function:src/app/api/proxy/[...path]/route.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/proxy/[...path]/route.ts",
+      "target": "function:src/app/api/proxy/[...path]/route.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/documents/[id]/route.ts",
+      "target": "function:src/app/api/signing/documents/[id]/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "function:src/app/api/signing/documents/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "function:src/app/api/signing/documents/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "function:src/app/api/signing/documents/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/documents/route.ts",
+      "target": "function:src/app/api/signing/documents/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:PUT",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:PUT",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/fields/route.ts",
+      "target": "function:src/app/api/signing/fields/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/migrate/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/migrate/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/migrate/route.ts",
+      "target": "function:src/app/api/signing/migrate/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/migrate/route.ts",
+      "target": "function:src/app/api/signing/migrate/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "function:src/app/api/signing/recipients/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "function:src/app/api/signing/recipients/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "function:src/app/api/signing/recipients/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/recipients/route.ts",
+      "target": "function:src/app/api/signing/recipients/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/send/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/send/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/send/route.ts",
+      "target": "function:src/app/api/signing/send/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/send/route.ts",
+      "target": "function:src/app/api/signing/send/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/sign/route.ts",
+      "target": "file:src/lib/neon.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/signing/sign/route.ts",
+      "target": "function:src/app/api/signing/sign/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/sign/route.ts",
+      "target": "function:src/app/api/signing/sign/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/signing/sign/route.ts",
+      "target": "function:src/app/api/signing/sign/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/signing/sign/route.ts",
+      "target": "function:src/app/api/signing/sign/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "file:src/models/SourcingConfig.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "function:src/app/api/sourcing/config/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "function:src/app/api/sourcing/config/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "function:src/app/api/sourcing/config/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/sourcing/config/route.ts",
+      "target": "function:src/app/api/sourcing/config/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "file:src/models/SourcingEvent.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:GET",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:GET",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:DELETE",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/sourcing/events/route.ts",
+      "target": "function:src/app/api/sourcing/events/route.ts:DELETE",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/app/api/upload/route.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/app/api/upload/route.ts",
+      "target": "function:src/app/api/upload/route.ts:POST",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/app/api/upload/route.ts",
+      "target": "function:src/app/api/upload/route.ts:POST",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/documents/[id]/route.ts:GET",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/documents/[id]/route.ts:PUT",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/documents/[id]/route.ts:DELETE",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/documents/route.ts:GET",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/documents/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/fields/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/fields/route.ts:PUT",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/fields/route.ts:DELETE",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/migrate/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/recipients/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/recipients/route.ts:DELETE",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/send/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/sign/route.ts:GET",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/signing/sign/route.ts:POST",
+      "target": "function:src/lib/neon.ts:getDb",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/library/[id]/route.ts:PUT",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/library/[id]/route.ts:DELETE",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/library/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/library/route.ts:POST",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/organize/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/organize/route.ts:PUT",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/rewrite/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/prompts/rewrite/route.ts:PUT",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/sourcing/config/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/sourcing/config/route.ts:POST",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/sourcing/events/route.ts:GET",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/sourcing/events/route.ts:POST",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/app/api/sourcing/events/route.ts:DELETE",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

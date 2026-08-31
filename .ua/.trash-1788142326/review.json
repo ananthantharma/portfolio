@@ -1,0 +1,54 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'config:.env.local.example' has no edges (orphan)",
+    "Node 'config:.yarnrc.yml' has no edges (orphan)",
+    "Node 'document:README.md' has no edges (orphan)",
+    "Node 'config:tsconfig.json' has no edges (orphan)",
+    "Node 'config:.claude/launch.json' has no edges (orphan)",
+    "Node 'config:.claude/settings.local.json' has no edges (orphan)",
+    "Node 'config:.github/FUNDING.yml' has no edges (orphan)",
+    "Node 'file:.npmrc' has no edges (orphan)",
+    "Node 'file:.prettierignore' has no edges (orphan)",
+    "Node 'file:next-env.d.ts' has no edges (orphan)",
+    "Node 'file:next-sitemap.js' has no edges (orphan)",
+    "Node 'file:public/site.webmanifest' has no edges (orphan)",
+    "Node 'file:server.js' has no edges (orphan)",
+    "Node 'file:src/components/.gitkeep' has no edges (orphan)",
+    "Node 'file:src/components/Base.tsx' has no edges (orphan)",
+    "Node 'file:src/components/Finance/StatCard.tsx' has no edges (orphan)",
+    "Node 'file:src/components/Finance/SummaryCards.tsx' has no edges (orphan)",
+    "Node 'file:src/components/Sections/StarField.tsx' has no edges (orphan)",
+    "Node 'file:src/config.ts' has no edges (orphan)",
+    "Node 'file:src/images/.gitkeep' has no edges (orphan)",
+    "Node 'file:src/images/testimonial.webp' has no edges (orphan)",
+    "Node 'file:src/models/Bookmark.ts' has no edges (orphan)",
+    "Node 'file:src/models/PdfTemplate.ts' has no edges (orphan)",
+    "Node 'file:src/pages/api/.gitkeep' has no edges (orphan)",
+    "Node 'file:src/types.d.ts' has no edges (orphan)",
+    "Node 'file:src/types/next-auth.d.ts' has no edges (orphan)",
+    "Node 'file:src/types/quill-better-table.d.ts' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 774,
+    "totalEdges": 1459,
+    "totalLayers": 7,
+    "tourSteps": 14,
+    "nodeTypes": {
+      "file": 383,
+      "function": 376,
+      "class": 3,
+      "config": 11,
+      "document": 1
+    },
+    "edgeTypes": {
+      "imports": 602,
+      "contains": 382,
+      "exports": 286,
+      "calls": 158,
+      "related": 8,
+      "depends_on": 19,
+      "configures": 4
+    }
+  }
+}

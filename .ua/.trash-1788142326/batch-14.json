@@ -1,0 +1,187 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "type": "file",
+      "name": "AddColumnModal.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "summary": "Modal dialog for adding a new column to the high-performance table, letting the user pick a column name and data type before submitting.",
+      "tags": ["component", "modal", "form", "table", "notes"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "type": "file",
+      "name": "EditRowModal.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "summary": "Modal dialog for editing all cell values of a single table row through per-column inputs, including status option selection.",
+      "tags": ["component", "modal", "form", "table", "notes"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "type": "file",
+      "name": "PDFExportModal.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "summary": "Configuration modal that exports the table to PDF via lazily-loaded jsPDF and jspdf-autotable, with controls for orientation, column widths, title, and striped rows.",
+      "tags": ["component", "modal", "pdf-export", "serialization", "table"],
+      "complexity": "complex",
+      "languageNotes": "Uses dynamic import() to code-split the jsPDF and autotable libraries out of the main bundle."
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "type": "file",
+      "name": "SortableHeader.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "summary": "Draggable and resizable table column header built on dnd-kit's useSortable, exposing resize-start and remove callbacks.",
+      "tags": ["component", "drag-and-drop", "table", "header", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "type": "file",
+      "name": "TableApp.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "summary": "Core spreadsheet-like table application supporting hierarchical rows, drag-to-reorder and resizable columns, inline editing, AI smart import, clipboard/Excel/PDF export, and server-side save/load of named tables.",
+      "tags": ["component", "table", "state-management", "drag-and-drop", "api-handler"],
+      "complexity": "complex",
+      "languageNotes": "Very large single-file React component (~1400 lines) combining several sub-components and many recursive tree helpers for nested rows."
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "type": "file",
+      "name": "TableAppModal.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "summary": "Thin full-screen modal wrapper that mounts the TableApp component when open.",
+      "tags": ["component", "modal", "wrapper", "table", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/types.ts",
+      "type": "file",
+      "name": "types.ts",
+      "filePath": "src/components/Notes/HighPerformanceTable/types.ts",
+      "summary": "Shared TypeScript type definitions for the high-performance table feature, including column types, column and row shapes, and status options.",
+      "tags": ["type-definition", "table", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx:AddColumnModal",
+      "type": "function",
+      "name": "AddColumnModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/AddColumnModal.tsx",
+      "lineRange": [19, 165],
+      "summary": "React component rendering the add-column form, managing name/type local state and invoking the onAdd callback with a new column definition.",
+      "tags": ["component", "modal", "form", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/EditRowModal.tsx:EditRowModal",
+      "type": "function",
+      "name": "EditRowModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/EditRowModal.tsx",
+      "lineRange": [16, 154],
+      "summary": "React component that seeds form state from a row via useEffect and renders per-column editors, calling onSave with the updated row.",
+      "tags": ["component", "modal", "form", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx:PDFExportModal",
+      "type": "function",
+      "name": "PDFExportModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/PDFExportModal.tsx",
+      "lineRange": [15, 356],
+      "summary": "React component managing PDF export options and column-width normalization, then generating and saving a PDF with jsPDF autoTable including flattened nested rows and page footers.",
+      "tags": ["component", "pdf-export", "serialization", "modal"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/SortableHeader.tsx:SortableHeader",
+      "type": "function",
+      "name": "SortableHeader",
+      "filePath": "src/components/Notes/HighPerformanceTable/SortableHeader.tsx",
+      "lineRange": [14, 71],
+      "summary": "Renders a single sortable, resizable column header cell wired to dnd-kit transform styles and resize/remove handlers.",
+      "tags": ["component", "drag-and-drop", "header", "event-handler"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:SortableColumnHeader",
+      "type": "function",
+      "name": "SortableColumnHeader",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "lineRange": [68, 196],
+      "summary": "In-file draggable column header supporting inline rename editing, icon-only toggle, removal, and column resize handle.",
+      "tags": ["component", "drag-and-drop", "header", "inline-edit"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:AddColumnInline",
+      "type": "function",
+      "name": "AddColumnInline",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "lineRange": [200, 275],
+      "summary": "Inline popover for adding a column with name and type selection, closing on outside click.",
+      "tags": ["component", "form", "popover", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:AISmartImportModal",
+      "type": "function",
+      "name": "AISmartImportModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "lineRange": [279, 458],
+      "summary": "Modal that accepts pasted text or an image and posts it to an AI endpoint to generate table columns and rows for import.",
+      "tags": ["component", "modal", "ai-import", "api-handler"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:TableApp",
+      "type": "function",
+      "name": "TableApp",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableApp.tsx",
+      "lineRange": [462, 1407],
+      "summary": "Main table component holding column/row state and all behavior: recursive row add/delete/indent/outdent, cell editing, drag reordering, exports, and axios-backed save/load/delete of named tables.",
+      "tags": ["component", "state-management", "table", "api-handler", "export"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/TableAppModal.tsx:TableAppModal",
+      "type": "function",
+      "name": "TableAppModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/TableAppModal.tsx",
+      "lineRange": [11, 57],
+      "summary": "Full-screen modal shell that conditionally renders TableApp based on the isOpen prop.",
+      "tags": ["component", "modal", "wrapper"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx", "target": "file:src/components/Notes/HighPerformanceTable/types.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx", "target": "file:src/components/Notes/HighPerformanceTable/types.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx", "target": "file:src/components/Notes/HighPerformanceTable/types.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx", "target": "file:src/components/Notes/HighPerformanceTable/types.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "file:src/components/Notes/HighPerformanceTable/types.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx", "target": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx:AddColumnModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/AddColumnModal.tsx:AddColumnModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/EditRowModal.tsx:EditRowModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/EditRowModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/EditRowModal.tsx:EditRowModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx:PDFExportModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx:PDFExportModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx", "target": "function:src/components/Notes/HighPerformanceTable/SortableHeader.tsx:SortableHeader", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/SortableHeader.tsx", "target": "function:src/components/Notes/HighPerformanceTable/SortableHeader.tsx:SortableHeader", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:SortableColumnHeader", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:AddColumnInline", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:AISmartImportModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:TableApp", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableApp.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:TableApp", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableAppModal.tsx:TableAppModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/components/Notes/HighPerformanceTable/TableAppModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/TableAppModal.tsx:TableAppModal", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:TableApp", "target": "function:src/components/Notes/HighPerformanceTable/PDFExportModal.tsx:PDFExportModal", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/components/Notes/HighPerformanceTable/TableAppModal.tsx:TableAppModal", "target": "function:src/components/Notes/HighPerformanceTable/TableApp.tsx:TableApp", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

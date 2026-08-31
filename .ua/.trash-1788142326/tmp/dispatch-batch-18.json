@@ -1,0 +1,137 @@
+{
+  "batchIndex": 18,
+  "files": [
+    {
+      "path": "src/hooks/useInterval.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/hooks/useWindow.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/images/.gitkeep",
+      "language": "unknown",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/images/testimonial.webp",
+      "language": "webp",
+      "sizeLines": 1156,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/Bookmark.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/models/PdfTemplate.ts",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/_app.tsx",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/_document.tsx",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/.gitkeep",
+      "language": "unknown",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/contact.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/api/tables/generate.ts",
+      "language": "typescript",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/pages/login.tsx",
+      "language": "typescript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types.d.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/next-auth.d.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/quill-better-table.d.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "stylelint.config.js",
+      "language": "javascript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tailwind.config.js",
+      "language": "javascript",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/hooks/useInterval.ts": [],
+    "src/hooks/useWindow.ts": [],
+    "src/images/.gitkeep": [],
+    "src/images/testimonial.webp": [],
+    "src/models/Bookmark.ts": [],
+    "src/models/PdfTemplate.ts": [],
+    "src/pages/_app.tsx": [
+      "src/globalStyles.scss"
+    ],
+    "src/pages/_document.tsx": [],
+    "src/pages/api/.gitkeep": [],
+    "src/pages/api/contact.ts": [],
+    "src/pages/api/tables/generate.ts": [],
+    "src/pages/login.tsx": [],
+    "src/types.d.ts": [],
+    "src/types/next-auth.d.ts": [],
+    "src/types/quill-better-table.d.ts": [],
+    "stylelint.config.js": [],
+    "tailwind.config.js": []
+  },
+  "neighborMap": {
+    "src/pages/_app.tsx": [
+      {
+        "path": "src/globalStyles.scss",
+        "batchIndex": 17,
+        "symbols": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,1602 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/components/Notes/SmartInput.tsx",
+      "type": "file",
+      "name": "SmartInput.tsx",
+      "filePath": "src/components/Notes/SmartInput.tsx",
+      "summary": "Lightweight natural-language task input that live-parses phrases like \"urgent\" and \"tomorrow\" into priority and due-date previews before adding a task.",
+      "tags": [
+        "component",
+        "notes",
+        "task-input",
+        "nlp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/SmartInput.tsx:SmartInput",
+      "type": "function",
+      "name": "SmartInput",
+      "filePath": "src/components/Notes/SmartInput.tsx",
+      "lineRange": [
+        9,
+        93
+      ],
+      "summary": "React component providing a text field that regex-parses the input for priority and relative dates, showing a preview chip and emitting the parsed task via onAdd.",
+      "tags": [
+        "component",
+        "event-handler",
+        "notes"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/TaskFormModal.tsx",
+      "type": "file",
+      "name": "TaskFormModal.tsx",
+      "filePath": "src/components/Notes/TaskFormModal.tsx",
+      "summary": "Full-featured modal form for creating and editing to-do tasks: title, priority, due date, category, notes, and chunked file/email attachment uploads to Drive or Blob storage.",
+      "tags": [
+        "component",
+        "modal",
+        "form",
+        "notes",
+        "file-upload"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/TaskFormModal.tsx:TaskFormModal",
+      "type": "function",
+      "name": "TaskFormModal",
+      "filePath": "src/components/Notes/TaskFormModal.tsx",
+      "lineRange": [
+        1,
+        750
+      ],
+      "summary": "Modal component managing task form state and attachment lifecycle, including drag-and-drop, chunked chunk-by-chunk upload to a Drive/Blob endpoint, and save/close callbacks.",
+      "tags": [
+        "component",
+        "form",
+        "file-upload",
+        "modal"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ToDoBoard.tsx",
+      "type": "file",
+      "name": "ToDoBoard.tsx",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "summary": "Kanban-style board view for to-do tasks with dnd-kit drag-and-drop columns, resizable/minimizable columns, per-card checklist, neon borders, starring, and inline category/priority editing.",
+      "tags": [
+        "component",
+        "kanban",
+        "drag-and-drop",
+        "notes",
+        "task-board"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses @dnd-kit (DndContext, useSortable, useDroppable) with persisted column widths and minimized state in localStorage."
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:getRelativeDate",
+      "type": "function",
+      "name": "getRelativeDate",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        147,
+        163
+      ],
+      "summary": "Formats a date string into a relative label (Today, Tomorrow, In N days, N days ago) for task due-date display.",
+      "tags": [
+        "utility",
+        "date",
+        "formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:ToDoBoard",
+      "type": "function",
+      "name": "ToDoBoard",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        169,
+        427
+      ],
+      "summary": "Top-level board component wiring dnd-kit sensors, drag handlers, per-column task grouping, search filtering, and column layout persistence.",
+      "tags": [
+        "component",
+        "kanban",
+        "drag-and-drop"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:Column",
+      "type": "function",
+      "name": "Column",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        433,
+        603
+      ],
+      "summary": "Droppable board column rendering its tasks, with pointer-driven resize handle and collapse toggle.",
+      "tags": [
+        "component",
+        "kanban",
+        "drag-and-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:DraggableTask",
+      "type": "function",
+      "name": "DraggableTask",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        609,
+        680
+      ],
+      "summary": "Sortable wrapper around a task card providing dnd-kit transform, transition, and drag listeners.",
+      "tags": [
+        "component",
+        "drag-and-drop"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:ChecklistSection",
+      "type": "function",
+      "name": "ChecklistSection",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        686,
+        851
+      ],
+      "summary": "Inline subtask checklist editor supporting add, toggle, delete, and reorder of a task's subtasks with a progress bar.",
+      "tags": [
+        "component",
+        "checklist",
+        "notes"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoBoard.tsx:TaskCard",
+      "type": "function",
+      "name": "TaskCard",
+      "filePath": "src/components/Notes/ToDoBoard.tsx",
+      "lineRange": [
+        857,
+        1300
+      ],
+      "summary": "Rich task card rendering title, badges, due-date controls, category/priority dropdowns, attachment counts, subtasks, and source-page navigation.",
+      "tags": [
+        "component",
+        "task-card",
+        "notes"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/Notes/ToDoListModal.tsx",
+      "type": "file",
+      "name": "ToDoListModal.tsx",
+      "filePath": "src/components/Notes/ToDoListModal.tsx",
+      "summary": "Primary to-do manager modal: fetches todos from /api/todos, offers list and board views, and orchestrates status/reorder/priority/category/subtask mutations plus task-form and email-task sub-modals.",
+      "tags": [
+        "component",
+        "modal",
+        "notes",
+        "task-management",
+        "api-consumer"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/components/Notes/ToDoListModal.tsx:ToDoListModal",
+      "type": "function",
+      "name": "ToDoListModal",
+      "filePath": "src/components/Notes/ToDoListModal.tsx",
+      "lineRange": [
+        1,
+        1307
+      ],
+      "summary": "Modal component holding todo state and all CRUD/mutation handlers (toggle complete, delete, reorder, add days, subtasks, neon color, minimize, category, priority) backed by fetch calls to the todos API.",
+      "tags": [
+        "component",
+        "modal",
+        "task-management",
+        "event-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/lib/dbConnect.ts",
+      "type": "file",
+      "name": "dbConnect.ts",
+      "filePath": "src/lib/dbConnect.ts",
+      "summary": "Cached Mongoose connection helper for serverless use, forcing Oracle Cloud PLAIN/$external TLS auth and a single-connection pool to avoid lambda connection exhaustion.",
+      "tags": [
+        "utility",
+        "database",
+        "mongoose",
+        "singleton"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Caches the connection on the Node global to survive Next.js hot reloads and lambda reuse."
+    },
+    {
+      "id": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "function",
+      "name": "dbConnect",
+      "filePath": "src/lib/dbConnect.ts",
+      "lineRange": [
+        16,
+        53
+      ],
+      "summary": "Returns a cached Mongoose connection or establishes one using MONGODB_URI with Oracle-specific auth options, resetting the cached promise on failure.",
+      "tags": [
+        "database",
+        "mongoose",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/lib/gridfs.ts",
+      "type": "file",
+      "name": "gridfs.ts",
+      "filePath": "src/lib/gridfs.ts",
+      "summary": "GridFS helper wrapping a MongoDB attachments bucket with upload, delete, and download-stream functions built on the shared Mongoose connection.",
+      "tags": [
+        "utility",
+        "database",
+        "gridfs",
+        "file-storage"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/lib/gridfs.ts:getGridFSBucket",
+      "type": "function",
+      "name": "getGridFSBucket",
+      "filePath": "src/lib/gridfs.ts",
+      "lineRange": [
+        8,
+        22
+      ],
+      "summary": "Lazily creates and caches a GridFSBucket named \"attachments\" over the active Mongoose connection.",
+      "tags": [
+        "database",
+        "gridfs",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/lib/gridfs.ts:uploadFileToGridFS",
+      "type": "function",
+      "name": "uploadFileToGridFS",
+      "filePath": "src/lib/gridfs.ts",
+      "lineRange": [
+        24,
+        43
+      ],
+      "summary": "Streams a File/Blob into GridFS and resolves with the new file id string.",
+      "tags": [
+        "database",
+        "gridfs",
+        "file-upload"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/lib/gridfs.ts:deleteFileFromGridFS",
+      "type": "function",
+      "name": "deleteFileFromGridFS",
+      "filePath": "src/lib/gridfs.ts",
+      "lineRange": [
+        45,
+        48
+      ],
+      "summary": "Deletes a GridFS file by id.",
+      "tags": [
+        "database",
+        "gridfs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/lib/gridfs.ts:getFileStream",
+      "type": "function",
+      "name": "getFileStream",
+      "filePath": "src/lib/gridfs.ts",
+      "lineRange": [
+        50,
+        53
+      ],
+      "summary": "Opens a GridFS download stream for a file id.",
+      "tags": [
+        "database",
+        "gridfs",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/AccessLog.ts",
+      "type": "file",
+      "name": "AccessLog.ts",
+      "filePath": "src/models/AccessLog.ts",
+      "summary": "Mongoose model for the access_logs collection recording request IP, path, timestamp, and optional user email/agent for the site-visit pulse feature.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Attachment.ts",
+      "type": "file",
+      "name": "Attachment.ts",
+      "filePath": "src/models/Attachment.ts",
+      "summary": "Mongoose model for note-page attachments, storing binary data locally or metadata/links for Google Drive and Blob storage, referencing a NotePage.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Contact.ts",
+      "type": "file",
+      "name": "Contact.ts",
+      "filePath": "src/models/Contact.ts",
+      "summary": "Mongoose model for organization contacts (name, company, position, department, type) with enum values sourced from contact-constants and per-user scoping.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/GanttChart.ts",
+      "type": "file",
+      "name": "GanttChart.ts",
+      "filePath": "src/models/GanttChart.ts",
+      "summary": "Mongoose model persisting a user's Gantt project as an array of tasks/milestones plus a category-color map and last-updated timestamp.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Investment.ts",
+      "type": "file",
+      "name": "Investment.ts",
+      "filePath": "src/models/Investment.ts",
+      "summary": "Mongoose model for a portfolio holding (ticker, quantity, purchase date, book price, account category) scoped by user email.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/NoteCategory.ts",
+      "type": "file",
+      "name": "NoteCategory.ts",
+      "filePath": "src/models/NoteCategory.ts",
+      "summary": "Mongoose model for top-level note categories with color, icon, Brandfetch image, and ordering, scoped by user email.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/NotePage.ts",
+      "type": "file",
+      "name": "NotePage.ts",
+      "filePath": "src/models/NotePage.ts",
+      "summary": "Mongoose model for note pages with multi-tab content, hierarchy (section or category or parent page), flags, and compound indexes tuned for sidebar and badge-count queries.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple",
+      "languageNotes": "pre-validate hook enforces that a page belongs to a section or a category; several compound indexes back per-request access patterns."
+    },
+    {
+      "id": "file:src/models/NoteSection.ts",
+      "type": "file",
+      "name": "NoteSection.ts",
+      "filePath": "src/models/NoteSection.ts",
+      "summary": "Mongoose model for note sections nested under a NoteCategory, with ordering and compound indexes for category-scoped listing.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Password.ts",
+      "type": "file",
+      "name": "Password.ts",
+      "filePath": "src/models/Password.ts",
+      "summary": "Mongoose model for the secure vault storing polymorphic items (password, card, identity, API key, secure note) keyed by itemType and user email.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/TableDoc.ts",
+      "type": "file",
+      "name": "TableDoc.ts",
+      "filePath": "src/models/TableDoc.ts",
+      "summary": "Mongoose model for the hierarchical table/spreadsheet tool storing arbitrary columns and hierarchical rows as loosely-typed arrays.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/ToDo.ts",
+      "type": "file",
+      "name": "ToDo.ts",
+      "filePath": "src/models/ToDo.ts",
+      "summary": "Mongoose model for to-do tasks with priority, due date, status, subtasks, attachments, recurrence, dependencies, neon styling, and source-page linkage, indexed for badge counts.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/Transaction.ts",
+      "type": "file",
+      "name": "Transaction.ts",
+      "filePath": "src/models/Transaction.ts",
+      "summary": "Mongoose model for finance transactions (date, description, amount, income/expense/transfer type, category, optional property reference) scoped by user email.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/models/User.ts",
+      "type": "file",
+      "name": "User.ts",
+      "filePath": "src/models/User.ts",
+      "summary": "Mongoose model for NextAuth users extended with per-feature permission flags, credentials-auth fields, custom AI prompts, and badge threshold/color settings.",
+      "tags": [
+        "data-model",
+        "mongoose",
+        "schema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/admin/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "src/pages/admin/index.tsx",
+      "summary": "Admin-only dashboard (SSR-guarded to the owner email) listing users with per-feature permission toggles and account management, plus grouped access-log/IP visitor history.",
+      "tags": [
+        "page",
+        "admin",
+        "dashboard",
+        "api-consumer"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/pages/admin/index.tsx:AdminDashboard",
+      "type": "function",
+      "name": "AdminDashboard",
+      "filePath": "src/pages/admin/index.tsx",
+      "lineRange": [
+        33,
+        556
+      ],
+      "summary": "Client component rendering the user permission grid, new-user creation/deletion, and expandable access-log IP groupings with sorting and filtering.",
+      "tags": [
+        "component",
+        "admin",
+        "dashboard"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/pages/admin/index.tsx:getServerSideProps",
+      "type": "function",
+      "name": "getServerSideProps",
+      "filePath": "src/pages/admin/index.tsx",
+      "lineRange": [
+        558,
+        576
+      ],
+      "summary": "Server-side guard that redirects non-admin sessions, then loads the latest 100 users and 500 access logs from MongoDB.",
+      "tags": [
+        "ssr",
+        "auth",
+        "data-loading"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "type": "file",
+      "name": "permissions.ts",
+      "filePath": "src/pages/api/admin/users/[id]/permissions.ts",
+      "summary": "Admin-only API endpoint (owner-email guarded) to update or delete a user, toggling per-feature permission flags on the User model.",
+      "tags": [
+        "admin",
+        "auth",
+        "user-management",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/admin/users/[id]/permissions.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/admin/users/[id]/permissions.ts",
+      "lineRange": [
+        7,
+        60
+      ],
+      "summary": "Admin-only API endpoint (owner-email guarded) to update or delete a user, toggling per-feature permission flags on the User model.",
+      "tags": [
+        "admin",
+        "auth",
+        "user-management",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/database-stats.ts",
+      "type": "file",
+      "name": "database-stats.ts",
+      "filePath": "src/pages/api/database-stats.ts",
+      "summary": "GET endpoint returning MongoDB database statistics (collection counts and sizes) for the admin/system dashboard.",
+      "tags": [
+        "admin",
+        "database",
+        "monitoring",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/database-stats.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/database-stats.ts",
+      "lineRange": [
+        6,
+        38
+      ],
+      "summary": "GET endpoint returning MongoDB database statistics (collection counts and sizes) for the admin/system dashboard.",
+      "tags": [
+        "admin",
+        "database",
+        "monitoring",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/finance/investments/[id].ts",
+      "type": "file",
+      "name": "[id].ts",
+      "filePath": "src/pages/api/finance/investments/[id].ts",
+      "summary": "Authenticated API endpoint to fetch, update, or delete a single Investment holding owned by the session user.",
+      "tags": [
+        "finance",
+        "auth",
+        "crud",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/finance/investments/[id].ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/finance/investments/[id].ts",
+      "lineRange": [
+        8,
+        54
+      ],
+      "summary": "Authenticated API endpoint to fetch, update, or delete a single Investment holding owned by the session user.",
+      "tags": [
+        "finance",
+        "auth",
+        "crud",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/finance/investments/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/pages/api/finance/investments/index.ts",
+      "summary": "Authenticated API endpoint to list and create Investment holdings for the session user.",
+      "tags": [
+        "finance",
+        "auth",
+        "crud",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/finance/investments/index.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/finance/investments/index.ts",
+      "lineRange": [
+        8,
+        50
+      ],
+      "summary": "Authenticated API endpoint to list and create Investment holdings for the session user.",
+      "tags": [
+        "finance",
+        "auth",
+        "crud",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/finance/investments/sell.ts",
+      "type": "file",
+      "name": "sell.ts",
+      "filePath": "src/pages/api/finance/investments/sell.ts",
+      "summary": "Authenticated POST endpoint that records selling a holding by reducing quantity or removing the Investment document.",
+      "tags": [
+        "finance",
+        "auth",
+        "transaction",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/finance/investments/sell.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/finance/investments/sell.ts",
+      "lineRange": [
+        8,
+        67
+      ],
+      "summary": "Authenticated POST endpoint that records selling a holding by reducing quantity or removing the Investment document.",
+      "tags": [
+        "finance",
+        "auth",
+        "transaction",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/passwords/[id].ts",
+      "type": "file",
+      "name": "[id].ts",
+      "filePath": "src/pages/api/passwords/[id].ts",
+      "summary": "Authenticated API endpoint to update or delete a single secure-vault item for the session user.",
+      "tags": [
+        "vault",
+        "auth",
+        "crud",
+        "security",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/passwords/[id].ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/passwords/[id].ts",
+      "lineRange": [
+        9,
+        54
+      ],
+      "summary": "Authenticated API endpoint to update or delete a single secure-vault item for the session user.",
+      "tags": [
+        "vault",
+        "auth",
+        "crud",
+        "security",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/passwords/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/pages/api/passwords/index.ts",
+      "summary": "Authenticated API endpoint to list and create secure-vault items scoped to the session user.",
+      "tags": [
+        "vault",
+        "auth",
+        "crud",
+        "security",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/passwords/index.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/passwords/index.ts",
+      "lineRange": [
+        9,
+        50
+      ],
+      "summary": "Authenticated API endpoint to list and create secure-vault items scoped to the session user.",
+      "tags": [
+        "vault",
+        "auth",
+        "crud",
+        "security",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/sys-pulse.ts",
+      "type": "file",
+      "name": "sys-pulse.ts",
+      "filePath": "src/pages/api/sys-pulse.ts",
+      "summary": "POST endpoint that logs a visitor pulse (IP, path, user email) into the AccessLog collection for the admin visitor history.",
+      "tags": [
+        "monitoring",
+        "access-log",
+        "analytics",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/sys-pulse.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/sys-pulse.ts",
+      "lineRange": [
+        9,
+        46
+      ],
+      "summary": "POST endpoint that logs a visitor pulse (IP, path, user email) into the AccessLog collection for the admin visitor history.",
+      "tags": [
+        "monitoring",
+        "access-log",
+        "analytics",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/tables/[id].ts",
+      "type": "file",
+      "name": "[id].ts",
+      "filePath": "src/pages/api/tables/[id].ts",
+      "summary": "API endpoint to fetch, update, or delete a single TableDoc for the hierarchical table tool.",
+      "tags": [
+        "tables",
+        "crud",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/tables/[id].ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/tables/[id].ts",
+      "lineRange": [
+        5,
+        47
+      ],
+      "summary": "API endpoint to fetch, update, or delete a single TableDoc for the hierarchical table tool.",
+      "tags": [
+        "tables",
+        "crud",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/pages/api/tables/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "src/pages/api/tables/index.ts",
+      "summary": "API endpoint to list TableDoc summaries and create a new table document.",
+      "tags": [
+        "tables",
+        "crud",
+        "api",
+        "nextjs-pages-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/pages/api/tables/index.ts:handler",
+      "type": "function",
+      "name": "handler",
+      "filePath": "src/pages/api/tables/index.ts",
+      "lineRange": [
+        5,
+        28
+      ],
+      "summary": "API endpoint to list TableDoc summaries and create a new table document.",
+      "tags": [
+        "tables",
+        "crud",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/components/Notes/SmartInput.tsx",
+      "target": "function:src/components/Notes/SmartInput.tsx:SmartInput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/SmartInput.tsx",
+      "target": "function:src/components/Notes/SmartInput.tsx:SmartInput",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Notes/TaskFormModal.tsx",
+      "target": "function:src/components/Notes/TaskFormModal.tsx:TaskFormModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/TaskFormModal.tsx",
+      "target": "function:src/components/Notes/TaskFormModal.tsx:TaskFormModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:getRelativeDate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:ToDoBoard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:Column",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:DraggableTask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:ChecklistSection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:TaskCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "function:src/components/Notes/ToDoBoard.tsx:ToDoBoard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "function:src/components/Notes/ToDoListModal.tsx:ToDoListModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "function:src/components/Notes/ToDoListModal.tsx:ToDoListModal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/lib/dbConnect.ts",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/lib/dbConnect.ts",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:getGridFSBucket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:uploadFileToGridFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:deleteFileFromGridFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:getFileStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:getGridFSBucket",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:uploadFileToGridFS",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:deleteFileFromGridFS",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "function:src/lib/gridfs.ts:getFileStream",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/lib/gridfs.ts:getGridFSBucket",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/models/NoteSection.ts",
+      "target": "file:src/models/NoteCategory.ts",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/models/NotePage.ts",
+      "target": "file:src/models/NoteSection.ts",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/models/NotePage.ts",
+      "target": "file:src/models/NoteCategory.ts",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/models/Attachment.ts",
+      "target": "file:src/models/NotePage.ts",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "function:src/pages/admin/index.tsx:AdminDashboard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "function:src/pages/admin/index.tsx:getServerSideProps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "function:src/pages/admin/index.tsx:AdminDashboard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "function:src/pages/admin/index.tsx:getServerSideProps",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/admin/index.tsx:getServerSideProps",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "target": "function:src/pages/api/admin/users/[id]/permissions.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "target": "function:src/pages/api/admin/users/[id]/permissions.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/admin/users/[id]/permissions.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/database-stats.ts",
+      "target": "function:src/pages/api/database-stats.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/database-stats.ts",
+      "target": "function:src/pages/api/database-stats.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/database-stats.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/[id].ts",
+      "target": "function:src/pages/api/finance/investments/[id].ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/[id].ts",
+      "target": "function:src/pages/api/finance/investments/[id].ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/finance/investments/[id].ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/index.ts",
+      "target": "function:src/pages/api/finance/investments/index.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/index.ts",
+      "target": "function:src/pages/api/finance/investments/index.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/finance/investments/index.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/sell.ts",
+      "target": "function:src/pages/api/finance/investments/sell.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/sell.ts",
+      "target": "function:src/pages/api/finance/investments/sell.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/finance/investments/sell.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/passwords/[id].ts",
+      "target": "function:src/pages/api/passwords/[id].ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/passwords/[id].ts",
+      "target": "function:src/pages/api/passwords/[id].ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/passwords/[id].ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/passwords/index.ts",
+      "target": "function:src/pages/api/passwords/index.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/passwords/index.ts",
+      "target": "function:src/pages/api/passwords/index.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/passwords/index.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/sys-pulse.ts",
+      "target": "function:src/pages/api/sys-pulse.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/sys-pulse.ts",
+      "target": "function:src/pages/api/sys-pulse.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/sys-pulse.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/tables/[id].ts",
+      "target": "function:src/pages/api/tables/[id].ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/tables/[id].ts",
+      "target": "function:src/pages/api/tables/[id].ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/tables/[id].ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/pages/api/tables/index.ts",
+      "target": "function:src/pages/api/tables/index.ts:handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/pages/api/tables/index.ts",
+      "target": "function:src/pages/api/tables/index.ts:handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:src/pages/api/tables/index.ts:handler",
+      "target": "function:src/lib/dbConnect.ts:dbConnect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "file:src/models/NotePage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoBoard.tsx",
+      "target": "file:src/models/ToDo.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/components/Notes/EmailTaskModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/components/Notes/SmartInput.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/components/Notes/TaskFormModal.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/components/Notes/ToDoBoard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/models/NotePage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/components/Notes/ToDoListModal.tsx",
+      "target": "file:src/models/ToDo.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/lib/gridfs.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/models/Contact.ts",
+      "target": "file:src/lib/contact-constants.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/models/ToDo.ts",
+      "target": "file:src/models/NotePage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "file:src/models/AccessLog.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/admin/index.tsx",
+      "target": "file:src/models/User.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/admin/users/[id]/permissions.ts",
+      "target": "file:src/models/User.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/database-stats.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/[id].ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/[id].ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/[id].ts",
+      "target": "file:src/models/Investment.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/index.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/index.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/index.ts",
+      "target": "file:src/models/Investment.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/sell.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/sell.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/finance/investments/sell.ts",
+      "target": "file:src/models/Investment.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/[id].ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/[id].ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/[id].ts",
+      "target": "file:src/models/Password.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/index.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/index.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/passwords/index.ts",
+      "target": "file:src/models/Password.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/sys-pulse.ts",
+      "target": "file:src/lib/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/sys-pulse.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/sys-pulse.ts",
+      "target": "file:src/models/AccessLog.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/tables/[id].ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/tables/[id].ts",
+      "target": "file:src/models/TableDoc.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/tables/index.ts",
+      "target": "file:src/lib/dbConnect.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/pages/api/tables/index.ts",
+      "target": "file:src/models/TableDoc.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

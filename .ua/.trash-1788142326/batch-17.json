@@ -1,0 +1,551 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/app/notes/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/notes/layout.tsx",
+      "summary": "Client layout for the /notes route that gates access behind an authenticated session and redirects unauthenticated visitors to the login page.",
+      "tags": ["layout", "route-guard", "authentication", "next-app-router", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/notes/loading.tsx",
+      "type": "file",
+      "name": "loading.tsx",
+      "filePath": "src/app/notes/loading.tsx",
+      "summary": "Next.js route-level loading UI for /notes that renders the full notes layout skeleton while the page streams in.",
+      "tags": ["loading-state", "skeleton", "next-app-router", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/organization/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/organization/layout.tsx",
+      "summary": "Client layout for the /organization (org chart) section that enforces an authenticated session before rendering child pages.",
+      "tags": ["layout", "route-guard", "authentication", "next-app-router", "organization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "type": "file",
+      "name": "PdfAutoFillClient.tsx",
+      "filePath": "src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "summary": "Main client component for the PDF auto-fill workflow: uploads source documents, extracts facts, analyzes a target PDF's form fields, maps values via API calls, and produces a filled/flattened PDF for download.",
+      "tags": ["client-component", "pdf", "wizard", "api-consumer", "form-fill", "feature"],
+      "complexity": "complex",
+      "languageNotes": "Dynamically injects pdf.js via a script tag and lazy-imports jsPDF for client-side PDF rasterization and overlay rendering."
+    },
+    {
+      "id": "file:src/app/pdf-autofill/TemplateEditor.tsx",
+      "type": "file",
+      "name": "TemplateEditor.tsx",
+      "filePath": "src/app/pdf-autofill/TemplateEditor.tsx",
+      "summary": "Interactive editor for building reusable PDF auto-fill templates by rendering PDF pages to canvas and letting the user place, drag, type, and configure field markers before saving the template via API.",
+      "tags": ["client-component", "pdf", "editor", "drag-and-drop", "template", "feature"],
+      "complexity": "complex",
+      "languageNotes": "Renders each PDF page to a data-URL image with pdf.js and overlays absolutely-positioned draggable field markers in percentage coordinates."
+    },
+    {
+      "id": "file:src/app/process-flow/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/process-flow/layout.tsx",
+      "summary": "Client layout for the /process-flow (Gantt / process diagram) section that requires an authenticated session before rendering.",
+      "tags": ["layout", "route-guard", "authentication", "next-app-router", "process-flow"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/providers.tsx",
+      "type": "file",
+      "name": "providers.tsx",
+      "filePath": "src/app/providers.tsx",
+      "summary": "Top-level client provider wrapper that composes app-wide context providers and mounts a visit-logging tracker that posts page views to the analytics API on route changes.",
+      "tags": ["providers", "client-component", "analytics", "context", "app-shell"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/sign/[token]/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/sign/[token]/layout.tsx",
+      "summary": "Minimal pass-through layout for the public token-based document signing route.",
+      "tags": ["layout", "next-app-router", "e-signing", "public"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/sign/[token]/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/sign/[token]/page.tsx",
+      "summary": "Public signer-facing page that loads a signing envelope by token, renders the document with assigned fields, and captures the recipient's typed/drawn signature and field input for submission.",
+      "tags": ["page", "client-component", "e-signing", "public", "api-consumer", "feature"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/signing/[id]/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/signing/[id]/page.tsx",
+      "summary": "Admin document editor for an e-signing envelope: places and assigns signature/field markers per recipient over the rendered document and manages recipient order before sending for signature.",
+      "tags": ["page", "client-component", "e-signing", "editor", "admin", "feature"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/signing/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/signing/layout.tsx",
+      "summary": "Client layout for the admin /signing section that enforces an authenticated session before rendering the signing dashboard and editor.",
+      "tags": ["layout", "route-guard", "authentication", "next-app-router", "e-signing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/signing/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/signing/page.tsx",
+      "summary": "Admin signing dashboard listing e-signing envelopes with their status and recipients, and entry points to create a new envelope or open one in the editor.",
+      "tags": ["page", "client-component", "e-signing", "dashboard", "admin"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/components/.gitkeep",
+      "type": "file",
+      "name": ".gitkeep",
+      "filePath": "src/components/.gitkeep",
+      "summary": "Empty placeholder file that keeps the src/components directory tracked in git.",
+      "tags": ["placeholder", "git", "no-op"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Anomaly/Guard.tsx",
+      "type": "file",
+      "name": "Guard.tsx",
+      "filePath": "src/components/Anomaly/Guard.tsx",
+      "summary": "Client-side auth guard component for the anomaly-detection feature that redirects non-admin users away and only renders its children for authorized sessions.",
+      "tags": ["route-guard", "authentication", "client-component", "anomaly", "authorization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Base.tsx",
+      "type": "file",
+      "name": "Base.tsx",
+      "filePath": "src/components/Base.tsx",
+      "summary": "Memoized no-op React component that renders an empty fragment, used as a placeholder/base stub.",
+      "tags": ["placeholder", "component", "no-op"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/ChatInterface.css",
+      "type": "file",
+      "name": "ChatInterface.css",
+      "filePath": "src/components/ChatInterface.css",
+      "summary": "Stylesheet for the ChatInterface component covering the chat panel layout, message bubbles, input area, and animation states.",
+      "tags": ["stylesheet", "css", "chat", "ui-styling"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Finance/StatCard.tsx",
+      "type": "file",
+      "name": "StatCard.tsx",
+      "filePath": "src/components/Finance/StatCard.tsx",
+      "summary": "Presentational finance stat card that displays a labeled metric with CAD currency formatting.",
+      "tags": ["component", "finance", "presentational", "ui", "currency"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Finance/SummaryCards.tsx",
+      "type": "file",
+      "name": "SummaryCards.tsx",
+      "filePath": "src/components/Finance/SummaryCards.tsx",
+      "summary": "Finance summary row that aggregates income, expense, and balance figures into a set of formatted CAD summary cards.",
+      "tags": ["component", "finance", "dashboard", "presentational", "currency"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/AISuggestions.tsx",
+      "type": "file",
+      "name": "AISuggestions.tsx",
+      "filePath": "src/components/Notes/AISuggestions.tsx",
+      "summary": "Notes helper component that requests AI-generated subtask suggestions for a task title from an API and lets the user accept them into the note.",
+      "tags": ["component", "notes", "ai", "api-consumer", "suggestions"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/components/Notes/ColoredTableCellNode.tsx",
+      "type": "file",
+      "name": "ColoredTableCellNode.tsx",
+      "filePath": "src/components/Notes/ColoredTableCellNode.tsx",
+      "summary": "Custom Lexical editor node extending TableCellNode to persist per-cell background color across DOM import/export and JSON serialization in the notes rich-text editor.",
+      "tags": ["lexical", "editor-node", "notes", "rich-text", "serialization"],
+      "complexity": "moderate",
+      "languageNotes": "Subclasses a Lexical TableCellNode and overrides getType/clone/importDOM/importJSON to round-trip a custom color attribute."
+    },
+    {
+      "id": "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "type": "file",
+      "name": "AIImportModal.tsx",
+      "filePath": "src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "summary": "Modal that accepts a pasted or uploaded screenshot of a table, sends the image to an AI endpoint for extraction, and imports the parsed rows into the high-performance table.",
+      "tags": ["component", "modal", "notes", "ai", "import", "api-consumer"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Notes/NotesSkeleton.tsx",
+      "type": "file",
+      "name": "NotesSkeleton.tsx",
+      "filePath": "src/components/Notes/NotesSkeleton.tsx",
+      "summary": "Collection of skeleton placeholder components (sidebar, page list, editor, badge, full layout) that mimic the notes UI structure during loading.",
+      "tags": ["skeleton", "loading-state", "notes", "presentational", "ui"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/components/Sections/StarField.tsx",
+      "type": "file",
+      "name": "StarField.tsx",
+      "filePath": "src/components/Sections/StarField.tsx",
+      "summary": "Decorative animated star-field background component that generates randomized stars and applies a parallax offset driven by mouse movement.",
+      "tags": ["component", "animation", "background", "decorative", "parallax"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/config.ts",
+      "type": "file",
+      "name": "config.ts",
+      "filePath": "src/config.ts",
+      "summary": "Environment detection helpers exporting boolean flags for browser, mobile pointer, DOM availability, and Apple platform.",
+      "tags": ["utility", "environment-detection", "constants", "ssr-safe"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/globalStyles.scss",
+      "type": "file",
+      "name": "globalStyles.scss",
+      "filePath": "src/globalStyles.scss",
+      "summary": "Global SCSS stylesheet defining base element styles, resets, and shared utility classes applied across the whole application.",
+      "tags": ["stylesheet", "scss", "global-styles", "ui-styling", "reset"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/notes/layout.tsx:NotesLayout",
+      "type": "function",
+      "name": "NotesLayout",
+      "filePath": "src/app/notes/layout.tsx",
+      "lineRange": [7, 26],
+      "summary": "Layout component that reads the session, redirects to login when unauthenticated, and otherwise renders the notes children.",
+      "tags": ["route-guard", "authentication", "layout", "hook-usage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/organization/layout.tsx:OrganizationRootLayout",
+      "type": "function",
+      "name": "OrganizationRootLayout",
+      "filePath": "src/app/organization/layout.tsx",
+      "lineRange": [8, 52],
+      "summary": "Layout component that enforces an authenticated session and renders the organization section shell around its children.",
+      "tags": ["route-guard", "authentication", "layout", "hook-usage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient",
+      "type": "function",
+      "name": "PdfAutoFillClient",
+      "filePath": "src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "lineRange": [158, 862],
+      "summary": "Stateful wizard component orchestrating source file upload, fact extraction, form-field analysis, value mapping, template selection, and filled-PDF generation and download.",
+      "tags": ["client-component", "wizard", "pdf", "api-consumer", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:resolveFieldDefault",
+      "type": "function",
+      "name": "resolveFieldDefault",
+      "filePath": "src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "lineRange": [34, 50],
+      "summary": "Computes a field's default value, resolving date-based defaults with configurable offset and format part into a concrete string.",
+      "tags": ["utility", "date", "formatting", "pdf"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:loadPdfJs",
+      "type": "function",
+      "name": "loadPdfJs",
+      "filePath": "src/app/pdf-autofill/PdfAutoFillClient.tsx",
+      "lineRange": [108, 127],
+      "summary": "Lazily injects the pdf.js library via a script tag and resolves once the global is available for client-side PDF rendering.",
+      "tags": ["utility", "lazy-load", "pdf", "script-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/pdf-autofill/TemplateEditor.tsx:TemplateEditor",
+      "type": "function",
+      "name": "TemplateEditor",
+      "filePath": "src/app/pdf-autofill/TemplateEditor.tsx",
+      "lineRange": [69, 705],
+      "summary": "Editor component that renders PDF pages to images, lets the user place and configure draggable field markers, and saves the resulting template via the templates API.",
+      "tags": ["client-component", "editor", "drag-and-drop", "pdf", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/pdf-autofill/TemplateEditor.tsx:loadPdfJs",
+      "type": "function",
+      "name": "loadPdfJs",
+      "filePath": "src/app/pdf-autofill/TemplateEditor.tsx",
+      "lineRange": [43, 61],
+      "summary": "Lazily injects the pdf.js library via a script tag and resolves once the global is ready for page rendering.",
+      "tags": ["utility", "lazy-load", "pdf", "script-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/process-flow/layout.tsx:ProcessFlowLayout",
+      "type": "function",
+      "name": "ProcessFlowLayout",
+      "filePath": "src/app/process-flow/layout.tsx",
+      "lineRange": [7, 47],
+      "summary": "Layout component that requires an authenticated session and renders the process-flow section shell around its children.",
+      "tags": ["route-guard", "authentication", "layout", "hook-usage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/providers.tsx:Providers",
+      "type": "function",
+      "name": "Providers",
+      "filePath": "src/app/providers.tsx",
+      "lineRange": [34, 43],
+      "summary": "Composes application-wide client context providers and mounts the visit tracker around the app's children.",
+      "tags": ["providers", "context", "app-shell", "client-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/providers.tsx:LogVisitTracker",
+      "type": "function",
+      "name": "LogVisitTracker",
+      "filePath": "src/app/providers.tsx",
+      "lineRange": [7, 32],
+      "summary": "Invisible tracker that posts the current path and query string to the visit-logging API whenever the route changes.",
+      "tags": ["analytics", "effect", "api-consumer", "tracking"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/sign/[token]/page.tsx:PublicSigningPage",
+      "type": "function",
+      "name": "PublicSigningPage",
+      "filePath": "src/app/sign/[token]/page.tsx",
+      "lineRange": [42, 500],
+      "summary": "Public signer page that fetches an envelope by token, renders the document and the recipient's assigned fields, and captures and submits signature and field values.",
+      "tags": ["page", "e-signing", "public", "api-consumer", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/signing/[id]/page.tsx:DocumentEditor",
+      "type": "function",
+      "name": "DocumentEditor",
+      "filePath": "src/app/signing/[id]/page.tsx",
+      "lineRange": [66, 625],
+      "summary": "Admin envelope editor for placing per-recipient signature and data field markers over a rendered document and managing recipients before sending for signature.",
+      "tags": ["page", "e-signing", "editor", "admin", "state-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/signing/layout.tsx:SigningLayout",
+      "type": "function",
+      "name": "SigningLayout",
+      "filePath": "src/app/signing/layout.tsx",
+      "lineRange": [8, 49],
+      "summary": "Layout component that enforces an authenticated session and renders the admin signing section shell around its children.",
+      "tags": ["route-guard", "authentication", "layout", "hook-usage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/signing/page.tsx:SigningDashboard",
+      "type": "function",
+      "name": "SigningDashboard",
+      "filePath": "src/app/signing/page.tsx",
+      "lineRange": [26, 338],
+      "summary": "Dashboard component that lists e-signing envelopes with status and recipients and provides actions to create or open envelopes.",
+      "tags": ["page", "e-signing", "dashboard", "api-consumer"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Anomaly/Guard.tsx:Guard",
+      "type": "function",
+      "name": "Guard",
+      "filePath": "src/components/Anomaly/Guard.tsx",
+      "lineRange": [14, 35],
+      "summary": "Auth guard that redirects unauthorized users and only renders children when the session is an authorized admin.",
+      "tags": ["route-guard", "authentication", "authorization", "client-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/AISuggestions.tsx:AISuggestions",
+      "type": "function",
+      "name": "AISuggestions",
+      "filePath": "src/components/Notes/AISuggestions.tsx",
+      "lineRange": [9, 72],
+      "summary": "Component that generates AI subtask suggestions for a task title via an API and lets the user accept them.",
+      "tags": ["component", "notes", "ai", "api-consumer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/components/Notes/ColoredTableCellNode.tsx:ColoredTableCellNode",
+      "type": "class",
+      "name": "ColoredTableCellNode",
+      "filePath": "src/components/Notes/ColoredTableCellNode.tsx",
+      "lineRange": [12, 40],
+      "summary": "Lexical node subclassing TableCellNode to store and round-trip a per-cell background color through DOM and JSON serialization.",
+      "tags": ["lexical", "editor-node", "rich-text", "serialization", "notes"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ColoredTableCellNode.tsx:convertColoredTableCellElement",
+      "type": "function",
+      "name": "convertColoredTableCellElement",
+      "filePath": "src/components/Notes/ColoredTableCellNode.tsx",
+      "lineRange": [42, 96],
+      "summary": "DOM conversion helper that builds a ColoredTableCellNode from a table cell element, carrying over header state, span, width, and color.",
+      "tags": ["lexical", "dom-import", "conversion", "rich-text"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/ColoredTableCellNode.tsx:$createColoredTableCellNode",
+      "type": "function",
+      "name": "$createColoredTableCellNode",
+      "filePath": "src/components/Notes/ColoredTableCellNode.tsx",
+      "lineRange": [98, 104],
+      "summary": "Factory function that constructs a new ColoredTableCellNode with the given header state, column span, and width.",
+      "tags": ["lexical", "factory", "editor-node"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/HighPerformanceTable/AIImportModal.tsx:AIImportModal",
+      "type": "function",
+      "name": "AIImportModal",
+      "filePath": "src/components/Notes/HighPerformanceTable/AIImportModal.tsx",
+      "lineRange": [13, 226],
+      "summary": "Modal component that takes a pasted or uploaded table screenshot, sends it to an AI extraction endpoint, and imports the parsed rows.",
+      "tags": ["component", "modal", "ai", "import", "api-consumer"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/components/Notes/NotesSkeleton.tsx:SidebarSkeleton",
+      "type": "function",
+      "name": "SidebarSkeleton",
+      "filePath": "src/components/Notes/NotesSkeleton.tsx",
+      "lineRange": [19, 33],
+      "summary": "Renders a placeholder skeleton for the notes sidebar with a configurable number of shimmer rows.",
+      "tags": ["skeleton", "loading-state", "presentational", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/NotesSkeleton.tsx:PageListSkeleton",
+      "type": "function",
+      "name": "PageListSkeleton",
+      "filePath": "src/components/Notes/NotesSkeleton.tsx",
+      "lineRange": [36, 51],
+      "summary": "Renders a placeholder skeleton for the notes page list with a configurable number of shimmer rows.",
+      "tags": ["skeleton", "loading-state", "presentational", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/NotesSkeleton.tsx:EditorSkeleton",
+      "type": "function",
+      "name": "EditorSkeleton",
+      "filePath": "src/components/Notes/NotesSkeleton.tsx",
+      "lineRange": [54, 88],
+      "summary": "Renders a placeholder skeleton mimicking the notes editor with title, paragraph, and list line shimmers.",
+      "tags": ["skeleton", "loading-state", "presentational", "notes"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton",
+      "type": "function",
+      "name": "NotesLayoutSkeleton",
+      "filePath": "src/components/Notes/NotesSkeleton.tsx",
+      "lineRange": [96, 134],
+      "summary": "Composes the sidebar, page list, and editor skeletons into a full-page notes layout placeholder.",
+      "tags": ["skeleton", "loading-state", "presentational", "notes", "composition"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    { "source": "file:src/app/notes/loading.tsx", "target": "file:src/components/Notes/NotesSkeleton.tsx", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx", "target": "file:src/app/pdf-autofill/TemplateEditor.tsx", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:src/app/notes/layout.tsx", "target": "function:src/app/notes/layout.tsx:NotesLayout", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/notes/layout.tsx", "target": "function:src/app/notes/layout.tsx:NotesLayout", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/organization/layout.tsx", "target": "function:src/app/organization/layout.tsx:OrganizationRootLayout", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/organization/layout.tsx", "target": "function:src/app/organization/layout.tsx:OrganizationRootLayout", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:resolveFieldDefault", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/pdf-autofill/PdfAutoFillClient.tsx", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:loadPdfJs", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:resolveFieldDefault", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient", "target": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:loadPdfJs", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:src/app/pdf-autofill/PdfAutoFillClient.tsx:PdfAutoFillClient", "target": "function:src/app/pdf-autofill/TemplateEditor.tsx:TemplateEditor", "type": "calls", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/pdf-autofill/TemplateEditor.tsx", "target": "function:src/app/pdf-autofill/TemplateEditor.tsx:TemplateEditor", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/pdf-autofill/TemplateEditor.tsx", "target": "function:src/app/pdf-autofill/TemplateEditor.tsx:TemplateEditor", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/app/pdf-autofill/TemplateEditor.tsx", "target": "function:src/app/pdf-autofill/TemplateEditor.tsx:loadPdfJs", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "function:src/app/pdf-autofill/TemplateEditor.tsx:TemplateEditor", "target": "function:src/app/pdf-autofill/TemplateEditor.tsx:loadPdfJs", "type": "calls", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/process-flow/layout.tsx", "target": "function:src/app/process-flow/layout.tsx:ProcessFlowLayout", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/process-flow/layout.tsx", "target": "function:src/app/process-flow/layout.tsx:ProcessFlowLayout", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/providers.tsx", "target": "function:src/app/providers.tsx:Providers", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/providers.tsx", "target": "function:src/app/providers.tsx:Providers", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/app/providers.tsx", "target": "function:src/app/providers.tsx:LogVisitTracker", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "function:src/app/providers.tsx:Providers", "target": "function:src/app/providers.tsx:LogVisitTracker", "type": "calls", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/sign/[token]/layout.tsx", "target": "file:src/app/sign/[token]/page.tsx", "type": "related", "direction": "forward", "weight": 0.5 },
+
+    { "source": "file:src/app/sign/[token]/page.tsx", "target": "function:src/app/sign/[token]/page.tsx:PublicSigningPage", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/sign/[token]/page.tsx", "target": "function:src/app/sign/[token]/page.tsx:PublicSigningPage", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/signing/[id]/page.tsx", "target": "function:src/app/signing/[id]/page.tsx:DocumentEditor", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/signing/[id]/page.tsx", "target": "function:src/app/signing/[id]/page.tsx:DocumentEditor", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/signing/layout.tsx", "target": "function:src/app/signing/layout.tsx:SigningLayout", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/signing/layout.tsx", "target": "function:src/app/signing/layout.tsx:SigningLayout", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/app/signing/page.tsx", "target": "function:src/app/signing/page.tsx:SigningDashboard", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/app/signing/page.tsx", "target": "function:src/app/signing/page.tsx:SigningDashboard", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/components/Anomaly/Guard.tsx", "target": "function:src/components/Anomaly/Guard.tsx:Guard", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Anomaly/Guard.tsx", "target": "function:src/components/Anomaly/Guard.tsx:Guard", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/components/Notes/AISuggestions.tsx", "target": "function:src/components/Notes/AISuggestions.tsx:AISuggestions", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:src/components/Notes/ColoredTableCellNode.tsx", "target": "class:src/components/Notes/ColoredTableCellNode.tsx:ColoredTableCellNode", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/ColoredTableCellNode.tsx", "target": "class:src/components/Notes/ColoredTableCellNode.tsx:ColoredTableCellNode", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/components/Notes/ColoredTableCellNode.tsx", "target": "function:src/components/Notes/ColoredTableCellNode.tsx:convertColoredTableCellElement", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/ColoredTableCellNode.tsx", "target": "function:src/components/Notes/ColoredTableCellNode.tsx:$createColoredTableCellNode", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/ColoredTableCellNode.tsx", "target": "function:src/components/Notes/ColoredTableCellNode.tsx:$createColoredTableCellNode", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "function:src/components/Notes/ColoredTableCellNode.tsx:$createColoredTableCellNode", "target": "class:src/components/Notes/ColoredTableCellNode.tsx:ColoredTableCellNode", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:src/components/Notes/ColoredTableCellNode.tsx:convertColoredTableCellElement", "target": "class:src/components/Notes/ColoredTableCellNode.tsx:ColoredTableCellNode", "type": "calls", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/AIImportModal.tsx:AIImportModal", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/HighPerformanceTable/AIImportModal.tsx", "target": "function:src/components/Notes/HighPerformanceTable/AIImportModal.tsx:AIImportModal", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:SidebarSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:SidebarSkeleton", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:PageListSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:PageListSkeleton", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:EditorSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:EditorSkeleton", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:src/components/Notes/NotesSkeleton.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "target": "function:src/components/Notes/NotesSkeleton.tsx:SidebarSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "target": "function:src/components/Notes/NotesSkeleton.tsx:PageListSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "target": "function:src/components/Notes/NotesSkeleton.tsx:EditorSkeleton", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:src/app/notes/loading.tsx", "target": "function:src/components/Notes/NotesSkeleton.tsx:NotesLayoutSkeleton", "type": "depends_on", "direction": "forward", "weight": 0.6 },
+
+    { "source": "file:src/components/ChatInterface.css", "target": "file:src/components/ChatInterface.tsx", "type": "related", "direction": "forward", "weight": 0.5 },
+    { "source": "file:src/globalStyles.scss", "target": "file:src/app/layout.tsx", "type": "related", "direction": "forward", "weight": 0.5 },
+    { "source": "file:src/globalStyles.scss", "target": "file:src/pages/_app.tsx", "type": "related", "direction": "forward", "weight": 0.5 }
+  ]
+}

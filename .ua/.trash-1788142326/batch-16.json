@@ -1,0 +1,455 @@
+{
+  "nodes": [
+    {
+      "id": "config:.claude/launch.json",
+      "type": "config",
+      "name": "launch.json",
+      "filePath": ".claude/launch.json",
+      "summary": "Claude Code launch configuration defining the dev server command and port used to preview this Next.js app.",
+      "tags": ["configuration", "tooling", "dev-server"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.claude/settings.local.json",
+      "type": "config",
+      "name": "settings.local.json",
+      "filePath": ".claude/settings.local.json",
+      "summary": "Local Claude Code settings granting a curated allowlist of tool permissions for this project.",
+      "tags": ["configuration", "tooling", "permissions"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.github/FUNDING.yml",
+      "type": "config",
+      "name": "FUNDING.yml",
+      "filePath": ".github/FUNDING.yml",
+      "summary": "GitHub Sponsors funding configuration pointing at the repository owner's sponsorship account.",
+      "tags": ["configuration", "github", "metadata"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.npmrc",
+      "type": "file",
+      "name": ".npmrc",
+      "filePath": ".npmrc",
+      "summary": "npm configuration file setting install behavior for the project's dependency resolution.",
+      "tags": ["configuration", "build-system", "npm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.prettierignore",
+      "type": "file",
+      "name": ".prettierignore",
+      "filePath": ".prettierignore",
+      "summary": "Prettier ignore list controlling which paths are excluded from code formatting (currently empty).",
+      "tags": ["configuration", "tooling", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.ua/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".ua/.understandignore",
+      "summary": "Ignore list for the Understand-Anything analyzer, excluding build output, vendored code, and generated assets from the knowledge graph.",
+      "tags": ["configuration", "tooling", "analysis"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.ua/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".ua/config.json",
+      "summary": "Understand-Anything project config setting the knowledge graph output language.",
+      "tags": ["configuration", "tooling", "analysis"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:next-env.d.ts",
+      "type": "file",
+      "name": "next-env.d.ts",
+      "filePath": "next-env.d.ts",
+      "summary": "Auto-generated Next.js TypeScript ambient type reference file; should not be edited manually.",
+      "tags": ["type-definition", "next-js", "generated"],
+      "complexity": "simple",
+      "languageNotes": "Triple-slash directives pull in Next.js global types."
+    },
+    {
+      "id": "file:next-sitemap.js",
+      "type": "file",
+      "name": "next-sitemap.js",
+      "filePath": "next-sitemap.js",
+      "summary": "next-sitemap configuration generating sitemap.xml and robots.txt for the deployed site.",
+      "tags": ["configuration", "seo", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:next.config.js",
+      "type": "config",
+      "name": "next.config.js",
+      "filePath": "next.config.js",
+      "summary": "Next.js build and runtime configuration covering image domains, webpack tweaks, and framework options for the portfolio app.",
+      "tags": ["configuration", "next-js", "build-system"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:postcss.config.js",
+      "type": "file",
+      "name": "postcss.config.js",
+      "filePath": "postcss.config.js",
+      "summary": "PostCSS configuration enabling Tailwind CSS and autoprefixer in the styling pipeline.",
+      "tags": ["configuration", "css", "build-system"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:public/site.webmanifest",
+      "type": "file",
+      "name": "site.webmanifest",
+      "filePath": "public/site.webmanifest",
+      "summary": "Progressive Web App manifest declaring app name, icons, theme colors, and display mode for the portfolio site.",
+      "tags": ["configuration", "pwa", "metadata"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/audit-data-ownership.js",
+      "type": "file",
+      "name": "audit-data-ownership.js",
+      "filePath": "scripts/audit-data-ownership.js",
+      "summary": "One-off maintenance script that connects to MongoDB and audits every collection for document counts and per-user ownership fields.",
+      "tags": ["script", "database", "maintenance", "mongodb"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scripts/clear-transactions.js",
+      "type": "file",
+      "name": "clear-transactions.js",
+      "filePath": "scripts/clear-transactions.js",
+      "summary": "Utility script that lists finance transactions via the API and deletes them to reset the dataset.",
+      "tags": ["script", "maintenance", "finance", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/list-transactions.js",
+      "type": "file",
+      "name": "list-transactions.js",
+      "filePath": "scripts/list-transactions.js",
+      "summary": "Small diagnostic script that fetches the transactions API and prints a sample of the returned records.",
+      "tags": ["script", "finance", "api-client", "debugging"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/seed-properties.js",
+      "type": "file",
+      "name": "seed-properties.js",
+      "filePath": "scripts/seed-properties.js",
+      "summary": "Database seed script that connects via Mongoose and inserts baseline Property records if they do not already exist.",
+      "tags": ["script", "database", "seed", "mongodb"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scripts/test-mongoose.js",
+      "type": "file",
+      "name": "test-mongoose.js",
+      "filePath": "scripts/test-mongoose.js",
+      "summary": "Connectivity check script that opens a Mongoose connection and queries NoteCategory documents to verify the database setup.",
+      "tags": ["script", "database", "debugging", "mongodb"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:server.js",
+      "type": "file",
+      "name": "server.js",
+      "filePath": "server.js",
+      "summary": "Standalone Express server exposing a /submitForm endpoint that persists contact form submissions to MongoDB Atlas via Mongoose.",
+      "tags": ["entry-point", "api-handler", "express", "mongodb"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/anomaly/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/anomaly/layout.tsx",
+      "summary": "Next.js App Router layout for the /anomaly section, wrapping child routes in the admin-only Guard component and setting section metadata.",
+      "tags": ["next-js", "layout", "middleware", "auth"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/analyze-form/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/analyze-form/route.ts",
+      "summary": "API route that loads an uploaded PDF, enumerates its AcroForm fields, and uses Gemini to produce human-readable labels for each field.",
+      "tags": ["api-handler", "pdf", "ai", "next-js"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/extract/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/extract/route.ts",
+      "summary": "API route that extracts structured facts from uploaded source documents (PDF, DOCX, XLSX) using Gemini, keyed by a party role label.",
+      "tags": ["api-handler", "ai", "document-parsing", "next-js"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/fill/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/fill/route.ts",
+      "summary": "API route that writes mapped values into a PDF, handling both AcroForm fields and flat PDFs by drawing text at computed coordinates.",
+      "tags": ["api-handler", "pdf", "next-js", "serialization"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/app/api/pdf-autofill/map-fields/route.ts",
+      "type": "file",
+      "name": "route.ts",
+      "filePath": "src/app/api/pdf-autofill/map-fields/route.ts",
+      "summary": "API route that uses Gemini to map extracted facts onto PDF form field names, then validates and reconciles the mappings against the real field set.",
+      "tags": ["api-handler", "ai", "validation", "next-js"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/app/debug/drive-status/page.tsx",
+      "type": "file",
+      "name": "page.tsx",
+      "filePath": "src/app/debug/drive-status/page.tsx",
+      "summary": "Client debug page that fetches /api/debug/drive-status and renders the Google Drive integration status as formatted JSON.",
+      "tags": ["component", "debugging", "next-js", "client-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/app/layout.tsx",
+      "type": "file",
+      "name": "layout.tsx",
+      "filePath": "src/app/layout.tsx",
+      "summary": "Root App Router layout that sets global metadata, imports global styles, and wraps the entire app in the Providers component.",
+      "tags": ["entry-point", "next-js", "layout", "providers"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scripts/audit-data-ownership.js:auditData",
+      "type": "function",
+      "name": "auditData",
+      "filePath": "scripts/audit-data-ownership.js",
+      "lineRange": [6, 92],
+      "summary": "Connects to MongoDB, iterates all non-excluded collections, and logs document counts plus ownership-field coverage for auditing multi-tenant data.",
+      "tags": ["database", "audit", "mongodb"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/clear-transactions.js:clearTransactions",
+      "type": "function",
+      "name": "clearTransactions",
+      "filePath": "scripts/clear-transactions.js",
+      "lineRange": [4, 37],
+      "summary": "Fetches all transactions from the API and issues delete requests for each to clear the finance dataset.",
+      "tags": ["maintenance", "api-client", "finance"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scripts/list-transactions.js:listTransactions",
+      "type": "function",
+      "name": "listTransactions",
+      "filePath": "scripts/list-transactions.js",
+      "lineRange": [3, 17],
+      "summary": "Fetches the transactions API endpoint and prints a small sample of the returned records for inspection.",
+      "tags": ["debugging", "api-client", "finance"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scripts/seed-properties.js:seed",
+      "type": "function",
+      "name": "seed",
+      "filePath": "scripts/seed-properties.js",
+      "lineRange": [20, 54],
+      "summary": "Opens a Mongoose connection and inserts baseline Property documents, skipping any that already exist, then exits.",
+      "tags": ["database", "seed", "mongodb"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scripts/test-mongoose.js:testMongoose",
+      "type": "function",
+      "name": "testMongoose",
+      "filePath": "scripts/test-mongoose.js",
+      "lineRange": [6, 47],
+      "summary": "Connects with Mongoose, registers a NoteCategory model, queries existing documents, and disconnects to verify database connectivity.",
+      "tags": ["database", "debugging", "mongodb"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/anomaly/layout.tsx:AnomalyLayout",
+      "type": "function",
+      "name": "AnomalyLayout",
+      "filePath": "src/app/anomaly/layout.tsx",
+      "lineRange": [9, 11],
+      "summary": "Layout component that renders the admin-only Guard wrapper around all /anomaly child routes.",
+      "tags": ["next-js", "layout", "auth"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/analyze-form/route.ts:parseJsonArray",
+      "type": "function",
+      "name": "parseJsonArray",
+      "filePath": "src/app/api/pdf-autofill/analyze-form/route.ts",
+      "lineRange": [10, 19],
+      "summary": "Parses a JSON array out of an LLM text response, stripping markdown code fences and validating the result is an array.",
+      "tags": ["utility", "parsing", "ai"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/analyze-form/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/pdf-autofill/analyze-form/route.ts",
+      "lineRange": [21, 106],
+      "summary": "Handles the analyze-form request: loads the uploaded PDF, reads its AcroForm fields, and calls Gemini to generate friendly labels, falling back to derived names on failure.",
+      "tags": ["api-handler", "pdf", "ai"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/extract/route.ts:buildExtractPrompt",
+      "type": "function",
+      "name": "buildExtractPrompt",
+      "filePath": "src/app/api/pdf-autofill/extract/route.ts",
+      "lineRange": [11, 20],
+      "summary": "Builds the Gemini prompt used to extract structured key-value facts from a source document for a given party role.",
+      "tags": ["utility", "ai", "prompt"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/extract/route.ts:extractFromFile",
+      "type": "function",
+      "name": "extractFromFile",
+      "filePath": "src/app/api/pdf-autofill/extract/route.ts",
+      "lineRange": [33, 63],
+      "summary": "Dispatches on file type (PDF, XLSX, DOCX) to convert an uploaded document to text or inline data and runs Gemini extraction to return fact objects.",
+      "tags": ["document-parsing", "ai", "serialization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/extract/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/pdf-autofill/extract/route.ts",
+      "lineRange": [65, 93],
+      "summary": "Handles the extract request: reads uploaded files and a role label from form data, runs extraction on each, and aggregates the facts into one response.",
+      "tags": ["api-handler", "ai", "document-parsing"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/fill/route.ts:fillAcroForm",
+      "type": "function",
+      "name": "fillAcroForm",
+      "filePath": "src/app/api/pdf-autofill/fill/route.ts",
+      "lineRange": [36, 97],
+      "summary": "Fills a PDF that has real AcroForm fields, matching mappings to fields by name or fuzzy label and setting text, checkbox, radio, and dropdown values.",
+      "tags": ["pdf", "serialization", "form-filling"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/fill/route.ts:fillFlatPDF",
+      "type": "function",
+      "name": "fillFlatPDF",
+      "filePath": "src/app/api/pdf-autofill/fill/route.ts",
+      "lineRange": [103, 176],
+      "summary": "Fills a flat PDF with no form fields by walking indirect objects to locate pages and drawing mapped text at computed coordinates.",
+      "tags": ["pdf", "serialization", "form-filling"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/fill/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/pdf-autofill/fill/route.ts",
+      "lineRange": [180, 230],
+      "summary": "Handles the fill request: loads the PDF and mappings from form data, routes to the AcroForm or flat-PDF filler, and returns the saved document.",
+      "tags": ["api-handler", "pdf"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/map-fields/route.ts:parseJsonArray",
+      "type": "function",
+      "name": "parseJsonArray",
+      "filePath": "src/app/api/pdf-autofill/map-fields/route.ts",
+      "lineRange": [9, 18],
+      "summary": "Parses a JSON array from an LLM text response, removing markdown fences and verifying the parsed value is an array.",
+      "tags": ["utility", "parsing", "ai"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/api/pdf-autofill/map-fields/route.ts:POST",
+      "type": "function",
+      "name": "POST",
+      "filePath": "src/app/api/pdf-autofill/map-fields/route.ts",
+      "lineRange": [20, 109],
+      "summary": "Handles the map-fields request: prompts Gemini to map extracted facts to PDF field names, then reconciles mappings by name and label and drops unrecognized entries.",
+      "tags": ["api-handler", "ai", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/app/debug/drive-status/page.tsx:DriveDebugPage",
+      "type": "function",
+      "name": "DriveDebugPage",
+      "filePath": "src/app/debug/drive-status/page.tsx",
+      "lineRange": [20, 51],
+      "summary": "Client component that fetches the Drive status API on mount and renders the JSON response with a reload control.",
+      "tags": ["component", "debugging", "client-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/app/layout.tsx:RootLayout",
+      "type": "function",
+      "name": "RootLayout",
+      "filePath": "src/app/layout.tsx",
+      "lineRange": [11, 19],
+      "summary": "Root layout component rendering the html/body shell and wrapping children in the app-wide Providers component.",
+      "tags": ["next-js", "layout", "entry-point"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {"source": "file:src/app/anomaly/layout.tsx", "target": "file:src/components/Anomaly/Guard.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/layout.tsx", "target": "file:src/app/providers.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:src/app/layout.tsx", "target": "file:src/globalStyles.scss", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:scripts/audit-data-ownership.js", "target": "function:scripts/audit-data-ownership.js:auditData", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:scripts/clear-transactions.js", "target": "function:scripts/clear-transactions.js:clearTransactions", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:scripts/list-transactions.js", "target": "function:scripts/list-transactions.js:listTransactions", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:scripts/seed-properties.js", "target": "function:scripts/seed-properties.js:seed", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:scripts/test-mongoose.js", "target": "function:scripts/test-mongoose.js:testMongoose", "type": "contains", "direction": "forward", "weight": 1.0},
+
+    {"source": "file:src/app/anomaly/layout.tsx", "target": "function:src/app/anomaly/layout.tsx:AnomalyLayout", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/anomaly/layout.tsx", "target": "function:src/app/anomaly/layout.tsx:AnomalyLayout", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/app/anomaly/layout.tsx:AnomalyLayout", "target": "function:src/components/Anomaly/Guard.tsx:Guard", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/api/pdf-autofill/analyze-form/route.ts", "target": "function:src/app/api/pdf-autofill/analyze-form/route.ts:parseJsonArray", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/analyze-form/route.ts", "target": "function:src/app/api/pdf-autofill/analyze-form/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/analyze-form/route.ts", "target": "function:src/app/api/pdf-autofill/analyze-form/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/api/pdf-autofill/extract/route.ts", "target": "function:src/app/api/pdf-autofill/extract/route.ts:buildExtractPrompt", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/extract/route.ts", "target": "function:src/app/api/pdf-autofill/extract/route.ts:extractFromFile", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/extract/route.ts", "target": "function:src/app/api/pdf-autofill/extract/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/extract/route.ts", "target": "function:src/app/api/pdf-autofill/extract/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/api/pdf-autofill/fill/route.ts", "target": "function:src/app/api/pdf-autofill/fill/route.ts:fillAcroForm", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/fill/route.ts", "target": "function:src/app/api/pdf-autofill/fill/route.ts:fillFlatPDF", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/fill/route.ts", "target": "function:src/app/api/pdf-autofill/fill/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/fill/route.ts", "target": "function:src/app/api/pdf-autofill/fill/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/app/api/pdf-autofill/fill/route.ts:POST", "target": "function:src/app/api/pdf-autofill/fill/route.ts:fillAcroForm", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/app/api/pdf-autofill/fill/route.ts:POST", "target": "function:src/app/api/pdf-autofill/fill/route.ts:fillFlatPDF", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/api/pdf-autofill/map-fields/route.ts", "target": "function:src/app/api/pdf-autofill/map-fields/route.ts:parseJsonArray", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/map-fields/route.ts", "target": "function:src/app/api/pdf-autofill/map-fields/route.ts:POST", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/api/pdf-autofill/map-fields/route.ts", "target": "function:src/app/api/pdf-autofill/map-fields/route.ts:POST", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/debug/drive-status/page.tsx", "target": "function:src/app/debug/drive-status/page.tsx:DriveDebugPage", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/debug/drive-status/page.tsx", "target": "function:src/app/debug/drive-status/page.tsx:DriveDebugPage", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:src/app/layout.tsx", "target": "function:src/app/layout.tsx:RootLayout", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:src/app/layout.tsx", "target": "function:src/app/layout.tsx:RootLayout", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "function:src/app/layout.tsx:RootLayout", "target": "function:src/app/providers.tsx:Providers", "type": "calls", "direction": "forward", "weight": 0.8},
+
+    {"source": "config:next.config.js", "target": "file:src/app/layout.tsx", "type": "configures", "direction": "forward", "weight": 0.6},
+    {"source": "file:postcss.config.js", "target": "file:src/app/layout.tsx", "type": "configures", "direction": "forward", "weight": 0.6}
+  ]
+}

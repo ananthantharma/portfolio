@@ -1,0 +1,2289 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 13,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 13,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 13,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "src/components/SupplierRisk/AlertItem.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "AlertItem",
+          "startLine": 42,
+          "endLine": 92,
+          "params": [
+            "{alert, onResolve, onMarkRead, compact}"
+          ]
+        },
+        {
+          "name": "timeAgo",
+          "startLine": 94,
+          "endLine": 101,
+          "params": [
+            "date"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AlertItem",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AlertItem",
+          "callee": "timeAgo",
+          "lineNumber": 44
+        },
+        {
+          "caller": "AlertItem",
+          "callee": "onMarkRead",
+          "lineNumber": 75
+        },
+        {
+          "caller": "AlertItem",
+          "callee": "onResolve",
+          "lineNumber": 82
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "Date.now",
+          "lineNumber": 95
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "date.getTime",
+          "lineNumber": 95
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "Math.floor",
+          "lineNumber": 96
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "Math.floor",
+          "lineNumber": 98
+        },
+        {
+          "caller": "timeAgo",
+          "callee": "Math.floor",
+          "lineNumber": 100
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskBadge.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "RiskBadge",
+          "startLine": 18,
+          "endLine": 29,
+          "params": [
+            "{level, score, size = 'md'}"
+          ]
+        },
+        {
+          "name": "ScoreBar",
+          "startLine": 31,
+          "endLine": 48,
+          "params": [
+            "{score, label}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RiskBadge",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "ScoreBar",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskDistributionChart.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "RiskDistributionChart",
+          "startLine": 17,
+          "endLine": 44,
+          "params": [
+            "{data}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RiskDistributionChart",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "RiskDistributionChart",
+          "callee": "Object.entries(data)\n    .filter(([, v]) => v > 0)\n    .map",
+          "lineNumber": 18
+        },
+        {
+          "caller": "RiskDistributionChart",
+          "callee": "Object.entries(data)\n    .filter",
+          "lineNumber": 18
+        },
+        {
+          "caller": "RiskDistributionChart",
+          "callee": "Object.entries",
+          "lineNumber": 18
+        },
+        {
+          "caller": "RiskDistributionChart",
+          "callee": "((percent ?? 0) * 100).toFixed",
+          "lineNumber": 33
+        },
+        {
+          "caller": "RiskDistributionChart",
+          "callee": "chartData.map",
+          "lineNumber": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/RiskRadarChart.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "RiskRadarChart",
+          "startLine": 14,
+          "endLine": 41,
+          "params": [
+            "{\n  financialRisk,\n  operationalRisk,\n  complianceRisk,\n  esgRisk,\n  className,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RiskRadarChart",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/StatCard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "StatCard",
+          "startLine": 21,
+          "endLine": 40,
+          "params": [
+            "{label, value, sub, icon, color = 'blue', trend}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "StatCard",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "StatCard",
+          "callee": "Math.abs",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierIntelligence.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 876,
+      "nonEmptyLines": 826,
+      "functions": [
+        {
+          "name": "fmtNumber",
+          "startLine": 142,
+          "endLine": 143,
+          "params": [
+            "n",
+            "decimals"
+          ]
+        },
+        {
+          "name": "fmtBillions",
+          "startLine": 145,
+          "endLine": 151,
+          "params": [
+            "n"
+          ]
+        },
+        {
+          "name": "fmtPct",
+          "startLine": 153,
+          "endLine": 153,
+          "params": [
+            "n"
+          ]
+        },
+        {
+          "name": "fmtDate",
+          "startLine": 155,
+          "endLine": 162,
+          "params": [
+            "d"
+          ]
+        },
+        {
+          "name": "SectionHeader",
+          "startLine": 164,
+          "endLine": 173,
+          "params": [
+            "{icon, title, count, badge}"
+          ]
+        },
+        {
+          "name": "Card",
+          "startLine": 175,
+          "endLine": 177,
+          "params": [
+            "{children, className = ''}"
+          ]
+        },
+        {
+          "name": "TrendArrow",
+          "startLine": 179,
+          "endLine": 186,
+          "params": [
+            "{trend, higherIsBetter}"
+          ]
+        },
+        {
+          "name": "SentimentPill",
+          "startLine": 188,
+          "endLine": 208,
+          "params": [
+            "{sentiment}"
+          ]
+        },
+        {
+          "name": "ApiKeySetupGuide",
+          "startLine": 211,
+          "endLine": 259,
+          "params": [
+            "{\n  hasNewsApi,\n  hasOpenSanctions,\n  hasAlphaVantage,\n}"
+          ]
+        },
+        {
+          "name": "CountryRiskSection",
+          "startLine": 262,
+          "endLine": 313,
+          "params": [
+            "{\n  data,\n  context,\n}"
+          ]
+        },
+        {
+          "name": "CurrencySection",
+          "startLine": 316,
+          "endLine": 338,
+          "params": [
+            "{data}"
+          ]
+        },
+        {
+          "name": "SanctionsSection",
+          "startLine": 341,
+          "endLine": 374,
+          "params": [
+            "{data, hasKey}"
+          ]
+        },
+        {
+          "name": "CompanyRegistrySection",
+          "startLine": 377,
+          "endLine": 423,
+          "params": [
+            "{data}"
+          ]
+        },
+        {
+          "name": "SecFilingsSection",
+          "startLine": 426,
+          "endLine": 462,
+          "params": [
+            "{data}"
+          ]
+        },
+        {
+          "name": "FinancialsSection",
+          "startLine": 465,
+          "endLine": 557,
+          "params": [
+            "{data}"
+          ]
+        },
+        {
+          "name": "GdeltNewsSection",
+          "startLine": 560,
+          "endLine": 604,
+          "params": [
+            "{data}"
+          ]
+        },
+        {
+          "name": "NewsApiSection",
+          "startLine": 607,
+          "endLine": 641,
+          "params": [
+            "{data, hasKey}"
+          ]
+        },
+        {
+          "name": "AlphaVantageSection",
+          "startLine": 644,
+          "endLine": 671,
+          "params": [
+            "{data, hasKey}"
+          ]
+        },
+        {
+          "name": "SupplierIntelligence",
+          "startLine": 682,
+          "endLine": 876,
+          "params": [
+            "{\n  supplierId,\n  supplierName,\n  supplierCountry,\n  supplierCategory,\n  onAlertsCreated,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SupplierIntelligence",
+          "line": 682,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fmtNumber",
+          "callee": "n.toLocaleString",
+          "lineNumber": 143
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "Math.abs",
+          "lineNumber": 147
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "(n / 1e12).toFixed",
+          "lineNumber": 147
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "Math.abs",
+          "lineNumber": 148
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "(n / 1e9).toFixed",
+          "lineNumber": 148
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "Math.abs",
+          "lineNumber": 149
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "(n / 1e6).toFixed",
+          "lineNumber": 149
+        },
+        {
+          "caller": "fmtBillions",
+          "callee": "n.toLocaleString",
+          "lineNumber": 150
+        },
+        {
+          "caller": "fmtPct",
+          "callee": "(n * 100).toFixed",
+          "lineNumber": 153
+        },
+        {
+          "caller": "fmtDate",
+          "callee": "new Date(d).toLocaleDateString",
+          "lineNumber": 158
+        },
+        {
+          "caller": "ApiKeySetupGuide",
+          "callee": "[\n    !hasNewsApi && {name: 'News API', env: 'NEWS_API_KEY', url: 'https://newsapi.org/', free: '100 req/day free'},\n    !hasOpenSanctions && {\n      name: 'OpenSanctions',\n      env: 'OPENSANCTIONS_API_KEY',\n      url: 'https://www.opensanctions.org/',\n      free: '10k req/mo free',\n    },\n    !hasAlphaVantage && {\n      name: 'Alpha Vantage',\n      env: 'ALPHA_VANTAGE_KEY',\n      url: 'https://www.alphavantage.co/',\n      free: '500 req/day free',\n    },\n  ].filter",
+          "lineNumber": 220
+        },
+        {
+          "caller": "ApiKeySetupGuide",
+          "callee": "missing.map",
+          "lineNumber": 245
+        },
+        {
+          "caller": "CountryRiskSection",
+          "callee": "(context.population / 1e6).toFixed",
+          "lineNumber": 280
+        },
+        {
+          "caller": "CountryRiskSection",
+          "callee": "context.currencies.join",
+          "lineNumber": 281
+        },
+        {
+          "caller": "CountryRiskSection",
+          "callee": "data.indicators.map",
+          "lineNumber": 290
+        },
+        {
+          "caller": "CountryRiskSection",
+          "callee": "fmtNumber",
+          "lineNumber": 301
+        },
+        {
+          "caller": "CurrencySection",
+          "callee": "fmtNumber",
+          "lineNumber": 331
+        },
+        {
+          "caller": "CurrencySection",
+          "callee": "fmtDate",
+          "lineNumber": 333
+        },
+        {
+          "caller": "SanctionsSection",
+          "callee": "data.matches.some",
+          "lineNumber": 342
+        },
+        {
+          "caller": "SanctionsSection",
+          "callee": "data.matches.map",
+          "lineNumber": 356
+        },
+        {
+          "caller": "SanctionsSection",
+          "callee": "(m.score * 100).toFixed",
+          "lineNumber": 367
+        },
+        {
+          "caller": "SanctionsSection",
+          "callee": "m.datasets?.join",
+          "lineNumber": 367
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "data.map",
+          "lineNumber": 384
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "c.jurisdiction?.toUpperCase",
+          "lineNumber": 400
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "c.status?.toLowerCase().includes",
+          "lineNumber": 407
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "c.status?.toLowerCase",
+          "lineNumber": 407
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "fmtDate",
+          "lineNumber": 415
+        },
+        {
+          "caller": "CompanyRegistrySection",
+          "callee": "fmtDate",
+          "lineNumber": 416
+        },
+        {
+          "caller": "SecFilingsSection",
+          "callee": "data.map",
+          "lineNumber": 433
+        },
+        {
+          "caller": "SecFilingsSection",
+          "callee": "fmtDate",
+          "lineNumber": 451
+        },
+        {
+          "caller": "SecFilingsSection",
+          "callee": "fmtDate",
+          "lineNumber": 451
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtNumber",
+          "lineNumber": 499
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtPct",
+          "lineNumber": 504
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "[\n          {label: 'Market Cap', val: fmtBillions(data.marketCap)},\n          {label: 'Rev Growth', val: fmtPct(data.revenueGrowth)},\n          {label: 'Gross Margin', val: fmtPct(data.grossMargins)},\n          {label: 'Op Margin', val: fmtPct(data.operatingMargins)},\n          {label: 'Debt/Equity', val: data.debtToEquity ? `${fmtNumber(data.debtToEquity)}%` : '—'},\n          {label: 'Current Ratio', val: fmtNumber(data.currentRatio)},\n          {label: 'Quick Ratio', val: fmtNumber(data.quickRatio)},\n          {label: 'Free CF', val: fmtBillions(data.freeCashflow)},\n          {label: 'P/E Ratio', val: fmtNumber(data.trailingPE)},\n          {label: 'Total Debt', val: fmtBillions(data.totalDebt)},\n          {label: 'Employees', val: data.fullTimeEmployees ? data.fullTimeEmployees.toLocaleString() : '—'},\n          {\n            label: 'Analyst Rating',\n            val: data.recommendationKey ? (\n              <span className={`font-semibold capitalize ${recColor[data.recommendationKey] || 'text-gray-700'}`}>\n                {data.recommendationKey}\n              </span>\n            ) : (\n              '—'\n            ),\n          },\n        ].map",
+          "lineNumber": 511
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtBillions",
+          "lineNumber": 512
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtPct",
+          "lineNumber": 513
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtPct",
+          "lineNumber": 514
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtPct",
+          "lineNumber": 515
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtNumber",
+          "lineNumber": 516
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtNumber",
+          "lineNumber": 517
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtNumber",
+          "lineNumber": 518
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtBillions",
+          "lineNumber": 519
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtNumber",
+          "lineNumber": 520
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "fmtBillions",
+          "lineNumber": 521
+        },
+        {
+          "caller": "FinancialsSection",
+          "callee": "data.fullTimeEmployees.toLocaleString",
+          "lineNumber": 522
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "useState",
+          "lineNumber": 561
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "data.slice",
+          "lineNumber": 562
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "shown.map",
+          "lineNumber": 571
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "fmtDate",
+          "lineNumber": 584
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "a.tone.toFixed",
+          "lineNumber": 590
+        },
+        {
+          "caller": "GdeltNewsSection",
+          "callee": "setShowAll",
+          "lineNumber": 596
+        },
+        {
+          "caller": "NewsApiSection",
+          "callee": "data.map",
+          "lineNumber": 616
+        },
+        {
+          "caller": "NewsApiSection",
+          "callee": "fmtDate",
+          "lineNumber": 632
+        },
+        {
+          "caller": "AlphaVantageSection",
+          "callee": "data.map",
+          "lineNumber": 650
+        },
+        {
+          "caller": "AlphaVantageSection",
+          "callee": "fmtDate",
+          "lineNumber": 662
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "useState",
+          "lineNumber": 689
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "useState",
+          "lineNumber": 690
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "useState",
+          "lineNumber": 691
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "useState",
+          "lineNumber": 692
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "setLoading",
+          "lineNumber": 695
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "setError",
+          "lineNumber": 696
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "String",
+          "lineNumber": 703
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "fetch",
+          "lineNumber": 705
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "res.json",
+          "lineNumber": 707
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "setData",
+          "lineNumber": 708
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "onAlertsCreated",
+          "lineNumber": 709
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "setError",
+          "lineNumber": 711
+        },
+        {
+          "caller": "fetchIntelligence",
+          "callee": "setLoading",
+          "lineNumber": 713
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "setAutoAlerts",
+          "lineNumber": 731
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "fetchIntelligence",
+          "lineNumber": 737
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "[\n            '🌍 World Bank',\n            '📰 GDELT News',\n            '🏢 OpenCorporates',\n            '📋 SEC EDGAR',\n            '📈 Yahoo Finance',\n            '💱 FX Rates',\n            '🚫 OpenSanctions*',\n            '📰 NewsAPI*',\n            '📊 AlphaVantage*',\n          ].map",
+          "lineNumber": 741
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "[0.1, 0.2, 0.3, 0.4, 0.5].map",
+          "lineNumber": 771
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "fetchIntelligence",
+          "lineNumber": 787
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "s.sanctions.matches.some",
+          "lineNumber": 798
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "s.secFilings.filter",
+          "lineNumber": 799
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "s.gdeltNews.filter",
+          "lineNumber": 800
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "new Date(data.fetchedAt).toLocaleString",
+          "lineNumber": 807
+        },
+        {
+          "caller": "SupplierIntelligence",
+          "callee": "fetchIntelligence",
+          "lineNumber": 844
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 19,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 268,
+      "nonEmptyLines": 251,
+      "functions": [
+        {
+          "name": "scoreColor",
+          "startLine": 81,
+          "endLine": 82,
+          "params": [
+            "v"
+          ]
+        },
+        {
+          "name": "SupplierModal",
+          "startLine": 84,
+          "endLine": 268,
+          "params": [
+            "{isOpen, onClose, onSave, initial, title = 'Add Supplier'}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SupplierModal",
+          "line": 84,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SupplierModal",
+          "callee": "useState",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "useState",
+          "lineNumber": 86
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "useEffect",
+          "lineNumber": 88
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "Array.isArray",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "rawTags.join",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "setForm",
+          "lineNumber": 94
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "setForm",
+          "lineNumber": 96
+        },
+        {
+          "caller": "set",
+          "callee": "setForm",
+          "lineNumber": 103
+        },
+        {
+          "caller": "setRisk",
+          "callee": "setForm",
+          "lineNumber": 108
+        },
+        {
+          "caller": "setRisk",
+          "callee": "Number",
+          "lineNumber": 108
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "e.preventDefault",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setSaving",
+          "lineNumber": 112
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onSave",
+          "lineNumber": 114
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "String",
+          "lineNumber": 116
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "form.tags\n          .split(',')\n          .map(t => t.trim())\n          .filter",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "form.tags\n          .split(',')\n          .map",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "form.tags\n          .split",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "t.trim",
+          "lineNumber": 119
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onClose",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setSaving",
+          "lineNumber": 124
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 145
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 149
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "COUNTRIES.map",
+          "lineNumber": 150
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 157
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "CATEGORIES.map",
+          "lineNumber": 158
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 165
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 173
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 178
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 186
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 191
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "['Active', 'Onboarding', 'Under Review', 'Suspended', 'Inactive'].map",
+          "lineNumber": 192
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 202
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "(\n              [\n                ['financialRisk', 'Financial Risk'],\n                ['operationalRisk', 'Operational Risk'],\n                ['complianceRisk', 'Compliance Risk'],\n                ['esgRisk', 'ESG Risk'],\n              ] as const\n            ).map",
+          "lineNumber": 214
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "scoreColor",
+          "lineNumber": 225
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "setRisk",
+          "lineNumber": 233
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "setRisk",
+          "lineNumber": 239
+        },
+        {
+          "caller": "SupplierModal",
+          "callee": "set",
+          "lineNumber": 251
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/components/SupplierRisk/SupplierRiskLayout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 103,
+      "nonEmptyLines": 96,
+      "functions": [
+        {
+          "name": "SupplierRiskLayout",
+          "startLine": 21,
+          "endLine": 103,
+          "params": [
+            "{children, title, actions, unreadCount}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SupplierRiskLayout",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SupplierRiskLayout",
+          "callee": "useRouter",
+          "lineNumber": 22
+        },
+        {
+          "caller": "SupplierRiskLayout",
+          "callee": "NAV.map",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SupplierRiskLayout",
+          "callee": "NAV.map",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/supplier-risk/alerts.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 176,
+      "nonEmptyLines": 163,
+      "functions": [
+        {
+          "name": "AlertsPage",
+          "startLine": 14,
+          "endLine": 174,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AlertsPage",
+          "callee": "useSession",
+          "lineNumber": 15
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useRouter",
+          "lineNumber": 16
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 17
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 19
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 21
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useState",
+          "lineNumber": 22
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useCallback",
+          "lineNumber": 24
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setLoading",
+          "lineNumber": 25
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "params.set",
+          "lineNumber": 28
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "params.set",
+          "lineNumber": 29
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "params.set",
+          "lineNumber": 30
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "fetch",
+          "lineNumber": 31
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "res.json",
+          "lineNumber": 33
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "data.sort",
+          "lineNumber": 34
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setAlerts",
+          "lineNumber": 35
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setLoading",
+          "lineNumber": 38
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "useEffect",
+          "lineNumber": 42
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "router.push",
+          "lineNumber": 43
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "fetchAlerts",
+          "lineNumber": 44
+        },
+        {
+          "caller": "patch",
+          "callee": "fetch",
+          "lineNumber": 48
+        },
+        {
+          "caller": "patch",
+          "callee": "JSON.stringify",
+          "lineNumber": 51
+        },
+        {
+          "caller": "patch",
+          "callee": "setSelected",
+          "lineNumber": 53
+        },
+        {
+          "caller": "patch",
+          "callee": "fetchAlerts",
+          "lineNumber": 54
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "alerts.filter",
+          "lineNumber": 57
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "alerts.filter",
+          "lineNumber": 58
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "patch",
+          "lineNumber": 76
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "patch",
+          "lineNumber": 81
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setFilterSeverity",
+          "lineNumber": 102
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "['Critical', 'High', 'Warning', 'Info'].map",
+          "lineNumber": 104
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setFilterCategory",
+          "lineNumber": 108
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "['Financial', 'Operational', 'Compliance', 'ESG', 'News', 'System'].map",
+          "lineNumber": 110
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setShowResolved",
+          "lineNumber": 118
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "patch",
+          "lineNumber": 127
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "alerts.filter(a => !a.isRead).map",
+          "lineNumber": 128
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "alerts.filter",
+          "lineNumber": 128
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "alerts.map",
+          "lineNumber": 146
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "selected.has",
+          "lineNumber": 151
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "next.add",
+          "lineNumber": 154
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "next.delete",
+          "lineNumber": 155
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "setSelected",
+          "lineNumber": 156
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "patch",
+          "lineNumber": 162
+        },
+        {
+          "caller": "AlertsPage",
+          "callee": "patch",
+          "lineNumber": 163
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/supplier-risk/index.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 262,
+      "nonEmptyLines": 246,
+      "functions": [
+        {
+          "name": "SupplierRiskDashboard",
+          "startLine": 35,
+          "endLine": 260,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useSession",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useRouter",
+          "lineNumber": 37
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useState",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useState",
+          "lineNumber": 39
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useState",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useCallback",
+          "lineNumber": 42
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "setLoading",
+          "lineNumber": 43
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "fetch",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "setData",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "res.json",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "setLoading",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "useEffect",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "router.push",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "fetchDashboard",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handleSeed",
+          "callee": "confirm",
+          "lineNumber": 58
+        },
+        {
+          "caller": "handleSeed",
+          "callee": "setSeeding",
+          "lineNumber": 59
+        },
+        {
+          "caller": "handleSeed",
+          "callee": "fetch",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleSeed",
+          "callee": "fetchDashboard",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleSeed",
+          "callee": "setSeeding",
+          "lineNumber": 64
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "['Low', 'Medium', 'High', 'Critical'].map",
+          "lineNumber": 134
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "data.topRisky.map",
+          "lineNumber": 168
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "data.byCategory.map",
+          "lineNumber": 198
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "data.recentAlerts.slice(0, 5).map",
+          "lineNumber": 248
+        },
+        {
+          "caller": "SupplierRiskDashboard",
+          "callee": "data.recentAlerts.slice",
+          "lineNumber": 248
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/supplier-risk/onboarding.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 272,
+      "nonEmptyLines": 257,
+      "functions": [
+        {
+          "name": "OnboardingPage",
+          "startLine": 22,
+          "endLine": 270,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OnboardingPage",
+          "callee": "useSession",
+          "lineNumber": 23
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useRouter",
+          "lineNumber": 24
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 25
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 26
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useCallback",
+          "lineNumber": 33
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setLoading",
+          "lineNumber": 34
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "Promise.all",
+          "lineNumber": 36
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "fetch",
+          "lineNumber": 37
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "fetch",
+          "lineNumber": 38
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setSuppliers",
+          "lineNumber": 40
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "sRes.json",
+          "lineNumber": 40
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setQuestionnaires",
+          "lineNumber": 41
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "qRes.json",
+          "lineNumber": 41
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setLoading",
+          "lineNumber": 43
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "useEffect",
+          "lineNumber": 47
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "router.push",
+          "lineNumber": 48
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "fetchData",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "e.preventDefault",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "setSending",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "fetch",
+          "lineNumber": 57
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "JSON.stringify",
+          "lineNumber": 60
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "setSelectedSupplier",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "setDueDate",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "fetchData",
+          "lineNumber": 64
+        },
+        {
+          "caller": "handleSendQuestionnaire",
+          "callee": "setSending",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleAnswerChange",
+          "callee": "setActiveQ",
+          "lineNumber": 72
+        },
+        {
+          "caller": "handleAnswerChange",
+          "callee": "activeQ.answers.map",
+          "lineNumber": 74
+        },
+        {
+          "caller": "handleSubmitAnswers",
+          "callee": "fetch",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handleSubmitAnswers",
+          "callee": "JSON.stringify",
+          "lineNumber": 85
+        },
+        {
+          "caller": "handleSubmitAnswers",
+          "callee": "setActiveQ",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handleSubmitAnswers",
+          "callee": "fetchData",
+          "lineNumber": 92
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setSelectedSupplier",
+          "lineNumber": 115
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "suppliers.map",
+          "lineNumber": 118
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setDueDate",
+          "lineNumber": 135
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "questionnaires.map",
+          "lineNumber": 167
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "q.answers?.filter",
+          "lineNumber": 169
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "a.answer?.trim",
+          "lineNumber": 169
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "Math.round",
+          "lineNumber": 171
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "new Date(q.createdAt).toLocaleDateString",
+          "lineNumber": 178
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "new Date(q.dueDate).toLocaleDateString",
+          "lineNumber": 179
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setActiveQ",
+          "lineNumber": 187
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setActiveQ",
+          "lineNumber": 225
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "['Financial', 'Operational', 'Compliance', 'ESG'].map",
+          "lineNumber": 231
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "activeQ.answers.filter",
+          "lineNumber": 232
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "a.questionId.startsWith",
+          "lineNumber": 233
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "section.toLowerCase().slice",
+          "lineNumber": 233
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "section.toLowerCase",
+          "lineNumber": 233
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "sectionAnswers.map",
+          "lineNumber": 240
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "handleAnswerChange",
+          "lineNumber": 247
+        },
+        {
+          "caller": "OnboardingPage",
+          "callee": "setActiveQ",
+          "lineNumber": 257
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/supplier-risk/suppliers/[id].tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 322,
+      "nonEmptyLines": 300,
+      "functions": [
+        {
+          "name": "SupplierDetailPage",
+          "startLine": 27,
+          "endLine": 320,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useSession",
+          "lineNumber": 28
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useRouter",
+          "lineNumber": 29
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useState",
+          "lineNumber": 34
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useCallback",
+          "lineNumber": 37
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setLoading",
+          "lineNumber": 39
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "Promise.all",
+          "lineNumber": 41
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "fetch",
+          "lineNumber": 42
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "fetch",
+          "lineNumber": 43
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setSupplier",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "sRes.json",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setAlerts",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "aRes.json",
+          "lineNumber": 46
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setLoading",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "useEffect",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "router.push",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "fetchData",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetch",
+          "lineNumber": 58
+        },
+        {
+          "caller": "handleSave",
+          "callee": "JSON.stringify",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetchData",
+          "lineNumber": 63
+        },
+        {
+          "caller": "handleResolveAlert",
+          "callee": "fetch",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handleResolveAlert",
+          "callee": "JSON.stringify",
+          "lineNumber": 70
+        },
+        {
+          "caller": "handleResolveAlert",
+          "callee": "fetchData",
+          "lineNumber": 72
+        },
+        {
+          "caller": "handleMarkReadAlert",
+          "callee": "fetch",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handleMarkReadAlert",
+          "callee": "JSON.stringify",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleMarkReadAlert",
+          "callee": "fetchData",
+          "lineNumber": 81
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "alerts.filter",
+          "lineNumber": 93
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "supplier.tags.map",
+          "lineNumber": 130
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setIsEditOpen",
+          "lineNumber": 139
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "(supplier.annualSpend / 1000000).toFixed",
+          "lineNumber": 152
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "new Date(supplier.lastAssessed).toLocaleDateString",
+          "lineNumber": 167
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "(['overview', 'alerts', 'mitigation', 'intelligence'] as const).map",
+          "lineNumber": 179
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setActiveTab",
+          "lineNumber": 185
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "[\n                    {key: 'financialRisk', label: 'Financial Risk', weight: '35%'},\n                    {key: 'operationalRisk', label: 'Operational Risk', weight: '30%'},\n                    {key: 'complianceRisk', label: 'Compliance Risk', weight: '20%'},\n                    {key: 'esgRisk', label: 'ESG Risk', weight: '15%'},\n                  ].map",
+          "lineNumber": 213
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "alerts.map",
+          "lineNumber": 258
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "String",
+          "lineNumber": 272
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setIsEditOpen",
+          "lineNumber": 288
+        },
+        {
+          "caller": "SupplierDetailPage",
+          "callee": "setIsEditOpen",
+          "lineNumber": 313
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/pages/supplier-risk/suppliers/index.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 251,
+      "nonEmptyLines": 238,
+      "functions": [
+        {
+          "name": "SuppliersPage",
+          "startLine": 22,
+          "endLine": 249,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SuppliersPage",
+          "callee": "useSession",
+          "lineNumber": 23
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useRouter",
+          "lineNumber": 24
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 26
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 27
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useCallback",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setLoading",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "params.set",
+          "lineNumber": 39
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "params.set",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "params.set",
+          "lineNumber": 41
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "params.set",
+          "lineNumber": 42
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "params.set",
+          "lineNumber": 43
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "fetch",
+          "lineNumber": 44
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setSuppliers",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "res.json",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setLoading",
+          "lineNumber": 47
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "useEffect",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "router.push",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "fetchSuppliers",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetch",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleSave",
+          "callee": "JSON.stringify",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleSave",
+          "callee": "fetchSuppliers",
+          "lineNumber": 62
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "confirm",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "fetch",
+          "lineNumber": 67
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "fetchSuppliers",
+          "lineNumber": 68
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setEditingSupplier",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setIsModalOpen",
+          "lineNumber": 86
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setSearch",
+          "lineNumber": 98
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setFilterRisk",
+          "lineNumber": 100
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "['Low', 'Medium', 'High', 'Critical'].map",
+          "lineNumber": 102
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setFilterStatus",
+          "lineNumber": 106
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "['Active', 'Onboarding', 'Under Review', 'Suspended', 'Inactive'].map",
+          "lineNumber": 108
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "e.target.value.split",
+          "lineNumber": 116
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setSortField",
+          "lineNumber": 117
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setSortOrder",
+          "lineNumber": 118
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setIsModalOpen",
+          "lineNumber": 134
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "suppliers.map",
+          "lineNumber": 154
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "s.tags.map",
+          "lineNumber": 164
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "(s.annualSpend / 1000000).toFixed",
+          "lineNumber": 205
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setEditingSupplier",
+          "lineNumber": 212
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setIsModalOpen",
+          "lineNumber": 213
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "handleDelete",
+          "lineNumber": 219
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setIsModalOpen",
+          "lineNumber": 239
+        },
+        {
+          "caller": "SuppliersPage",
+          "callee": "setEditingSupplier",
+          "lineNumber": 240
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}
