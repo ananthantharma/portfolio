@@ -4,8 +4,7 @@
 import {DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useDroppable, useSensor, useSensors} from '@dnd-kit/core';
 import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {Columns3, LayoutGrid} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import TaskCard from './TaskCard';
 import {daysUntil, Task} from './types';
@@ -55,44 +54,6 @@ const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring
   },
   {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
 ];
-
-const ALL_QUADRANT_KEYS: Quadrant[] = QUADRANTS.map(q => q.key);
-
-// ── Layout system ────────────────────────────────────────────────────────────
-// Two grid modes (2×2 / single row) plus a multi-select "which categories are
-// visible" filter. Visible quadrants render in a plain CSS grid, sized by
-// column-count — no need for named grid-areas now that every combination is
-// just "N boxes, wrapped or in a row."
-type LayoutMode = 'grid' | 'row';
-
-interface LayoutSettings {
-  mode: LayoutMode;
-  visible: Quadrant[];
-}
-
-const DEFAULT_LAYOUT: LayoutSettings = {mode: 'grid', visible: ALL_QUADRANT_KEYS};
-
-const LAYOUT_MODES: {key: LayoutMode; label: string; icon: React.ReactNode}[] = [
-  {key: 'grid', label: '2×2 grid', icon: <LayoutGrid className="h-3.5 w-3.5" />},
-  {key: 'row', label: 'Single row', icon: <Columns3 className="h-3.5 w-3.5" />},
-];
-
-// Tailwind's JIT compiler only picks up class names it can see literally in source,
-// so the desktop column-count has to be one of these spelled-out strings — not built
-// from a template literal — or the CSS for it would simply never get generated.
-const MD_COLS_CLASS: Record<number, string> = {
-  1: 'md:grid-cols-1',
-  2: 'md:grid-cols-2',
-  3: 'md:grid-cols-3',
-  4: 'md:grid-cols-4',
-};
-
-function mdColsClass(mode: LayoutMode, count: number): string {
-  const cols = mode === 'row' ? count : Math.min(2, count);
-  return MD_COLS_CLASS[cols] || MD_COLS_CLASS[1];
-}
-
-const LAYOUT_STORAGE_KEY = 'TASKS_MATRIX_LAYOUT_V4';
 
 function SortableCard({
   task,
@@ -186,40 +147,8 @@ export default function MatrixView({
   onReorderQuadrant,
 }: MatrixViewProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [layout, setLayout] = useState<LayoutSettings>(DEFAULT_LAYOUT);
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}));
   const isQuadrantKey = (id: string): id is Quadrant => QUADRANTS.some(q => q.key === id);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      const visible = Array.isArray(parsed?.visible) ? parsed.visible.filter((k: unknown) => ALL_QUADRANT_KEYS.includes(k as Quadrant)) : [];
-      setLayout({
-        mode: parsed?.mode === 'row' ? 'row' : 'grid',
-        visible: visible.length ? visible : ALL_QUADRANT_KEYS,
-      });
-    } catch {
-      // ignore malformed/legacy stored value — fall back to the default layout
-    }
-  }, []);
-
-  const persist = (next: LayoutSettings) => {
-    setLayout(next);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(next));
-  };
-
-  const setMode = (mode: LayoutMode) => persist({...layout, mode});
-
-  const toggleQuadrant = (key: Quadrant) => {
-    const has = layout.visible.includes(key);
-    if (has && layout.visible.length === 1) return; // keep at least one category visible
-    const visible = has ? layout.visible.filter(k => k !== key) : [...layout.visible, key];
-    persist({...layout, visible});
-  };
-
-  const visibleQuadrants = QUADRANTS.filter(q => layout.visible.includes(q.key));
 
   const onDragStart = (e: DragStartEvent) => {
     setActiveTask(tasks.find(t => t._id === e.active.id) || null);
@@ -249,39 +178,8 @@ export default function MatrixView({
   return (
     <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart} sensors={sensors}>
       <div className="flex h-full flex-col">
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 px-4 pt-3 sm:px-6">
-          <div className="flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-            {QUADRANTS.map(q => (
-              <button
-                className={`rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
-                  layout.visible.includes(q.key)
-                    ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white'
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-                key={q.key}
-                onClick={() => toggleQuadrant(q.key)}
-                title={`${layout.visible.includes(q.key) ? 'Hide' : 'Show'} "${q.title}"`}>
-                {q.title}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-            {LAYOUT_MODES.map(m => (
-              <button
-                className={`flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold transition-all ${
-                  layout.mode === m.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
-                }`}
-                key={m.key}
-                onClick={() => setMode(m.key)}
-                title={m.label}>
-                {m.icon}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={`grid min-h-0 flex-1 auto-rows-fr grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 pt-3 sm:px-6 md:overflow-hidden ${mdColsClass(layout.mode, visibleQuadrants.length)}`}>
-          {visibleQuadrants.map(q => (
+        <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 pt-4 sm:px-6 md:grid-cols-2 md:overflow-hidden">
+          {QUADRANTS.map(q => (
             <QuadrantBox
               items={tasks.filter(t => quadrantOf(t) === q.key).sort(byOrder)}
               key={q.key}

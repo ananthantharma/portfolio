@@ -1,23 +1,10 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {
-  CheckCircle2,
-  Columns3,
-  CornerDownLeft,
-  FileText,
-  Grid2x2,
-  Moon,
-  Plus,
-  Rows3,
-  Search,
-  Sparkles,
-  Sun,
-  Target,
-} from 'lucide-react';
+import {CheckCircle2, CornerDownLeft, FileText, Moon, Plus, Search, Sun, Target} from 'lucide-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 
-import {Task, ViewMode} from './types';
+import {Task} from './types';
 
 interface Command {
   id: string;
@@ -32,7 +19,6 @@ interface TaskCommandPaletteProps {
   onClose: () => void;
   onOpenTask: (task: Task) => void;
   onNewTask: () => void;
-  onSetView: (v: ViewMode) => void;
   onToggleDark: () => void;
   onToggleFocus: () => void;
   isDark: boolean;
@@ -43,7 +29,6 @@ export default function CommandPalette({
   onClose,
   onOpenTask,
   onNewTask,
-  onSetView,
   onToggleDark,
   onToggleFocus,
   isDark,
@@ -59,11 +44,6 @@ export default function CommandPalette({
   const commands: Command[] = useMemo(
     () => [
       {id: 'new', label: 'Create a new task', icon: <Plus className="h-4 w-4" />, run: onNewTask},
-      {id: 'list', label: 'Switch to List view', icon: <Rows3 className="h-4 w-4" />, run: () => onSetView('list')},
-      {id: 'board', label: 'Switch to Board view', icon: <Columns3 className="h-4 w-4" />, run: () => onSetView('board')},
-      {id: 'matrix', label: 'Switch to Matrix view', icon: <Grid2x2 className="h-4 w-4" />, run: () => onSetView('matrix')},
-      {id: 'calendar', label: 'Switch to Calendar view', icon: <Grid2x2 className="h-4 w-4" />, run: () => onSetView('calendar')},
-      {id: 'insights', label: 'Switch to Insights view', icon: <Sparkles className="h-4 w-4" />, run: () => onSetView('insights')},
       {id: 'focus', label: 'Toggle Focus mode', icon: <Target className="h-4 w-4" />, run: onToggleFocus},
       {
         id: 'theme',
@@ -72,7 +52,7 @@ export default function CommandPalette({
         run: onToggleDark,
       },
     ],
-    [onNewTask, onSetView, onToggleFocus, onToggleDark, isDark],
+    [onNewTask, onToggleFocus, onToggleDark, isDark],
   );
 
   const q = query.trim().toLowerCase();

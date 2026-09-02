@@ -7,25 +7,16 @@ import {
   BellOff,
   Bookmark as BookmarkIcon,
   BookOpen,
-  CalendarClock,
-  CheckCheck,
   CheckSquare,
-  Columns3,
   Download,
-  Eye,
-  EyeOff,
   Flame,
-  Grid2x2,
-  ListTodo as InsightsIcon,
   Loader2,
   Mail,
   Maximize2,
   Moon,
   MoreHorizontal,
   Plus,
-  Rows3,
   Search,
-  Sparkles,
   Square,
   Sun,
   Target,
@@ -46,17 +37,13 @@ import PromptLibraryModal from '@/components/PromptLibrary/PromptLibraryModal';
 
 import {api} from './api';
 import ArchiveView from './ArchiveView';
-import BoardView from './BoardView';
 import BookmarksModal from './BookmarksModal';
-import CalendarView from './CalendarView';
 import CommandPalette from './CommandPalette';
 import ConfettiBurst from './ConfettiBurst';
 import ContextMenu, {ContextMenuItem} from './ContextMenu';
 import DetailDrawer from './DetailDrawer';
 import EmailDropModal from './EmailDropModal';
 import {ExtractedTask} from './emailParse';
-import InsightsView from './InsightsView';
-import ListView from './ListView';
 import MatrixView, {Quadrant} from './MatrixView';
 import SavedViewsBar from './SavedViewsBar';
 import TaskWindow from './TaskWindow';
@@ -78,17 +65,8 @@ import {
   Status,
   Task,
   tasksToCsv,
-  ViewMode,
 } from './types';
 import UndoToast from './UndoToast';
-
-const VIEWS: {key: ViewMode; label: string; icon: React.ReactNode}[] = [
-  {key: 'list', label: 'List', icon: <Rows3 className="h-3.5 w-3.5" />},
-  {key: 'board', label: 'Board', icon: <Columns3 className="h-3.5 w-3.5" />},
-  {key: 'matrix', label: 'Matrix', icon: <Grid2x2 className="h-3.5 w-3.5" />},
-  {key: 'calendar', label: 'Calendar', icon: <CalendarClock className="h-3.5 w-3.5" />},
-  {key: 'insights', label: 'Insights', icon: <InsightsIcon className="h-3.5 w-3.5" />},
-];
 
 type QuickFilter = 'myday' | 'week' | 'nodue' | 'overdue' | null;
 
@@ -117,7 +95,6 @@ export default function TasksApp() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<ViewMode>('board');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -125,7 +102,6 @@ export default function TasksApp() {
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [quickFilter, setQuickFilter] = useState<QuickFilter>(null);
-  const [showCompleted, setShowCompleted] = useState(false);
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [newTaskStatus, setNewTaskStatus] = useState<Status>('todo');
   const [sortMode, setSortMode] = useState<SortMode>('smart');
@@ -171,8 +147,6 @@ export default function TasksApp() {
 
   // ── Preference persistence ───────────────────────────────────────────────────
   useEffect(() => {
-    const saved = localStorage.getItem('TASKS_VIEW') as ViewMode | null;
-    if (saved && ['list', 'board', 'matrix', 'calendar', 'insights'].includes(saved)) setView(saved);
     setIsDark(localStorage.getItem('TASKS_DARK') === 'true');
     const savedSort = localStorage.getItem('TASKS_SORT') as SortMode | null;
     if (savedSort) setSortMode(savedSort);
@@ -184,9 +158,6 @@ export default function TasksApp() {
     }
     setNotifyEnabled(typeof Notification !== 'undefined' && Notification.permission === 'granted');
   }, []);
-  useEffect(() => {
-    localStorage.setItem('TASKS_VIEW', view);
-  }, [view]);
   useEffect(() => {
     localStorage.setItem('TASKS_DARK', String(isDark));
   }, [isDark]);
@@ -231,11 +202,7 @@ export default function TasksApp() {
         setNewTaskOpen(true);
       } else if (e.key.toLowerCase() === 'b') {
         setBulkMode(v => !v);
-      } else if (e.key === '1') setView('list');
-      else if (e.key === '2') setView('board');
-      else if (e.key === '3') setView('matrix');
-      else if (e.key === '4') setView('calendar');
-      else if (e.key === '5') setView('insights');
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -289,13 +256,6 @@ export default function TasksApp() {
       }
     },
     [patchTask, triggerConfetti],
-  );
-
-  const setStatus = useCallback(
-    (task: Task, status: Status) => {
-      patchTask(task._id, {status, isCompleted: status === 'done'});
-    },
-    [patchTask],
   );
 
   const deleteTask = useCallback((task: Task) => {
@@ -403,12 +363,6 @@ export default function TasksApp() {
     await api.remove(template._id).catch(() => undefined);
   }, []);
 
-  /** Inline "+ Add" composer inside a board column. */
-  const quickCreateInColumn = useCallback(async (title: string, status: Status) => {
-    const created = await api.create({title, status, isCompleted: status === 'done', priority: 'None'});
-    setTasks(prev => [created, ...prev]);
-  }, []);
-
   /** Bump an overdue/active task to tomorrow 5pm. */
   const snoozeTask = useCallback(
     (task: Task) => {
@@ -417,21 +371,6 @@ export default function TasksApp() {
       d.setHours(17, 0, 0, 0);
       patchTask(task._id, {dueDate: d.toISOString()});
     },
-    [patchTask],
-  );
-
-  const clearCompleted = useCallback(async () => {
-    const doomed = liveTasks.filter(t => t.isCompleted);
-    if (doomed.length === 0) return;
-    if (!window.confirm(`Delete all ${doomed.length} completed task${doomed.length === 1 ? '' : 's'}? This cannot be undone.`))
-      return;
-    setTasks(prev => prev.filter(t => !doomed.some(d => d._id === t._id)));
-    setSelectedId(prev => (prev && doomed.some(t => t._id === prev) ? null : prev));
-    await Promise.allSettled(doomed.map(t => api.remove(t._id)));
-  }, [liveTasks]);
-
-  const toggleMinimize = useCallback(
-    (task: Task) => patchTask(task._id, {isMinimized: !task.isMinimized}),
     [patchTask],
   );
 
@@ -487,15 +426,6 @@ export default function TasksApp() {
   };
 
   // ── Bulk selection ───────────────────────────────────────────────────────────
-  const bulkToggle = useCallback((task: Task) => {
-    setBulkSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(task._id)) next.delete(task._id);
-      else next.add(task._id);
-      return next;
-    });
-  }, []);
-
   const exitBulkMode = () => {
     setBulkMode(false);
     setBulkSelected(new Set());
@@ -723,13 +653,6 @@ export default function TasksApp() {
   }, [filtered, focusMode]);
 
   const active = useMemo(() => focusFiltered.filter(t => !t.isCompleted).sort(compareBy(sortMode)), [focusFiltered, sortMode]);
-  const completed = useMemo(
-    () =>
-      focusFiltered
-        .filter(t => t.isCompleted)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
-    [focusFiltered],
-  );
 
   const applyReorder = useCallback((updates: {id: string; order: number}[]) => {
     setTasks(prev => {
@@ -739,24 +662,16 @@ export default function TasksApp() {
     api.reorder(updates).catch(err => console.error('Reorder failed', err));
   }, []);
 
-  const reorderManual = useCallback(
-    (newOrder: Task[]) => applyReorder(newOrder.map((t, i) => ({id: t._id, order: i}))),
-    [applyReorder],
-  );
-
   // ── Stats ───────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const activeAll = liveTasks.filter(t => !t.isCompleted);
-    const overdue = activeAll.filter(t => (daysUntil(t.dueDate) ?? 1) < 0).length;
     const dueToday = activeAll.filter(t => daysUntil(t.dueDate) === 0);
-    const weekAgo = Date.now() - 7 * 86400000;
-    const doneThisWeek = liveTasks.filter(t => t.isCompleted && new Date(t.updatedAt).getTime() > weekAgo).length;
     const focusMin = dueToday.reduce((n, t) => n + (t.estimatedTime || 0), 0);
     const todayStart = startOfDay(new Date()).getTime();
     const doneToday = liveTasks.filter(t => t.isCompleted && new Date(t.updatedAt).getTime() >= todayStart).length;
     const dayTotal = doneToday + dueToday.length;
     const dayProgress = dayTotal > 0 ? doneToday / dayTotal : 1;
-    return {overdue, today: dueToday.length, doneThisWeek, focusMin, doneToday, dayProgress, dayTotal};
+    return {focusMin, doneToday, dayProgress, dayTotal};
   }, [liveTasks]);
 
   // Celebrate when the day's list is fully cleared (once per session per completion)
@@ -852,16 +767,6 @@ export default function TasksApp() {
                     </div>
                   </div>
                 )}
-                <div className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1.5 ring-1 ring-inset ring-rose-100 dark:bg-rose-500/10 dark:ring-rose-500/20">
-                  <CalendarClock className="h-3.5 w-3.5 text-rose-500" />
-                  <span className="text-[12px] font-bold text-rose-700 dark:text-rose-300">{stats.overdue}</span>
-                  <span className="text-[11px] text-rose-400">overdue</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1.5 ring-1 ring-inset ring-orange-100 dark:bg-orange-500/10 dark:ring-orange-500/20">
-                  <Sparkles className="h-3.5 w-3.5 text-orange-500" />
-                  <span className="text-[12px] font-bold text-orange-700 dark:text-orange-300">{stats.today}</span>
-                  <span className="text-[11px] text-orange-400">today</span>
-                </div>
                 {stats.focusMin > 0 && (
                   <div className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-1.5 ring-1 ring-inset ring-indigo-100 dark:bg-indigo-500/10 dark:ring-indigo-500/20">
                     <Timer className="h-3.5 w-3.5 text-indigo-500" />
@@ -869,11 +774,6 @@ export default function TasksApp() {
                     <span className="text-[11px] text-indigo-400">focus</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-1.5 ring-1 ring-inset ring-emerald-100 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
-                  <CheckCheck className="h-3.5 w-3.5 text-emerald-500" />
-                  <span className="text-[12px] font-bold text-emerald-700 dark:text-emerald-300">{stats.doneThisWeek}</span>
-                  <span className="text-[11px] text-emerald-400">done this wk</span>
-                </div>
                 <Link
                   className="ml-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
                   href="/anomaly">
@@ -1008,21 +908,8 @@ export default function TasksApp() {
               </button>
             </div>
 
-            {/* ── View switcher + filters ── */}
-            <div className="flex flex-wrap items-center gap-2 px-6 pb-2">
-              <div className="flex rounded-xl bg-slate-100 p-1 dark:bg-slate-700">
-                {VIEWS.map(v => (
-                  <button
-                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all ${
-                      view === v.key ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-600 dark:text-white' : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                    key={v.key}
-                    onClick={() => setView(v.key)}>
-                    {v.icon} {v.label}
-                  </button>
-                ))}
-              </div>
-
+            {/* ── Filters ── */}
+            <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
               <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
                 <Search className="h-3.5 w-3.5 text-slate-300" />
                 <input
@@ -1127,67 +1014,19 @@ export default function TasksApp() {
                 {bulkMode ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />} Select
               </button>
 
-              {view === 'list' && (
-                <div className="flex items-center gap-1">
-                  {showCompleted && completed.length > 0 && (
-                    <button
-                      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
-                      onClick={clearCompleted}
-                      title="Delete all completed tasks">
-                      <Trash2 className="h-3.5 w-3.5" /> Clear done
-                    </button>
-                  )}
-                  <button
-                    className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                      showCompleted ? 'bg-emerald-50 text-emerald-600' : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                    onClick={() => setShowCompleted(v => !v)}>
-                    {showCompleted ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                    Completed
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Quick filter chips + saved views */}
-            <div className="flex flex-wrap items-center gap-1.5 px-6 pb-3">
-              <button
-                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                  quickFilter === null
-                    ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400'
-                }`}
-                onClick={() => setQuickFilter(null)}>
-                All
-              </button>
-              {(
-                [
-                  {key: 'myday', label: 'My day'},
-                  {key: 'overdue', label: 'Overdue'},
-                  {key: 'week', label: 'This week'},
-                  {key: 'nodue', label: 'No due date'},
-                ] as const
-              ).map(qf => (
-                <button
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                    quickFilter === qf.key
-                      ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400'
-                  }`}
-                  key={qf.key}
-                  onClick={() => setQuickFilter(qf.key)}>
-                  {qf.label}
-                </button>
-              ))}
-              <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700" />
-              <SavedViewsBar
-                activeId={activeSavedViewId}
-                canSave={canSaveView}
-                onApply={applySavedView}
-                onDelete={deleteSavedView}
-                onSave={saveCurrentView}
-                views={savedViews}
-              />
+              {savedViews.length > 0 || canSaveView ? (
+                <>
+                  <div className="mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                  <SavedViewsBar
+                    activeId={activeSavedViewId}
+                    canSave={canSaveView}
+                    onApply={applySavedView}
+                    onDelete={deleteSavedView}
+                    onSave={saveCurrentView}
+                    views={savedViews}
+                  />
+                </>
+              ) : null}
             </div>
           </header>
 
@@ -1229,34 +1068,7 @@ export default function TasksApp() {
                   <div className="h-[72px] animate-pulse rounded-2xl bg-slate-200/50 dark:bg-slate-700/50" key={i} />
                 ))}
               </div>
-            ) : view === 'list' ? (
-              <ListView
-                bulkMode={bulkMode}
-                bulkSelected={bulkSelected}
-                completed={completed}
-                onBulkToggle={bulkToggle}
-                onContextMenu={openContextMenu}
-                onOpen={t => setSelectedId(t._id)}
-                onReorderManual={reorderManual}
-                onToggleComplete={toggleComplete}
-                onToggleMinimize={toggleMinimize}
-                selectedId={selectedId}
-                showCompleted={showCompleted}
-                sortMode={sortMode}
-                tasks={active}
-              />
-            ) : view === 'board' ? (
-              <BoardView
-                onAddTask={s => openNewTask(s)}
-                onContextMenu={openContextMenu}
-                onOpen={t => setSelectedId(t._id)}
-                onQuickCreate={quickCreateInColumn}
-                onSetStatus={setStatus}
-                onToggleComplete={toggleComplete}
-                selectedId={selectedId}
-                tasks={focusFiltered}
-              />
-            ) : view === 'matrix' ? (
+            ) : (
               <MatrixView
                 onContextMenu={openContextMenu}
                 onExpand={t => setExpandedTaskId(t._id)}
@@ -1267,10 +1079,6 @@ export default function TasksApp() {
                 selectedId={selectedId}
                 tasks={active}
               />
-            ) : view === 'calendar' ? (
-              <CalendarView onOpen={t => setSelectedId(t._id)} selectedId={selectedId} tasks={liveTasks} />
-            ) : (
-              <InsightsView tasks={liveTasks} />
             )}
           </div>
         </div>
@@ -1349,7 +1157,6 @@ export default function TasksApp() {
             onClose={() => setPaletteOpen(false)}
             onNewTask={() => openNewTask('todo')}
             onOpenTask={t => setSelectedId(t._id)}
-            onSetView={setView}
             onToggleDark={() => setIsDark(v => !v)}
             onToggleFocus={() => setFocusMode(v => !v)}
             tasks={liveTasks}
