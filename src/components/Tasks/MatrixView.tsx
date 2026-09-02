@@ -36,23 +36,39 @@ export function quadrantOf(task: Task): Quadrant {
   return 'someday';
 }
 
-const QUADRANTS: {key: Quadrant; title: string; hint: string; tone: string; ring: string}[] = [
-  {key: 'do', title: 'Do First', hint: 'urgent + important', tone: 'border-rose-200 bg-rose-50/60 text-rose-700', ring: 'ring-rose-300'},
+const QUADRANTS: {key: Quadrant; title: string; hint: string; dot: string; accent: string; ring: string}[] = [
+  {
+    key: 'do',
+    title: 'Do First',
+    hint: 'urgent + important',
+    dot: 'bg-rose-500',
+    accent: 'text-rose-600 dark:text-rose-300',
+    ring: 'ring-rose-300',
+  },
   {
     key: 'schedule',
     title: 'Second Priority',
     hint: 'important, not urgent',
-    tone: 'border-orange-200 bg-orange-50/60 text-orange-700',
-    ring: 'ring-orange-300',
+    dot: 'bg-amber-500',
+    accent: 'text-amber-600 dark:text-amber-300',
+    ring: 'ring-amber-300',
   },
   {
     key: 'delegate',
     title: 'With Someone',
     hint: 'urgent, not important',
-    tone: 'border-sky-200 bg-sky-50/60 text-sky-700',
+    dot: 'bg-sky-500',
+    accent: 'text-sky-600 dark:text-sky-300',
     ring: 'ring-sky-300',
   },
-  {key: 'someday', title: 'Someday', hint: 'neither', tone: 'border-slate-200 bg-slate-50/80 text-slate-500', ring: 'ring-slate-300'},
+  {
+    key: 'someday',
+    title: 'Someday',
+    hint: 'neither',
+    dot: 'bg-slate-400',
+    accent: 'text-slate-500 dark:text-slate-400',
+    ring: 'ring-slate-300',
+  },
 ];
 
 function SortableCard({
@@ -107,14 +123,17 @@ function QuadrantBox({
   const {setNodeRef, isOver} = useDroppable({id: q.key});
   return (
     <div
-      className={`flex min-h-[220px] flex-col rounded-3xl border transition-all ${q.tone} ${
-        isOver ? `ring-2 ${q.ring} scale-[1.005]` : ''
+      className={`flex min-h-[220px] flex-col rounded-2xl border border-slate-200/70 bg-white/70 transition-all dark:border-slate-800 dark:bg-slate-900/40 ${
+        isOver ? `ring-2 ${q.ring}` : ''
       }`}
       ref={setNodeRef}>
-      <div className="flex items-baseline gap-2 px-4 pb-1 pt-3.5">
-        <h3 className="text-[13px] font-bold uppercase tracking-wider">{q.title}</h3>
-        <span className="text-[10.5px] font-medium opacity-60">{q.hint}</span>
-        <span className="ml-auto rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold shadow-sm">{items.length}</span>
+      <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+        <span className={`h-2 w-2 shrink-0 rounded-full ${q.dot}`} />
+        <h3 className={`text-[12px] font-bold uppercase tracking-wider ${q.accent}`}>{q.title}</h3>
+        <span className="hidden text-[10px] font-medium text-slate-400 sm:inline">{q.hint}</span>
+        <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+          {items.length}
+        </span>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3 [scrollbar-width:thin]">
         <SortableContext items={items.map(t => t._id)} strategy={verticalListSortingStrategy}>
@@ -130,7 +149,7 @@ function QuadrantBox({
             />
           ))}
         </SortableContext>
-        {items.length === 0 && <p className="pt-6 text-center text-[11px] italic opacity-50">Drop tasks here</p>}
+        {items.length === 0 && <p className="pt-6 text-center text-[11px] italic text-slate-300 dark:text-slate-600">Drop tasks here</p>}
       </div>
     </div>
   );

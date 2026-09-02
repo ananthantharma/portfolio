@@ -64,7 +64,7 @@ export default function TaskCard({
     return (
       <div
         className={`group flex items-center gap-2 rounded-xl border bg-white px-3 py-2 transition-all dark:bg-slate-800 ${
-          selected ? 'border-orange-400' : 'border-slate-200/80 hover:border-slate-300 dark:border-slate-700'
+          selected ? 'border-green-500' : 'border-slate-200/80 hover:border-slate-300 dark:border-slate-700'
         }`}
         onClick={handleClick}
         onContextMenu={e => onContextMenu?.(task, e)}>
@@ -101,7 +101,7 @@ export default function TaskCard({
     <div
       className={`group relative cursor-pointer rounded-2xl border bg-white transition-all dark:bg-slate-800 ${
         selected
-          ? 'border-orange-400 shadow-[0_4px_20px_-6px_rgba(234,88,12,0.25)]'
+          ? 'border-green-500 shadow-[0_4px_20px_-6px_rgba(34,197,94,0.3)]'
           : 'border-slate-200/80 shadow-sm hover:-translate-y-px hover:border-slate-300 hover:shadow-md dark:border-slate-700'
       } ${done ? 'opacity-60' : ''} ${compact ? 'p-3' : 'p-3.5'} ${
         pinned && neon ? `ring-2 ${neon.ring}` : ''
@@ -121,7 +121,7 @@ export default function TaskCard({
             }}>
             <div
               className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-colors ${
-                bulkSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'
+                bulkSelected ? 'border-green-500 bg-green-500' : 'border-slate-300'
               }`}>
               {bulkSelected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
             </div>
@@ -156,7 +156,7 @@ export default function TaskCard({
             {task.dueDate && (
               <span
                 className={`flex items-center gap-1 ${
-                  overdue ? 'text-rose-600' : dueToday ? 'text-orange-600' : ''
+                  overdue ? 'text-rose-600' : dueToday ? 'text-amber-600' : ''
                 }`}>
                 <CalendarDays className="h-3 w-3" /> {formatDue(task.dueDate)}
               </span>
@@ -202,7 +202,7 @@ export default function TaskCard({
           {subTotal > 0 && !compact && (
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
               <div
-                className={`h-full rounded-full transition-all ${subDone === subTotal ? 'bg-emerald-400' : 'bg-orange-400'}`}
+                className={`h-full rounded-full transition-all ${subDone === subTotal ? 'bg-emerald-400' : 'bg-green-500'}`}
                 style={{width: `${(subDone / subTotal) * 100}%`}}
               />
             </div>
@@ -214,7 +214,7 @@ export default function TaskCard({
         <div className="absolute right-2 top-2 flex items-center gap-1">
           {onExpand && (
             <button
-              className={`flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600 dark:border-slate-600 dark:bg-slate-700 ${
+              className={`flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 shadow-sm transition-colors hover:border-green-300 hover:bg-green-50 hover:text-green-600 dark:border-slate-600 dark:bg-slate-700 ${
                 compact ? '' : 'hidden group-hover:flex'
               }`}
               onClick={e => {

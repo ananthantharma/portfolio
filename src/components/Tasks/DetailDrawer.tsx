@@ -299,11 +299,11 @@ export default function DetailDrawer({
 
         {/* AI plan */}
         <button
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11.5px] font-semibold text-slate-600 transition-colors hover:border-orange-300 hover:text-orange-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11.5px] font-semibold text-slate-600 transition-colors hover:border-green-300 hover:text-green-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
           disabled={!task.title.trim() || planning}
           onClick={runAiPlan}
           title="Ask Gemini to write a summary and a full subtask checklist">
-          {planning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-orange-500" />}
+          {planning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-green-600" />}
           {planning ? 'Thinking…' : 'Summarize & plan with AI'}
         </button>
 
@@ -335,7 +335,7 @@ export default function DetailDrawer({
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <input
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11.5px] text-slate-700 outline-none focus:border-orange-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11.5px] text-slate-700 outline-none focus:border-green-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                 onChange={e => {
                   if (!e.target.value) return;
                   const d = new Date(`${e.target.value}T17:00:00`);
@@ -350,7 +350,7 @@ export default function DetailDrawer({
                 {label: '+1 week', days: 7},
               ].map(p => (
                 <button
-                  className="rounded-md bg-slate-50 px-2 py-1 text-[10px] font-semibold text-slate-500 transition-colors hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-800 dark:text-slate-300"
+                  className="rounded-md bg-slate-50 px-2 py-1 text-[10px] font-semibold text-slate-500 transition-colors hover:bg-green-100 hover:text-green-700 dark:bg-slate-800 dark:text-slate-300"
                   key={p.label}
                   onClick={() => {
                     const d = new Date();
@@ -376,7 +376,7 @@ export default function DetailDrawer({
               <Tag className="h-3 w-3" /> Category &amp; tags
             </div>
             <input
-              className="mt-1.5 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              className="mt-1.5 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] text-slate-700 outline-none placeholder:text-slate-300 focus:border-green-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               onBlur={() => {
                 if ((category || '') !== (task.category || '')) onPatch(task._id, {category});
               }}
@@ -399,7 +399,7 @@ export default function DetailDrawer({
                 </span>
               ))}
               <input
-                className="w-16 rounded-md border border-dashed border-slate-300 bg-transparent px-1.5 py-0.5 text-[10.5px] outline-none placeholder:text-slate-300 focus:border-orange-400 dark:border-slate-600"
+                className="w-16 rounded-md border border-dashed border-slate-300 bg-transparent px-1.5 py-0.5 text-[10.5px] outline-none placeholder:text-slate-300 focus:border-green-500 dark:border-slate-600"
                 onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addTag()}
                 placeholder="+ tag"
@@ -424,7 +424,7 @@ export default function DetailDrawer({
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  subDone === subtasks.length ? 'bg-emerald-500' : 'bg-orange-400'
+                  subDone === subtasks.length ? 'bg-emerald-500' : 'bg-green-500'
                 }`}
                 style={{width: `${(subDone / subtasks.length) * 100}%`}}
               />
@@ -439,7 +439,7 @@ export default function DetailDrawer({
                   {sub.isCompleted ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   ) : (
-                    <Circle className="h-3.5 w-3.5 text-slate-300 hover:text-orange-400" />
+                    <Circle className="h-3.5 w-3.5 text-slate-300 hover:text-green-500" />
                   )}
                 </button>
                 <span
@@ -475,7 +475,7 @@ export default function DetailDrawer({
             <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Notes</h4>
           </div>
           <textarea
-            className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-slate-50/60 p-2.5 text-[12px] leading-relaxed text-slate-700 outline-none transition-colors placeholder:text-slate-300 focus:border-orange-400 focus:bg-white dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200"
+            className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-slate-50/60 p-2.5 text-[12px] leading-relaxed text-slate-700 outline-none transition-colors placeholder:text-slate-300 focus:border-green-500 focus:bg-white dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200"
             onBlur={() => {
               if ((notes || '') !== (task.notes || '')) onPatch(task._id, {notes});
             }}

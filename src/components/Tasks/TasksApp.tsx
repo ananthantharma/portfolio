@@ -7,14 +7,15 @@ import {
   BellOff,
   Bookmark as BookmarkIcon,
   BookOpen,
+  CheckCircle2,
   CheckSquare,
   Download,
-  Flame,
+  FileText,
+  LayoutTemplate,
   Loader2,
   Mail,
-  Maximize2,
-  Moon,
   MoreHorizontal,
+  Moon,
   Plus,
   Search,
   Square,
@@ -24,6 +25,7 @@ import {
   Trash2,
   Upload,
   Users,
+  Workflow,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -89,8 +91,50 @@ interface PendingUndo {
   onCommit: () => void;
 }
 
+function RailButton({
+  icon,
+  label,
+  onClick,
+  href,
+  badge,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  badge?: number;
+}) {
+  const cls =
+    'group relative flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-green-400';
+  const body = (
+    <>
+      <span className="relative">
+        {icon}
+        {badge ? (
+          <span className="absolute -right-2.5 -top-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-slate-700 px-1 text-[8px] font-bold text-slate-200 group-hover:bg-green-500 group-hover:text-slate-900">
+            {badge}
+          </span>
+        ) : null}
+      </span>
+      <span className="text-[9px] font-medium leading-none">{label}</span>
+    </>
+  );
+  if (href) {
+    return (
+      <Link className={cls} href={href} target="_blank">
+        {body}
+      </Link>
+    );
+  }
+  return (
+    <button className={cls} onClick={onClick} title={label} type="button">
+      {body}
+    </button>
+  );
+}
+
 export default function TasksApp() {
-  const {status: authStatus} = useSession();
+  const {data: session, status: authStatus} = useSession();
   const router = useRouter();
 
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -665,13 +709,14 @@ export default function TasksApp() {
   // ── Stats ───────────────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const activeAll = liveTasks.filter(t => !t.isCompleted);
+    const overdue = activeAll.filter(t => (daysUntil(t.dueDate) ?? 1) < 0).length;
     const dueToday = activeAll.filter(t => daysUntil(t.dueDate) === 0);
     const focusMin = dueToday.reduce((n, t) => n + (t.estimatedTime || 0), 0);
     const todayStart = startOfDay(new Date()).getTime();
     const doneToday = liveTasks.filter(t => t.isCompleted && new Date(t.updatedAt).getTime() >= todayStart).length;
     const dayTotal = doneToday + dueToday.length;
     const dayProgress = dayTotal > 0 ? doneToday / dayTotal : 1;
-    return {focusMin, doneToday, dayProgress, dayTotal};
+    return {open: activeAll.length, overdue, focusMin, doneToday, dayProgress, dayTotal};
   }, [liveTasks]);
 
   // Celebrate when the day's list is fully cleared (once per session per completion)
@@ -689,11 +734,18 @@ export default function TasksApp() {
   const selectedTask = selectedId ? tasks.find(t => t._id === selectedId) || null : null;
   const expandedTask = expandedTaskId ? tasks.find(t => t._id === expandedTaskId) || null : null;
   const canSaveView = !!(search || priorityFilter || tagFilter || categoryFilter);
+  const userInitials =
+    (session?.user?.name || session?.user?.email || 'AT')
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(s => s[0]?.toUpperCase())
+      .join('') || 'AT';
 
   if (authStatus === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#f4f4f0] dark:bg-slate-900">
-        <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+      <div className="flex h-screen items-center justify-center bg-[#f6f6f4] dark:bg-slate-950">
+        <Loader2 className="h-6 w-6 animate-spin text-green-500" />
       </div>
     );
   }
@@ -702,229 +754,189 @@ export default function TasksApp() {
   return (
     <div className={isDark ? 'dark' : ''}>
       <div
-        className="flex h-screen w-full overflow-hidden bg-[#f4f4f0] font-sans text-slate-800 antialiased dark:bg-slate-900 dark:text-slate-100"
+        className="flex h-screen w-full overflow-hidden bg-[#f6f6f4] font-sans text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100"
         onDragEnter={onRootDragEnter}
         onDragLeave={onRootDragLeave}
         onDragOver={onRootDragOver}
-        onDrop={onRootDrop}
-        style={{
-          backgroundImage: isDark
-            ? undefined
-            : 'radial-gradient(circle, rgba(15,23,42,0.055) 1px, transparent 1px)',
-          backgroundSize: '22px 22px',
-        }}>
+        onDrop={onRootDrop}>
+        {/* ── Left nav rail ── */}
+        <nav className="z-20 flex w-[60px] shrink-0 flex-col items-center gap-0.5 border-r border-black/10 bg-slate-900 py-3">
+          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green-500 text-slate-900 shadow-lg shadow-green-500/20">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <RailButton icon={<BookOpen className="h-[17px] w-[17px]" />} label="Prompts" onClick={() => setPromptLibraryOpen(true)} />
+          <RailButton icon={<Users className="h-[17px] w-[17px]" />} label="Contacts" onClick={() => setContactsOpen(true)} />
+          <RailButton
+            icon={<BookmarkIcon className="h-[17px] w-[17px]" />}
+            label="Bookmarks"
+            onClick={() => setBookmarksOpen(true)}
+          />
+          <RailButton
+            badge={templates.length}
+            icon={<LayoutTemplate className="h-[17px] w-[17px]" />}
+            label="Templates"
+            onClick={() => setTemplatesOpen(true)}
+          />
+          <RailButton
+            badge={archived.length}
+            icon={<ArchiveIcon className="h-[17px] w-[17px]" />}
+            label="Archive"
+            onClick={() => setArchiveOpen(true)}
+          />
+          <RailButton icon={<Mail className="h-[17px] w-[17px]" />} label="Email" onClick={() => setEmailDropOpen(true)} />
+          <div className="my-1.5 h-px w-7 bg-slate-700/70" />
+          <RailButton href="/anomaly" icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
+          <RailButton href="/process-flow" icon={<Workflow className="h-[17px] w-[17px]" />} label="Flow" />
+          <div className="mt-auto flex w-full flex-col items-center gap-1.5">
+            <RailButton
+              icon={isDark ? <Sun className="h-[17px] w-[17px]" /> : <Moon className="h-[17px] w-[17px]" />}
+              label="Theme"
+              onClick={() => setIsDark(v => !v)}
+            />
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/90 text-[11px] font-bold text-slate-900"
+              title={session?.user?.email || ''}>
+              {userInitials}
+            </div>
+          </div>
+        </nav>
+
         <div className="flex min-w-0 flex-1 flex-col">
           {/* ── Header ── */}
-          <header className="shrink-0 border-b border-slate-200/70 bg-white/70 backdrop-blur-md dark:border-slate-700 dark:bg-slate-800/70">
-            <div className="flex items-center gap-4 px-6 pt-4">
-              <div>
-                <h1 className="flex items-center gap-2 text-[20px] font-black tracking-tight text-slate-900 dark:text-white">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 text-white shadow-md">
-                    <Flame className="h-4 w-4" />
-                  </span>
-                  Ananthan&apos;s Tasks
+          <header className="shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/70">
+            <div className="flex items-center gap-3 px-5 pb-3 pt-3.5">
+              <div className="min-w-0 shrink-0">
+                <h1 className="text-[18px] font-black tracking-tight text-slate-900 dark:text-white">Command Centre</h1>
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] font-medium text-slate-400">
+                  <span>{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}</span>
+                  <span className="text-slate-300">·</span>
+                  <span>{stats.open} open</span>
+                  {stats.overdue > 0 && (
+                    <>
+                      <span className="text-slate-300">·</span>
+                      <span className="font-semibold text-rose-500">{stats.overdue} overdue</span>
+                    </>
+                  )}
                   {focusMode && (
-                    <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:bg-violet-500/15 dark:text-violet-300">
+                    <span className="ml-1 rounded-full bg-green-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-green-700 dark:bg-green-500/15 dark:text-green-300">
                       Focus
                     </span>
                   )}
-                </h1>
-                <p className="ml-9 text-[11px] font-medium text-slate-400">
-                  {new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}
                 </p>
               </div>
 
-              {/* Stats */}
-              <div className="ml-auto hidden items-center gap-2 md:flex">
+              {/* Command / search */}
+              <div className="mx-auto flex w-full max-w-[460px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition-colors focus-within:border-green-400 dark:border-slate-700 dark:bg-slate-800">
+                <Search className="h-4 w-4 shrink-0 text-slate-300" />
+                <input
+                  className="w-full bg-transparent text-[12.5px] outline-none placeholder:text-slate-400 dark:text-white"
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search or type a command"
+                  value={search}
+                />
+                {search ? (
+                  <button className="shrink-0 text-slate-300 hover:text-slate-500" onClick={() => setSearch('')} title="Clear search">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    className="shrink-0 rounded-md border border-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700"
+                    onClick={() => setPaletteOpen(true)}
+                    title="Command palette (Ctrl / ⌘ K)"
+                    type="button">
+                    ⌘K
+                  </button>
+                )}
+              </div>
+
+              {/* Right cluster */}
+              <div className="flex shrink-0 items-center gap-2">
                 {stats.dayTotal > 0 && (
                   <div
-                    className="flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-700 dark:ring-slate-600"
+                    className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800 sm:flex"
                     title={`${stats.doneToday} of ${stats.dayTotal} tasks for today completed`}>
-                    <svg className="h-6 w-6 -rotate-90" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 -rotate-90" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" fill="none" r="9" stroke="#e2e8f0" strokeWidth="3.5" />
                       <circle
                         cx="12"
                         cy="12"
                         fill="none"
                         r="9"
-                        stroke="url(#ringGrad)"
+                        stroke="#22c55e"
                         strokeDasharray={`${stats.dayProgress * 56.5} 56.5`}
                         strokeLinecap="round"
                         strokeWidth="3.5"
                       />
-                      <defs>
-                        <linearGradient id="ringGrad" x1="0" x2="1" y1="0" y2="1">
-                          <stop offset="0%" stopColor="#f97316" />
-                          <stop offset="100%" stopColor="#f43f5e" />
-                        </linearGradient>
-                      </defs>
                     </svg>
-                    <div className="leading-none">
-                      <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">
-                        {Math.round(stats.dayProgress * 100)}%
-                      </p>
-                      <p className="text-[9.5px] text-slate-400">today</p>
-                    </div>
+                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-200">
+                      {Math.round(stats.dayProgress * 100)}%
+                    </span>
                   </div>
                 )}
                 {stats.focusMin > 0 && (
-                  <div className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-1.5 ring-1 ring-inset ring-indigo-100 dark:bg-indigo-500/10 dark:ring-indigo-500/20">
-                    <Timer className="h-3.5 w-3.5 text-indigo-500" />
-                    <span className="text-[12px] font-bold text-indigo-700 dark:text-indigo-300">{formatMinutes(stats.focusMin)}</span>
-                    <span className="text-[11px] text-indigo-400">focus</span>
+                  <div className="hidden items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 lg:flex">
+                    <Timer className="h-3.5 w-3.5 text-green-500" /> {formatMinutes(stats.focusMin)}
                   </div>
                 )}
-                <Link
-                  className="ml-1 text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
-                  href="/anomaly">
-                  Notes ↗
-                </Link>
-                <Link
-                  className="text-[11px] font-medium text-slate-400 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
-                  href="/process-flow"
-                  target="_blank">
-                  Process Flow ↗
-                </Link>
-              </div>
 
-              {/* Tools overflow menu */}
-              <div className="relative" ref={toolsRef}>
+                {/* Tools overflow menu */}
+                <div className="relative" ref={toolsRef}>
+                  <button
+                    className="rounded-xl border border-slate-200 bg-white p-2 text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    onClick={() => setToolsOpen(v => !v)}
+                    title="More tools">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                  {toolsOpen && (
+                    <div className="absolute right-0 top-full z-40 mt-1 w-52 animate-scale-in overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                        onClick={exportJson}>
+                        <Download className="h-4 w-4 text-slate-400" /> Export JSON
+                      </button>
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                        onClick={exportCsv}>
+                        <Download className="h-4 w-4 text-slate-400" /> Export CSV
+                      </button>
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                        onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="h-4 w-4 text-slate-400" /> Import CSV / JSON
+                      </button>
+                      <div className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
+                        onClick={enableNotifications}>
+                        {notifyEnabled ? <Bell className="h-4 w-4 text-emerald-500" /> : <BellOff className="h-4 w-4 text-slate-400" />}
+                        {notifyEnabled ? 'Reminders on' : 'Enable reminders'}
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    accept=".csv,.json"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) importFile(file);
+                      e.target.value = '';
+                    }}
+                    ref={fileInputRef}
+                    type="file"
+                  />
+                </div>
+
                 <button
-                  className="rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                  onClick={() => setToolsOpen(v => !v)}
-                  title="More tools">
-                  <MoreHorizontal className="h-4 w-4" />
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl bg-green-600 px-3.5 py-2 text-[12.5px] font-bold text-white shadow-sm shadow-green-600/20 transition-colors hover:bg-green-500"
+                  onClick={() => openNewTask('todo')}
+                  title="New task (N)">
+                  <Plus className="h-4 w-4" /> New task
                 </button>
-                {toolsOpen && (
-                  <div className="absolute right-0 top-full z-40 mt-1 w-56 animate-scale-in overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-2xl dark:border-slate-600 dark:bg-slate-800">
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={() => {
-                        setTemplatesOpen(true);
-                        setToolsOpen(false);
-                      }}>
-                      <BookmarkIcon className="h-4 w-4 text-indigo-500" /> Templates ({templates.length})
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={() => {
-                        setArchiveOpen(true);
-                        setToolsOpen(false);
-                      }}>
-                      <ArchiveIcon className="h-4 w-4 text-amber-500" /> Archive ({archived.length})
-                    </button>
-                    <div className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={exportJson}>
-                      <Download className="h-4 w-4 text-slate-400" /> Export JSON
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={exportCsv}>
-                      <Download className="h-4 w-4 text-slate-400" /> Export CSV
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={() => fileInputRef.current?.click()}>
-                      <Upload className="h-4 w-4 text-slate-400" /> Import CSV / JSON
-                    </button>
-                    <div className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={enableNotifications}>
-                      {notifyEnabled ? <Bell className="h-4 w-4 text-emerald-500" /> : <BellOff className="h-4 w-4 text-slate-400" />}
-                      {notifyEnabled ? 'Reminders on' : 'Enable reminders'}
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
-                      onClick={() => setIsDark(v => !v)}>
-                      {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-slate-400" />}
-                      {isDark ? 'Light theme' : 'Dark theme'}
-                    </button>
-                  </div>
-                )}
-                <input
-                  accept=".csv,.json"
-                  className="hidden"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) importFile(file);
-                    e.target.value = '';
-                  }}
-                  ref={fileInputRef}
-                  type="file"
-                />
               </div>
-
-              {/* Full window — same destination as the Maximize2 button inside the side drawer */}
-              {selectedTask && (
-                <button
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                  onClick={() => setExpandedTaskId(selectedTask._id)}
-                  title="Open selected task in full window">
-                  <Maximize2 className="h-4 w-4" /> Full window
-                </button>
-              )}
-
-              {/* Bookmarks */}
-              <button
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                onClick={() => setBookmarksOpen(true)}
-                title="Bookmarks">
-                <BookmarkIcon className="h-4 w-4" /> Bookmarks
-              </button>
-
-              {/* Prompt Library */}
-              <button
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                onClick={() => setPromptLibraryOpen(true)}
-                title="Prompt Library">
-                <BookOpen className="h-4 w-4" /> Prompts
-              </button>
-
-              {/* Contacts */}
-              <button
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] font-bold text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                onClick={() => setContactsOpen(true)}
-                title="Contacts">
-                <Users className="h-4 w-4" /> Contacts
-              </button>
-
-              {/* Task from email */}
-              <button
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5 text-[12.5px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
-                onClick={() => setEmailDropOpen(true)}
-                title="Drag an Outlook message anywhere onto this window, or click to paste one">
-                <Mail className="h-4 w-4" /> Task from email
-              </button>
-
-              {/* New task */}
-              <button
-                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-md transition-all hover:-translate-y-px hover:shadow-lg"
-                onClick={() => openNewTask('todo')}
-                title="New task (N)">
-                <Plus className="h-4 w-4" /> New task
-              </button>
             </div>
 
             {/* ── Filters ── */}
-            <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
-              <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
-                <Search className="h-3.5 w-3.5 text-slate-300" />
-                <input
-                  className="w-36 bg-transparent text-[12px] outline-none placeholder:text-slate-300 dark:text-white"
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search tasks…"
-                  value={search}
-                />
-                {search && (
-                  <button className="text-slate-300 hover:text-slate-500" onClick={() => setSearch('')}>
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 px-5 py-2.5 dark:border-slate-800">
               {/* Priority filter pills */}
               <div className="flex gap-1">
                 {(['High', 'Medium', 'Low'] as const).map(p => (
@@ -998,7 +1010,7 @@ export default function TasksApp() {
 
               <button
                 className={`ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                  focusMode ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300' : 'text-slate-400 hover:text-slate-600'
+                  focusMode ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'text-slate-400 hover:text-slate-600'
                 }`}
                 onClick={() => setFocusMode(v => !v)}
                 title="Focus mode — only overdue, due today, and pinned tasks">
@@ -1007,7 +1019,7 @@ export default function TasksApp() {
 
               <button
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                  bulkMode ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300' : 'text-slate-400 hover:text-slate-600'
+                  bulkMode ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'text-slate-400 hover:text-slate-600'
                 }`}
                 onClick={() => (bulkMode ? exitBulkMode() : setBulkMode(true))}
                 title="Select multiple tasks (B)">
@@ -1032,8 +1044,8 @@ export default function TasksApp() {
 
           {/* ── Bulk action bar ── */}
           {bulkMode && (
-            <div className="flex shrink-0 items-center gap-2 border-b border-orange-200 bg-orange-50 px-6 py-2 dark:border-orange-500/20 dark:bg-orange-500/10">
-              <span className="text-[12px] font-semibold text-orange-700 dark:text-orange-300">
+            <div className="flex shrink-0 items-center gap-2 border-b border-green-200 bg-green-50 px-5 py-2 dark:border-green-500/20 dark:bg-green-500/10">
+              <span className="text-[12px] font-semibold text-green-700 dark:text-green-300">
                 {bulkSelected.size} selected
               </span>
               <button
@@ -1054,7 +1066,7 @@ export default function TasksApp() {
                 onClick={bulkDelete}>
                 <Trash2 className="h-3.5 w-3.5" /> Delete
               </button>
-              <button className="rounded-lg p-1.5 text-orange-400 hover:text-orange-700" onClick={exitBulkMode}>
+              <button className="rounded-lg p-1.5 text-green-500 hover:text-green-700" onClick={exitBulkMode}>
                 <X className="h-4 w-4" />
               </button>
             </div>
