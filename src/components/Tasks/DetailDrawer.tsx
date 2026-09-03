@@ -65,6 +65,7 @@ export default function DetailDrawer({
   const [newSubtask, setNewSubtask] = useState('');
   const [planning, setPlanning] = useState(false);
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
 
   // Re-sync local fields when a different task is opened
   useEffect(() => {
@@ -159,12 +160,14 @@ export default function DetailDrawer({
     }
   };
 
-  // A React onPaste handler only fires while focus is inside an editable element within
-  // this drawer, so clicking anywhere non-editable silently breaks "paste anywhere".
-  // Listen at the document level instead, which sees every paste while the drawer is
-  // mounted regardless of what currently has focus.
+  // Paste an image to attach it to this task — but only when the paste actually happened
+  // inside the drawer. Pasting elsewhere on the page is claimed by the AI capture flow
+  // (which stops propagation before this listener runs).
   useEffect(() => {
     const handler = (e: ClipboardEvent) => {
+      if (e.defaultPrevented) return;
+      const node = e.target as Node | null;
+      if (!node || !asideRef.current?.contains(node)) return;
       onPasteAttachment(e);
     };
     document.addEventListener('paste', handler);
@@ -185,7 +188,9 @@ export default function DetailDrawer({
     'flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500';
 
   return (
-    <aside className="relative flex h-full w-[468px] shrink-0 animate-slide-up flex-col overflow-hidden border-l border-slate-200 bg-white dark:border-slate-700/70 dark:bg-slate-900">
+    <aside
+      className="relative flex h-full w-[468px] shrink-0 animate-slide-up flex-col overflow-hidden border-l border-slate-200 bg-white dark:border-slate-700/70 dark:bg-slate-900"
+      ref={asideRef}>
       {task.priority !== 'None' && (
         <span className={`absolute inset-x-0 top-0 z-10 h-[2px] bg-gradient-to-r ${prio.gradient}`} />
       )}

@@ -45,7 +45,8 @@ export async function POST(req: Request) {
     };
 
     const hasText = typeof text === 'string' && text.trim().length > 0;
-    const hasImage = !!image?.data && !!image?.mimeType;
+    const imageData = typeof image?.data === 'string' ? image.data.trim() : '';
+    const hasImage = imageData.length > 0;
     if (!hasText && !hasImage) {
       return NextResponse.json({success: false, error: 'Nothing to analyze — paste some text or an image.'}, {status: 400});
     }
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
       {text: `${PROMPT}\n\nPasted content:\n"""\n${hasText ? text!.trim() : '(see the attached image)'}\n"""`},
     ];
     if (hasImage) {
-      parts.push({inlineData: {data: image!.data!, mimeType: image!.mimeType!}});
+      parts.push({inlineData: {data: imageData, mimeType: image?.mimeType || 'image/png'}});
     }
 
     const result = await model.generateContent(parts);
@@ -93,6 +94,7 @@ export async function POST(req: Request) {
     return NextResponse.json({success: true, data});
   } catch (error) {
     console.error('Task capture error:', error);
-    return NextResponse.json({success: false, error: 'Failed to turn that into a task'}, {status: 500});
+    const message = error instanceof Error ? error.message : 'Failed to turn that into a task';
+    return NextResponse.json({success: false, error: message}, {status: 500});
   }
 }

@@ -11,9 +11,16 @@ import {Task} from './types';
 
 /** What the modal is seeded with when it opens (a drop, a page-level paste, or nothing). */
 export interface CaptureSeed {
+  /** An image, a .msg/.eml/.txt, or any file — the modal routes it by type. */
   file?: File | null;
   text?: string;
-  image?: {dataUrl: string; mimeType: string; name: string} | null;
+}
+
+type PastedImage = {dataUrl: string; mimeType: string; name: string};
+
+function base64Body(dataUrl: string): string {
+  const comma = dataUrl.indexOf(',');
+  return comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
 }
 
 interface CaptureModalProps {
@@ -34,9 +41,10 @@ function readFileAsDataUrl(file: File): Promise<string> {
 }
 
 export default function CaptureModal({seed, onClose, onCreated}: CaptureModalProps) {
+  const seededEmailFile = seed?.file && !IMAGE_RE.test(seed.file.type) ? seed.file : null;
   const [text, setText] = useState(seed?.text || '');
-  const [image, setImage] = useState<{dataUrl: string; mimeType: string; name: string} | null>(seed?.image || null);
-  const [file, setFile] = useState<File | null>(seed?.file || null);
+  const [image, setImage] = useState<PastedImage | null>(null);
+  const [file, setFile] = useState<File | null>(seededEmailFile);
   const [dragOver, setDragOver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,22 +71,25 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
     setError('Unsupported file — paste an image or drop a .msg / .eml / .txt.');
   };
 
-  const run = async () => {
+  const run = async (src?: {text?: string; image?: PastedImage | null; file?: File | null}) => {
+    const useFile = src ? src.file || null : file;
+    const useImage = src ? src.image || null : image;
+    const useText = (src ? src.text : text) || '';
     setBusy(true);
     setError(null);
     try {
       let payload: {text?: string; image?: {data: string; mimeType: string}};
-      if (file) {
-        const emailText = await fileToEmailText(file);
+      if (useFile) {
+        const emailText = await fileToEmailText(useFile);
         if (!emailText.trim()) throw new Error('That file looks empty.');
         payload = {text: emailText};
-      } else if (image) {
+      } else if (useImage) {
         payload = {
-          image: {data: image.dataUrl.replace(/^data:[^;]+;base64,/, ''), mimeType: image.mimeType},
-          ...(text.trim() ? {text: text.trim()} : {}),
+          image: {data: base64Body(useImage.dataUrl), mimeType: useImage.mimeType || 'image/png'},
+          ...(useText.trim() ? {text: useText.trim()} : {}),
         };
-      } else if (text.trim()) {
-        payload = {text: text.trim()};
+      } else if (useText.trim()) {
+        payload = {text: useText.trim()};
       } else {
         throw new Error('Paste an email, a screenshot, or some text first.');
       }
@@ -120,9 +131,22 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
 
   // Auto-run once when the modal is seeded (a drop or a page-level paste).
   useEffect(() => {
-    if (!autoRanRef.current && (seed?.file || seed?.text || seed?.image)) {
-      autoRanRef.current = true;
-      run();
+    if (autoRanRef.current) return;
+    autoRanRef.current = true;
+    const f = seed?.file || null;
+    const t = seed?.text || '';
+    if (f && IMAGE_RE.test(f.type || '')) {
+      readFileAsDataUrl(f)
+        .then(dataUrl => {
+          const img: PastedImage = {dataUrl, mimeType: f.type || 'image/png', name: f.name || 'pasted.png'};
+          setImage(img);
+          run({image: img});
+        })
+        .catch(() => setError('Could not read that image.'));
+    } else if (f) {
+      run({file: f});
+    } else if (t.trim()) {
+      run({text: t});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -263,7 +287,7 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
                 <button
                   className="flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2 text-[12.5px] font-bold text-white shadow-sm shadow-green-600/20 transition-colors hover:bg-green-500 disabled:opacity-40"
                   disabled={!canRun}
-                  onClick={run}>
+                  onClick={() => run()}>
                   <Sparkles className="h-3.5 w-3.5" /> Create task
                 </button>
               </div>

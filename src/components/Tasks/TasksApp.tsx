@@ -47,7 +47,6 @@ import DetailDrawer from './DetailDrawer';
 import {ExtractedTask} from './emailParse';
 import InAppBrowser from './InAppBrowser';
 import MatrixView, {Quadrant} from './MatrixView';
-import {attachmentFromPaste} from './pasteImage';
 import SavedViewsBar from './SavedViewsBar';
 import TaskWindow from './TaskWindow';
 import TemplatesModal from './TemplatesModal';
@@ -253,39 +252,38 @@ export default function TasksApp() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Paste anywhere on the page — an image (screenshot) or a decent chunk of text —
-  // and hand it straight to the AI capture modal, which drafts the task for Ananthan.
+  // Paste anywhere on the page — an image (screenshot) or a chunk of text — and hand it
+  // straight to the AI capture modal, which drafts the task for Ananthan. Runs in the
+  // capture phase and stops propagation when it claims the paste, so it wins over the
+  // detail drawer's own paste-to-attach listener even while a task is selected.
   useEffect(() => {
-    const onPaste = async (e: ClipboardEvent) => {
-      if (captureOpen || newTaskOpen || paletteOpen || selectedId || expandedTaskId) return;
+    const onPaste = (e: ClipboardEvent) => {
+      if (captureOpen || newTaskOpen || paletteOpen || expandedTaskId) return;
       const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
-      ) {
+      if (target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)) {
         return;
       }
-      try {
-        const att = await attachmentFromPaste(e);
-        if (att) {
-          e.preventDefault();
-          setCaptureSeed({image: {dataUrl: att.data, mimeType: att.type, name: att.name}});
+      const items = Array.from(e.clipboardData?.items || []);
+      const imageItem = items.find(i => i.kind === 'file' && i.type.startsWith('image/'));
+      const text = (e.clipboardData?.getData('text') || '').trim();
+      if (!imageItem && text.length < 40) return;
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (imageItem) {
+        const imgFile = imageItem.getAsFile();
+        if (imgFile) {
+          setCaptureSeed({file: imgFile});
           setCaptureOpen(true);
           return;
         }
-      } catch {
-        /* fall through to text */
       }
-      const text = e.clipboardData?.getData('text')?.trim();
-      if (text && text.length >= 60) {
-        e.preventDefault();
-        setCaptureSeed({text});
-        setCaptureOpen(true);
-      }
+      setCaptureSeed({text});
+      setCaptureOpen(true);
     };
-    document.addEventListener('paste', onPaste);
-    return () => document.removeEventListener('paste', onPaste);
-  }, [captureOpen, newTaskOpen, paletteOpen, selectedId, expandedTaskId]);
+    document.addEventListener('paste', onPaste, true);
+    return () => document.removeEventListener('paste', onPaste, true);
+  }, [captureOpen, newTaskOpen, paletteOpen, expandedTaskId]);
 
   // Live (non-archived, non-template) tasks — everything else derives from this
   const liveTasks = useMemo(() => tasks.filter(t => !t.isArchived && !t.isTemplate), [tasks]);
