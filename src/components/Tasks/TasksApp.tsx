@@ -9,11 +9,11 @@ import {
   BookOpen,
   CheckCircle2,
   CheckSquare,
+  ClipboardPaste,
   Download,
   FileText,
   LayoutTemplate,
   Loader2,
-  Mail,
   MoreHorizontal,
   Moon,
   Plus,
@@ -33,20 +33,21 @@ import {useRouter} from 'next/navigation';
 import {useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import InAppBrowser from '@/components/Anomaly/InAppBrowser';
 import ContactListModal from '@/components/Notes/ContactListModal';
 import PromptLibraryModal from '@/components/PromptLibrary/PromptLibraryModal';
 
 import {api} from './api';
 import ArchiveView from './ArchiveView';
 import BookmarksModal from './BookmarksModal';
+import CaptureModal, {CaptureSeed} from './CaptureModal';
 import CommandPalette from './CommandPalette';
 import ConfettiBurst from './ConfettiBurst';
 import ContextMenu, {ContextMenuItem} from './ContextMenu';
 import DetailDrawer from './DetailDrawer';
-import EmailDropModal from './EmailDropModal';
 import {ExtractedTask} from './emailParse';
+import InAppBrowser from './InAppBrowser';
 import MatrixView, {Quadrant} from './MatrixView';
+import {attachmentFromPaste} from './pasteImage';
 import SavedViewsBar from './SavedViewsBar';
 import TaskWindow from './TaskWindow';
 import TemplatesModal from './TemplatesModal';
@@ -167,8 +168,8 @@ export default function TasksApp() {
   const [activeSavedViewId, setActiveSavedViewId] = useState<string | null>(null);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
-  const [emailDropOpen, setEmailDropOpen] = useState(false);
-  const [emailDropFile, setEmailDropFile] = useState<File | null>(null);
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const [captureSeed, setCaptureSeed] = useState<CaptureSeed | null>(null);
   const [emailPrefill, setEmailPrefill] = useState<ExtractedTask | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
@@ -251,6 +252,40 @@ export default function TasksApp() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // Paste anywhere on the page — an image (screenshot) or a decent chunk of text —
+  // and hand it straight to the AI capture modal, which drafts the task for Ananthan.
+  useEffect(() => {
+    const onPaste = async (e: ClipboardEvent) => {
+      if (captureOpen || newTaskOpen || paletteOpen || selectedId || expandedTaskId) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
+      ) {
+        return;
+      }
+      try {
+        const att = await attachmentFromPaste(e);
+        if (att) {
+          e.preventDefault();
+          setCaptureSeed({image: {dataUrl: att.data, mimeType: att.type, name: att.name}});
+          setCaptureOpen(true);
+          return;
+        }
+      } catch {
+        /* fall through to text */
+      }
+      const text = e.clipboardData?.getData('text')?.trim();
+      if (text && text.length >= 60) {
+        e.preventDefault();
+        setCaptureSeed({text});
+        setCaptureOpen(true);
+      }
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+  }, [captureOpen, newTaskOpen, paletteOpen, selectedId, expandedTaskId]);
 
   // Live (non-archived, non-template) tasks — everything else derives from this
   const liveTasks = useMemo(() => tasks.filter(t => !t.isArchived && !t.isTemplate), [tasks]);
@@ -464,8 +499,8 @@ export default function TasksApp() {
     setIsDraggingFile(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      setEmailDropFile(file);
-      setEmailDropOpen(true);
+      setCaptureSeed({file});
+      setCaptureOpen(true);
     }
   };
 
@@ -783,9 +818,16 @@ export default function TasksApp() {
             label="Archive"
             onClick={() => setArchiveOpen(true)}
           />
-          <RailButton icon={<Mail className="h-[17px] w-[17px]" />} label="Email" onClick={() => setEmailDropOpen(true)} />
+          <RailButton
+            icon={<ClipboardPaste className="h-[17px] w-[17px]" />}
+            label="Capture"
+            onClick={() => {
+              setCaptureSeed(null);
+              setCaptureOpen(true);
+            }}
+          />
           <div className="my-1.5 h-px w-7 bg-slate-700/70" />
-          <RailButton href="/anomaly" icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
+          <RailButton href="/notes" icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
           <RailButton href="/process-flow" icon={<Workflow className="h-[17px] w-[17px]" />} label="Flow" />
           <div className="mt-auto flex w-full flex-col items-center gap-1.5">
             <RailButton
@@ -1139,26 +1181,29 @@ export default function TasksApp() {
           />
         )}
 
-        {emailDropOpen && (
-          <EmailDropModal
-            initialFile={emailDropFile}
+        {captureOpen && (
+          <CaptureModal
             onClose={() => {
-              setEmailDropOpen(false);
-              setEmailDropFile(null);
+              setCaptureOpen(false);
+              setCaptureSeed(null);
             }}
-            onExtracted={data => {
-              setEmailDropFile(null);
-              openNewTask('todo', data);
+            onCreated={task => {
+              setTasks(prev => [task, ...prev]);
+              setSelectedId(task._id);
+              setCaptureOpen(false);
+              setCaptureSeed(null);
+              flash('Task drafted from your paste — review & tweak');
             }}
+            seed={captureSeed}
           />
         )}
 
-        {isDraggingFile && !emailDropOpen && (
-          <div className="pointer-events-none fixed inset-0 z-[290] flex items-center justify-center bg-indigo-900/30 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-indigo-300 bg-white/90 px-10 py-8 text-center shadow-2xl dark:bg-slate-800/90">
-              <Mail className="h-8 w-8 text-indigo-500" />
-              <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200">Drop to create a task from this email</p>
-              <p className="text-[11.5px] text-slate-400">Gemini will pull out the title, priority, and due date</p>
+        {isDraggingFile && !captureOpen && (
+          <div className="pointer-events-none fixed inset-0 z-[290] flex items-center justify-center bg-green-900/25 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-green-300 bg-white/90 px-10 py-8 text-center shadow-2xl dark:bg-slate-800/90">
+              <ClipboardPaste className="h-8 w-8 text-green-500" />
+              <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200">Drop to create a task with AI</p>
+              <p className="text-[11.5px] text-slate-400">A screenshot, an Outlook message, or a text file — Gemini drafts the task</p>
             </div>
           </div>
         )}

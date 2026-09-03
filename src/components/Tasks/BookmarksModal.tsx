@@ -20,10 +20,10 @@ import {
 } from 'lucide-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 
-import type {Bookmark, BookmarkDraft} from '@/components/Anomaly/bookmarksApi';
-import {bookmarksApi} from '@/components/Anomaly/bookmarksApi';
+import type {Bookmark, BookmarkDraft} from './bookmarksApi';
+import {bookmarksApi} from './bookmarksApi';
 
-const PINS_KEY = 'bookmark-pins'; // shared with the Anomaly notes bookmark modal on purpose
+const PINS_KEY = 'bookmark-pins';
 
 function loadPinnedIds(): Set<string> {
   try {

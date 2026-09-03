@@ -65,7 +65,7 @@ import PromptLibraryModal from '../PromptLibrary/PromptLibraryModal';
 import {ICON_options} from './IconPicker';
 import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
-import CameraModal from '../Anomaly/CameraModal';
+import CameraModal from './CameraModal';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';

@@ -59,7 +59,7 @@ export default function CameraModal({onClose}: CameraModalProps) {
     (async () => {
       let creds: Creds;
       try {
-        const res = await fetch('/api/anomaly/camera/mqtt-creds', {cache: 'no-store'});
+        const res = await fetch('/api/notes/camera/mqtt-creds', {cache: 'no-store'});
         const body = await res.json().catch(() => null);
         if (!res.ok) throw new Error(body?.error || `Config request failed (${res.status})`);
         creds = body as Creds;
@@ -88,7 +88,7 @@ export default function CameraModal({onClose}: CameraModalProps) {
       client = mqtt.connect(creds.url, {
         username: creds.username,
         password: creds.password,
-        clientId: 'anomaly-web-' + Math.random().toString(16).slice(2, 10),
+        clientId: 'notes-web-' + Math.random().toString(16).slice(2, 10),
         protocolVersion: 4,
         clean: true,
         reconnectPeriod: 3000,
