@@ -133,7 +133,7 @@ function RailButton({
   );
 }
 
-export default function TasksApp() {
+export default function TasksApp({embedded = false, isActive = true, onOpenNotes}: {embedded?: boolean; isActive?: boolean; onOpenNotes?: () => void}) {
   const {data: session, status: authStatus} = useSession();
   const router = useRouter();
 
@@ -231,6 +231,7 @@ export default function TasksApp() {
   // Keyboard shortcuts: "n" new task · "b" bulk mode · Ctrl+K palette · 1-5 switch views
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (!isActive) return;
       const target = e.target as HTMLElement;
       const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -250,7 +251,7 @@ export default function TasksApp() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [isActive]);
 
   // Paste anywhere on the page — an image (screenshot) or a chunk of text — and hand it
   // straight to the AI capture modal, which drafts the task for Ananthan. Runs in the
@@ -258,6 +259,7 @@ export default function TasksApp() {
   // detail drawer's own paste-to-attach listener even while a task is selected.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
+      if (!isActive) return;
       if (captureOpen || newTaskOpen || paletteOpen || expandedTaskId) return;
       const target = e.target as HTMLElement | null;
       if (target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)) {
@@ -283,7 +285,7 @@ export default function TasksApp() {
     };
     document.addEventListener('paste', onPaste, true);
     return () => document.removeEventListener('paste', onPaste, true);
-  }, [captureOpen, newTaskOpen, paletteOpen, expandedTaskId]);
+  }, [isActive, captureOpen, newTaskOpen, paletteOpen, expandedTaskId]);
 
   // Live (non-archived, non-template) tasks — everything else derives from this
   const liveTasks = useMemo(() => tasks.filter(t => !t.isArchived && !t.isTemplate), [tasks]);
@@ -785,9 +787,9 @@ export default function TasksApp() {
   if (authStatus === 'unauthenticated') return null;
 
   return (
-    <div className={isDark ? 'dark' : ''}>
+    <div className={`${isDark ? 'dark' : ''} ${embedded ? 'h-full min-h-0' : ''}`}>
       <div
-        className="flex h-screen w-full overflow-hidden bg-[#f6f6f4] font-sans text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100"
+        className={`flex ${embedded ? 'h-full' : 'h-screen'} w-full overflow-hidden bg-[#f6f6f4] font-sans text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100`}
         onDragEnter={onRootDragEnter}
         onDragLeave={onRootDragLeave}
         onDragOver={onRootDragOver}
@@ -825,7 +827,7 @@ export default function TasksApp() {
             }}
           />
           <div className="my-1.5 h-px w-7 bg-slate-700/70" />
-          <RailButton href="/notes" icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
+          <RailButton href={embedded ? undefined : "/notes"} onClick={onOpenNotes} icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
           <RailButton href="/process-flow" icon={<Workflow className="h-[17px] w-[17px]" />} label="Flow" />
           <div className="mt-auto flex w-full flex-col items-center gap-1.5">
             <RailButton
@@ -846,7 +848,7 @@ export default function TasksApp() {
           <header className="shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/70">
             <div className="flex items-center gap-3 px-5 pb-3 pt-3.5">
               <div className="min-w-0 shrink-0">
-                <h1 className="text-[18px] font-black tracking-tight text-slate-900 dark:text-white">Command Centre</h1>
+                <h1 className="text-[18px] font-black tracking-tight text-slate-900 dark:text-white">Your tasks</h1>
                 <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] font-medium text-slate-400">
                   <span>{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}</span>
                   <span className="text-slate-300">·</span>
