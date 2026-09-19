@@ -2,11 +2,12 @@
 'use client';
 
 import {ExternalLink, FileText, Link2, Plus, X} from 'lucide-react';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 
 import NoteLinkModal from './NoteLinkModal';
 import NoteQuickEditModal from './NoteQuickEditModal';
 import {Task} from './types';
+import {OpenWorkspaceNoteContext} from './WorkspaceNavigation';
 
 interface LinkedNoteSectionProps {
   task: Task;
@@ -15,6 +16,7 @@ interface LinkedNoteSectionProps {
 
 /** "Linked note" property — create/link a NotePage to a task, open it, or quick-edit it inline. */
 export default function LinkedNoteSection({task, onPatch}: LinkedNoteSectionProps) {
+  const openWorkspaceNote = useContext(OpenWorkspaceNoteContext);
   const [linkMode, setLinkMode] = useState<'search' | 'create' | null>(null);
   const [quickEditPageId, setQuickEditPageId] = useState<string | null>(null);
 
@@ -49,9 +51,15 @@ export default function LinkedNoteSection({task, onPatch}: LinkedNoteSectionProp
           <a
             className="shrink-0 rounded-lg p-1 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
             href={`/notes?pageId=${linkedPage._id}`}
+            onClick={event => {
+              if (openWorkspaceNote && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+                event.preventDefault();
+                openWorkspaceNote(linkedPage._id);
+              }
+            }}
             rel="noopener noreferrer"
-            target="_blank"
-            title="Open full page in /notes">
+            target={openWorkspaceNote ? undefined : '_blank'}
+            title="Open full note">
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
           <button

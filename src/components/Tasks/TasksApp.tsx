@@ -14,8 +14,8 @@ import {
   FileText,
   LayoutTemplate,
   Loader2,
-  MoreHorizontal,
   Moon,
+  MoreHorizontal,
   Plus,
   Search,
   Square,
@@ -36,7 +36,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import ContactListModal from '@/components/Notes/ContactListModal';
 import PromptLibraryModal from '@/components/PromptLibrary/PromptLibraryModal';
 
-import {api} from './api';
+import {api, subscribeTasks} from './api';
 import ArchiveView from './ArchiveView';
 import BookmarksModal from './BookmarksModal';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
@@ -133,11 +133,23 @@ function RailButton({
   );
 }
 
-export default function TasksApp({embedded = false, isActive = true, onOpenNotes}: {embedded?: boolean; isActive?: boolean; onOpenNotes?: () => void}) {
+export default function TasksApp({
+  embedded = false,
+  isActive = true,
+  onOpenNotes,
+}: {
+  embedded?: boolean;
+  isActive?: boolean;
+  onOpenNotes?: () => void;
+}) {
   const {data: session, status: authStatus} = useSession();
   const router = useRouter();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  useEffect(() => subscribeTasks(change => {
+    if (change.type === 'reload') {void api.list().then(setTasks).catch(() => undefined); return;}
+    setTasks(previous => change.type === 'remove' ? previous.filter(task => task._id !== change.id) : previous.some(task => task._id === change.task._id) ? previous.map(task => task._id === change.task._id ? change.task : task) : [change.task, ...previous]);
+  }), []);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -298,8 +310,12 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
     api.update(id, patch).then(
       updated => setTasks(prev => prev.map(t => (t._id === id ? {...t, ...updated} : t))),
       err => {
+        setFlashMessage('Task could not be saved. Please try again.');
         console.error('Update failed', err);
-        api.list().then(setTasks).catch(() => undefined); // resync on failure
+        api
+          .list()
+          .then(setTasks)
+          .catch(() => undefined); // resync on failure
       },
     );
   }, []);
@@ -605,7 +621,10 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
   };
 
   const exportCsv = () => {
-    downloadBlob(new Blob([tasksToCsv(liveTasks)], {type: 'text/csv'}), `tasks-${new Date().toISOString().slice(0, 10)}.csv`);
+    downloadBlob(
+      new Blob([tasksToCsv(liveTasks)], {type: 'text/csv'}),
+      `tasks-${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     setToolsOpen(false);
   };
 
@@ -674,7 +693,14 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
     localStorage.setItem('TASKS_SAVED_VIEWS', JSON.stringify(views));
   };
   const saveCurrentView = (name: string) => {
-    const v: SavedView = {id: genId(), name, search, priority: priorityFilter, tag: tagFilter, category: categoryFilter};
+    const v: SavedView = {
+      id: genId(),
+      name,
+      search,
+      priority: priorityFilter,
+      tag: tagFilter,
+      category: categoryFilter,
+    };
     persistViews([...savedViews, v]);
     setActiveSavedViewId(v.id);
   };
@@ -731,7 +757,10 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
     });
   }, [filtered, focusMode]);
 
-  const active = useMemo(() => focusFiltered.filter(t => !t.isCompleted).sort(compareBy(sortMode)), [focusFiltered, sortMode]);
+  const active = useMemo(
+    () => focusFiltered.filter(t => !t.isCompleted).sort(compareBy(sortMode)),
+    [focusFiltered, sortMode],
+  );
 
   const applyReorder = useCallback((updates: {id: string; order: number}[]) => {
     setTasks(prev => {
@@ -789,59 +818,76 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
   return (
     <div className={`${isDark ? 'dark' : ''} ${embedded ? 'h-full min-h-0' : ''}`}>
       <div
-        className={`flex ${embedded ? 'h-full' : 'h-screen'} w-full overflow-hidden bg-[#f6f6f4] font-sans text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100`}
+        className={`flex ${
+          embedded ? 'h-full' : 'h-screen'
+        } w-full overflow-hidden bg-[#f6f6f4] font-sans text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100`}
         onDragEnter={onRootDragEnter}
         onDragLeave={onRootDragLeave}
         onDragOver={onRootDragOver}
         onDrop={onRootDrop}>
         {/* ── Left nav rail ── */}
-        <nav className="z-20 flex w-[60px] shrink-0 flex-col items-center gap-0.5 border-r border-black/10 bg-slate-900 py-3">
-          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green-500 text-slate-900 shadow-lg shadow-green-500/20">
-            <CheckCircle2 className="h-5 w-5" />
-          </div>
-          <RailButton icon={<BookOpen className="h-[17px] w-[17px]" />} label="Prompts" onClick={() => setPromptLibraryOpen(true)} />
-          <RailButton icon={<Users className="h-[17px] w-[17px]" />} label="Contacts" onClick={() => setContactsOpen(true)} />
-          <RailButton
-            icon={<BookmarkIcon className="h-[17px] w-[17px]" />}
-            label="Bookmarks"
-            onClick={() => setBookmarksOpen(true)}
-          />
-          <RailButton
-            badge={templates.length}
-            icon={<LayoutTemplate className="h-[17px] w-[17px]" />}
-            label="Templates"
-            onClick={() => setTemplatesOpen(true)}
-          />
-          <RailButton
-            badge={archived.length}
-            icon={<ArchiveIcon className="h-[17px] w-[17px]" />}
-            label="Archive"
-            onClick={() => setArchiveOpen(true)}
-          />
-          <RailButton
-            icon={<ClipboardPaste className="h-[17px] w-[17px]" />}
-            label="Capture"
-            onClick={() => {
-              setCaptureSeed(null);
-              setCaptureOpen(true);
-            }}
-          />
-          <div className="my-1.5 h-px w-7 bg-slate-700/70" />
-          <RailButton href={embedded ? undefined : "/notes"} onClick={onOpenNotes} icon={<FileText className="h-[17px] w-[17px]" />} label="Notes" />
-          <RailButton href="/process-flow" icon={<Workflow className="h-[17px] w-[17px]" />} label="Flow" />
-          <div className="mt-auto flex w-full flex-col items-center gap-1.5">
-            <RailButton
-              icon={isDark ? <Sun className="h-[17px] w-[17px]" /> : <Moon className="h-[17px] w-[17px]" />}
-              label="Theme"
-              onClick={() => setIsDark(v => !v)}
-            />
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/90 text-[11px] font-bold text-slate-900"
-              title={session?.user?.email || ''}>
-              {userInitials}
+        {!embedded && (
+          <nav className="z-20 flex w-[60px] shrink-0 flex-col items-center gap-0.5 border-r border-black/10 bg-slate-900 py-3">
+            <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green-500 text-slate-900 shadow-lg shadow-green-500/20">
+              <CheckCircle2 className="h-5 w-5" />
             </div>
-          </div>
-        </nav>
+            <RailButton
+              icon={<BookOpen className="h-[17px] w-[17px]" />}
+              label="Prompts"
+              onClick={() => setPromptLibraryOpen(true)}
+            />
+            <RailButton
+              icon={<Users className="h-[17px] w-[17px]" />}
+              label="Contacts"
+              onClick={() => setContactsOpen(true)}
+            />
+            <RailButton
+              icon={<BookmarkIcon className="h-[17px] w-[17px]" />}
+              label="Bookmarks"
+              onClick={() => setBookmarksOpen(true)}
+            />
+            <RailButton
+              badge={templates.length}
+              icon={<LayoutTemplate className="h-[17px] w-[17px]" />}
+              label="Templates"
+              onClick={() => setTemplatesOpen(true)}
+            />
+            <RailButton
+              badge={archived.length}
+              icon={<ArchiveIcon className="h-[17px] w-[17px]" />}
+              label="Archive"
+              onClick={() => setArchiveOpen(true)}
+            />
+            <RailButton
+              icon={<ClipboardPaste className="h-[17px] w-[17px]" />}
+              label="Capture"
+              onClick={() => {
+                setCaptureSeed(null);
+                setCaptureOpen(true);
+              }}
+            />
+            <div className="my-1.5 h-px w-7 bg-slate-700/70" />
+            <RailButton
+              href={embedded ? undefined : '/notes'}
+              icon={<FileText className="h-[17px] w-[17px]" />}
+              label="Notes"
+              onClick={onOpenNotes}
+            />
+            <RailButton href="/process-flow" icon={<Workflow className="h-[17px] w-[17px]" />} label="Flow" />
+            <div className="mt-auto flex w-full flex-col items-center gap-1.5">
+              <RailButton
+                icon={isDark ? <Sun className="h-[17px] w-[17px]" /> : <Moon className="h-[17px] w-[17px]" />}
+                label="Theme"
+                onClick={() => setIsDark(v => !v)}
+              />
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/90 text-[11px] font-bold text-slate-900"
+                title={session?.user?.email || ''}>
+                {userInitials}
+              </div>
+            </div>
+          </nav>
+        )}
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* ── Header ── */}
@@ -850,7 +896,9 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
               <div className="min-w-0 shrink-0">
                 <h1 className="text-[18px] font-black tracking-tight text-slate-900 dark:text-white">Your tasks</h1>
                 <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] font-medium text-slate-400">
-                  <span>{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}</span>
+                  <span>
+                    {new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}
+                  </span>
                   <span className="text-slate-300">·</span>
                   <span>{stats.open} open</span>
                   {stats.overdue > 0 && (
@@ -877,7 +925,10 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
                   value={search}
                 />
                 {search ? (
-                  <button className="shrink-0 text-slate-300 hover:text-slate-500" onClick={() => setSearch('')} title="Clear search">
+                  <button
+                    className="shrink-0 text-slate-300 hover:text-slate-500"
+                    onClick={() => setSearch('')}
+                    title="Clear search">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 ) : (
@@ -946,11 +997,42 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
                         onClick={() => fileInputRef.current?.click()}>
                         <Upload className="h-4 w-4 text-slate-400" /> Import CSV / JSON
                       </button>
+                      {embedded && (
+                        <>
+                          {[
+                            ['Archive', () => setArchiveOpen(true)],
+                            ['Templates', () => setTemplatesOpen(true)],
+                            [
+                              'Capture task',
+                              () => {
+                                setCaptureSeed(null);
+                                setCaptureOpen(true);
+                              },
+                            ],
+                            ['Bookmarks', () => setBookmarksOpen(true)],
+                            ['Toggle theme', () => setIsDark(v => !v)],
+                          ].map(([label, action]) => (
+                            <button
+                              className="flex w-full items-center px-3 py-2 text-left text-[12.5px] hover:bg-slate-50 dark:hover:bg-slate-700"
+                              key={label as string}
+                              onClick={() => {
+                                (action as () => void)();
+                                setToolsOpen(false);
+                              }}>
+                              {label as string}
+                            </button>
+                          ))}
+                        </>
+                      )}
                       <div className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
                       <button
                         className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
                         onClick={enableNotifications}>
-                        {notifyEnabled ? <Bell className="h-4 w-4 text-emerald-500" /> : <BellOff className="h-4 w-4 text-slate-400" />}
+                        {notifyEnabled ? (
+                          <Bell className="h-4 w-4 text-emerald-500" />
+                        ) : (
+                          <BellOff className="h-4 w-4 text-slate-400" />
+                        )}
                         {notifyEnabled ? 'Reminders on' : 'Enable reminders'}
                       </button>
                     </div>
@@ -1052,7 +1134,9 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
 
               <button
                 className={`ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                  focusMode ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'text-slate-400 hover:text-slate-600'
+                  focusMode
+                    ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300'
+                    : 'text-slate-400 hover:text-slate-600'
                 }`}
                 onClick={() => setFocusMode(v => !v)}
                 title="Focus mode — only overdue, due today, and pinned tasks">
@@ -1061,7 +1145,9 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
 
               <button
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-                  bulkMode ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' : 'text-slate-400 hover:text-slate-600'
+                  bulkMode
+                    ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300'
+                    : 'text-slate-400 hover:text-slate-600'
                 }`}
                 onClick={() => (bulkMode ? exitBulkMode() : setBulkMode(true))}
                 title="Select multiple tasks (B)">
@@ -1203,7 +1289,9 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
             <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-green-300 bg-white/90 px-10 py-8 text-center shadow-2xl dark:bg-slate-800/90">
               <ClipboardPaste className="h-8 w-8 text-green-500" />
               <p className="text-[14px] font-bold text-slate-700 dark:text-slate-200">Drop to create a task with AI</p>
-              <p className="text-[11.5px] text-slate-400">A screenshot, an Outlook message, or a text file — Gemini drafts the task</p>
+              <p className="text-[11.5px] text-slate-400">
+                A screenshot, an Outlook message, or a text file — Gemini drafts the task
+              </p>
             </div>
           </div>
         )}
@@ -1230,7 +1318,12 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
         )}
 
         {archiveOpen && (
-          <ArchiveView onClose={() => setArchiveOpen(false)} onPurge={purgeTask} onRestore={restoreTask} tasks={archived} />
+          <ArchiveView
+            onClose={() => setArchiveOpen(false)}
+            onPurge={purgeTask}
+            onRestore={restoreTask}
+            tasks={archived}
+          />
         )}
 
         {bookmarksOpen && (
@@ -1249,7 +1342,12 @@ export default function TasksApp({embedded = false, isActive = true, onOpenNotes
         <ContactListModal isOpen={contactsOpen} onClose={() => setContactsOpen(false)} />
 
         {contextMenu && (
-          <ContextMenu items={contextMenuItems} onClose={() => setContextMenu(null)} x={contextMenu.x} y={contextMenu.y} />
+          <ContextMenu
+            items={contextMenuItems}
+            onClose={() => setContextMenu(null)}
+            x={contextMenu.x}
+            y={contextMenu.y}
+          />
         )}
 
         {undoState && (

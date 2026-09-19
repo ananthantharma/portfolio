@@ -63,7 +63,7 @@ const ToDoSchema = new Schema<IToDo>(
       enum: ['High', 'Medium', 'Low', 'None'],
       default: 'None',
     },
-    dueDate: {type: Date, default: Date.now},
+    dueDate: {type: Date, default: null},
     category: {type: String},
     notes: {type: String},
     isCompleted: {type: Boolean, default: false},

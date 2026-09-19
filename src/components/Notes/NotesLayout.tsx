@@ -4,7 +4,9 @@
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import styles from './Workspace.module.css';
-const TasksApp = dynamic(() => import('../Tasks/TasksApp'), {ssr: false, loading: () => <div className="p-8 text-sm text-slate-500">Loading your tasks…</div>});
+import TaskWorkspace from '../Tasks/TaskWorkspace';
+import {TaskProvider, useTaskCollection} from '../Tasks/TaskProvider';
+import {OpenWorkspaceNoteContext} from '../Tasks/WorkspaceNavigation';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -57,6 +59,11 @@ import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
 import Humanizer from './Humanizer';
 import TruthTeller from './TruthTeller';
 
+const LegacyTasksApp = dynamic(() => import('../Tasks/TasksApp'), {
+  ssr: false,
+  loading: () => <div className="p-8 text-sm text-slate-500">Loading your tasks…</div>,
+});
+
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
   const [sections, setSections] = useState<INoteSection[]>([]);
@@ -71,6 +78,10 @@ const NotesLayout: React.FC = React.memo(() => {
   const [loadingPages, setLoadingPages] = useState(false);
   const [loadingCategoryPages, setLoadingCategoryPages] = useState(false);
 
+  const {tasks: workspaceTasks} = useTaskCollection();
+  const activeTaskCount = workspaceTasks.filter(task => !task.isCompleted && task.status !== 'done' && !task.isArchived && !task.isTemplate).length;
+  const [sidebarMode, setSidebarMode] = useState<'notebooks' | 'tasks'>('tasks');
+  const [advancedTasks, setAdvancedTasks] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<'notes' | 'tasks'>('notes');
   const [tasksVisited, setTasksVisited] = useState(false);
   const [mobileNavigation, setMobileNavigation] = useState(false);
@@ -90,9 +101,7 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   // Sidebar visibility states
-  const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
   const [isSectionCollapsed, setIsSectionCollapsed] = useState(false);
-  const [isRailExpanded, setIsRailExpanded] = useState(false);
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -125,17 +134,11 @@ const NotesLayout: React.FC = React.memo(() => {
     const savedPage = localStorage.getItem('NOTES_SELECTED_PAGE');
     if (savedPage) setSelectedPageId(savedPage);
 
-    const savedCategoryCollapsed = localStorage.getItem('NOTES_CATEGORY_COLLAPSED');
-    if (savedCategoryCollapsed !== null) setIsCategoryCollapsed(savedCategoryCollapsed === 'true');
-
     const savedSectionCollapsed = localStorage.getItem('NOTES_SECTION_COLLAPSED');
     if (savedSectionCollapsed !== null) setIsSectionCollapsed(savedSectionCollapsed === 'true');
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
-
-    const savedRailExpanded = localStorage.getItem('NOTES_RAIL_EXPANDED');
-    if (savedRailExpanded !== null) setIsRailExpanded(savedRailExpanded === 'true');
   }, []);
 
   // Persistence: Save to localStorage when state changes
@@ -155,9 +158,6 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [selectedPageId]);
 
   // Page Content handlers
-  useEffect(() => {
-    localStorage.setItem('NOTES_CATEGORY_COLLAPSED', isCategoryCollapsed.toString());
-  }, [isCategoryCollapsed]);
 
   useEffect(() => {
     localStorage.setItem('NOTES_SECTION_COLLAPSED', isSectionCollapsed.toString());
@@ -166,10 +166,6 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
   }, [isFocusMode]);
-
-  useEffect(() => {
-    localStorage.setItem('NOTES_RAIL_EXPANDED', isRailExpanded.toString());
-  }, [isRailExpanded]);
 
   // Selection Wrappers to clear sub-selection only when manually changing
   const handleSelectCategory = useCallback((id: string | null) => {
@@ -186,8 +182,6 @@ const NotesLayout: React.FC = React.memo(() => {
       setSelectedPageId(null);
     }
   }, []);
-
-
 
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
@@ -329,31 +323,6 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [categoryPages, selectedCategoryId]);
 
   // Active Task Count Logic
-  const [activeTaskCount, setActiveTaskCount] = useState(0);
-
-  const fetchActiveTaskCount = useCallback(async () => {
-    try {
-      const response = await axios.get('/api/todos');
-      if (response.data.success && Array.isArray(response.data.data)) {
-        // Filter for incomplete tasks
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const incomplete = response.data.data.filter((todo: any) => !todo.isCompleted);
-        setActiveTaskCount(incomplete.length);
-      }
-    } catch (error) {
-      console.error('Error fetching active task count:', error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchActiveTaskCount();
-    // Optional: Poll every minute or so
-    const interval = setInterval(() => {
-      fetchActiveTaskCount();
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [fetchActiveTaskCount]);
-
   // Fetch pages when section changes
   useEffect(() => {
     if (selectedSectionId) {
@@ -464,6 +433,21 @@ const NotesLayout: React.FC = React.memo(() => {
       setSelectedPageId(targetPageId);
     }
   }, []);
+
+  const openWorkspaceNote = useCallback(
+    async (pageId: string) => {
+      try {
+        const response = await axios.get('/api/notes/pages/' + encodeURIComponent(pageId));
+        if (!response.data?.success || !response.data.data) throw new Error('Note unavailable');
+        await handleJumpToTask(response.data.data);
+        changeView('notes');
+        setMobileNavigation(false);
+      } catch {
+        alert('This note could not be opened. Please try again.');
+      }
+    },
+    [handleJumpToTask, changeView],
+  );
 
   // Deep link support: /notes?pageId=<id> (e.g. from a task's "Open note page" link) jumps
   // straight to that page, resolving its section/category context first.
@@ -956,10 +940,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isPromptLibraryOpen, setIsPromptLibraryOpen] = useState(false);
 
-  const handleToggleCategoryCollapse = useCallback(
-    () => setIsCategoryCollapsed(!isCategoryCollapsed),
-    [isCategoryCollapsed],
-  );
+  const handleToggleCategoryCollapse = useCallback(() => setMobileNavigation(v => !v), []);
   const handleToggleSectionCollapse = useCallback(
     () => setIsSectionCollapsed(!isSectionCollapsed),
     [isSectionCollapsed],
@@ -1073,84 +1054,238 @@ const NotesLayout: React.FC = React.memo(() => {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [workspaceView, selectedSectionId, selectedCategoryId, handleAddPage, handleAddCategoryPage]);
 
-
   return (
+    <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
     <BadgeSettingsProvider>
       <div className={styles.workspace}>
-        {!isFocusMode && <aside className={styles.sidebar}>
-          <Link href="/" className={styles.brand}><BookOpenIcon /> <span>notebook<span className={styles.brandDot}>.</span></span></Link>
-          <div className={styles.workspaceLabel}>PERSONAL WORKSPACE</div>
-          <nav className={styles.navigation} aria-label="Workspace">
-            <button aria-current={workspaceView === 'notes' ? 'page' : undefined} onClick={() => changeView('notes')}><DocumentTextIcon />Notes<span>{categories.length}</span></button>
-            <button aria-current={workspaceView === 'tasks' ? 'page' : undefined} onClick={() => changeView('tasks')}><ClipboardDocumentListIcon />Tasks{activeTaskCount > 0 && <span>{activeTaskCount}</span>}</button>
-            <button onClick={handleOpenSearch}><MagnifyingGlassIcon />Search notes<kbd>⌘ K</kbd></button>
-          </nav>
-          <div className={styles.notebooks}>
-                <CategoryList
-                  badgeCounts={badgeCounts.categories}
-                  categories={categories}
-                  dbSize={dbSize}
-                  isCollapsed={false}
-                  loading={false}
-                  onAddCategory={handleAddCategory}
-                  onDeleteCategory={handleDeleteCategory}
-                  onRenameCategory={handleRenameCategory}
-                  onReorderCategories={handleReorderCategories}
-                  onSelectCategory={id => {handleSelectCategory(id); changeView('notes');}}
-                  onToggleCollapse={() => setMobileNavigation(v => !v)}
-                  selectedCategoryId={selectedCategoryId}
-                />
-
-          </div>
-          <div className={styles.sidebarFooter}>
-            <button onClick={handleOpenSettings}><Cog6ToothIcon />Workspace settings</button>
-            <button onClick={() => signOut()}><span className={styles.avatar}>{userInitial}</span><span>{userName || 'My workspace'}<small>Personal account · Sign out</small></span></button>
-          </div>
-        </aside>}
+        {!isFocusMode && workspaceView === 'notes' && (
+          <aside className={styles.sidebar} data-content={sidebarMode} data-mobile-open={mobileNavigation}>
+            <Link className={styles.brand} href="/">
+              <BookOpenIcon />{' '}
+              <span>
+                notebook<span className={styles.brandDot}>.</span>
+              </span>
+            </Link>
+            <div className={styles.workspaceLabel}>PERSONAL WORKSPACE<button className={styles.mobileSidebarClose} onClick={() => setMobileNavigation(false)}>Close</button></div>
+            <nav aria-label="Workspace" className={styles.navigation}>
+              <button aria-current={sidebarMode === 'notebooks' ? 'page' : undefined} onClick={() => {setSidebarMode('notebooks'); changeView('notes');}}>
+                <DocumentTextIcon />
+                Notes<span>{categories.length}</span>
+              </button>
+              <button aria-current={sidebarMode === 'tasks' ? 'page' : undefined} onClick={() => {setSidebarMode('tasks'); changeView('notes');}}>
+                <ClipboardDocumentListIcon />
+                Tasks{activeTaskCount > 0 && <span>{activeTaskCount}</span>}
+              </button>
+              <button onClick={handleOpenSearch}>
+                <MagnifyingGlassIcon />
+                Search notes<kbd>⌘ K</kbd>
+              </button>
+            </nav>
+            <div className={styles.notebooks} data-content={sidebarMode}>
+              {sidebarMode === 'tasks' ? <TaskWorkspace compact note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onExpand={() => changeView('tasks')} /> : <>
+              <button className={styles.mobileSidebarClose} onClick={() => setMobileNavigation(false)}>Close navigation</button>
+              <CategoryList
+                badgeCounts={badgeCounts.categories}
+                categories={categories}
+                dbSize={dbSize}
+                embedded
+                isCollapsed={false}
+                loading={false}
+                onAddCategory={handleAddCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onRenameCategory={handleRenameCategory}
+                onReorderCategories={handleReorderCategories}
+                onSelectCategory={id => {
+                  handleSelectCategory(id);
+                  changeView('notes');
+                }}
+                onToggleCollapse={() => setMobileNavigation(v => !v)}
+                selectedCategoryId={selectedCategoryId}
+              />
+              </>}
+            </div>
+            <div className={styles.sidebarFooter}>
+              <button onClick={handleOpenSettings}>
+                <Cog6ToothIcon />
+                Workspace settings
+              </button>
+              <button onClick={() => signOut()}>
+                <span className={styles.avatar}>{userInitial}</span>
+                <span>
+                  {userName || 'My workspace'}
+                  <small>Personal account · Sign out</small>
+                </span>
+              </button>
+            </div>
+          </aside>
+        )}
         <div className={styles.body}>
           <header className={styles.header}>
-            <div className={styles.breadcrumb}><button className={styles.mobileToggle} aria-label="Toggle notebooks and pages" aria-expanded={mobileNavigation} onClick={() => setMobileNavigation(v => !v)}><RectangleGroupIcon /></button><button onClick={() => {changeView('notes'); handleSelectCategory(null);}} aria-label="Notes home">Workspace</button><ChevronRightIcon /><strong>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>{selectedPage && workspaceView === 'notes' && <><ChevronRightIcon /><span>{selectedPage.title}</span></>}</div>
+            <div className={styles.breadcrumb}>
+              <button
+                aria-expanded={mobileNavigation}
+                aria-label="Toggle notebooks and pages"
+                className={styles.mobileToggle}
+                onClick={() => setMobileNavigation(v => !v)}>
+                <RectangleGroupIcon />
+              </button>
+              <button
+                aria-label="Notes home"
+                onClick={() => {
+                  changeView('notes');
+                  handleSelectCategory(null);
+                }}>
+                Workspace
+              </button>
+              <ChevronRightIcon />
+              <strong>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
+              {selectedPage && workspaceView === 'notes' && (
+                <>
+                  <ChevronRightIcon />
+                  <span>{selectedPage.title}</span>
+                </>
+              )}
+            </div>
             <div className={styles.headerActions}>
-              <details className={styles.tools}><summary><SparklesIcon />Tools<ChevronDownIcon /></summary><div>
-                {[
-                  ['Executive overview', () => setIsExecutiveModalOpen(true)], ['AI assistant', handleOpenAIChat], ['Calendar', () => setIsCalendarOpen(true)],
-                  ['Google Drive', () => setIsDriveOpen(true)], ['Contacts', handleOpenContactList],
-                  ['Bookmarks', () => setIsBookmarksOpen(true)], ['Prompt library', () => setIsPromptLibraryOpen(true)],
-                  ['Important notes', handleOpenImportant], ['Flagged notes', handleOpenKeyTasks],
-                  ['Note reminders', handleOpenToDoList], ['Record audio', () => setIsAudioRecorderOpen(true)],
-                  ['Rewrite', handleOpenRewrite], ['Image extraction', handleOpenImageExtract],
-                  ['Assessment', handleOpenAssessment], ['Style refiner', handleOpenRefiner],
-                  ['Contract review', handleOpenRedline], ['Humanizer', handleOpenHumanizer], ['Truth teller', handleOpenTruthTeller],
-                  ...(isAdmin ? [['Camera', () => setIsCameraOpen(true)]] : []),
-                ].map(([label, action]) => <button key={label as string} onClick={e => { (action as () => void)(); e.currentTarget.closest('details')?.removeAttribute('open'); }}>{label as string}</button>)}
-              </div></details>
-              <button className={styles.iconButton} onClick={toggleFocusMode} aria-label={isFocusMode ? 'Exit focus mode' : 'Enter focus mode'}>{isFocusMode ? <ArrowsPointingInIcon /> : <ArrowsPointingOutIcon />}</button>
-              <button className={styles.primaryButton} onClick={() => {changeView('notes'); if (selectedCategoryId) handleCreatePageFromPalette(); else handleQuickNote();}}><DocumentPlusIcon />New note</button>
+              <details className={styles.tools}>
+                <summary>
+                  <SparklesIcon />
+                  Tools
+                  <ChevronDownIcon />
+                </summary>
+                <div>
+                  {[
+                    ['Executive overview', () => setIsExecutiveModalOpen(true)],
+                    ['AI assistant', handleOpenAIChat],
+                    ['Calendar', () => setIsCalendarOpen(true)],
+                    ['Google Drive', () => setIsDriveOpen(true)],
+                    ['Contacts', handleOpenContactList],
+                    ['Bookmarks', () => setIsBookmarksOpen(true)],
+                    ['Prompt library', () => setIsPromptLibraryOpen(true)],
+                    ['Important notes', handleOpenImportant],
+                    ['Flagged notes', handleOpenKeyTasks],
+                    ['Note reminders', handleOpenToDoList],
+                    ['Record audio', () => setIsAudioRecorderOpen(true)],
+                    ['Rewrite', handleOpenRewrite],
+                    ['Image extraction', handleOpenImageExtract],
+                    ['Assessment', handleOpenAssessment],
+                    ['Style refiner', handleOpenRefiner],
+                    ['Contract review', handleOpenRedline],
+                    ['Humanizer', handleOpenHumanizer],
+                    ['Truth teller', handleOpenTruthTeller],
+                    ...(isAdmin ? [['Camera', () => setIsCameraOpen(true)]] : []),
+                  ].map(([label, action]) => (
+                    <button
+                      key={label as string}
+                      onClick={e => {
+                        (action as () => void)();
+                        e.currentTarget.closest('details')?.removeAttribute('open');
+                      }}>
+                      {label as string}
+                    </button>
+                  ))}
+                </div>
+              </details>
+              <button
+                aria-label={isFocusMode ? 'Exit focus mode' : 'Enter focus mode'}
+                className={styles.iconButton}
+                onClick={toggleFocusMode}>
+                {isFocusMode ? <ArrowsPointingInIcon /> : <ArrowsPointingOutIcon />}
+              </button>
+              <button
+                className={styles.primaryButton}
+                onClick={() => {
+                  changeView('notes');
+                  if (selectedCategoryId) handleCreatePageFromPalette();
+                  else handleQuickNote();
+                }}>
+                <DocumentPlusIcon />
+                New note
+              </button>
             </div>
           </header>
-          <div className={styles.viewTabs} role="tablist" aria-label="Workspace view">
-            <button id="notes-tab" role="tab" aria-selected={workspaceView === 'notes'} aria-controls="notes-panel" onClick={() => changeView('notes')}><DocumentTextIcon />Notes</button>
-            <button id="tasks-tab" role="tab" aria-selected={workspaceView === 'tasks'} aria-controls="tasks-panel" onClick={() => changeView('tasks')}><ClipboardDocumentListIcon />Tasks</button>
+          <div
+            aria-label="Workspace view"
+            className={styles.viewTabs}
+            role="tablist"
+            onKeyDown={event => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              event.preventDefault();
+              const view =
+                event.key === 'Home'
+                  ? 'notes'
+                  : event.key === 'End'
+                  ? 'tasks'
+                  : workspaceView === 'notes'
+                  ? 'tasks'
+                  : 'notes';
+              changeView(view);
+              document.getElementById(view + '-tab')?.focus();
+            }}>
+            <button
+              tabIndex={workspaceView === 'notes' ? 0 : -1}
+              aria-controls="notes-panel"
+              aria-selected={workspaceView === 'notes'}
+              id="notes-tab"
+              onClick={() => changeView('notes')}
+              role="tab">
+              <DocumentTextIcon />
+              Notes
+            </button>
+            <button
+              tabIndex={workspaceView === 'tasks' ? 0 : -1}
+              aria-controls="tasks-panel"
+              aria-selected={workspaceView === 'tasks'}
+              id="tasks-tab"
+              onClick={() => changeView('tasks')}
+              role="tab">
+              <ClipboardDocumentListIcon />
+              Tasks
+            </button>
+            <button className={styles.showTaskSidebar} onClick={() => {changeView('notes'); setSidebarMode('tasks'); setIsFocusMode(false); setMobileNavigation(true);}}>Task sidebar</button>
             <span>Room to think. Space to do.</span>
           </div>
-          <div id="tasks-panel" role="tabpanel" aria-labelledby="tasks-tab" hidden={workspaceView !== 'tasks'} className={styles.taskPanel}>{tasksVisited && <TasksApp embedded isActive={workspaceView === 'tasks'} onOpenNotes={() => changeView('notes')} />}</div>
-          <div id="notes-panel" role="tabpanel" aria-labelledby="notes-tab" hidden={workspaceView !== 'notes'} className={styles.notesPanel} data-mobile-navigation={mobileNavigation}>
-            {!isFocusMode && <aside className={styles.pageSidebar}>
-              <div className={styles.mobileNotebooks}>                <CategoryList
-                  badgeCounts={badgeCounts.categories}
-                  categories={categories}
-                  dbSize={dbSize}
-                  isCollapsed={false}
-                  loading={false}
-                  onAddCategory={handleAddCategory}
-                  onDeleteCategory={handleDeleteCategory}
-                  onRenameCategory={handleRenameCategory}
-                  onReorderCategories={handleReorderCategories}
-                  onSelectCategory={handleSelectCategory}
-                  onToggleCollapse={handleToggleCategoryCollapse}
-                  selectedCategoryId={selectedCategoryId}
-                />
-</div>
+          <div
+            aria-labelledby="tasks-tab"
+            className={styles.taskPanel}
+            hidden={workspaceView !== 'tasks'}
+            id="tasks-panel"
+            role="tabpanel">
+            {tasksVisited && (
+              <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
+                <>
+                  {advancedTasks ? <div className={styles.advancedTasks}><button className={styles.backToTasks} onClick={() => setAdvancedTasks(false)}>← Back to tasks</button><LegacyTasksApp embedded isActive={workspaceView === 'tasks'} onOpenNotes={() => changeView('notes')} /></div> : <TaskWorkspace note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onAdvanced={() => setAdvancedTasks(true)} />}
+                </>
+              </OpenWorkspaceNoteContext.Provider>
+            )}
+          </div>
+          <div
+            aria-labelledby="notes-tab"
+            className={styles.notesPanel}
+            data-mobile-navigation={mobileNavigation && sidebarMode === 'notebooks'}
+            hidden={workspaceView !== 'notes'}
+            id="notes-panel"
+            role="tabpanel">
+            {!isFocusMode && (selectedCategoryId || mobileNavigation) && (
+              <aside className={styles.pageSidebar} data-collapsed={isSectionCollapsed}>
+                <div className={styles.mobileNotebooks}>
+                  {' '}
+                  <CategoryList
+                    badgeCounts={badgeCounts.categories}
+                    categories={categories}
+                    dbSize={dbSize}
+                    embedded
+                    isCollapsed={false}
+                    loading={false}
+                    onAddCategory={handleAddCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onRenameCategory={handleRenameCategory}
+                    onReorderCategories={handleReorderCategories}
+                    onSelectCategory={handleSelectCategory}
+                    onToggleCollapse={handleToggleCategoryCollapse}
+                    selectedCategoryId={selectedCategoryId}
+                  />
+                </div>
                 <SectionPageList
                   categoryName={currentCategory?.name}
                   categoryPages={categoryPages}
@@ -1176,7 +1311,10 @@ const NotesLayout: React.FC = React.memo(() => {
                     setSelectedSectionId(null);
                     setSelectedPageId(id);
                   }}
-                  onSelectPage={id => {setSelectedPageId(id); setMobileNavigation(false);}}
+                  onSelectPage={id => {
+                    setSelectedPageId(id);
+                    setMobileNavigation(false);
+                  }}
                   onSelectSection={handleSelectSection}
                   onSetParentPage={handleSetParentPage}
                   onToggleCollapse={handleToggleSectionCollapse}
@@ -1189,8 +1327,8 @@ const NotesLayout: React.FC = React.memo(() => {
                   selectedPageId={selectedPageId}
                   selectedSectionId={selectedSectionId}
                 />
-
-            </aside>}
+              </aside>
+            )}
             <main className={styles.editor}>
               {/* Page open: Editor */}
               {selectedPageId ? (
@@ -1219,29 +1357,137 @@ const NotesLayout: React.FC = React.memo(() => {
                 <div className={styles.home}>
                   <div className={styles.eyebrow}>Notebook</div>
                   <h1>{currentCategory?.name}</h1>
-                  <p className={styles.intro}>{sections.length} sections · {categoryPages.length} pages</p>
+                  <p className={styles.intro}>
+                    {sections.length} sections · {categoryPages.length} pages
+                  </p>
                   <div className={styles.quickActions}>
-                    <button onClick={() => handleAddCategoryPage('New Page')}><span className={styles.actionIcon}><DocumentPlusIcon /></span><strong>New page</strong><span>Give your next idea a place.</span></button>
-                    <button onClick={() => handleAddSection('New Section')}><span className={styles.actionIcon}><PlusCircleIcon /></span><strong>New section</strong><span>Keep related pages together.</span></button>
+                    <button onClick={() => handleAddCategoryPage('New Page')}>
+                      <span className={styles.actionIcon}>
+                        <DocumentPlusIcon />
+                      </span>
+                      <strong>New page</strong>
+                      <span>Give your next idea a place.</span>
+                    </button>
+                    <button onClick={() => handleAddSection('New Section')}>
+                      <span className={styles.actionIcon}>
+                        <PlusCircleIcon />
+                      </span>
+                      <strong>New section</strong>
+                      <span>Keep related pages together.</span>
+                    </button>
                   </div>
-                  <div className={styles.sectionHeading}><h2>Pages</h2></div>
-                  {loadingCategoryPages ? <p className={styles.intro}>Loading pages…</p> : categoryPages.length ? <div className={styles.recentList}>{categoryPages.map(page => <button key={page._id as string} onClick={() => setSelectedPageId(page._id as string)}><DocumentTextIcon /><span><strong>{page.title}</strong></span><ChevronRightIcon /></button>)}</div> : <p className={styles.intro}>No pages yet. Create one above or explore a section below.</p>}
-                  <div className={styles.sectionHeading} style={{marginTop: 30}}><h2>Sections</h2></div>
-                  {loadingSections ? <p className={styles.intro}>Loading sections…</p> : <div className={styles.notebookGrid}>{sections.map(section => <button key={section._id as string} onClick={() => handleSelectSection(section._id as string)}><BookOpenIcon /><strong>{section.name}</strong><span>Open section <ChevronRightIcon /></span></button>)}</div>}
+                  <div className={styles.sectionHeading}>
+                    <h2>Pages</h2>
+                  </div>
+                  {loadingCategoryPages ? (
+                    <p className={styles.intro}>Loading pages…</p>
+                  ) : categoryPages.length ? (
+                    <div className={styles.recentList}>
+                      {categoryPages.map(page => (
+                        <button key={page._id as string} onClick={() => setSelectedPageId(page._id as string)}>
+                          <DocumentTextIcon />
+                          <span>
+                            <strong>{page.title}</strong>
+                          </span>
+                          <ChevronRightIcon />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.intro}>No pages yet. Create one above or explore a section below.</p>
+                  )}
+                  <div className={styles.sectionHeading} style={{marginTop: 30}}>
+                    <h2>Sections</h2>
+                  </div>
+                  {loadingSections ? (
+                    <p className={styles.intro}>Loading sections…</p>
+                  ) : (
+                    <div className={styles.notebookGrid}>
+                      {sections.map(section => (
+                        <button key={section._id as string} onClick={() => handleSelectSection(section._id as string)}>
+                          <BookOpenIcon />
+                          <strong>{section.name}</strong>
+                          <span>
+                            Open section <ChevronRightIcon />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className={styles.home}>
                   <div className={styles.eyebrow}>{dateStr}</div>
-                  <h1>{greeting}{userName ? ', ' + userName : ''}<span>.</span></h1>
+                  <h1>
+                    {greeting}
+                    {userName ? ', ' + userName : ''}
+                    <span>.</span>
+                  </h1>
                   <p className={styles.intro}>A little clarity for everything on your mind.</p>
                   <div className={styles.quickActions}>
-                    <button onClick={handleQuickNote}><span className={styles.actionIcon}><DocumentPlusIcon /></span><strong>Start a fresh note</strong><span>Capture a thought, make it yours.</span><ChevronRightIcon /></button>
-                    <button onClick={() => changeView('tasks')}><span className={styles.actionIcon}><ClipboardDocumentListIcon /></span><strong>Make room for progress</strong><span>Your tasks, right here with your notes.</span><ChevronRightIcon /></button>
+                    <button onClick={handleQuickNote}>
+                      <span className={styles.actionIcon}>
+                        <DocumentPlusIcon />
+                      </span>
+                      <strong>Start a fresh note</strong>
+                      <span>Capture a thought, make it yours.</span>
+                      <ChevronRightIcon />
+                    </button>
+                    <button onClick={() => changeView('tasks')}>
+                      <span className={styles.actionIcon}>
+                        <ClipboardDocumentListIcon />
+                      </span>
+                      <strong>Make room for progress</strong>
+                      <span>Your tasks, right here with your notes.</span>
+                      <ChevronRightIcon />
+                    </button>
                   </div>
-                  <div className={styles.sectionHeading}><h2>Pick up where you left off</h2><span>Recently opened</span></div>
-                  {recentPages.length ? <div className={styles.recentList}>{recentPages.slice(0, 5).map(rp => <button key={rp.id} onClick={() => handleJumpToRecentPage(rp)}><DocumentTextIcon /><span><strong>{rp.title}</strong><small>{rp.categoryName}{rp.sectionName ? ' / ' + rp.sectionName : ''}</small></span><time>{formatTimeAgo(rp.timestamp)}</time><ChevronRightIcon /></button>)}</div> : <div className={styles.empty}><BookOpenIcon /><h3>Your next idea starts here</h3><p>Create your first note. Your recent pages will appear here for easy access.</p><button className={styles.primaryButton} onClick={handleQuickNote}>Create a note</button></div>}
-                  <div className={styles.sectionHeading}><h2>Your notebooks</h2><span>{categories.length} collections</span></div>
-                  <div className={styles.notebookGrid}>{categories.map(cat => <button key={cat._id as string} onClick={() => handleSelectCategory(cat._id as string)}><BookOpenIcon /><strong>{cat.name}</strong><span>Open notebook <ChevronRightIcon /></span></button>)}</div>
+                  <div className={styles.sectionHeading}>
+                    <h2>Pick up where you left off</h2>
+                    <span>Recently opened</span>
+                  </div>
+                  {recentPages.length ? (
+                    <div className={styles.recentList}>
+                      {recentPages.slice(0, 5).map(rp => (
+                        <button key={rp.id} onClick={() => handleJumpToRecentPage(rp)}>
+                          <DocumentTextIcon />
+                          <span>
+                            <strong>{rp.title}</strong>
+                            <small>
+                              {rp.categoryName}
+                              {rp.sectionName ? ' / ' + rp.sectionName : ''}
+                            </small>
+                          </span>
+                          <time>{formatTimeAgo(rp.timestamp)}</time>
+                          <ChevronRightIcon />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.empty}>
+                      <BookOpenIcon />
+                      <h3>Your next idea starts here</h3>
+                      <p>Create your first note. Your recent pages will appear here for easy access.</p>
+                      <button className={styles.primaryButton} onClick={handleQuickNote}>
+                        Create a note
+                      </button>
+                    </div>
+                  )}
+                  <div className={styles.sectionHeading}>
+                    <h2>Your notebooks</h2>
+                    <span>{categories.length} collections</span>
+                  </div>
+                  <div className={styles.notebookGrid}>
+                    {categories.map(cat => (
+                      <button key={cat._id as string} onClick={() => handleSelectCategory(cat._id as string)}>
+                        <BookOpenIcon />
+                        <strong>{cat.name}</strong>
+                        <span>
+                          Open notebook <ChevronRightIcon />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                   <div className={styles.homeFooter}>A home for your ideas, plans, and everything in between.</div>
                 </div>
               )}
@@ -1329,11 +1575,12 @@ const NotesLayout: React.FC = React.memo(() => {
             pageTitle={selectedPageToMove.title}
           />
         )}
-
       </div>
     </BadgeSettingsProvider>
+    </OpenWorkspaceNoteContext.Provider>
   );
 });
 
 NotesLayout.displayName = 'NotesLayout';
-export default NotesLayout;
+const NotesWorkspace = React.memo(function NotesWorkspace() {return <TaskProvider><NotesLayout /></TaskProvider>;});
+export default NotesWorkspace;

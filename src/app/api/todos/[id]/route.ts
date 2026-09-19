@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {NextResponse} from 'next/server';
+import {getServerSession} from 'next-auth';
+import {authOptions} from '@/lib/auth';
+import '@/models/NotePage';
 
 import dbConnect from '@/lib/dbConnect';
 import ToDo from '@/models/ToDo';
@@ -9,6 +12,8 @@ export const dynamic = 'force-dynamic';
 // PUT: Update a To Do item
 export async function PUT(req: Request, {params}: {params: {id: string}}) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return NextResponse.json({success: false, error: 'Unauthorized'}, {status: 401});
     await dbConnect();
     const {id} = params;
 
@@ -99,7 +104,16 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
       data = body;
     }
 
-    const updatedToDo = await ToDo.findByIdAndUpdate(id, data, {new: true}).populate({
+    // Never accept ownership changes or Mongo operators from a client payload.
+    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order'];
+    data = Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key)));
+    if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) return NextResponse.json({success: false, error: 'A task title is required'}, {status: 400});
+    if (data.status !== undefined) {
+      if (!['todo', 'in-progress', 'done'].includes(data.status)) return NextResponse.json({success: false, error: 'Invalid task status'}, {status: 400});
+      data.isCompleted = data.status === 'done';
+    } else if (data.isCompleted !== undefined) data.status = data.isCompleted ? 'done' : 'todo';
+    if (data.dueDate === '') data.dueDate = null;
+    const updatedToDo = await ToDo.findOneAndUpdate({_id: id, userEmail: session.user.email}, {$set: data}, {new: true, runValidators: true}).populate({
       path: 'sourcePageId',
       select: 'title',
     });
@@ -118,11 +132,13 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
 // DELETE: Remove a To Do item
 export async function DELETE(_req: Request, {params}: {params: {id: string}}) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return NextResponse.json({success: false, error: 'Unauthorized'}, {status: 401});
     await dbConnect();
     const {id} = params;
 
     // Direct delete (attachments are embedded, so no need to clean up external files)
-    const deletedToDo = await ToDo.findByIdAndDelete(id);
+    const deletedToDo = await ToDo.findOneAndDelete({_id: id, userEmail: session.user.email});
 
     if (!deletedToDo) {
       return NextResponse.json({success: false, error: 'To Do not found'}, {status: 404});

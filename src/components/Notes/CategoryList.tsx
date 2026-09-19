@@ -8,7 +8,16 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
-import {ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, CircleStackIcon, PencilIcon, PlusIcon, StarIcon, TrashIcon} from '@heroicons/react/24/outline';
+import {
+  ArrowsUpDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CircleStackIcon,
+  PencilIcon,
+  PlusIcon,
+  StarIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 // ─── Monogram helpers ─────────────────────────────────────────────────────────
@@ -49,6 +58,7 @@ import {IconPicker} from './IconPicker';
 import {SortableItem} from './SortableItem';
 
 interface CategoryListProps {
+  embedded?: boolean;
   categories: INoteCategory[];
   selectedCategoryId: string | null;
   onSelectCategory: (id: string) => void;
@@ -117,7 +127,9 @@ const CategoryItem = React.memo<{
           />
         ) : null}
         <div
-          className={`h-6 w-6 rounded-md flex items-center justify-center text-[9px] font-bold ${category.image ? 'hidden' : ''}`}
+          className={`h-6 w-6 rounded-md flex items-center justify-center text-[9px] font-bold ${
+            category.image ? 'hidden' : ''
+          }`}
           style={{backgroundColor: monoBg, color: monoFg}}>
           {getMonogram(category.name)}
         </div>
@@ -139,7 +151,6 @@ const CategoryItem = React.memo<{
             : 'text-slate-500 hover:bg-black/[0.04] hover:text-slate-900'
         }`}
         onClick={() => onSelect(category._id as string)}>
-
         <div className="flex items-center gap-2.5 overflow-hidden">
           {/* Monogram avatar / Clearbit logo */}
           {category.image ? (
@@ -154,7 +165,9 @@ const CategoryItem = React.memo<{
             />
           ) : null}
           <div
-            className={`h-[18px] w-[18px] rounded-md flex items-center justify-center text-[8px] font-bold flex-shrink-0 ${category.image ? 'hidden' : ''}`}
+            className={`h-[18px] w-[18px] rounded-md flex items-center justify-center text-[8px] font-bold flex-shrink-0 ${
+              category.image ? 'hidden' : ''
+            }`}
             style={{backgroundColor: monoBg, color: monoFg}}>
             {getMonogram(category.name)}
           </div>
@@ -165,7 +178,9 @@ const CategoryItem = React.memo<{
           {renderBadges()}
           <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
             <button
-              className={`rounded p-1 transition-colors ${isPinned ? 'text-amber-400 hover:bg-amber-50' : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400'}`}
+              className={`rounded p-1 transition-colors ${
+                isPinned ? 'text-amber-400 hover:bg-amber-50' : 'text-slate-300 hover:bg-slate-100 hover:text-amber-400'
+              }`}
               onClick={e => {
                 e.stopPropagation();
                 onTogglePin(category._id as string);
@@ -203,6 +218,7 @@ CategoryItem.displayName = 'CategoryItem';
 const CategoryList: React.FC<CategoryListProps> = React.memo(
   ({
     categories,
+    embedded = false,
     isCollapsed,
     loading,
     onAddCategory,
@@ -233,7 +249,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
       try {
         const saved = localStorage.getItem('NOTES_PINNED_CATEGORIES');
         return saved ? new Set<string>(JSON.parse(saved)) : new Set<string>();
-      } catch { return new Set<string>(); }
+      } catch {
+        return new Set<string>();
+      }
     });
 
     useEffect(() => {
@@ -243,7 +261,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     const togglePin = useCallback((id: string) => {
       setPinnedIds(prev => {
         const next = new Set(prev);
-        if (next.has(id)) next.delete(id); else next.add(id);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
         return next;
       });
     }, []);
@@ -366,18 +385,28 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
           <div className={`flex items-center gap-0.5 ${isCollapsed ? 'mx-auto flex-col' : ''}`}>
             {!isCollapsed && (
               <button
-                className={`rounded-md p-1 transition-all duration-150 ${sortAlpha ? 'text-indigo-500 bg-indigo-50' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'}`}
+                className={`rounded-md p-1 transition-all duration-150 ${
+                  sortAlpha
+                    ? 'text-indigo-500 bg-indigo-50'
+                    : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
+                }`}
                 onClick={() => setSortAlpha(v => !v)}
                 title="Sort alphabetically">
                 <ArrowsUpDownIcon className="h-3.5 w-3.5" />
               </button>
             )}
-            <button
-              className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
-              onClick={onToggleCollapse}
-              title={isCollapsed ? 'Expand Notebooks' : 'Collapse Notebooks'}>
-              {isCollapsed ? <ChevronRightIcon className="h-3.5 w-3.5" /> : <ChevronLeftIcon className="h-3.5 w-3.5" />}
-            </button>
+            {!embedded && (
+              <button
+                className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
+                onClick={onToggleCollapse}
+                title={isCollapsed ? 'Expand Notebooks' : 'Collapse Notebooks'}>
+                {isCollapsed ? (
+                  <ChevronRightIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronLeftIcon className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
             <button
               className="rounded-md p-1 text-slate-400 hover:bg-black/[0.04] hover:text-slate-600 transition-all duration-150"
               onClick={() => {
@@ -436,14 +465,13 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               </div>
             )}
 
-            <div
-              onClick={e => e.stopPropagation()}
-              onPointerDown={e => e.stopPropagation()}>
-
+            <div onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
               {/* Pinned notebooks */}
               {pinnedCategories.length > 0 && (
                 <>
-                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">Pinned</p>
+                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">
+                    Pinned
+                  </p>
                   <ul className="space-y-0.5 mb-2">
                     {pinnedCategories.map(category => {
                       if (editingId === category._id) {
@@ -507,13 +535,17 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       );
                     })}
                   </ul>
-                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">All</p>
+                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">
+                    All
+                  </p>
                 </>
               )}
 
               {/* All notebooks (DnD-sortable, unpinned only) */}
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
-                <SortableContext items={unpinnedCategories.map(c => c._id as string)} strategy={verticalListSortingStrategy}>
+                <SortableContext
+                  items={unpinnedCategories.map(c => c._id as string)}
+                  strategy={verticalListSortingStrategy}>
                   <ul className="space-y-0.5">
                     {unpinnedCategories.map(category => {
                       if (editingId === category._id) {
@@ -601,11 +633,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
         )}
 
         {/* User chip + storage footer */}
-        {!isCollapsed && (
+        {!embedded && !isCollapsed && (
           <div className="flex-shrink-0 border-t border-slate-100/60">
             <div className="flex items-center gap-2 px-3 py-2.5">
               {session?.user?.image ? (
-                <img src={session.user.image} alt="avatar" className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                <img
+                  src={session.user.image}
+                  alt="avatar"
+                  className="w-5 h-5 rounded-full object-cover flex-shrink-0"
+                />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-[9px] font-bold">{userInitial}</span>

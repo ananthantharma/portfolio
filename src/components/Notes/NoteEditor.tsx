@@ -30,6 +30,7 @@ import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import {INotePage} from '@/models/NotePage';
 
 import RichTextEditor from './RichTextEditor';
+import {notifyTasksChanged} from '../Tasks/api';
 
 import ToDoModal from './ToDoModal';
 import PromptEditorModal from './PromptEditorModal';
@@ -66,6 +67,9 @@ interface NoteEditorProps {
   page: INotePage | null;
   initialTabId?: string;
 }
+
+// Keep in-session edits when navigating between notes. Nothing is written to browser storage.
+const noteDrafts = new Map<string, {tabs: NonNullable<INotePage['tabs']>; activeTabId: string | null}>();
 
 const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId}) => {
   const {data: session} = useSession(); // Get session data
@@ -105,6 +109,21 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   const [pageTodos, setPageTodos] = useState<any[]>([]);
 
   const [isDirty, setIsDirty] = useState(false);
+  const draftKey = `${session?.user?.email || ''}:${page?._id || ''}`;
+  const latestTabs = useRef(tabs);
+  const draftInitialized = useRef(false);
+  latestTabs.current = tabs;
+  useEffect(() => {
+    if (!page || !draftInitialized.current) return;
+    if (isDirty) noteDrafts.set(draftKey, {tabs, activeTabId});
+    else noteDrafts.delete(draftKey);
+  }, [draftKey, page, tabs, activeTabId, isDirty]);
+  useEffect(() => {
+    if (!isDirty) return;
+    const warn = (event: BeforeUnloadEvent) => {event.preventDefault(); event.returnValue = '';};
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [isDirty]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -210,6 +229,17 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   // Migration & Initialization Effect
   useEffect(() => {
     if (page) {
+      if (draftInitialized.current && isDirty) return;
+      const draft = draftInitialized.current ? undefined : noteDrafts.get(draftKey);
+      draftInitialized.current = true;
+      if (draft) {
+        setTabs(draft.tabs);
+        setActiveTabId(initialTabId || draft.activeTabId);
+        setEditorContent(draft.tabs.find(tab => tab._id === (initialTabId || draft.activeTabId) || tab.title === (initialTabId || draft.activeTabId))?.content || '');
+        setIsDirty(true);
+        return;
+      }
+      if (isDirty) return;
       setIsDirty(false);
 
       if (page.tabs && page.tabs.length > 0) {
@@ -438,7 +468,8 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
   // Upated Save Handler
   // Upated Save Handler
   const handleSave = async () => {
-    if (page) {
+    if (page && !isSaving) {
+      const savedRevision = JSON.stringify(tabs);
       // Prepare payload (Sync active content + Sanitize)
       const sanitizedTabs = prepareTabsPayload(tabs);
 
@@ -447,10 +478,12 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         setIsSaving(true);
         setSaveError(null);
         await onSave(page._id as string, sanitizedTabs as any);
-        setIsDirty(false);
+        const changedDuringSave = JSON.stringify(latestTabs.current) !== savedRevision;
+        if (!changedDuringSave) noteDrafts.delete(draftKey);
+        setIsDirty(changedDuringSave);
       } catch (error) {
         console.error('Failed to save page', error);
-        setSaveError('Save failed — page may be too large. Try removing large images.');
+        setSaveError('Could not save this note. Your edits are still here; check your connection and try again.');
       } finally {
         setIsSaving(false);
       }
@@ -1741,6 +1774,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
         });
 
         if (response.ok) {
+          notifyTasksChanged();
           // Ideally show a success notification
           alert('To Do created successfully!');
         } else {
