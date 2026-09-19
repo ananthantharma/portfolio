@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Check, CheckCheck, ChevronDown, ChevronRight, Copy, FileText, ListTodo, Maximize2, Plus, Search, Trash2, X} from 'lucide-react';
+import {Archive, ArrowLeft, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, ListTodo, Maximize2, Plus, Search, Trash2, X} from 'lucide-react';
 import React, {useContext, useId, useMemo, useState} from 'react';
 
 import {api} from './api';
@@ -98,7 +98,7 @@ export function TaskEditor({task, note, onClose}: {task?: Task; note?: NoteConte
   </div>;
 }
 
-export default function TaskWorkspace({compact = false, note, onExpand, onAdvanced}: {compact?: boolean; note?: NoteContext; onExpand?: () => void; onAdvanced?: () => void}) {
+export default function TaskWorkspace({compact = false, note, onExpand, onAdvanced, onCollapse}: {compact?: boolean; note?: NoteContext; onExpand?: () => void; onAdvanced?: () => void; onCollapse?: () => void}) {
   const {tasks, loading, error, refresh, busy, run, drafts} = useTaskCollection();
   const [filter, setFilter] = useState<Filter>('open');
   const [query, setQuery] = useState('');
@@ -130,7 +130,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const editor = selected === 'new' || selectedTask ? <TaskEditor key={selected} task={selectedTask} note={note} onClose={() => {if (selected === 'new') {setFilter('open'); setQuery('');} setSelected(null);}}/> : null;
   return <section className={`${styles.workspace} ${compact ? styles.compact : ''}`} aria-label={compact ? 'Task sidebar' : 'Tasks workspace'}>
     <div className={styles.listPane}>
-      <header className={styles.header}><div><span className={styles.eyebrow}>A LITTLE PROGRESS, EVERY DAY</span><h2>Tasks<span>{open.length}</span></h2></div><div>{onExpand && <button onClick={onExpand} aria-label="Expand tasks workspace"><Maximize2 size={16}/></button>}<button className={styles.addButton} onClick={() => setSelected('new')} aria-label="New task"><Plus size={18}/></button></div></header>
+      <header className={styles.header}><div><span className={styles.eyebrow}>A LITTLE PROGRESS, EVERY DAY</span><h2>Tasks<span>{open.length}</span></h2></div><div>{onExpand && <button onClick={onExpand} aria-label="Expand tasks workspace"><Maximize2 size={16}/></button>}<button className={styles.addButton} onClick={() => setSelected('new')} aria-label="New task"><Plus size={18}/></button>{onCollapse && <button onClick={onCollapse} aria-label="Minimize task sidebar" title="Minimize"><ChevronsRight size={16}/></button>}</div></header>
       <div className={styles.search}><Search size={15}/><input aria-label="Search tasks" placeholder="Find a task…" value={query} onChange={e => setQuery(e.target.value)}/>{query && <button aria-label="Clear task search" onClick={() => setQuery('')}><X size={14}/></button>}</div>
       <div className={styles.filters} aria-label="Filter tasks">{([['open','Open'],['today','Today'],['note','This note'],['done','Done'],['archive','Archive']] as [Filter,string][]).map(([key,label]) => <button key={key} aria-pressed={filter === key} disabled={key === 'note' && !note} onClick={() => setFilter(key)}>{label}</button>)}</div>
       <form className={styles.quickAdd} onSubmit={e => {e.preventDefault(); if (!quickTitle.trim() || busy.includes('quick')) return; const title = quickTitle.trim(); void execute('quick', async () => {await api.create({title, priority: 'None', status: 'todo', ...(filter === 'today' ? {dueDate: new Date(new Date().setHours(17,0,0,0)).toISOString()} : {}), ...(filter === 'note' && note ? {sourcePageId: note.id} : {})}); setQuickTitle(''); setFilter(filter === 'done' || filter === 'archive' ? 'open' : filter); setNotice('Task added');});}}><Plus size={16}/><input aria-label="Quick add task" placeholder="Add a task, press Enter" value={quickTitle} disabled={busy.includes('quick')} onChange={e => setQuickTitle(e.target.value)}/><button type="submit" disabled={!quickTitle.trim() || busy.includes('quick')} aria-label="Add task"><ChevronRight size={17}/></button></form>

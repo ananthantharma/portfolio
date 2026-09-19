@@ -705,24 +705,25 @@
     width: 48px;
   }
 }
-.sidebar[data-content=tasks] { width:338px; padding:22px 0 0; }
-.sidebar[data-content=tasks] .brand { padding:0 25px 20px; font-size:23px; }
-.sidebar[data-content=tasks] .workspaceLabel { padding-inline:25px; display:flex; justify-content:space-between; }
-.sidebar[data-content=tasks] .navigation { flex-direction:row; flex-wrap:wrap; gap:5px; padding:0 16px 12px; }
-.sidebar[data-content=tasks] .navigation button { padding:8px 10px; font-size:11px; }
-.sidebar[data-content=tasks] .navigation button:last-child { margin-left:auto; font-size:0; }
-.sidebar[data-content=tasks] .navigation kbd { display:none; }
-.notebooks[data-content=tasks] { padding:0; overflow:hidden; }
-.sidebar[data-content=tasks] .sidebarFooter { padding:5px 13px; display:flex; align-items:center; }
-.sidebar[data-content=tasks] .sidebarFooter button { padding:7px; font-size:9px; }
-.sidebar[data-content=tasks] .sidebarFooter small { display:none; }
-.mobileSidebarClose { display:none; }
 .advancedTasks { display:flex; flex-direction:column; min-height:0; height:100%; }
 .advancedTasks > div { flex:1; min-height:0; }
 .backToTasks { padding:10px 20px; text-align:left; color:#52734a; background:#f2f5eb; font-size:12px; }
 .viewTabs .showTaskSidebar { font-size:10px; color:#899780; margin-left:auto; }
-@media(max-width:1100px) and (min-width:901px) { .sidebar[data-content=tasks] {width:300px;} .sidebar[data-content=tasks] ~ .body .pageSidebar {width:200px;} }
+/* Minimizable notebook (left) and task (right) sidebars */
+.brandRow { display:flex; align-items:flex-start; justify-content:space-between; }
+.collapseButton { padding:6px; margin-top:2px; border-radius:6px; color:#7d8576; }
+.collapseButton:hover { background:#e3e3da; color:#365238; }
+.collapseButton svg { width:16px; height:16px; }
+.sidebarRail { width:52px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px; padding:22px 0 14px; background:#f1f0eb; border-right:1px solid #e5e4dd; }
+.sidebarRail > button, .sidebarRail > a { position:relative; display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; color:#646a61; }
+.sidebarRail > button:hover, .sidebarRail > a:hover { background:#e3e3da; color:#365238; }
+.sidebarRail svg { width:18px; height:18px; }
+.sidebarRail .railBottom { margin-top:auto; }
+.taskRail { border-right:0; border-left:1px solid #e5e4dd; background:#f7f8f2; }
+.railBadge { position:absolute; top:-2px; right:-4px; min-width:17px; padding:1px 4px; border-radius:9px; background:#46674d; color:#fff; font-size:9px; font-weight:600; line-height:15px; text-align:center; }
+.taskSidebar { width:340px; flex-shrink:0; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-left:1px solid #e5e4dd; background:#f7f8f2; }
+.taskSidebar > section { flex:1; min-height:0; }
+@media(max-width:1250px) and (min-width:901px) { .taskSidebar { width:290px; } }
 @media(max-width:900px) {
-  .sidebar[data-content=tasks][data-mobile-open=true] { display:flex; position:absolute; inset:0 auto 0 0; z-index:70; width:min(360px,100%); box-shadow:15px 0 50px #26332330; }
-  .mobileSidebarClose { display:inline-block; font-size:10px; color:#52734a; letter-spacing:0; }
+  .sidebarRail, .taskSidebar, .viewTabs .showTaskSidebar { display:none; }
 }

@@ -21,6 +21,8 @@ import {
   DocumentTextIcon,
   RectangleGroupIcon,
   BookOpenIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
@@ -80,7 +82,8 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const {tasks: workspaceTasks} = useTaskCollection();
   const activeTaskCount = workspaceTasks.filter(task => !task.isCompleted && task.status !== 'done' && !task.isArchived && !task.isTemplate).length;
-  const [sidebarMode, setSidebarMode] = useState<'notebooks' | 'tasks'>('tasks');
+  const [isNotebookSidebarCollapsed, setIsNotebookSidebarCollapsed] = useState(false);
+  const [isTaskSidebarCollapsed, setIsTaskSidebarCollapsed] = useState(false);
   const [advancedTasks, setAdvancedTasks] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<'notes' | 'tasks'>('notes');
   const [tasksVisited, setTasksVisited] = useState(false);
@@ -139,6 +142,23 @@ const NotesLayout: React.FC = React.memo(() => {
 
     const savedFocusMode = localStorage.getItem('NOTES_FOCUS_MODE');
     if (savedFocusMode !== null) setIsFocusMode(savedFocusMode === 'true');
+
+    setIsNotebookSidebarCollapsed(localStorage.getItem('NOTES_NOTEBOOK_SIDEBAR_COLLAPSED') === 'true');
+    setIsTaskSidebarCollapsed(localStorage.getItem('NOTES_TASK_SIDEBAR_COLLAPSED') === 'true');
+  }, []);
+
+  const toggleNotebookSidebar = useCallback(() => {
+    setIsNotebookSidebarCollapsed(prev => {
+      localStorage.setItem('NOTES_NOTEBOOK_SIDEBAR_COLLAPSED', String(!prev));
+      return !prev;
+    });
+  }, []);
+
+  const toggleTaskSidebar = useCallback(() => {
+    setIsTaskSidebarCollapsed(prev => {
+      localStorage.setItem('NOTES_TASK_SIDEBAR_COLLAPSED', String(!prev));
+      return !prev;
+    });
   }, []);
 
   // Persistence: Save to localStorage when state changes
@@ -1058,21 +1078,48 @@ const NotesLayout: React.FC = React.memo(() => {
     <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
     <BadgeSettingsProvider>
       <div className={styles.workspace}>
-        {!isFocusMode && workspaceView === 'notes' && (
-          <aside className={styles.sidebar} data-content={sidebarMode} data-mobile-open={mobileNavigation}>
-            <Link className={styles.brand} href="/">
-              <BookOpenIcon />{' '}
-              <span>
-                notebook<span className={styles.brandDot}>.</span>
-              </span>
+        {!isFocusMode && workspaceView === 'notes' && isNotebookSidebarCollapsed && (
+          <aside aria-label="Notebook sidebar (minimized)" className={styles.sidebarRail}>
+            <button aria-label="Expand notebook sidebar" onClick={toggleNotebookSidebar} title="Expand sidebar">
+              <ChevronDoubleRightIcon />
+            </button>
+            <Link aria-label="Home" href="/" title="Home">
+              <BookOpenIcon />
             </Link>
-            <div className={styles.workspaceLabel}>PERSONAL WORKSPACE<button className={styles.mobileSidebarClose} onClick={() => setMobileNavigation(false)}>Close</button></div>
+            <button aria-label="Notebooks" onClick={toggleNotebookSidebar} title="Notebooks">
+              <DocumentTextIcon />
+            </button>
+            <button aria-label="Search notes" onClick={handleOpenSearch} title="Search notes (⌘ K)">
+              <MagnifyingGlassIcon />
+            </button>
+            <button aria-label="Workspace settings" className={styles.railBottom} onClick={handleOpenSettings} title="Workspace settings">
+              <Cog6ToothIcon />
+            </button>
+          </aside>
+        )}
+        {!isFocusMode && workspaceView === 'notes' && !isNotebookSidebarCollapsed && (
+          <aside className={styles.sidebar}>
+            <div className={styles.brandRow}>
+              <Link className={styles.brand} href="/">
+                <BookOpenIcon />{' '}
+                <span>
+                  notebook<span className={styles.brandDot}>.</span>
+                </span>
+              </Link>
+              <button aria-label="Minimize notebook sidebar" className={styles.collapseButton} onClick={toggleNotebookSidebar} title="Minimize">
+                <ChevronDoubleLeftIcon />
+              </button>
+            </div>
+            <div className={styles.workspaceLabel}>PERSONAL WORKSPACE</div>
             <nav aria-label="Workspace" className={styles.navigation}>
-              <button aria-current={sidebarMode === 'notebooks' ? 'page' : undefined} onClick={() => {setSidebarMode('notebooks'); changeView('notes');}}>
+              <button aria-current="page" onClick={() => changeView('notes')}>
                 <DocumentTextIcon />
                 Notes<span>{categories.length}</span>
               </button>
-              <button aria-current={sidebarMode === 'tasks' ? 'page' : undefined} onClick={() => {setSidebarMode('tasks'); changeView('notes');}}>
+              <button
+                aria-pressed={!isTaskSidebarCollapsed}
+                onClick={toggleTaskSidebar}
+                title={isTaskSidebarCollapsed ? 'Show task sidebar' : 'Hide task sidebar'}>
                 <ClipboardDocumentListIcon />
                 Tasks{activeTaskCount > 0 && <span>{activeTaskCount}</span>}
               </button>
@@ -1081,9 +1128,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 Search notes<kbd>⌘ K</kbd>
               </button>
             </nav>
-            <div className={styles.notebooks} data-content={sidebarMode}>
-              {sidebarMode === 'tasks' ? <TaskWorkspace compact note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onExpand={() => changeView('tasks')} /> : <>
-              <button className={styles.mobileSidebarClose} onClick={() => setMobileNavigation(false)}>Close navigation</button>
+            <div className={styles.notebooks}>
               <CategoryList
                 badgeCounts={badgeCounts.categories}
                 categories={categories}
@@ -1102,7 +1147,6 @@ const NotesLayout: React.FC = React.memo(() => {
                 onToggleCollapse={() => setMobileNavigation(v => !v)}
                 selectedCategoryId={selectedCategoryId}
               />
-              </>}
             </div>
             <div className={styles.sidebarFooter}>
               <button onClick={handleOpenSettings}>
@@ -1242,7 +1286,16 @@ const NotesLayout: React.FC = React.memo(() => {
               <ClipboardDocumentListIcon />
               Tasks
             </button>
-            <button className={styles.showTaskSidebar} onClick={() => {changeView('notes'); setSidebarMode('tasks'); setIsFocusMode(false); setMobileNavigation(true);}}>Task sidebar</button>
+            <button
+              className={styles.showTaskSidebar}
+              onClick={() => {
+                const isVisible = !isTaskSidebarCollapsed && workspaceView === 'notes' && !isFocusMode;
+                changeView('notes');
+                setIsFocusMode(false);
+                if (isVisible || isTaskSidebarCollapsed) toggleTaskSidebar();
+              }}>
+              {!isTaskSidebarCollapsed && workspaceView === 'notes' && !isFocusMode ? 'Hide task sidebar' : 'Show task sidebar'}
+            </button>
             <span>Room to think. Space to do.</span>
           </div>
           <div
@@ -1262,7 +1315,7 @@ const NotesLayout: React.FC = React.memo(() => {
           <div
             aria-labelledby="notes-tab"
             className={styles.notesPanel}
-            data-mobile-navigation={mobileNavigation && sidebarMode === 'notebooks'}
+            data-mobile-navigation={mobileNavigation}
             hidden={workspaceView !== 'notes'}
             id="notes-panel"
             role="tabpanel">
@@ -1494,6 +1547,28 @@ const NotesLayout: React.FC = React.memo(() => {
             </main>
           </div>
         </div>
+
+        {!isFocusMode && workspaceView === 'notes' &&
+          (isTaskSidebarCollapsed ? (
+            <aside aria-label="Task sidebar (minimized)" className={`${styles.sidebarRail} ${styles.taskRail}`}>
+              <button aria-label="Expand task sidebar" onClick={toggleTaskSidebar} title="Expand tasks">
+                <ChevronDoubleLeftIcon />
+              </button>
+              <button aria-label={`Tasks, ${activeTaskCount} open`} onClick={toggleTaskSidebar} title="Tasks">
+                <ClipboardDocumentListIcon />
+                {activeTaskCount > 0 && <span className={styles.railBadge}>{activeTaskCount}</span>}
+              </button>
+            </aside>
+          ) : (
+            <aside className={styles.taskSidebar}>
+              <TaskWorkspace
+                compact
+                note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null}
+                onCollapse={toggleTaskSidebar}
+                onExpand={() => changeView('tasks')}
+              />
+            </aside>
+          ))}
 
         {/* ── Modals ── */}
         <ToDoListModal
