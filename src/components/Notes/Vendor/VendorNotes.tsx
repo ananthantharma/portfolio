@@ -31,6 +31,7 @@ const SORT_LABELS: Record<NoteSort, string> = {
 
 const CLASS_COLORS = ['#46674d', '#3f6f9f', '#b4532a', '#8a6a14', '#6a4fa3', '#9a3e5c', '#2f7d7a', '#5f5e5a'];
 const UNCLASSIFIED = '__none__';
+const NEW_CLASS = '__new__';
 
 interface Props {
   vendorName: string;
@@ -42,7 +43,7 @@ interface Props {
   onAddPage: (title: string, extra?: Partial<INotePage>) => void;
   onUpdatePage: (id: string, updates: Partial<INotePage>) => Promise<void>;
   onReorderPages: (newOrder: INotePage[]) => void;
-  onUpdateNotebook: (updates: {noteClasses?: INoteClass[]; noteSort?: string}) => Promise<void>;
+  onUpdateNotebook: (updates: {noteClasses?: INoteClass[]; noteSort?: string}) => Promise<INoteClass[] | void>;
 }
 
 function snippet(page: INotePage) {
@@ -80,6 +81,9 @@ export default function VendorNotes(props: Props) {
   const [query, setQuery] = useState('');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [editingClasses, setEditingClasses] = useState(false);
+  const [addingClass, setAddingClass] = useState(false);
+  const [newClassName, setNewClassName] = useState('');
+  const [classError, setClassError] = useState('');
 
   const classById = useMemo(() => new Map(classes.map(c => [String(c._id), c])), [classes]);
   const classOf = (page: INotePage) => (page.noteClass && classById.has(page.noteClass) ? page.noteClass : UNCLASSIFIED);
@@ -144,6 +148,64 @@ export default function VendorNotes(props: Props) {
     onAddPage(label ? `${label} – ${new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}` : 'New note', extra);
   };
 
+  // Adds a classification and returns its id (null if the name was empty, taken, or saving failed)
+  const createClass = async (rawName: string): Promise<string | null> => {
+    const name = rawName.trim().slice(0, 40);
+    if (!name) return null;
+    const existing = classes.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      setClassError(`"${existing.name}" already exists.`);
+      return String(existing._id);
+    }
+    try {
+      const color = CLASS_COLORS[classes.length % CLASS_COLORS.length];
+      const saved = await onUpdateNotebook({noteClasses: [...classes, {name, color}]});
+      const created = (saved || []).find(c => c.name.toLowerCase() === name.toLowerCase());
+      setClassError('');
+      return created ? String(created._id) : null;
+    } catch {
+      setClassError('Could not add the classification. Try again.');
+      return null;
+    }
+  };
+
+  const submitNewClass = async () => {
+    if (!newClassName.trim()) {
+      setAddingClass(false);
+      return;
+    }
+    await createClass(newClassName);
+    setNewClassName('');
+    setAddingClass(false);
+  };
+
+  const removeClass = async (c: INoteClass) => {
+    const id = String(c._id);
+    const used = counts[id] || 0;
+    const message = used
+      ? `Remove "${c.name}"? ${used} note${used === 1 ? '' : 's'} will become unclassified. The notes themselves are kept.`
+      : `Remove "${c.name}"?`;
+    if (!confirm(message)) return;
+    try {
+      await onUpdateNotebook({noteClasses: classes.filter(x => String(x._id) !== id)});
+      if (classFilter === id) setClassFilter('all');
+      setClassError('');
+    } catch {
+      setClassError('Could not remove the classification. Try again.');
+    }
+  };
+
+  const setNoteClass = async (page: INotePage, value: string | null) => {
+    if (value !== NEW_CLASS) {
+      onUpdatePage(String(page._id), {noteClass: value});
+      return;
+    }
+    const name = window.prompt(`Name the new classification for "${page.title || 'this note'}"`);
+    if (!name?.trim()) return;
+    const id = await createClass(name);
+    if (id) onUpdatePage(String(page._id), {noteClass: id});
+  };
+
   let lastGroup: string | null = null;
 
   return (
@@ -163,7 +225,9 @@ export default function VendorNotes(props: Props) {
       </div>
 
       {editingClasses && (
-        <ClassEditor classes={classes} onClose={() => setEditingClasses(false)} onSave={noteClasses => onUpdateNotebook({noteClasses})} />
+        <ClassEditor classes={classes} onClose={() => setEditingClasses(false)} onSave={async noteClasses => {
+            await onUpdateNotebook({noteClasses});
+          }} />
       )}
 
       <div className={styles.notesBar}>
@@ -190,14 +254,22 @@ export default function VendorNotes(props: Props) {
           All <small>{pages.length}</small>
         </button>
         {classes.map(c => (
-          <button
-            aria-pressed={classFilter === String(c._id)}
-            className={styles.chip}
-            key={String(c._id)}
-            onClick={() => setClassFilter(classFilter === String(c._id) ? 'all' : String(c._id))}>
-            <span className={styles.dot} style={{background: c.color}} />
-            {c.name} <small>{counts[String(c._id)] || 0}</small>
-          </button>
+          <span className={styles.chipGroup} key={String(c._id)}>
+            <button
+              aria-pressed={classFilter === String(c._id)}
+              className={styles.chip}
+              onClick={() => setClassFilter(classFilter === String(c._id) ? 'all' : String(c._id))}>
+              <span className={styles.dot} style={{background: c.color}} />
+              {c.name} <small>{counts[String(c._id)] || 0}</small>
+            </button>
+            <button
+              aria-label={`Remove the ${c.name} classification`}
+              className={styles.chipRemove}
+              onClick={() => removeClass(c)}
+              title={`Remove ${c.name}`}>
+              <X size={10} />
+            </button>
+          </span>
         ))}
         {(counts[UNCLASSIFIED] || 0) > 0 && (
           <button
@@ -208,7 +280,34 @@ export default function VendorNotes(props: Props) {
             Unclassified <small>{counts[UNCLASSIFIED]}</small>
           </button>
         )}
+        {addingClass ? (
+          <input
+            aria-label="New classification name"
+            autoFocus
+            className={styles.chipInput}
+            maxLength={40}
+            onBlur={submitNewClass}
+            onChange={e => {
+              setNewClassName(e.target.value);
+              setClassError('');
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') submitNewClass();
+              if (e.key === 'Escape') {
+                setNewClassName('');
+                setAddingClass(false);
+              }
+            }}
+            placeholder="New classification"
+            value={newClassName}
+          />
+        ) : (
+          <button className={`${styles.chip} ${styles.chipAdd}`} onClick={() => setAddingClass(true)}>
+            <Plus size={12} /> Add
+          </button>
+        )}
       </div>
+      {classError && <p className={styles.error} style={{marginTop: -4, marginBottom: 8}}>{classError}</p>}
 
       {loading && !pages.length ? (
         <div className={styles.empty}>Loading notes…</div>
@@ -239,7 +338,7 @@ export default function VendorNotes(props: Props) {
                     classes={classes}
                     currentClass={cls}
                     onOpen={() => onOpenPage(String(page._id))}
-                    onSetClass={noteClass => onUpdatePage(String(page._id), {noteClass})}
+                    onSetClass={value => setNoteClass(page, value)}
                     page={page}
                   />
                 </React.Fragment>
@@ -312,6 +411,7 @@ function NoteRow({
             {c.name}
           </option>
         ))}
+        <option value={NEW_CLASS}>+ New classification…</option>
       </select>
       <div className={styles.noteMeta}>
         <div>Edited {timeAgo(page.updatedAt)}</div>

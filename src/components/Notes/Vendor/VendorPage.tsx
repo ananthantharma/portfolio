@@ -1,15 +1,15 @@
 /* eslint-disable react-memo/require-usememo, react-memo/require-memo, react/jsx-sort-props */
 'use client';
 
-import {BookUser, ExternalLink, FileSignature, Globe, Link as LinkIcon, Network, NotebookPen} from 'lucide-react';
+import {BookUser, Building2, ExternalLink, FileSignature, Globe, Link as LinkIcon, Network, NotebookPen} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
+import ContactsCard from './ContactsCard';
 import DocumentsCard from './DocumentsCard';
-import KeyContactsCard from './KeyContactsCard';
 import LinksCard from './LinksCard';
 import OrgChartCard from './OrgChartCard';
 import {
@@ -36,7 +36,7 @@ export interface VendorPageProps {
   onAddPage: (title: string, extra?: Partial<INotePage>) => void;
   onUpdatePage: (id: string, updates: Partial<INotePage>) => Promise<void>;
   onReorderPages: (newOrder: INotePage[]) => void;
-  onUpdateNotebook: (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string}) => Promise<void>;
+  onUpdateNotebook: (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string}) => Promise<INoteClass[] | void>;
 }
 
 function Logo({domain, name}: {domain: string; name: string}) {
@@ -211,6 +211,9 @@ export default function VendorPage(props: VendorPageProps) {
             <button onClick={() => jump('vendor-contacts')}>
               <BookUser size={13} /> Key contacts <span>{profile.keyContacts.length}</span>
             </button>
+            <button onClick={() => jump('vendor-internal-contacts')}>
+              <Building2 size={13} /> Internal contacts <span>{(profile.internalContacts || []).length}</span>
+            </button>
             <button onClick={() => jump('vendor-links')}>
               <LinkIcon size={13} /> Links <span>{profile.links.length}</span>
             </button>
@@ -226,7 +229,13 @@ export default function VendorPage(props: VendorPageProps) {
 
           <div className={styles.grid}>
             <OrgChartCard onPatch={patch} profile={profile} vendorName={section.name} />
-            <KeyContactsCard keyContacts={profile.keyContacts} onPatch={patch} vendorName={section.name} />
+            <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="vendor" vendorName={section.name} />
+            <ContactsCard
+              contacts={profile.internalContacts || []}
+              onPatch={patch}
+              variant="internal"
+              vendorName={section.name}
+            />
             <LinksCard links={profile.links} onPatch={patch} />
             <DocumentsCard documents={profile.documents} onPatch={patch} />
             <VendorNotes

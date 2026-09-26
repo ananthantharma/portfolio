@@ -46,6 +46,8 @@ export interface IVendorProfile extends Document {
   website: string;
   orgChart: IVendorOrgChart;
   keyContacts: IVendorKeyContact[];
+  // People in your own organization who work with this vendor
+  internalContacts: IVendorKeyContact[];
   links: IVendorLink[];
   documents: IVendorDocument[];
   createdAt: Date;
@@ -67,6 +69,13 @@ const VendorProfileSchema = new Schema<IVendorProfile>(
       updatedAt: {type: Date, default: null},
     },
     keyContacts: [
+      {
+        _id: false,
+        contactId: {type: Schema.Types.ObjectId, ref: 'Contact', required: true},
+        role: {type: String, default: ''},
+      },
+    ],
+    internalContacts: [
       {
         _id: false,
         contactId: {type: Schema.Types.ObjectId, ref: 'Contact', required: true},

@@ -67,10 +67,14 @@ async function loadProfile(userEmail: string, sectionId: string) {
     {userEmail, sectionId},
     {$setOnInsert: {status: 'Active'}}, // userEmail/sectionId come from the filter on insert
     {new: true, upsert: true},
-  ).populate({path: 'keyContacts.contactId', select: CONTACT_FIELDS, match: {userEmail}});
+  ).populate([
+    {path: 'keyContacts.contactId', select: CONTACT_FIELDS, match: {userEmail}},
+    {path: 'internalContacts.contactId', select: CONTACT_FIELDS, match: {userEmail}},
+  ]);
   const data = profile.toObject();
   // Contacts deleted from the Contacts list drop out of key contacts
   data.keyContacts = data.keyContacts.filter(kc => kc.contactId);
+  data.internalContacts = (data.internalContacts || []).filter(kc => kc.contactId);
   return data;
 }
 
@@ -111,10 +115,11 @@ export async function PUT(req: Request, {params}: RouteParams) {
       };
     }
 
-    if (Array.isArray(body.keyContacts)) {
+    for (const field of ['keyContacts', 'internalContacts'] as const) {
+      if (!Array.isArray(body[field])) continue;
       profile.set(
-        'keyContacts',
-        body.keyContacts
+        field,
+        body[field]
           .filter((kc: {contactId?: unknown}) => mongoose.isValidObjectId(kc?.contactId))
           .map((kc: {contactId: string; role?: string}) => ({contactId: kc.contactId, role: String(kc.role || '').slice(0, 60)})),
       );

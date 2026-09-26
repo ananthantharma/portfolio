@@ -95,6 +95,16 @@ export default function OrgChartCard({vendorName, profile, onPatch}: Props) {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [openNode, setOpenNode] = useState<string | null>(null);
   const [chartWidth, setChartWidth] = useState<number | null>(null);
+  const [builderMaximized, setBuilderMaximized] = useState(false);
+
+  // Reopen the builder the way it was last used (window or full screen)
+  useEffect(() => {
+    try {
+      setBuilderMaximized(localStorage.getItem('VENDOR_BUILDER_MAXIMIZED') === 'true');
+    } catch {
+      // ignore unavailable storage
+    }
+  }, []);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -220,6 +230,16 @@ export default function OrgChartCard({vendorName, profile, onPatch}: Props) {
         startWithOutline: !orgChart.flowData,
         onSave: saveChart,
         onClose: () => setBuilderOpen(false),
+        windowed: true,
+        startMaximized: builderMaximized,
+        onToggleMaximize: maximized => {
+          setBuilderMaximized(maximized);
+          try {
+            localStorage.setItem('VENDOR_BUILDER_MAXIMIZED', String(maximized));
+          } catch {
+            // storage can be unavailable (private mode); the toggle still works for this session
+          }
+        },
       }
     : null;
 
@@ -416,12 +436,19 @@ export default function OrgChartCard({vendorName, profile, onPatch}: Props) {
       {builderEmbed &&
         createPortal(
           <div
+            className={styles.builderBackdrop}
             onDragLeave={stop}
             onDragOver={stop}
             onDrop={stop}
-            onPaste={stop}
-            style={{display: 'contents'}}>
-            <ProcessFlowBuilder embed={builderEmbed} />
+            onPaste={stop}>
+            <div
+              aria-label={`${vendorName} org chart builder`}
+              aria-modal="true"
+              className={styles.builderWindow}
+              data-maximized={builderMaximized}
+              role="dialog">
+              <ProcessFlowBuilder embed={builderEmbed} />
+            </div>
           </div>,
           document.body,
         )}

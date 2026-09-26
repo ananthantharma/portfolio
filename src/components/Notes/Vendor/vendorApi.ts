@@ -81,6 +81,7 @@ export interface VendorProfile {
   website: string;
   orgChart: VendorOrgChart;
   keyContacts: VendorKeyContact[];
+  internalContacts: VendorKeyContact[];
   links: VendorLink[];
   documents: VendorDocument[];
 }
@@ -91,6 +92,7 @@ export type VendorPatch = Partial<{
   website: string;
   orgChart: Partial<VendorOrgChart>;
   keyContacts: {contactId: string; role: string}[];
+  internalContacts: {contactId: string; role: string}[];
   links: VendorLink[];
   documents: VendorDocument[];
 }>;

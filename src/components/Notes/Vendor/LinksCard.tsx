@@ -54,7 +54,7 @@ export default function LinksCard({links, onPatch}: Props) {
   };
 
   return (
-    <section aria-label="Links" className={styles.card} id="vendor-links">
+    <section aria-label="Links" className={`${styles.card} ${styles.wide}`} id="vendor-links">
       <div className={styles.cardHead}>
         <h2>
           <LinkIcon size={17} />

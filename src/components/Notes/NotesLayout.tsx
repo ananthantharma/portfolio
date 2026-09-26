@@ -48,6 +48,7 @@ import {signOut, useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
+import {DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
@@ -548,6 +549,8 @@ const NotesLayout: React.FC = React.memo(() => {
             : cat,
         ),
       );
+      // Callers that create a classification need its new id
+      return saved.noteClasses || [];
     },
     [],
   );
@@ -1567,13 +1570,7 @@ const NotesLayout: React.FC = React.memo(() => {
                         kind: toVendor ? 'vendor' : 'standard',
                         ...(toVendor && !currentCategory.noteClasses?.length
                           ? {
-                              noteClasses: [
-                                {name: 'Meeting', color: '#46674d'},
-                                {name: 'QBR', color: '#3f6f9f'},
-                                {name: 'Issue', color: '#b4532a'},
-                                {name: 'Commercial', color: '#8a6a14'},
-                                {name: 'Decision', color: '#6a4fa3'},
-                              ],
+                              noteClasses: DEFAULT_VENDOR_NOTE_CLASSES,
                             }
                           : {}),
                       }).catch(() => alert('Could not change the notebook type. Try again.'));

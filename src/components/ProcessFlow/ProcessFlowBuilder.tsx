@@ -210,6 +210,10 @@ export interface ProcessFlowEmbed {
   startWithOutline?: boolean;
   onSave: (data: unknown, png: Blob | null) => Promise<void>;
   onClose: () => void;
+  // Windowed mode: the caller hosts the builder in a window and can let it fill the screen
+  windowed?: boolean;
+  startMaximized?: boolean;
+  onToggleMaximize?: (maximized: boolean) => void;
 }
 
 function escapeHtml(s: string) {
@@ -220,7 +224,10 @@ function buildHtml(embed?: ProcessFlowEmbed) {
   if (!embed) return HTML;
   return HTML.replace(
     '<a href="/notes" class="back-btn" title="Back to Notes">← Notes</a>',
-    '<button class="back-btn" id="pfbClose" type="button" title="Close without saving">✕ Close</button>',
+    '<button class="back-btn" id="pfbClose" type="button" title="Close without saving">✕ Close</button>' +
+      (embed.windowed
+        ? `<button class="back-btn" id="pfbMaximize" type="button">${embed.startMaximized ? '⤡ Exit full screen' : '⤢ Full screen'}</button>`
+        : ''),
   )
     .replace('<h1>Process Flow Builder</h1>', `<h1>${escapeHtml(embed.title)}</h1>`)
     .replace('<span class="tag">VISIO-STYLE EDITOR</span>', `<span class="tag">${escapeHtml(embed.tag || 'EDITOR')}</span>`)
@@ -1474,6 +1481,16 @@ export default function ProcessFlowBuilder({embed}: {embed?: ProcessFlowEmbed} =
         if (dirty&&!confirm('Close without saving your changes?')) return;
         embedRef.current?.onClose();
       };
+      const maxBtn=document.getElementById('pfbMaximize') as HTMLButtonElement|null;
+      if (maxBtn){
+        let maximized=!!embed.startMaximized;
+        maxBtn.onclick=()=>{
+          maximized=!maximized;
+          maxBtn.textContent=maximized?'⤡ Exit full screen':'⤢ Full screen';
+          embedRef.current?.onToggleMaximize?.(maximized);
+          setTimeout(fit,220); // re-fit once the window has resized
+        };
+      }
       const saveBtn=document.getElementById('saveEmbed') as HTMLButtonElement;
       saveBtn.onclick=async ()=>{
         const orig=saveBtn.textContent!;
@@ -1519,5 +1536,7 @@ export default function ProcessFlowBuilder({embed}: {embed?: ProcessFlowEmbed} =
     };
   },[]);
 
-  return <div id="pfb-root" ref={rootRef} style={embed ? {zIndex: 60} : undefined} />;
+  // Windowed: fill the caller's window instead of covering the whole viewport
+  const rootStyle = embed?.windowed ? {position: 'absolute' as const, inset: 0, zIndex: 'auto'} : embed ? {zIndex: 60} : undefined;
+  return <div id="pfb-root" ref={rootRef} style={rootStyle} />;
 }
