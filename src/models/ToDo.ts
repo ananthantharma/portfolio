@@ -4,6 +4,7 @@ import {INotePage} from './NotePage';
 
 export interface IToDo extends Document {
   sourcePageId?: string | INotePage;
+  vendorSectionId?: mongoose.Types.ObjectId | null; // vendor (a section in a vendor notebook) this task belongs to
   tabId?: string;
   tabName?: string;
   title: string;
@@ -55,6 +56,7 @@ const ToDoSchema = new Schema<IToDo>(
       required: true,
     },
     sourcePageId: {type: Schema.Types.ObjectId, ref: 'NotePage', required: false},
+    vendorSectionId: {type: Schema.Types.ObjectId, ref: 'NoteSection', default: null},
     tabId: {type: String, required: false}, // ID of the tab within the page
     tabName: {type: String, required: false}, // Name of the tab for display/fallback
     title: {type: String, required: true},
@@ -121,3 +123,10 @@ ToDoSchema.index({userEmail: 1, isCompleted: 1, sourcePageId: 1}); // active tod
 ToDoSchema.index({userEmail: 1, sourcePageId: 1});                  // todos lookup by page
 
 export default (mongoose.models.ToDo as Model<IToDo>) || mongoose.model<IToDo>('ToDo', ToDoSchema);
+
+// Populates a task's vendor with just what the vendor pill needs; foreign sections resolve to null
+export const VENDOR_POPULATE = (userEmail: string) => ({
+  path: 'vendorSectionId',
+  select: 'name categoryId',
+  match: {userEmail},
+});

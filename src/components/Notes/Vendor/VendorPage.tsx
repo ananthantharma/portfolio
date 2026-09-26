@@ -1,13 +1,15 @@
 /* eslint-disable react-memo/require-usememo, react-memo/require-memo, react/jsx-sort-props */
 'use client';
 
-import {BookUser, Building2, ExternalLink, FileSignature, Globe, Link as LinkIcon, Network, NotebookPen} from 'lucide-react';
+import {BookUser, Building2, ExternalLink, FileSignature, Globe, Link as LinkIcon, ListTodo, Network, NotebookPen} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
+import {useTaskCollection} from '../../Tasks/TaskProvider';
+import {statusOf, vendorIdOf} from '../../Tasks/types';
 import ContactsCard from './ContactsCard';
 import DocumentsCard from './DocumentsCard';
 import LinksCard from './LinksCard';
@@ -26,6 +28,7 @@ import {
 } from './vendorApi';
 import VendorNotes, {NoteSort} from './VendorNotes';
 import styles from './VendorPage.module.css';
+import VendorTasksCard from './VendorTasksCard';
 
 export interface VendorPageProps {
   section: INoteSection;
@@ -62,6 +65,10 @@ export default function VendorPage(props: VendorPageProps) {
   const [editing, setEditing] = useState<'summary' | 'website' | null>(null);
   const [draft, setDraft] = useState('');
   const latestSection = useRef(sectionId);
+  const {tasks} = useTaskCollection();
+  const openTaskCount = tasks.filter(
+    t => vendorIdOf(t) === sectionId && !t.isArchived && !t.isTemplate && statusOf(t) !== 'done',
+  ).length;
 
   useEffect(() => {
     latestSection.current = sectionId;
@@ -214,6 +221,9 @@ export default function VendorPage(props: VendorPageProps) {
             <button onClick={() => jump('vendor-internal-contacts')}>
               <Building2 size={13} /> Internal contacts <span>{(profile.internalContacts || []).length}</span>
             </button>
+            <button onClick={() => jump('vendor-tasks')}>
+              <ListTodo size={13} /> Tasks <span>{openTaskCount}</span>
+            </button>
             <button onClick={() => jump('vendor-links')}>
               <LinkIcon size={13} /> Links <span>{profile.links.length}</span>
             </button>
@@ -235,6 +245,9 @@ export default function VendorPage(props: VendorPageProps) {
               onPatch={patch}
               variant="internal"
               vendorName={section.name}
+            />
+            <VendorTasksCard
+              vendor={{_id: sectionId, name: section.name, categoryId: String(section.categoryId)}}
             />
             <LinksCard links={profile.links} onPatch={patch} />
             <DocumentsCard documents={profile.documents} onPatch={patch} />

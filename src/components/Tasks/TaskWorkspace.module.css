@@ -10,3 +10,12 @@
 @media(max-width:1100px) { .listPane { width:320px; } }
 @media(max-width:650px) { .workspace:not(.compact) { flex-direction:column; overflow:auto; }.workspace:not(.compact) .listPane { width:100%; flex:1; border-right:0; }.workspace:not(.compact):has(.detailPane .editor) .listPane { display:none; }.workspace:not(.compact) .detailPane { flex-shrink:0; }.workspace:not(.compact) .detailPane:has(.detailEmpty) { display:none; }.editor { padding:22px; } }
 @media(prefers-reduced-motion:reduce) { .workspace * { transition:none !important; } }
+
+/* Vendor link, neon glow toggles */
+.rowBody { flex:1; min-width:0; }
+.rowExtras { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:6px; min-width:0; }
+.rowExtras > :last-child { margin-left:auto; }
+.taskRow[data-glow] { margin:6px 2px; border-radius:9px; background:#fff; }
+.vendorLink { padding:14px 0 4px; font-size:10px; }
+.vendorLink > div { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.vendorLink select { flex:1; min-width:0; }

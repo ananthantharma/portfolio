@@ -9,18 +9,20 @@ import {saveTaskChanges} from './taskActions';
 import AttachmentGallery from './AttachmentGallery';
 import NoteLinkModal from './NoteLinkModal';
 import {useTaskCollection} from './TaskProvider';
-import {daysUntil, formatDue, PRIORITY_META, smartCompare, statusOf, Task} from './types';
+import {GlowToggles, glowStyle, VendorPill, VendorSelect} from './TaskExtras';
+import {daysUntil, formatDue, glowOf, PRIORITY_META, smartCompare, statusOf, Task, vendorIdOf, vendorOf} from './types';
 import {OpenWorkspaceNoteContext} from './WorkspaceNavigation';
 import styles from './TaskWorkspace.module.css';
 
 export type NoteContext = {id: string; title: string} | null;
 type Filter = 'open' | 'today' | 'note' | 'done' | 'archive';
 
-export function TaskEditor({task, note, onClose}: {task?: Task; note?: NoteContext; onClose: () => void}) {
+export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Task; note?: NoteContext; onClose: () => void; draftKey?: string; defaults?: Partial<Task>}) {
   const {drafts, setDraft, busy, run} = useTaskCollection();
-  const key = task?._id || 'new';
+  // New tasks started from a vendor page keep their own draft so they don't mix with the sidebar's
+  const key = task?._id || draftKey || 'new';
   const draft = drafts[key] || {};
-  const value = {...task, ...draft};
+  const value = {...(task ? {} : defaults), ...task, ...draft};
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [subtask, setSubtask] = useState('');
@@ -43,7 +45,7 @@ export function TaskEditor({task, note, onClose}: {task?: Task; note?: NoteConte
     setError(null);
     try {
       await run(key, async () => {
-        const payload = {...draft, ...(draft.tags ? {tags: draft.tags.map(tag => tag.trim()).filter(Boolean)} : {}), title, ...(draft.sourcePageId !== undefined ? {sourcePageId: linkedId || null} : {})};
+        const payload = {...(task ? {} : defaults), ...draft, ...(draft.tags ? {tags: draft.tags.map(tag => tag.trim()).filter(Boolean)} : {}), title, ...(draft.sourcePageId !== undefined ? {sourcePageId: linkedId || null} : {}), ...(draft.vendorSectionId !== undefined || (!task && defaults?.vendorSectionId) ? {vendorSectionId: vendorIdOf(value)} : {})};
         if (task) {const result = await saveTaskChanges(task, payload); if (result.warning) setError(result.warning);}
         else await api.create({priority: 'None', status: 'todo', isCompleted: false, ...payload});
         setDraft(key, null);
@@ -84,6 +86,10 @@ export function TaskEditor({task, note, onClose}: {task?: Task; note?: NoteConte
           <span><FileText size={14}/> Connected note</span>
           {linkedId ? <div><button type="button" onClick={() => openNote ? openNote(linkedId) : window.location.assign(`/notes?pageId=${encodeURIComponent(linkedId)}`)}>{linkedTitle || 'Open note'}</button><button type="button" aria-label="Unlink note" onClick={() => change({sourcePageId: null})}><X size={14}/></button></div> : <div>{note && <button type="button" onClick={() => change({sourcePageId: {_id: note.id, title: note.title}})}>Link current note</button>}<button type="button" onClick={() => setLinking(true)}>Choose a note</button></div>}
         </div>
+        <div className={styles.vendorLink}>
+          <label htmlFor={`${prefix}-vendor`}>Vendor</label>
+          <div><VendorSelect id={`${prefix}-vendor`} value={vendorOf(value) || (vendorIdOf(value) ? {_id: vendorIdOf(value)!, name: 'Linked vendor'} : null)} onChange={vendor => change({vendorSectionId: vendor})}/>{vendorOf(value) && task && <VendorPill task={value as Task}/>}</div>
+        </div>
         <details className={styles.more}><summary>More options <ChevronDown size={14}/></summary><label htmlFor={`${prefix}-repeat`}>Repeat</label><select id={`${prefix}-repeat`} value={value.recurrence?.freq || 'none'} onChange={e => change({recurrence: {freq: e.target.value as NonNullable<Task['recurrence']>['freq'], interval: 1}})}><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><p>Repeating tasks need a due date. Completing one creates the next occurrence.</p><label htmlFor={`${prefix}-estimate`}>Estimated minutes</label><input id={`${prefix}-estimate`} type="number" min="0" value={value.estimatedTime ?? ''} onChange={e => change({estimatedTime: e.target.value ? Number(e.target.value) : 0})}/>{task?.attachments?.length ? <AttachmentGallery attachments={task.attachments} taskId={task._id} compact/> : null}</details>
         {error && <div className={styles.error} role="alert">{error}</div>}
         <div className={styles.saveRow}><span role="status">{pending ? 'Saving…' : dirty ? 'Unsaved changes' : saved ? 'All changes saved' : 'Up to date'}</span><button className={styles.primary} type="submit" disabled={pending || (!!task && !dirty)}><Check size={14}/>{task ? 'Save changes' : 'Create task'}</button></div>
@@ -91,7 +97,7 @@ export function TaskEditor({task, note, onClose}: {task?: Task; note?: NoteConte
     </form>
     {task && <div className={styles.taskActions}>
       <button disabled={pending} onClick={() => void action(() => api.update(task._id, {isArchived: !task.isArchived}), true)}><Archive size={14}/>{task.isArchived ? 'Restore' : 'Archive'}</button>
-      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
+      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
       <button disabled={pending} className={styles.danger} onClick={() => {if (window.confirm(`Permanently delete “${task.title}”? You can archive it instead.`)) void action(async () => {await api.remove(task._id); setDraft(key, null);}, true);}}><Trash2 size={14}/>Delete</button>
     </div>}
     {linking && <NoteLinkModal taskTitle={value.title || 'New note'} onClose={() => setLinking(false)} onLinked={page => {change({sourcePageId: page}); setLinking(false);}}/>}
@@ -137,7 +143,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       {(error || actionError) && <div className={styles.error} role="alert">{error || actionError}{error && <button onClick={() => void refresh()}>Try again</button>}</div>}
       <div className={styles.list}>
         {compact && editor && <div className={styles.inlineEditor}><button className={styles.back} onClick={() => setSelected(null)}><ArrowLeft size={14}/>Back to list</button>{editor}</div>}
-        {(!compact || !editor) && <>{loading && !tasks.length ? <div className={styles.empty} role="status">Loading your tasks…</div> : !visible.length ? <div className={styles.empty}><CheckCheck size={30}/><strong>{query ? 'No matches' : filter === 'done' ? 'Progress will live here' : filter === 'archive' ? 'Nothing archived' : 'A little breathing room'}</strong><p>{query ? 'Try another title, project, or tag.' : filter === 'note' ? 'Add a task linked to this note.' : 'Add a task above, or explore another view.'}</p></div> : visible.map(task => <article className={styles.taskRow} data-selected={selected === task._id} key={task._id}><button className={styles.checkbox} aria-label={`${statusOf(task) === 'done' ? 'Reopen' : 'Complete'} ${task.title}`} aria-pressed={statusOf(task) === 'done'} disabled={busy.includes(task._id)} onClick={() => toggle(task)}>{statusOf(task) === 'done' && <Check size={12}/>}</button><button className={styles.taskSummary} onClick={() => setSelected(task._id)}><strong data-done={statusOf(task) === 'done'}>{task.title}</strong><span>{task.priority !== 'None' && <i data-priority={task.priority}>{task.priority}</i>}{task.dueDate && <time data-overdue={statusOf(task) !== 'done' && (daysUntil(task.dueDate) || 0) < 0}>{formatDue(task.dueDate)}</time>}{task.category && <span>{task.category}</span>}{task.subtasks?.length ? <span>{task.subtasks.filter(item => item.isCompleted).length}/{task.subtasks.length} steps</span> : null}{drafts[task._id] && <span>Draft</span>}{task.sourcePageId && <FileText size={12}/>}</span></button><ChevronRight size={13}/></article>)}</>}
+        {(!compact || !editor) && <>{loading && !tasks.length ? <div className={styles.empty} role="status">Loading your tasks…</div> : !visible.length ? <div className={styles.empty}><CheckCheck size={30}/><strong>{query ? 'No matches' : filter === 'done' ? 'Progress will live here' : filter === 'archive' ? 'Nothing archived' : 'A little breathing room'}</strong><p>{query ? 'Try another title, project, or tag.' : filter === 'note' ? 'Add a task linked to this note.' : 'Add a task above, or explore another view.'}</p></div> : visible.map(task => <article className={styles.taskRow} data-glow={glowOf(task) || undefined} data-selected={selected === task._id} key={task._id} style={glowStyle(task)}><button className={styles.checkbox} aria-label={`${statusOf(task) === 'done' ? 'Reopen' : 'Complete'} ${task.title}`} aria-pressed={statusOf(task) === 'done'} disabled={busy.includes(task._id)} onClick={() => toggle(task)}>{statusOf(task) === 'done' && <Check size={12}/>}</button><div className={styles.rowBody}><button className={styles.taskSummary} onClick={() => setSelected(task._id)}><strong data-done={statusOf(task) === 'done'}>{task.title}</strong><span>{task.priority !== 'None' && <i data-priority={task.priority}>{task.priority}</i>}{task.dueDate && <time data-overdue={statusOf(task) !== 'done' && (daysUntil(task.dueDate) || 0) < 0}>{formatDue(task.dueDate)}</time>}{task.category && <span>{task.category}</span>}{task.subtasks?.length ? <span>{task.subtasks.filter(item => item.isCompleted).length}/{task.subtasks.length} steps</span> : null}{drafts[task._id] && <span>Draft</span>}{task.sourcePageId && <FileText size={12}/>}</span></button><div className={styles.rowExtras}><VendorPill task={task}/><GlowToggles task={task}/></div></div><ChevronRight size={13}/></article>)}</>}
       </div>
       <footer className={styles.footer}><span role="status">{notice || `${visible.length} ${visible.length === 1 ? 'task' : 'tasks'} in this view`}</span>{onAdvanced && <button onClick={onAdvanced}>Board & tools</button>}</footer>
     </div>

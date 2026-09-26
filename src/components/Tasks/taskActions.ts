@@ -1,5 +1,5 @@
 import {api} from './api';
-import {nextOccurrence, statusOf, Task} from './types';
+import {nextOccurrence, statusOf, Task, vendorIdOf} from './types';
 
 /** Complete consistently from the list or the editor; recurrence runs only after a successful save. */
 export async function saveTaskChanges(task: Task, patch: Record<string, unknown>) {
@@ -13,6 +13,7 @@ export async function saveTaskChanges(task: Task, patch: Record<string, unknown>
           title: saved.title, priority: saved.priority, dueDate: next, category: saved.category,
           notes: saved.notes, tags: saved.tags, recurrence: saved.recurrence, estimatedTime: saved.estimatedTime,
           sourcePageId: typeof saved.sourcePageId === 'object' ? saved.sourcePageId?._id : saved.sourcePageId,
+          vendorSectionId: vendorIdOf(saved),
           subtasks: saved.subtasks?.map(item => ({title: item.title, isCompleted: false})),
           status: 'todo', isCompleted: false,
         });

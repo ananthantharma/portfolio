@@ -3,9 +3,11 @@ import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
 import {authOptions} from '@/lib/auth';
 import '@/models/NotePage';
+import '@/models/NoteSection'; // registered for vendor population
+import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
-import ToDo from '@/models/ToDo';
+import ToDo, {VENDOR_POPULATE} from '@/models/ToDo';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,7 +107,7 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     }
 
     // Never accept ownership changes or Mongo operators from a client payload.
-    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order'];
+    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId'];
     data = Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key)));
     if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) return NextResponse.json({success: false, error: 'A task title is required'}, {status: 400});
     if (data.status !== undefined) {
@@ -113,10 +115,13 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
       data.isCompleted = data.status === 'done';
     } else if (data.isCompleted !== undefined) data.status = data.isCompleted ? 'done' : 'todo';
     if (data.dueDate === '') data.dueDate = null;
-    const updatedToDo = await ToDo.findOneAndUpdate({_id: id, userEmail: session.user.email}, {$set: data}, {new: true, runValidators: true}).populate({
-      path: 'sourcePageId',
-      select: 'title',
-    });
+    if (data.vendorSectionId !== undefined && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
+    const updatedToDo = await ToDo.findOneAndUpdate({_id: id, userEmail: session.user.email}, {$set: data}, {new: true, runValidators: true})
+      .populate({
+        path: 'sourcePageId',
+        select: 'title',
+      })
+      .populate(VENDOR_POPULATE(session.user.email));
 
     if (!updatedToDo) {
       return NextResponse.json({success: false, error: 'To Do not found'}, {status: 404});

@@ -4,6 +4,7 @@
 import {
   Archive,
   Bookmark,
+  Building2,
   CalendarDays,
   CheckCircle2,
   Circle,
@@ -30,6 +31,7 @@ import {ExtractedTask} from './emailParse';
 import LinkedNoteSection from './LinkedNoteSection';
 import {attachmentFromPaste} from './pasteImage';
 import PropertyCard from './PropertyCard';
+import {VendorSelect} from './TaskExtras';
 import {
   Attachment,
   isPinned,
@@ -43,6 +45,8 @@ import {
   statusOf,
   Subtask,
   Task,
+  TaskVendor,
+  vendorOf,
 } from './types';
 
 interface TaskWindowProps {
@@ -103,6 +107,7 @@ export default function TaskWindow({
   );
   const [recurrence, setRecurrence] = useState<RecurrenceFreq>(task?.recurrence?.freq || 'none');
   const [category, setCategory] = useState(task?.category || prefill?.category || '');
+  const [vendor, setVendor] = useState<TaskVendor | null>(task ? vendorOf(task) : null);
   const [tags, setTags] = useState<string[]>(task?.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [subtasks, setSubtasks] = useState<Subtask[]>(task?.subtasks || []);
@@ -278,6 +283,7 @@ export default function TaskWindow({
         isCompleted: status === 'done',
         ...(dueDate ? {dueDate: new Date(`${dueDate}T17:00:00`).toISOString()} : {}),
         ...(category.trim() ? {category: category.trim()} : {}),
+        ...(vendor ? {vendorSectionId: vendor._id} : {}),
         ...(notes.trim() ? {notes: notes.trim()} : {}),
         ...(recurrence !== 'none' ? {recurrence: {freq: recurrence, interval: 1}} : {}),
         tags,
@@ -630,6 +636,18 @@ export default function TaskWindow({
                   onKeyDown={e => e.key === 'Enter' && addTag()}
                   placeholder="+ tag ↵"
                   value={tagInput}
+                />
+              </div>
+            </PropertyCard>
+
+            <PropertyCard icon={<Building2 className="h-3 w-3" />} label="Vendor" tint="sky">
+              <div className="[&_select]:w-full [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-200 [&_select]:bg-white [&_select]:px-2.5 [&_select]:py-1.5 [&_select]:text-[12.5px] [&_select]:text-slate-700 dark:[&_select]:border-slate-600 dark:[&_select]:bg-slate-800 dark:[&_select]:text-white">
+                <VendorSelect
+                  onChange={next => {
+                    setVendor(next);
+                    commit({vendorSectionId: next?._id || null});
+                  }}
+                  value={vendor}
                 />
               </div>
             </PropertyCard>

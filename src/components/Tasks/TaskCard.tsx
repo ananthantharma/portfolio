@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import {colorForLabel, daysUntil, formatDue, formatMinutes, isPinned, NEON_COLORS, PRIORITY_META, staleDays, subtaskProgress, Task} from './types';
+import {GlowToggles, glowStyle, VendorPill} from './TaskExtras';
+import {colorForLabel, daysUntil, formatDue, formatMinutes, PRIORITY_META, staleDays, subtaskProgress, Task} from './types';
 
 interface TaskCardProps {
   task: Task;
@@ -51,8 +52,6 @@ export default function TaskCard({
   const dueToday = !done && d === 0;
   const {done: subDone, total: subTotal} = subtaskProgress(task);
   const prio = PRIORITY_META[task.priority];
-  const pinned = isPinned(task);
-  const neon = NEON_COLORS.find(n => n.key === task.neonColor);
   const stale = !done && staleDays(task) >= 14;
 
   const handleClick = () => {
@@ -67,6 +66,7 @@ export default function TaskCard({
           selected ? 'border-green-500' : 'border-slate-200/80 hover:border-slate-300 dark:border-slate-700'
         }`}
         onClick={handleClick}
+        style={glowStyle(task)}
         onContextMenu={e => onContextMenu?.(task, e)}>
         <button
           className="shrink-0 text-slate-300 hover:text-emerald-500"
@@ -103,10 +103,9 @@ export default function TaskCard({
         selected
           ? 'border-green-500 shadow-[0_4px_20px_-6px_rgba(34,197,94,0.3)]'
           : 'border-slate-200/80 shadow-sm hover:-translate-y-px hover:border-slate-300 hover:shadow-md dark:border-slate-700'
-      } ${done ? 'opacity-60' : ''} ${compact ? 'p-3' : 'p-3.5'} ${
-        pinned && neon ? `ring-2 ${neon.ring}` : ''
-      }`}
+      } ${done ? 'opacity-60' : ''} ${compact ? 'p-3' : 'p-3.5'}`}
       onClick={handleClick}
+      style={glowStyle(task)}
       onContextMenu={e => onContextMenu?.(task, e)}>
       {/* Priority spine */}
       <span className={`absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full ${prio.dot} ${task.priority === 'None' ? 'opacity-0' : ''}`} />
@@ -188,6 +187,7 @@ export default function TaskCard({
                 {task.category}
               </span>
             )}
+            <VendorPill task={task} />
             {(task.tags || []).slice(0, compact ? 2 : 4).map(tag => (
               <span
                 className="rounded-md px-1.5 py-0.5"
@@ -197,6 +197,12 @@ export default function TaskCard({
               </span>
             ))}
           </div>
+
+          {!bulkMode && (
+            <div className="mt-1.5 flex justify-end">
+              <GlowToggles task={task} />
+            </div>
+          )}
 
           {/* Subtask progress bar */}
           {subTotal > 0 && !compact && (

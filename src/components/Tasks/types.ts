@@ -37,6 +37,8 @@ export interface Task {
   tags?: string[];
   attachments?: Attachment[];
   sourcePageId?: {_id: string; title: string} | string | null;
+  // Vendor = a section in a vendor notebook; populated with its name when loaded from the API
+  vendorSectionId?: TaskVendor | string | null;
   tabName?: string;
   order?: number;
   aiGenerated?: boolean;
@@ -50,6 +52,24 @@ export interface Task {
   isMinimized?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TaskVendor {
+  _id: string;
+  name: string;
+  categoryId?: string;
+}
+
+/** The vendor a task is linked to, when its name is known. */
+export function vendorOf(task: Pick<Task, 'vendorSectionId'>): TaskVendor | null {
+  const v = task.vendorSectionId;
+  return v && typeof v === 'object' && v._id ? v : null;
+}
+
+export function vendorIdOf(task: Pick<Task, 'vendorSectionId'>): string | null {
+  const v = task.vendorSectionId;
+  if (!v) return null;
+  return typeof v === 'string' ? v : v._id || null;
 }
 
 export type ViewMode = 'list' | 'board' | 'matrix' | 'calendar' | 'insights';
@@ -371,6 +391,18 @@ export const NEON_COLORS: {key: NonNullable<Task['neonColor']>; label: string; r
 export function isPinned(task: Task): boolean {
   return !!task.hasNeonBorder;
 }
+
+/** The neon glow colour a task card shows, if any (same fields as the legacy highlight). */
+export function glowOf(task: Pick<Task, 'hasNeonBorder' | 'neonColor'>): NonNullable<Task['neonColor']> | null {
+  return task.hasNeonBorder && task.neonColor ? task.neonColor : null;
+}
+
+// Bright, clearly different neons so each highlight is recognisable at a glance
+export const NEON_GLOW: Record<NonNullable<Task['neonColor']>, {hex: string; label: string}> = {
+  red: {hex: '#ff2d6f', label: 'Red'},
+  blue: {hex: '#00d4ff', label: 'Blue'},
+  green: {hex: '#39ff14', label: 'Green'},
+};
 
 // ── Streak ────────────────────────────────────────────────────────────────────
 

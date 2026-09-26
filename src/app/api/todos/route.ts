@@ -8,8 +8,10 @@ import {authOptions} from '@/lib/auth';
 
 import {NextResponse} from 'next/server';
 
+import mongoose from 'mongoose';
+
 import dbConnect from '@/lib/dbConnect';
-import ToDo from '@/models/ToDo';
+import ToDo, {VENDOR_POPULATE} from '@/models/ToDo';
 
 export const runtime = 'nodejs';
 
@@ -107,7 +109,10 @@ export async function POST(req: Request) {
       attachmentsCount: data.attachments?.length || 0,
     });
 
+    if (data.vendorSectionId && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
     const newToDo = await ToDo.create(data);
+    // Return the vendor name with the new task so its vendor pill can render immediately
+    await newToDo.populate(VENDOR_POPULATE(session.user.email));
 
     console.log('To Do Created:', newToDo._id);
     return NextResponse.json({success: true, data: newToDo}, {status: 201});
@@ -137,7 +142,8 @@ export async function GET(_req: Request) {
           path: 'sectionId',
           select: 'categoryId',
         },
-      });
+      })
+      .populate(VENDOR_POPULATE(session.user.email));
 
     console.log(`Fetched ${todos.length} todos`);
     return NextResponse.json({success: true, data: todos});

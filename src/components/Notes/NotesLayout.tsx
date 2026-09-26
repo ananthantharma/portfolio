@@ -6,7 +6,8 @@ import dynamic from 'next/dynamic';
 import styles from './Workspace.module.css';
 import TaskWorkspace from '../Tasks/TaskWorkspace';
 import {TaskProvider, useTaskCollection} from '../Tasks/TaskProvider';
-import {OpenWorkspaceNoteContext} from '../Tasks/WorkspaceNavigation';
+import {OpenVendorContext, OpenWorkspaceNoteContext} from '../Tasks/WorkspaceNavigation';
+import {refreshVendorOptions} from '../Tasks/TaskExtras';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -500,6 +501,18 @@ const NotesLayout: React.FC = React.memo(() => {
     [handleJumpToTask, changeView],
   );
 
+  // A task's vendor pill opens that vendor's page
+  const openVendor = useCallback(
+    (sectionId: string, notebookId?: string) => {
+      if (notebookId) setSelectedCategoryId(notebookId);
+      setSelectedSectionId(sectionId);
+      setSelectedPageId(null);
+      changeView('notes');
+      setMobileNavigation(false);
+    },
+    [changeView],
+  );
+
   // Deep link support: /notes?pageId=<id> (e.g. from a task's "Open note page" link) jumps
   // straight to that page, resolving its section/category context first.
   useEffect(() => {
@@ -549,6 +562,7 @@ const NotesLayout: React.FC = React.memo(() => {
             : cat,
         ),
       );
+      if (updates.kind) refreshVendorOptions();
       // Callers that create a classification need its new id
       return saved.noteClasses || [];
     },
@@ -606,6 +620,7 @@ const NotesLayout: React.FC = React.memo(() => {
         });
         setSections(prev => [...prev, response.data.data]);
         setSelectedSectionId(response.data.data._id);
+        refreshVendorOptions();
       } catch (error) {
         console.error('Error adding section:', error);
       }
@@ -618,6 +633,7 @@ const NotesLayout: React.FC = React.memo(() => {
       try {
         const response = await axios.put(`/api/notes/sections/${id}`, {name, color, icon, image});
         setSections(prev => prev.map(sec => (sec._id === id ? response.data.data : sec)));
+        refreshVendorOptions();
       } catch (error) {
         console.error('Error renaming section:', error);
       }
@@ -630,6 +646,7 @@ const NotesLayout: React.FC = React.memo(() => {
       try {
         await axios.delete(`/api/notes/sections/${id}`);
         setSections(prev => prev.filter(sec => sec._id !== id));
+        refreshVendorOptions();
         if (selectedSectionId === id) setSelectedSectionId(null);
       } catch (error) {
         console.error('Error deleting section:', error);
@@ -1193,6 +1210,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   return (
     <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
+    <OpenVendorContext.Provider value={openVendor}>
     <BadgeSettingsProvider>
       <div className={styles.workspace}>
         <nav aria-label="Tools" className={styles.toolbar} data-expanded={isToolbarExpanded}>
@@ -1820,6 +1838,7 @@ const NotesLayout: React.FC = React.memo(() => {
         )}
       </div>
     </BadgeSettingsProvider>
+    </OpenVendorContext.Provider>
     </OpenWorkspaceNoteContext.Provider>
   );
 });

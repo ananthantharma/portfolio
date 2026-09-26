@@ -1,0 +1,61 @@
+.glowGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.glowButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: #b9bfb1;
+  transition:
+    color 0.12s,
+    background 0.12s,
+    filter 0.12s;
+}
+.glowButton:hover {
+  color: var(--neon);
+  background: color-mix(in srgb, var(--neon) 12%, transparent);
+}
+.glowButton[data-on='true'] {
+  color: var(--neon);
+  background: color-mix(in srgb, var(--neon) 16%, transparent);
+  filter: drop-shadow(0 0 3px var(--neon));
+}
+.glowButton[data-on='true'] svg {
+  fill: color-mix(in srgb, var(--neon) 35%, transparent);
+}
+.glowButton:disabled {
+  cursor: progress;
+}
+.glowError {
+  font-size: 10px;
+  color: #b4532a;
+  margin-left: 4px;
+}
+.vendorPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  background: #e7eef8;
+  color: #2f5d8a;
+  border: 1px solid #cddcf0;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.vendorPill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+button.vendorPill:hover {
+  background: #d9e6f6;
+  border-color: #b3c9e8;
+}
