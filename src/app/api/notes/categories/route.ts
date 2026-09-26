@@ -94,8 +94,21 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const count = await NoteCategory.countDocuments({userEmail: session.user.email});
+    const kind = body.kind === 'vendor' ? 'vendor' : 'standard';
     const category = await NoteCategory.create({
       ...body,
+      kind,
+      // Vendor notebooks start with a useful set of note classifications the user can edit
+      noteClasses:
+        kind === 'vendor' && !Array.isArray(body.noteClasses)
+          ? [
+              {name: 'Meeting', color: '#46674d'},
+              {name: 'QBR', color: '#3f6f9f'},
+              {name: 'Issue', color: '#b4532a'},
+              {name: 'Commercial', color: '#8a6a14'},
+              {name: 'Decision', color: '#6a4fa3'},
+            ]
+          : body.noteClasses,
       userEmail: session.user.email,
       order: count,
     });

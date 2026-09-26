@@ -62,7 +62,13 @@ interface CategoryListProps {
   categories: INoteCategory[];
   selectedCategoryId: string | null;
   onSelectCategory: (id: string) => void;
-  onAddCategory: (name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
+  onAddCategory: (
+    name: string,
+    color?: string,
+    icon?: string,
+    image?: string | null,
+    kind?: 'standard' | 'vendor',
+  ) => Promise<void>;
   onRenameCategory: (id: string, name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
   onReorderCategories: (newOrder: INoteCategory[]) => void;
@@ -232,6 +238,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     dbSize,
   }) => {
     const [isAdding, setIsAdding] = useState(false);
+    const [newIsVendor, setNewIsVendor] = useState(false);
 
     const {data: session} = useSession();
     const userName = useMemo(() => {
@@ -320,14 +327,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleAdd = useCallback(() => {
       if (newCategoryName.trim()) {
-        onAddCategory(newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage);
+        onAddCategory(newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newIsVendor ? 'vendor' : 'standard');
+        setNewIsVendor(false);
         setNewCategoryName('');
         setNewCategoryColor('#000000');
         setNewCategoryIcon('Folder');
         setNewCategoryImage(null);
         setIsAdding(false);
       }
-    }, [newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, onAddCategory]);
+    }, [newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newIsVendor, onAddCategory]);
 
     const startEditing = useCallback((category: INoteCategory) => {
       setEditingId(category._id as string);
@@ -450,6 +458,20 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 <div className="mb-3">
                   <ColorPicker onSelectColor={setNewCategoryColor} selectedColor={newCategoryColor} />
                 </div>
+                <label className="mb-3 flex cursor-pointer items-start gap-2 rounded-lg bg-slate-50 p-2 text-[12px] text-gray-700">
+                  <input
+                    checked={newIsVendor}
+                    className="mt-0.5"
+                    onChange={e => setNewIsVendor(e.target.checked)}
+                    type="checkbox"
+                  />
+                  <span>
+                    <strong className="font-semibold">Vendor notebook</strong>
+                    <span className="block text-[11px] text-gray-500">
+                      Each section is a vendor with an org chart, key contacts, links, agreements, and classified notes.
+                    </span>
+                  </span>
+                </label>
                 <div className="flex justify-end gap-2">
                   <button
                     className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"

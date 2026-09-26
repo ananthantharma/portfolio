@@ -1,7 +1,16 @@
 import mongoose, {Document, Model, Schema} from 'mongoose';
 
+export interface INoteClass {
+  _id?: string;
+  name: string;
+  color: string;
+}
+
 export interface INoteCategory extends Document {
   name: string;
+  kind?: 'standard' | 'vendor';
+  noteClasses?: INoteClass[];
+  noteSort?: string;
   color?: string;
   icon?: string;
   image?: string | null;
@@ -40,6 +49,23 @@ const NoteCategorySchema: Schema = new Schema(
     order: {
       type: Number,
       default: 0,
+    },
+    // 'vendor' notebooks treat every section as a vendor with a profile page
+    kind: {
+      type: String,
+      enum: ['standard', 'vendor'],
+      default: 'standard',
+    },
+    // User-defined classifications for notes in this notebook (used by vendor notebooks)
+    noteClasses: [
+      {
+        name: {type: String, required: true, maxlength: 40},
+        color: {type: String, default: '#648158'},
+      },
+    ],
+    noteSort: {
+      type: String,
+      default: 'custom',
     },
   },
   {

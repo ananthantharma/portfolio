@@ -727,3 +727,19 @@
 @media(max-width:900px) {
   .sidebarRail, .taskSidebar, .viewTabs .showTaskSidebar { display:none; }
 }
+/* Tools sidebar (far left): icon-only by default, expands to icons + labels */
+.toolbar { width:52px; flex-shrink:0; display:flex; flex-direction:column; min-height:0; padding:18px 8px 12px; background:#e9e8e1; border-right:1px solid #deddd4; overflow:hidden; transition:width .18s ease; }
+.toolbar[data-expanded='true'] { width:208px; }
+.toolbar button { display:flex; align-items:center; gap:11px; width:100%; min-height:36px; padding:0 9px; border-radius:8px; color:#5f665c; font-size:12.5px; text-align:left; white-space:nowrap; }
+.toolbar button:hover { background:#dcdcd2; color:#2f4a33; }
+.toolbar button svg { width:18px; height:18px; }
+.toolbar button span { overflow:hidden; text-overflow:ellipsis; opacity:1; transition:opacity .12s ease; }
+.toolbar[data-expanded='false'] button span { opacity:0; }
+.toolbarToggle { margin-bottom:10px; padding-bottom:12px !important; border-bottom:1px solid #d6d6cc; border-radius:8px 8px 0 0 !important; color:#365238 !important; font-weight:600; }
+.toolbarToggle svg:last-child:not(:first-child) { margin-left:auto; width:15px !important; height:15px !important; color:#7d8576; }
+.toolbarItems { flex:1; min-height:0; display:flex; flex-direction:column; gap:2px; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; }
+.toolbarItems::-webkit-scrollbar { display:none; }
+@media(min-width:901px) { .tools { display:none; } }
+@media(max-width:900px) { .toolbar { display:none; } }
+.notebookKindToggle { margin-top:10px; padding:5px 10px; border:1px solid #e0e1d8; border-radius:999px; font-size:11px; color:#6f7b68; }
+.notebookKindToggle:hover { border-color:#b9c4ae; color:#365238; background:#f2f5eb; }

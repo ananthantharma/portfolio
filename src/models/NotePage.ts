@@ -28,6 +28,7 @@ export interface INotePage extends Document {
   description?: string;
   isStarred?: boolean;
   isPinned?: boolean;
+  noteClass?: string | null; // _id of one of the notebook's noteClasses
   createdAt: Date;
   updatedAt: Date;
 }
@@ -112,6 +113,10 @@ const NotePageSchema: Schema = new Schema(
     order: {
       type: Number,
       default: 0,
+    },
+    noteClass: {
+      type: String,
+      default: null,
     },
   },
   {

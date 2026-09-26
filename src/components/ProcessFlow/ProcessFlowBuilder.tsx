@@ -200,12 +200,52 @@ const HTML = `
 </div>
 `;
 
-export default function ProcessFlowBuilder() {
+// Embedded mode: the builder opens over another page (e.g. a vendor's org chart),
+// starts from the caller's data, and saves back to the caller instead of named flows.
+export interface ProcessFlowEmbed {
+  title: string;
+  tag?: string;
+  initialData?: unknown;
+  autoArrange?: boolean;
+  startWithOutline?: boolean;
+  onSave: (data: unknown, png: Blob | null) => Promise<void>;
+  onClose: () => void;
+}
+
+function escapeHtml(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function buildHtml(embed?: ProcessFlowEmbed) {
+  if (!embed) return HTML;
+  return HTML.replace(
+    '<a href="/notes" class="back-btn" title="Back to Notes">← Notes</a>',
+    '<button class="back-btn" id="pfbClose" type="button" title="Close without saving">✕ Close</button>',
+  )
+    .replace('<h1>Process Flow Builder</h1>', `<h1>${escapeHtml(embed.title)}</h1>`)
+    .replace('<span class="tag">VISIO-STYLE EDITOR</span>', `<span class="tag">${escapeHtml(embed.tag || 'EDITOR')}</span>`)
+    .replace(
+      '<button class="ghost" id="saveLocal"',
+      '<button class="accent" id="saveEmbed" type="button">Save to notebook</button><button class="ghost" id="saveLocal" style="display:none"',
+    )
+    .replace('<button class="ghost" id="loadLocal"', '<button class="ghost" id="loadLocal" style="display:none"');
+}
+
+export default function ProcessFlowBuilder({embed}: {embed?: ProcessFlowEmbed} = {}) {
   const initRef = useRef(false);
+  const embedRef = useRef(embed);
+  embedRef.current = embed;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const htmlRef = useRef<string>();
+  if (htmlRef.current === undefined) htmlRef.current = buildHtml(embed);
 
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
+
+    // The builder owns this markup: inject it here (not via dangerouslySetInnerHTML) so a
+    // parent re-render can never swap the DOM out from under the handlers bound below
+    rootRef.current!.innerHTML = htmlRef.current!;
 
     const styleEl = document.createElement('style');
     styleEl.id = 'pfb-styles';
@@ -343,7 +383,9 @@ export default function ProcessFlowBuilder() {
     const history: string[] = [];
     const redo: string[] = [];
     const HISTORY_CAP = 80;
+    let dirty=false;
     function snapshot(){
+      dirty=true;
       history.push(JSON.stringify(state));
       if (history.length>HISTORY_CAP) history.shift();
       redo.length=0;
@@ -1190,8 +1232,8 @@ export default function ProcessFlowBuilder() {
     }
 
     // ── PNG export ─────────────────────────────────────────────────────────
-    function exportPNG(){
-      if (!state.nodes.length){alert('Nothing to export.');return;}
+    function renderPngCanvas(): HTMLCanvasElement|null{
+      if (!state.nodes.length) return null;
       let minx=1e9,miny=1e9,maxx=0,maxy=0;
       state.nodes.forEach(n=>{minx=Math.min(minx,n.x);miny=Math.min(miny,n.y);maxx=Math.max(maxx,n.x+n.w);maxy=Math.max(maxy,n.y+n.h);});
       const pad=40,W=maxx-minx+pad*2,H=maxy-miny+pad*2;
@@ -1232,6 +1274,11 @@ export default function ProcessFlowBuilder() {
         if(n.sub){x.font='11.5px '+(n.font||'sans-serif');wrapText(x,n.sub,n.x+n.w/2,n.y+24+tl*16+4,n.w-24,15);}
         if(n.badge){x.font='17px sans-serif';x.textAlign='center';x.fillText(n.badge,n.x+n.w-2,n.y+6);}
       });
+      return c;
+    }
+    function exportPNG(){
+      const c=renderPngCanvas();
+      if (!c){alert('Nothing to export.');return;}
       c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b!);a.download='process-flow.png';a.click();});
     }
     function rr(c: CanvasRenderingContext2D,x:number,y:number,w:number,h:number,r:number){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
@@ -1421,7 +1468,45 @@ export default function ProcessFlowBuilder() {
       edgeId=7;
     }
 
-    seed();render();applyZoom();
+    const embed=embedRef.current;
+    if (embed){
+      (document.getElementById('pfbClose') as HTMLButtonElement).onclick=()=>{
+        if (dirty&&!confirm('Close without saving your changes?')) return;
+        embedRef.current?.onClose();
+      };
+      const saveBtn=document.getElementById('saveEmbed') as HTMLButtonElement;
+      saveBtn.onclick=async ()=>{
+        const orig=saveBtn.textContent!;
+        saveBtn.textContent='Saving…';saveBtn.disabled=true;
+        try{
+          const c=renderPngCanvas();
+          const png=c?await new Promise<Blob|null>(resolve=>c.toBlob(resolve,'image/png')):null;
+          await embedRef.current!.onSave(stateToSave(),png);
+          dirty=false;
+          saveBtn.textContent='✓ Saved';
+          setTimeout(()=>{saveBtn.textContent=orig;},1500);
+        }catch(err){
+          console.error(err);
+          alert('Could not save. Please try again.');
+          saveBtn.textContent=orig;
+        }finally{
+          saveBtn.disabled=false;
+        }
+      };
+    }
+
+    if (embed?.initialData){
+      applyState(embed.initialData as AppState);
+      applyZoom();
+      // Node heights are measured after the first paint, so arrange and fit on the next frames
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if (embed.autoArrange) autoLayout();
+        fit();
+        if (embed.startWithOutline) showOutlineModal();
+      }));
+    }else{
+      seed();render();applyZoom();
+    }
     cw.style.background=state.canvasBg;
 
     return ()=>{
@@ -1434,5 +1519,5 @@ export default function ProcessFlowBuilder() {
     };
   },[]);
 
-  return <div id="pfb-root" dangerouslySetInnerHTML={{__html:HTML}} />;
+  return <div id="pfb-root" ref={rootRef} style={embed ? {zIndex: 60} : undefined} />;
 }

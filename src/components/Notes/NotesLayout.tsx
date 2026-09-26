@@ -23,12 +23,31 @@ import {
   BookOpenIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  PresentationChartBarIcon,
+  CalendarDaysIcon,
+  CloudIcon,
+  UserGroupIcon,
+  BookmarkIcon,
+  ChatBubbleBottomCenterTextIcon,
+  ExclamationCircleIcon,
+  FlagIcon,
+  BellAlertIcon,
+  MicrophoneIcon,
+  PencilSquareIcon,
+  PhotoIcon,
+  ClipboardDocumentCheckIcon,
+  AdjustmentsHorizontalIcon,
+  ScaleIcon,
+  FaceSmileIcon,
+  ShieldCheckIcon,
+  VideoCameraIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {signOut, useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
-import {INoteCategory} from '@/models/NoteCategory';
+import {INoteCategory, INoteClass} from '@/models/NoteCategory';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
@@ -42,6 +61,7 @@ import NoteEditor from './NoteEditor';
 // import SearchModal from './SearchModal'; // Replaced by CommandPalette
 import SectionPageList from './SectionPageList';
 import SectionDashboard from './SectionDashboard';
+import VendorPage from './Vendor/VendorPage';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
 import MovePageModal from './MovePageModal';
@@ -145,6 +165,16 @@ const NotesLayout: React.FC = React.memo(() => {
 
     setIsNotebookSidebarCollapsed(localStorage.getItem('NOTES_NOTEBOOK_SIDEBAR_COLLAPSED') === 'true');
     setIsTaskSidebarCollapsed(localStorage.getItem('NOTES_TASK_SIDEBAR_COLLAPSED') === 'true');
+    setIsToolbarExpanded(localStorage.getItem('NOTES_TOOLBAR_EXPANDED') === 'true');
+  }, []);
+
+  // Tools sidebar (far left) — icon-only by default, expandable to icons + labels
+  const [isToolbarExpanded, setIsToolbarExpanded] = useState(false);
+  const toggleToolbar = useCallback(() => {
+    setIsToolbarExpanded(prev => {
+      localStorage.setItem('NOTES_TOOLBAR_EXPANDED', String(!prev));
+      return !prev;
+    });
   }, []);
 
   const toggleNotebookSidebar = useCallback(() => {
@@ -490,14 +520,37 @@ const NotesLayout: React.FC = React.memo(() => {
   }, []);
 
   // Category Operations
-  const handleAddCategory = useCallback(async (name: string, color?: string, icon?: string, image?: string | null) => {
+  const handleAddCategory = useCallback(
+    async (name: string, color?: string, icon?: string, image?: string | null, kind?: 'standard' | 'vendor') => {
     try {
-      const response = await axios.post('/api/notes/categories', {name, color, icon, image});
+      const response = await axios.post('/api/notes/categories', {name, color, icon, image, kind});
       setCategories(prev => [...prev, response.data.data]);
     } catch (error) {
       console.error('Error adding category:', error);
     }
-  }, []);
+    },
+    [],
+  );
+
+  // Notebook-level settings (vendor note classifications and sort order)
+  const handleUpdateCategory = useCallback(
+    async (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string; kind?: 'standard' | 'vendor'}) => {
+      // Sort changes feel instant; classifications wait for the server so new ones get ids
+      if (updates.noteSort) {
+        setCategories(prev => prev.map(cat => (cat._id === id ? ({...cat, noteSort: updates.noteSort} as INoteCategory) : cat)));
+      }
+      const response = await axios.put(`/api/notes/categories/${id}`, updates);
+      const saved = response.data.data as INoteCategory;
+      setCategories(prev =>
+        prev.map(cat =>
+          cat._id === id
+            ? ({...cat, kind: saved.kind, noteClasses: saved.noteClasses, noteSort: saved.noteSort} as INoteCategory)
+            : cat,
+        ),
+      );
+    },
+    [],
+  );
 
   const handleRenameCategory = useCallback(
     async (id: string, name: string, color?: string, icon?: string, image?: string | null) => {
@@ -613,6 +666,22 @@ const NotesLayout: React.FC = React.memo(() => {
         setSelectedPageId(response.data.data._id as string);
       } catch (error) {
         console.error('Error adding page:', error);
+      }
+    },
+    [selectedSectionId],
+  );
+
+  // Notes created from a vendor page can start with a classification; they open straight in the editor
+  const handleAddVendorNote = useCallback(
+    async (title: string, extra?: Partial<INotePage>) => {
+      if (!selectedSectionId) return;
+      try {
+        const response = await axios.post('/api/notes/pages', {...extra, title, sectionId: selectedSectionId});
+        setPages(prev => [...prev, response.data.data]);
+        setSelectedPageId(response.data.data._id as string);
+      } catch (error) {
+        console.error('Error adding vendor note:', error);
+        alert('Could not create the note. Try again.');
       }
     },
     [selectedSectionId],
@@ -852,6 +921,12 @@ const NotesLayout: React.FC = React.memo(() => {
     pages.find(p => p._id === selectedPageId) || categoryPages.find(p => p._id === selectedPageId) || null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
+  const isVendorNotebook = currentCategory?.kind === 'vendor';
+
+  const handleAddVendor = useCallback(() => {
+    const name = window.prompt('Vendor name');
+    if (name?.trim()) handleAddSection(name.trim().slice(0, 60));
+  }, [handleAddSection]);
 
   // Load recent pages from localStorage on mount
   useEffect(() => {
@@ -1035,6 +1110,45 @@ const NotesLayout: React.FC = React.memo(() => {
   const handleOpenSettings = useCallback(() => setIsSettingsOpen(true), []);
   const handleCloseSettings = useCallback(() => setIsSettingsOpen(false), []);
 
+  const toolItems = useMemo<Array<{label: string; Icon: typeof SparklesIcon; action: () => void}>>(
+    () => [
+      {label: 'Executive overview', Icon: PresentationChartBarIcon, action: () => setIsExecutiveModalOpen(true)},
+      {label: 'AI assistant', Icon: SparklesIcon, action: handleOpenAIChat},
+      {label: 'Calendar', Icon: CalendarDaysIcon, action: () => setIsCalendarOpen(true)},
+      {label: 'Google Drive', Icon: CloudIcon, action: () => setIsDriveOpen(true)},
+      {label: 'Contacts', Icon: UserGroupIcon, action: handleOpenContactList},
+      {label: 'Bookmarks', Icon: BookmarkIcon, action: () => setIsBookmarksOpen(true)},
+      {label: 'Prompt library', Icon: ChatBubbleBottomCenterTextIcon, action: () => setIsPromptLibraryOpen(true)},
+      {label: 'Important notes', Icon: ExclamationCircleIcon, action: handleOpenImportant},
+      {label: 'Flagged notes', Icon: FlagIcon, action: handleOpenKeyTasks},
+      {label: 'Note reminders', Icon: BellAlertIcon, action: handleOpenToDoList},
+      {label: 'Record audio', Icon: MicrophoneIcon, action: () => setIsAudioRecorderOpen(true)},
+      {label: 'Rewrite', Icon: PencilSquareIcon, action: handleOpenRewrite},
+      {label: 'Image extraction', Icon: PhotoIcon, action: handleOpenImageExtract},
+      {label: 'Assessment', Icon: ClipboardDocumentCheckIcon, action: handleOpenAssessment},
+      {label: 'Style refiner', Icon: AdjustmentsHorizontalIcon, action: handleOpenRefiner},
+      {label: 'Contract review', Icon: ScaleIcon, action: handleOpenRedline},
+      {label: 'Humanizer', Icon: FaceSmileIcon, action: handleOpenHumanizer},
+      {label: 'Truth teller', Icon: ShieldCheckIcon, action: handleOpenTruthTeller},
+      ...(isAdmin ? [{label: 'Camera', Icon: VideoCameraIcon, action: () => setIsCameraOpen(true)}] : []),
+    ],
+    [
+      handleOpenAIChat,
+      handleOpenContactList,
+      handleOpenImportant,
+      handleOpenKeyTasks,
+      handleOpenToDoList,
+      handleOpenRewrite,
+      handleOpenImageExtract,
+      handleOpenAssessment,
+      handleOpenRefiner,
+      handleOpenRedline,
+      handleOpenHumanizer,
+      handleOpenTruthTeller,
+      isAdmin,
+    ],
+  );
+
   // Focus Mode Toggle
   const toggleFocusMode = useCallback(() => {
     setIsFocusMode(prev => !prev);
@@ -1078,6 +1192,26 @@ const NotesLayout: React.FC = React.memo(() => {
     <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
     <BadgeSettingsProvider>
       <div className={styles.workspace}>
+        <nav aria-label="Tools" className={styles.toolbar} data-expanded={isToolbarExpanded}>
+          <button
+            aria-expanded={isToolbarExpanded}
+            aria-label={isToolbarExpanded ? 'Collapse tools' : 'Expand tools'}
+            className={styles.toolbarToggle}
+            onClick={toggleToolbar}
+            title={isToolbarExpanded ? 'Collapse tools' : 'Expand tools'}>
+            <WrenchScrewdriverIcon />
+            <span>Tools</span>
+            {isToolbarExpanded ? <ChevronDoubleLeftIcon /> : null}
+          </button>
+          <div className={styles.toolbarItems}>
+            {toolItems.map(({label, Icon, action}) => (
+              <button aria-label={label} key={label} onClick={action} title={isToolbarExpanded ? undefined : label}>
+                <Icon />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
         {!isFocusMode && workspaceView === 'notes' && isNotebookSidebarCollapsed && (
           <aside aria-label="Notebook sidebar (minimized)" className={styles.sidebarRail}>
             <button aria-label="Expand notebook sidebar" onClick={toggleNotebookSidebar} title="Expand sidebar">
@@ -1183,6 +1317,18 @@ const NotesLayout: React.FC = React.memo(() => {
               </button>
               <ChevronRightIcon />
               <strong>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
+              {currentSection && workspaceView === 'notes' && (
+                <>
+                  <ChevronRightIcon />
+                  {selectedPage ? (
+                    <button onClick={() => setSelectedPageId(null)} title={isVendorNotebook ? 'Back to vendor page' : 'Back to section'}>
+                      {currentSection.name}
+                    </button>
+                  ) : (
+                    <span>{currentSection.name}</span>
+                  )}
+                </>
+              )}
               {selectedPage && workspaceView === 'notes' && (
                 <>
                   <ChevronRightIcon />
@@ -1191,6 +1337,7 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
             </div>
             <div className={styles.headerActions}>
+              {/* Phones have no room for the tools sidebar, so they keep this dropdown */}
               <details className={styles.tools}>
                 <summary>
                   <SparklesIcon />
@@ -1198,34 +1345,14 @@ const NotesLayout: React.FC = React.memo(() => {
                   <ChevronDownIcon />
                 </summary>
                 <div>
-                  {[
-                    ['Executive overview', () => setIsExecutiveModalOpen(true)],
-                    ['AI assistant', handleOpenAIChat],
-                    ['Calendar', () => setIsCalendarOpen(true)],
-                    ['Google Drive', () => setIsDriveOpen(true)],
-                    ['Contacts', handleOpenContactList],
-                    ['Bookmarks', () => setIsBookmarksOpen(true)],
-                    ['Prompt library', () => setIsPromptLibraryOpen(true)],
-                    ['Important notes', handleOpenImportant],
-                    ['Flagged notes', handleOpenKeyTasks],
-                    ['Note reminders', handleOpenToDoList],
-                    ['Record audio', () => setIsAudioRecorderOpen(true)],
-                    ['Rewrite', handleOpenRewrite],
-                    ['Image extraction', handleOpenImageExtract],
-                    ['Assessment', handleOpenAssessment],
-                    ['Style refiner', handleOpenRefiner],
-                    ['Contract review', handleOpenRedline],
-                    ['Humanizer', handleOpenHumanizer],
-                    ['Truth teller', handleOpenTruthTeller],
-                    ...(isAdmin ? [['Camera', () => setIsCameraOpen(true)]] : []),
-                  ].map(([label, action]) => (
+                  {toolItems.map(({label, action}) => (
                     <button
-                      key={label as string}
+                      key={label}
                       onClick={e => {
-                        (action as () => void)();
+                        action();
                         e.currentTarget.closest('details')?.removeAttribute('open');
                       }}>
-                      {label as string}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -1394,7 +1521,19 @@ const NotesLayout: React.FC = React.memo(() => {
                   />
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
-              selectedSectionId ? (
+              selectedSectionId && isVendorNotebook && currentSection && currentCategory ? (
+                <VendorPage
+                  loadingPages={loadingPages}
+                  notebook={currentCategory}
+                  onAddPage={handleAddVendorNote}
+                  onOpenPage={handleOpenPageFromDashboard}
+                  onReorderPages={handleReorderPages}
+                  onUpdateNotebook={handleUpdateCategory}
+                  onUpdatePage={handleUpdatePage}
+                  pages={pages}
+                  section={currentSection}
+                />
+              ) : selectedSectionId ? (
                 <SectionDashboard
                   badgeCounts={badgeCounts.pages}
                   currentCategory={currentCategory}
@@ -1408,11 +1547,39 @@ const NotesLayout: React.FC = React.memo(() => {
               ) : /* Category selected, no section: Sections overview */
               selectedCategoryId ? (
                 <div className={styles.home}>
-                  <div className={styles.eyebrow}>Notebook</div>
+                  <div className={styles.eyebrow}>{isVendorNotebook ? 'Vendor notebook' : 'Notebook'}</div>
                   <h1>{currentCategory?.name}</h1>
                   <p className={styles.intro}>
-                    {sections.length} sections · {categoryPages.length} pages
+                    {isVendorNotebook
+                      ? `${sections.length} vendor${sections.length === 1 ? '' : 's'} · ${categoryPages.length} pages`
+                      : `${sections.length} sections · ${categoryPages.length} pages`}
                   </p>
+                  <button
+                    className={styles.notebookKindToggle}
+                    onClick={() => {
+                      if (!currentCategory) return;
+                      const toVendor = !isVendorNotebook;
+                      const message = toVendor
+                        ? `Make "${currentCategory.name}" a vendor notebook? Each section becomes a vendor page with an org chart, key contacts, links, agreements, and classified notes. Your existing pages stay as they are.`
+                        : `Make "${currentCategory.name}" a regular notebook? Vendor details are kept and come back if you switch again.`;
+                      if (!confirm(message)) return;
+                      handleUpdateCategory(currentCategory._id as string, {
+                        kind: toVendor ? 'vendor' : 'standard',
+                        ...(toVendor && !currentCategory.noteClasses?.length
+                          ? {
+                              noteClasses: [
+                                {name: 'Meeting', color: '#46674d'},
+                                {name: 'QBR', color: '#3f6f9f'},
+                                {name: 'Issue', color: '#b4532a'},
+                                {name: 'Commercial', color: '#8a6a14'},
+                                {name: 'Decision', color: '#6a4fa3'},
+                              ],
+                            }
+                          : {}),
+                      }).catch(() => alert('Could not change the notebook type. Try again.'));
+                    }}>
+                    {isVendorNotebook ? 'Switch to a regular notebook' : 'Use as a vendor notebook'}
+                  </button>
                   <div className={styles.quickActions}>
                     <button onClick={() => handleAddCategoryPage('New Page')}>
                       <span className={styles.actionIcon}>
@@ -1421,12 +1588,16 @@ const NotesLayout: React.FC = React.memo(() => {
                       <strong>New page</strong>
                       <span>Give your next idea a place.</span>
                     </button>
-                    <button onClick={() => handleAddSection('New Section')}>
+                    <button onClick={isVendorNotebook ? handleAddVendor : () => handleAddSection('New Section')}>
                       <span className={styles.actionIcon}>
                         <PlusCircleIcon />
                       </span>
-                      <strong>New section</strong>
-                      <span>Keep related pages together.</span>
+                      <strong>{isVendorNotebook ? 'New vendor' : 'New section'}</strong>
+                      <span>
+                        {isVendorNotebook
+                          ? 'Org chart, contacts, links, agreements, and notes in one place.'
+                          : 'Keep related pages together.'}
+                      </span>
                     </button>
                   </div>
                   <div className={styles.sectionHeading}>
@@ -1450,7 +1621,7 @@ const NotesLayout: React.FC = React.memo(() => {
                     <p className={styles.intro}>No pages yet. Create one above or explore a section below.</p>
                   )}
                   <div className={styles.sectionHeading} style={{marginTop: 30}}>
-                    <h2>Sections</h2>
+                    <h2>{isVendorNotebook ? 'Vendors' : 'Sections'}</h2>
                   </div>
                   {loadingSections ? (
                     <p className={styles.intro}>Loading sections…</p>
@@ -1461,7 +1632,7 @@ const NotesLayout: React.FC = React.memo(() => {
                           <BookOpenIcon />
                           <strong>{section.name}</strong>
                           <span>
-                            Open section <ChevronRightIcon />
+                            {isVendorNotebook ? 'Open vendor' : 'Open section'} <ChevronRightIcon />
                           </span>
                         </button>
                       ))}
