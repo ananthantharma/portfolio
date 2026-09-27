@@ -16,6 +16,8 @@ interface Props {
   note: {id: string; title: string};
   // Current HTML of the open tab (includes unsaved edits)
   getHtml: () => string;
+  // Vendors have no Decisions section
+  allowDecisions?: boolean;
 }
 
 /**
@@ -23,7 +25,7 @@ interface Props {
  * task, decision, or attention item, or review a meeting note's Action Items / Decisions.
  * Every option opens a prefilled form; nothing is created without confirming.
  */
-export default function ProjectNoteActions({project, note, getHtml}: Props) {
+export default function ProjectNoteActions({project, note, getHtml, allowDecisions = true}: Props) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{top: number; left: number} | null>(null);
   const [selection, setSelection] = useState('');
@@ -49,7 +51,7 @@ export default function ProjectNoteActions({project, note, getHtml}: Props) {
 
   const openMenu = () => {
     const html = getHtml();
-    setFound({actions: sectionItems(html, 'Action Items'), decisions: sectionItems(html, 'Decisions')});
+    setFound({actions: sectionItems(html, 'Action Items'), decisions: allowDecisions ? sectionItems(html, 'Decisions') : []});
     const rect = buttonRef.current?.getBoundingClientRect();
     if (rect) {
       const width = 260;
@@ -74,7 +76,7 @@ export default function ProjectNoteActions({project, note, getHtml}: Props) {
         onMouseDown={() => setSelection(window.getSelection()?.toString() || '')}
         onClick={() => (open ? setOpen(false) : openMenu())}
         ref={buttonRef}
-        title="Create a task, decision, or attention item from this note"
+        title={`Create a task${allowDecisions ? ', decision,' : ''} or attention item from this note`}
         type="button">
         <Sparkles size={13} /> Create from note <ChevronDown size={12} />
       </button>
@@ -88,12 +90,14 @@ export default function ProjectNoteActions({project, note, getHtml}: Props) {
             <button onClick={() => choose({kind: 'task', text: source()})} role="menuitem" type="button">
               <ListTodo size={14} /> Task
             </button>
+            {allowDecisions && (
             <button
               onClick={() => choose({kind: 'decision', text: source(), title: from === 'note' ? note.title : undefined})}
               role="menuitem"
               type="button">
               <Gavel size={14} /> {from === 'note' ? 'Convert to decision' : 'Decision'}
             </button>
+            )}
             <button onClick={() => choose({kind: 'attention', text: source()})} role="menuitem" type="button">
               <Siren size={14} /> Attention item (risk, issue…)
             </button>

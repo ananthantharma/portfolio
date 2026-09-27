@@ -5,6 +5,7 @@
 
 import {Building2, Droplet, Flame, FolderKanban, Leaf} from 'lucide-react';
 import React, {useContext, useEffect, useState} from 'react';
+import {createPortal} from 'react-dom';
 
 import {api} from './api';
 import styles from './TaskExtras.module.css';
@@ -196,5 +197,102 @@ export function VendorSelect({
         ),
       )}
     </select>
+  );
+}
+
+/** Dashed "Link" pill on unlinked tasks: pick a project or vendor without opening the task. */
+export function LinkVendorButton({task}: {task: Task}) {
+  const vendors = useVendorOptions();
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [pos, setPos] = useState<{top: number; left: number} | null>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (!panelRef.current?.contains(t) && !buttonRef.current?.contains(t)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const q = query.trim().toLowerCase();
+  const matches = (vendors || []).filter(v => !q || v.name.toLowerCase().includes(q));
+  const groups: [string, VendorOption[]][] = [
+    ['Projects', matches.filter(v => v.kind === 'project')],
+    ['Vendors', matches.filter(v => v.kind !== 'project')],
+  ];
+
+  const pick = async (v: VendorOption) => {
+    setSaving(true);
+    try {
+      await api.update(task._id, {vendorSectionId: v._id});
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        className={styles.linkPill}
+        onClick={e => {
+          e.stopPropagation();
+          const r = buttonRef.current?.getBoundingClientRect();
+          if (r) setPos({top: Math.min(r.bottom + 4, window.innerHeight - 330), left: Math.max(8, Math.min(r.left, window.innerWidth - 268))});
+          setOpen(v => !v);
+        }}
+        ref={buttonRef}
+        title="Link this task to a project or vendor"
+        type="button">
+        + Link
+      </button>
+      {open &&
+        pos &&
+        createPortal(
+          <div className={styles.linkPanel} onClick={e => e.stopPropagation()} ref={panelRef} style={{top: pos.top, left: pos.left}}>
+            <input
+              aria-label="Find a project or vendor"
+              autoFocus
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Find a project or vendor"
+              value={query}
+            />
+            <div className={styles.linkList}>
+              {vendors === null && <p className={styles.linkEmpty}>Loading…</p>}
+              {vendors !== null && !matches.length && (
+                <p className={styles.linkEmpty}>{vendors.length ? 'No match.' : 'Create a project or vendor notebook first.'}</p>
+              )}
+              {groups.map(([label, list]) =>
+                list.length ? (
+                  <React.Fragment key={label}>
+                    <div className={styles.linkGroup}>{label}</div>
+                    {list.map(v => {
+                      const Icon = v.kind === 'project' ? FolderKanban : Building2;
+                      return (
+                        <button disabled={saving} key={v._id} onClick={() => pick(v)} type="button">
+                          <Icon size={13} /> <span>{v.name}</span>
+                          <small>{v.notebook}</small>
+                        </button>
+                      );
+                    })}
+                  </React.Fragment>
+                ) : null,
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

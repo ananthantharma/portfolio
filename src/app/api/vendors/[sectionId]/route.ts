@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import {NextResponse} from 'next/server';
 
-import {ActivityEntry, isProjectSection, logActivity} from '@/lib/projectActivity';
+import {ActivityEntry, logActivity, profileKind} from '@/lib/projectActivity';
 import {authorizeSection, isHttpUrl, keepId, loadProfile, toDateOrNull} from '@/lib/vendorProfileServer';
 import VendorFile from '@/models/VendorFile';
 import VendorProfile, {IVendorProfile, PROJECT_HEALTH, VENDOR_DOC_TYPES, VENDOR_STATUSES} from '@/models/VendorProfile';
@@ -138,11 +138,13 @@ export async function PUT(req: Request, {params}: RouteParams) {
     const orphaned = before.filter(id => !after.has(id));
     if (orphaned.length) await VendorFile.deleteMany({_id: {$in: orphaned}, userEmail});
 
-    // Project history: status, health, phase, target date, and documents
-    if (await isProjectSection(userEmail, params.sectionId)) {
+    // History for project and vendor pages: status, health, phase, target date, and documents
+    const kind = await profileKind(userEmail, params.sectionId);
+    if (kind) {
       const entries: ActivityEntry[] = [];
+      const noun = kind === 'project' ? 'Project' : 'Vendor';
       if (prev.status !== profile.status)
-        entries.push({type: 'project', action: 'status', label: 'Project status changed', title: `${prev.status} → ${profile.status}`});
+        entries.push({type: 'project', action: 'status', label: `${noun} status changed`, title: `${prev.status} → ${profile.status}`});
       if (prev.health !== profile.health)
         entries.push({type: 'project', action: 'health', label: 'Project health changed', title: `${prev.health} → ${profile.health}`});
       if ((prev.phase || '') !== (profile.phase || ''))

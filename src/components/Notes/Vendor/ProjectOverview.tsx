@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-usememo, react-memo/require-memo, react/jsx-sort-props */
 'use client';
 
-import {Activity, Check, FileText, Gavel, Globe, ListTodo, NotebookPen, Pin, Siren, Sparkles, X} from 'lucide-react';
+import {Activity, BookUser, Check, FileText, Gavel, Globe, ListTodo, Mail, NotebookPen, Pin, Siren, Sparkles, X} from 'lucide-react';
 import React from 'react';
 
 import {INotePage} from '@/models/NotePage';
@@ -12,7 +12,7 @@ import {AttentionSummary, isOpenAttention, isSerious, sortAttention} from './Att
 import {docHref} from './DecisionsCard';
 import InlineNote from './InlineNote';
 import {HealthChip, targetLabel} from './ProjectHeader';
-import {ActivityItem, formatDate, VendorPatch, VendorProfile} from './vendorApi';
+import {ActivityItem, daysUntil, formatDate, initials, VendorPatch, VendorProfile} from './vendorApi';
 import {noteDateOf} from './VendorNotes';
 import styles from './VendorPage.module.css';
 
@@ -24,6 +24,8 @@ export interface SinceVisit {
 }
 
 interface Props {
+  // Vendors get key contacts and agreements instead of project status and decisions
+  kind?: 'project' | 'vendor';
   profile: VendorProfile;
   notes: INotePage[];
   tasks: Task[];
@@ -68,11 +70,15 @@ function Card({
   );
 }
 
+const VENDOR_SUMMARY_EXAMPLE =
+  'Acme hosts our billing platform under a 3-year MSA (renews Mar 2027). Service has been stable since the Q2 migration; one open issue on support response times. Next QBR is scheduled for October 14.';
+
 const BRIEF_EXAMPLE =
   'SAP EA analysis is underway. Architecture workshops are complete and the team is reviewing implementation options. Three tasks remain open and one schedule risk is being monitored. Next milestone: Steering Committee review on October 9.';
 
 export default function ProjectOverview(props: Props) {
   const {profile, notes, tasks, activity, sinceVisit, onDismissSince, onPatch, onGo, onOpenNote, onToggleTask, onJumpActivity} = props;
+  const isVendor = props.kind === 'vendor';
   const openTasks = tasks.filter(t => statusOf(t) !== 'done').sort(smartCompare);
   const attention = profile.attention || [];
   const serious = sortAttention(attention.filter(isSerious));
@@ -82,10 +88,30 @@ export default function ProjectOverview(props: Props) {
   );
   const recentNotes = [...notes].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3);
 
-  type PinnedItem = {key: string; icon: typeof FileText; title: string; sub: string; href?: string; onClick?: () => void};
+  type PinnedItem = {key: string; icon: typeof FileText; title: string; sub: string; href?: string; onClick?: () => void; tone?: 'warn' | 'bad'};
+  // Vendors: agreements that have expired or expire within 60 days come first
+  const expiryNote = (expiry?: string | null) => {
+    const days = daysUntil(expiry);
+    if (days === null || days > 60) return null;
+    return days < 0 ? {text: 'Expired', tone: 'bad' as const} : {text: days === 0 ? 'Expires today' : `Expires in ${days} days`, tone: 'warn' as const};
+  };
+  const expiring: PinnedItem[] = isVendor
+    ? (profile.documents || [])
+        .filter(d => expiryNote(d.expiryDate))
+        .sort((a, b) => new Date(a.expiryDate || 0).getTime() - new Date(b.expiryDate || 0).getTime())
+        .map(d => ({
+          key: `x${d._id}`,
+          icon: FileText,
+          title: d.title,
+          sub: `${d.docType} · ${expiryNote(d.expiryDate)!.text}`,
+          tone: expiryNote(d.expiryDate)!.tone,
+          href: docHref(d),
+        }))
+    : [];
   const pinned: PinnedItem[] = [
+    ...expiring,
     ...(profile.documents || [])
-      .filter(d => d.pinned)
+      .filter(d => d.pinned && !(isVendor && expiryNote(d.expiryDate)))
       .map(d => ({key: `d${d._id}`, icon: FileText, title: d.title, sub: d.docType, href: docHref(d)})),
     ...notes
       .filter(n => n.isPinned)
@@ -114,6 +140,28 @@ export default function ProjectOverview(props: Props) {
 
       <div className={styles.ovGrid}>
         <div className={styles.ovCol}>
+          {isVendor ? (
+            <Card count={profile.keyContacts.length} icon={BookUser} onViewAll={() => onGo('contacts')} title="Key contacts">
+              {!profile.keyContacts.length ? (
+                <p className={styles.ovEmpty}>Add the people you work with in the Contacts tab.</p>
+              ) : (
+                profile.keyContacts.slice(0, 4).map(({contactId: c, role}) => (
+                  <div className={styles.ovRow} key={c._id}>
+                    <span className={styles.ovAvatar}>{initials(c.name)}</span>
+                    <span className={styles.ovRowMain}>
+                      <span>{c.name}</span>
+                      <small>{role || c.position || c.department || ''}</small>
+                    </span>
+                    {c.email && (
+                      <a aria-label={`Email ${c.name}`} className={styles.iconBtn} href={`mailto:${c.email}`}>
+                        <Mail size={13} />
+                      </a>
+                    )}
+                  </div>
+                ))
+              )}
+            </Card>
+          ) : (
           <Card icon={Activity} title="Project status">
             <div className={styles.statusGrid}>
               <span>Health</span>
@@ -129,15 +177,16 @@ export default function ProjectOverview(props: Props) {
               <strong className={styles.focusText}>{profile.currentFocus || 'Not set. Add it in the header.'}</strong>
             </div>
           </Card>
+          )}
 
-          <Card icon={Sparkles} title="Project brief">
+          <Card icon={Sparkles} title={isVendor ? 'Vendor summary' : 'Project brief'}>
             <InlineNote
-              addLabel="Write the project brief"
-              editLabel="Edit brief"
+              addLabel={isVendor ? 'Write a vendor summary' : 'Write the project brief'}
+              editLabel={isVendor ? 'Edit summary' : 'Edit brief'}
               clampLines={5}
               maxLength={3000}
               onSave={text => onPatch({brief: {text}})}
-              placeholder={BRIEF_EXAMPLE}
+              placeholder={isVendor ? VENDOR_SUMMARY_EXAMPLE : BRIEF_EXAMPLE}
               value={profile.brief?.text || ''}
             />
             {profile.brief?.updatedAt && profile.brief.text && (
@@ -211,9 +260,17 @@ export default function ProjectOverview(props: Props) {
             )}
           </Card>
 
-          <Card count={pinned.length || undefined} icon={Pin} onViewAll={() => onGo('documents')} title="Pinned & key documents">
+          <Card
+            count={pinned.length || undefined}
+            icon={isVendor ? FileText : Pin}
+            onViewAll={() => onGo('documents')}
+            title={isVendor ? 'Agreements & pinned' : 'Pinned & key documents'}>
             {!pinned.length ? (
-              <p className={styles.ovEmpty}>Pin documents, notes, decisions, or links to keep them here.</p>
+              <p className={styles.ovEmpty}>
+                {isVendor
+                  ? 'Agreements expiring within 60 days and anything you pin show up here.'
+                  : 'Pin documents, notes, decisions, or links to keep them here.'}
+              </p>
             ) : (
               pinned.slice(0, 6).map(p => {
                 const inner = (
@@ -221,7 +278,7 @@ export default function ProjectOverview(props: Props) {
                     <p.icon className={styles.ovIcon} size={13} />
                     <span className={styles.ovRowMain}>
                       <span>{p.title}</span>
-                      <small>{p.sub}</small>
+                      <small className={p.tone ? styles[`tone_${p.tone}`] : undefined}>{p.sub}</small>
                     </span>
                   </>
                 );
@@ -238,6 +295,7 @@ export default function ProjectOverview(props: Props) {
             )}
           </Card>
 
+          {!isVendor && (
           <Card count={decisions.length} icon={Gavel} onViewAll={() => onGo('decisions')} title="Recent decisions">
             {!decisions.length ? (
               <p className={styles.ovEmpty}>No decisions recorded yet.</p>
@@ -256,6 +314,7 @@ export default function ProjectOverview(props: Props) {
               ))
             )}
           </Card>
+          )}
 
           <Card icon={Activity} onViewAll={() => onGo('activity')} title="Recent activity">
             {activity === null ? (

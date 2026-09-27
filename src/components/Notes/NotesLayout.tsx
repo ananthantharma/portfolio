@@ -65,7 +65,6 @@ import NoteEditor from './NoteEditor';
 import SectionPageList from './SectionPageList';
 import SectionDashboard from './SectionDashboard';
 import ProjectPage from './Vendor/ProjectPage';
-import VendorPage from './Vendor/VendorPage';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
 import MovePageModal from './MovePageModal';
@@ -963,10 +962,10 @@ const NotesLayout: React.FC = React.memo(() => {
     return counts;
   }, [workspaceTasks]);
 
-  // Notes opened from a project page get the "Create from note" actions (task / decision / attention)
+  // Notes opened from a project or vendor page get the "Create from note" actions
   const noteProject = useMemo(
     () =>
-      notebookKind === 'project' && currentSection && pages.some(p => p._id === selectedPageId)
+      notebookKind && currentSection && pages.some(p => p._id === selectedPageId)
         ? {_id: String(currentSection._id), name: currentSection.name, categoryId: String(currentSection.categoryId)}
         : null,
     [notebookKind, currentSection, pages, selectedPageId],
@@ -1585,23 +1584,13 @@ const NotesLayout: React.FC = React.memo(() => {
                     onSave={handleSavePageContent}
                     page={selectedPage || null}
                     project={noteProject}
+                    projectKind={notebookKind || undefined}
                   />
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
-              selectedSectionId && notebookKind === 'project' && currentSection && currentCategory ? (
+              selectedSectionId && notebookKind && currentSection && currentCategory ? (
                 <ProjectPage
-                  loadingPages={loadingPages}
-                  notebook={currentCategory}
-                  onAddPage={handleAddVendorNote}
-                  onOpenPage={handleOpenPageFromDashboard}
-                  onReorderPages={handleReorderPages}
-                  onUpdateNotebook={handleUpdateCategory}
-                  onUpdatePage={handleUpdatePage}
-                  pages={pages}
-                  section={currentSection}
-                />
-              ) : selectedSectionId && notebookKind && currentSection && currentCategory ? (
-                <VendorPage
+                  key={String(currentSection._id)}
                   kind={notebookKind}
                   loadingPages={loadingPages}
                   notebook={currentCategory}

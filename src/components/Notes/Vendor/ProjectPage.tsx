@@ -17,15 +17,29 @@ import DecisionsCard, {docHref} from './DecisionsCard';
 import DocumentsCard from './DocumentsCard';
 import LinksCard from './LinksCard';
 import NoteRecordModal, {NoteRecordRequest} from './NoteRecordModal';
+import OrgChartCard from './OrgChartCard';
 import ProjectHeader from './ProjectHeader';
 import ProjectOverview, {ProjectTab, SinceVisit} from './ProjectOverview';
 import ProjectSearchResults, {SearchResult} from './ProjectSearch';
-import {ActivityItem, fetchActivity, fetchVendor, PROJECT_DOC_TYPES, recordVisit, saveVendor, VendorPatch, VendorProfile} from './vendorApi';
+import {
+  ActivityItem,
+  fetchActivity,
+  fetchVendor,
+  PROJECT_DOC_TYPES,
+  recordVisit,
+  saveVendor,
+  VENDOR_DOC_TYPES,
+  VendorPatch,
+  VendorProfile,
+} from './vendorApi';
+import VendorHeader from './VendorHeader';
 import VendorNotes, {noteSnippet,NoteSort} from './VendorNotes';
 import styles from './VendorPage.module.css';
 import VendorTasksCard from './VendorTasksCard';
 
 export interface ProjectPageProps {
+  // The same workspace serves projects and vendors; vendors swap project-only parts for vendor ones
+  kind?: 'project' | 'vendor';
   section: INoteSection;
   notebook: INoteCategory;
   pages: INotePage[];
@@ -68,6 +82,8 @@ function summarizeSince(items: ActivityItem[]): string[] {
 
 export default function ProjectPage(props: ProjectPageProps) {
   const {section, notebook, pages, loadingPages, onOpenPage, onAddPage, onUpdatePage, onReorderPages, onUpdateNotebook} = props;
+  const isVendor = props.kind === 'vendor';
+  const noun = isVendor ? 'vendor' : 'project';
   const sectionId = String(section._id);
   const project: TaskVendor = useMemo(
     () => ({_id: sectionId, name: section.name, categoryId: String(section.categoryId)}),
@@ -209,54 +225,75 @@ export default function ProjectPage(props: ProjectPageProps) {
   if (loadError) {
     return (
       <div className={styles.page}>
-        <div className={styles.empty}>This project couldn’t be loaded. {loadError}</div>
+        <div className={styles.empty}>
+          This {noun} couldn’t be loaded. {loadError}
+        </div>
       </div>
     );
   }
   if (!profile) {
     return (
       <div className={styles.page}>
-        <div className={styles.empty}>Loading project…</div>
+        <div className={styles.empty}>Loading {noun}…</div>
       </div>
     );
   }
 
-  const decisions = profile.decisions || [];
+  const decisions = isVendor ? [] : profile.decisions || [];
   const attention = profile.attention || [];
   const openTasks = linkedTasks.filter(t => statusOf(t) !== 'done').length;
   const openAttention = attention.filter(isOpenAttention).length;
   const hasSerious = attention.some(isSerious);
   const lastUpdated = [profile.updatedAt, recent?.[0]?.createdAt].filter(Boolean).sort().pop() || null;
 
+  // Vendors skip Decisions; their Contacts tab also holds the org chart and internal contacts
   const tabs: {key: ProjectTab; label: string; count?: number; warn?: boolean}[] = [
     {key: 'overview', label: 'Overview'},
     {key: 'notes', label: 'Notes', count: pages.length},
     {key: 'tasks', label: 'Tasks', count: openTasks},
-    {key: 'decisions', label: 'Decisions', count: decisions.length},
+    ...(isVendor ? [] : [{key: 'decisions' as const, label: 'Decisions', count: decisions.length}]),
     {key: 'attention', label: 'Attention', count: openAttention, warn: hasSerious},
     {key: 'documents', label: 'Documents', count: profile.documents.length},
-    {key: 'contacts', label: 'Contacts', count: profile.keyContacts.length},
+    {
+      key: 'contacts',
+      label: 'Contacts',
+      count: profile.keyContacts.length + (isVendor ? (profile.internalContacts || []).length : 0),
+    },
     {key: 'activity', label: 'Activity'},
   ];
+  const activeTab: ProjectTab = tabs.some(t => t.key === tab) ? tab : 'overview';
 
   const searching = query.trim().length > 1;
 
   return (
     <div className={`${styles.page} ${styles.projectPage}`}>
-      <ProjectHeader
-        lastUpdated={lastUpdated}
-        name={section.name}
-        notebookName={notebook.name}
-        onPatch={patch}
-        onQuery={setQuery}
-        profile={profile}
-        query={query}
-      />
+      {isVendor ? (
+        <VendorHeader
+          image={section.image}
+          lastUpdated={lastUpdated}
+          name={section.name}
+          notebookName={notebook.name}
+          onPatch={patch}
+          onQuery={setQuery}
+          profile={profile}
+          query={query}
+        />
+      ) : (
+        <ProjectHeader
+          lastUpdated={lastUpdated}
+          name={section.name}
+          notebookName={notebook.name}
+          onPatch={patch}
+          onQuery={setQuery}
+          profile={profile}
+          query={query}
+        />
+      )}
 
-      <nav aria-label="Project sections" className={styles.projectTabs} role="tablist">
+      <nav aria-label={isVendor ? 'Vendor sections' : 'Project sections'} className={styles.projectTabs} role="tablist">
         {tabs.map(t => (
           <button
-            aria-selected={!searching && tab === t.key}
+            aria-selected={!searching && activeTab === t.key}
             className={styles.projectTab}
             key={t.key}
             onClick={() => go(t.key)}
@@ -286,9 +323,10 @@ export default function ProjectPage(props: ProjectPageProps) {
               links: profile.links,
             }}
           />
-        ) : tab === 'overview' ? (
+        ) : activeTab === 'overview' ? (
           <ProjectOverview
             activity={recent}
+            kind={isVendor ? 'vendor' : 'project'}
             notes={pages}
             onDismissSince={() => setSinceVisit(null)}
             onGo={go}
@@ -302,22 +340,29 @@ export default function ProjectPage(props: ProjectPageProps) {
           />
         ) : (
           <div className={styles.grid}>
-            {tab === 'notes' && (
+            {activeTab === 'notes' && (
               <VendorNotes
                 classes={notebook.noteClasses || []}
-                decisions={decisions}
+                decisions={isVendor ? undefined : decisions}
                 documents={profile.documents}
-                emptyText={`Meeting notes, decisions, and updates for ${section.name} will show up here.`}
-                loading={loadingPages}
-                meetingPrefix="Project meeting"
-                onAddPage={onAddPage}
-                onConvertToDecision={page =>
-                  setRecordRequest({
-                    note: {id: String(page._id), title: page.title},
-                    request: {kind: 'decision', title: page.title, text: noteSnippet(page, 6000)},
-                  })
+                emptyText={
+                  isVendor
+                    ? `Meeting notes, QBR prep, and updates about ${section.name} will show up here.`
+                    : `Meeting notes, decisions, and updates for ${section.name} will show up here.`
                 }
-                onOpenDecision={id => go('decisions', `decision-${id}`)}
+                loading={loadingPages}
+                meetingPrefix={isVendor ? 'Vendor meeting' : 'Project meeting'}
+                onAddPage={onAddPage}
+                onConvertToDecision={
+                  isVendor
+                    ? undefined
+                    : page =>
+                        setRecordRequest({
+                          note: {id: String(page._id), title: page.title},
+                          request: {kind: 'decision', title: page.title, text: noteSnippet(page, 6000)},
+                        })
+                }
+                onOpenDecision={isVendor ? undefined : id => go('decisions', `decision-${id}`)}
                 onOpenPage={onOpenPage}
                 onReorderPages={onReorderPages}
                 onUpdateNotebook={updates => onUpdateNotebook(String(notebook._id), updates)}
@@ -328,8 +373,8 @@ export default function ProjectPage(props: ProjectPageProps) {
                 vendorName={section.name}
               />
             )}
-            {tab === 'tasks' && <VendorTasksCard vendor={project} />}
-            {tab === 'decisions' && (
+            {activeTab === 'tasks' && <VendorTasksCard vendor={project} />}
+            {activeTab === 'decisions' && (
               <DecisionsCard
                 decisions={decisions}
                 documents={profile.documents}
@@ -339,17 +384,24 @@ export default function ProjectPage(props: ProjectPageProps) {
                 sectionId={sectionId}
               />
             )}
-            {tab === 'attention' && <AttentionCard items={attention} onProfile={applyProfile} sectionId={sectionId} />}
-            {tab === 'documents' && (
+            {activeTab === 'attention' && <AttentionCard items={attention} onProfile={applyProfile} sectionId={sectionId} />}
+            {activeTab === 'documents' && (
               <>
-                <DocumentsCard documents={profile.documents} onPatch={patch} types={PROJECT_DOC_TYPES} />
+                <DocumentsCard documents={profile.documents} onPatch={patch} types={isVendor ? VENDOR_DOC_TYPES : PROJECT_DOC_TYPES} />
                 <LinksCard links={profile.links} onPatch={patch} />
               </>
             )}
-            {tab === 'contacts' && (
-              <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="project" vendorName={section.name} wide />
-            )}
-            {tab === 'activity' && <ActivityView onJump={jumpToActivity} refreshKey={activityKey} sectionId={sectionId} />}
+            {activeTab === 'contacts' &&
+              (isVendor ? (
+                <>
+                  <OrgChartCard onPatch={patch} profile={profile} vendorName={section.name} />
+                  <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="vendor" vendorName={section.name} />
+                  <ContactsCard contacts={profile.internalContacts || []} onPatch={patch} variant="internal" vendorName={section.name} />
+                </>
+              ) : (
+                <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="project" vendorName={section.name} wide />
+              ))}
+            {activeTab === 'activity' && <ActivityView onJump={jumpToActivity} refreshKey={activityKey} sectionId={sectionId} />}
           </div>
         )}
       </div>

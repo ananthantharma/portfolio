@@ -1,17 +1,17 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, ListTodo, Maximize2, Plus, Search, Trash2, X} from 'lucide-react';
-import React, {useContext, useId, useMemo, useState} from 'react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Plus, Search, Trash2, X} from 'lucide-react';
+import React, {useContext, useEffect, useId, useMemo, useState} from 'react';
 
 import {api} from './api';
 import {saveTaskChanges} from './taskActions';
 import AttachmentGallery from './AttachmentGallery';
 import NoteLinkModal from './NoteLinkModal';
 import {useTaskCollection} from './TaskProvider';
-import {GlowToggles, glowStyle, VendorPill, VendorSelect} from './TaskExtras';
+import {GlowToggles, glowStyle, LinkVendorButton, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {daysUntil, formatDue, glowOf, PRIORITY_META, smartCompare, statusOf, Task, vendorIdOf, vendorOf} from './types';
-import {OpenWorkspaceNoteContext} from './WorkspaceNavigation';
+import {OpenVendorContext, OpenWorkspaceNoteContext} from './WorkspaceNavigation';
 import styles from './TaskWorkspace.module.css';
 
 export type NoteContext = {id: string; title: string} | null;
@@ -112,6 +112,32 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const [quickTitle, setQuickTitle] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
+  // Group the list by the project or vendor each task is linked to (remembered in this browser)
+  const [grouped, setGrouped] = useState(true);
+  const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
+  const vendorOptions = useVendorOptions();
+  const openVendor = useContext(OpenVendorContext);
+  useEffect(() => {
+    try {
+      setGrouped(localStorage.getItem('TASKS_GROUPED') !== 'false');
+      setCollapsedGroups(JSON.parse(localStorage.getItem('TASKS_COLLAPSED_GROUPS') || '[]'));
+    } catch {
+      // storage unavailable
+    }
+  }, []);
+  const toggleGrouped = () => {
+    setGrouped(v => {
+      try {localStorage.setItem('TASKS_GROUPED', String(!v));} catch {/* storage unavailable */}
+      return !v;
+    });
+  };
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups(list => {
+      const next = list.includes(key) ? list.filter(k => k !== key) : [...list, key];
+      try {localStorage.setItem('TASKS_COLLAPSED_GROUPS', JSON.stringify(next));} catch {/* storage unavailable */}
+      return next;
+    });
+  };
   const visible = useMemo(() => tasks.filter(task => {
     if (task.isTemplate) return false;
     if (filter === 'archive') {if (!task.isArchived) return false;}
@@ -133,17 +159,52 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
     if (result.warning) setActionError(result.warning);
     setNotice(complete ? 'Task completed' : 'Task reopened');
   });
+  const kindOf = (id: string) => vendorOptions?.find(v => v._id === id)?.kind || 'vendor';
+  // Projects first, then vendors, each A–Z; tasks keep the list's order inside a group; unlinked last
+  const groups = useMemo(() => {
+    const map = new Map<string, {key: string; name: string; notebookId?: string; tasks: Task[]}>();
+    visible.forEach(task => {
+      const id = vendorIdOf(task) || 'none';
+      const known = vendorOf(task);
+      if (!map.has(id)) map.set(id, {key: id, name: id === 'none' ? 'Not linked' : known?.name || 'Linked', notebookId: known?.categoryId, tasks: []});
+      map.get(id)!.tasks.push(task);
+    });
+    const rank = (g: {key: string}) => (g.key === 'none' ? 2 : kindOf(g.key) === 'project' ? 0 : 1);
+    return [...map.values()].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, vendorOptions]);
+
+  const renderRow = (task: Task, inGroup: boolean) => <article className={styles.taskRow} data-glow={glowOf(task) || undefined} data-selected={selected === task._id} key={task._id} style={glowStyle(task)}><button className={styles.checkbox} aria-label={`${statusOf(task) === 'done' ? 'Reopen' : 'Complete'} ${task.title}`} aria-pressed={statusOf(task) === 'done'} disabled={busy.includes(task._id)} onClick={() => toggle(task)}>{statusOf(task) === 'done' && <Check size={12}/>}</button><div className={styles.rowBody}><button className={styles.taskSummary} onClick={() => setSelected(task._id)}><strong data-done={statusOf(task) === 'done'}>{task.title}</strong><span>{task.priority !== 'None' && <i data-priority={task.priority}>{task.priority}</i>}{task.dueDate && <time data-overdue={statusOf(task) !== 'done' && (daysUntil(task.dueDate) || 0) < 0}>{formatDue(task.dueDate)}</time>}{task.category && <span>{task.category}</span>}{task.subtasks?.length ? <span>{task.subtasks.filter(item => item.isCompleted).length}/{task.subtasks.length} steps</span> : null}{drafts[task._id] && <span>Draft</span>}{task.sourcePageId && <FileText size={12}/>}</span></button><div className={styles.rowExtras}>{vendorIdOf(task) ? (!inGroup && <VendorPill task={task}/>) : <LinkVendorButton task={task}/>}<GlowToggles task={task}/></div></div><ChevronRight size={13}/></article>;
+
+  const renderGroups = () => groups.map(group => {
+    const collapsed = collapsedGroups.includes(group.key);
+    const isProject = group.key !== 'none' && kindOf(group.key) === 'project';
+    const Icon = group.key === 'none' ? Inbox : isProject ? FolderKanban : Building2;
+    return <div className={styles.group} data-kind={group.key === 'none' ? 'none' : isProject ? 'project' : 'vendor'} key={group.key}>
+      <div className={styles.groupHead}>
+        <button aria-expanded={!collapsed} className={styles.groupToggle} onClick={() => toggleGroup(group.key)}>
+          <ChevronDown className={styles.groupChevron} data-collapsed={collapsed} size={13}/>
+          <Icon size={13}/>
+          <span>{group.name}</span>
+          <small>{group.tasks.length}</small>
+        </button>
+        {group.key !== 'none' && openVendor && <button className={styles.groupOpen} onClick={() => openVendor(group.key, group.notebookId)} title={`Open the ${group.name} page`}>Open</button>}
+      </div>
+      {!collapsed && group.tasks.map(task => renderRow(task, true))}
+    </div>;
+  });
+
   const editor = selected === 'new' || selectedTask ? <TaskEditor key={selected} task={selectedTask} note={note} onClose={() => {if (selected === 'new') {setFilter('open'); setQuery('');} setSelected(null);}}/> : null;
   return <section className={`${styles.workspace} ${compact ? styles.compact : ''}`} aria-label={compact ? 'Task sidebar' : 'Tasks workspace'}>
     <div className={styles.listPane}>
       <header className={styles.header}><div><span className={styles.eyebrow}>A LITTLE PROGRESS, EVERY DAY</span><h2>Tasks<span>{open.length}</span></h2></div><div>{onExpand && <button onClick={onExpand} aria-label="Expand tasks workspace"><Maximize2 size={16}/></button>}<button className={styles.addButton} onClick={() => setSelected('new')} aria-label="New task"><Plus size={18}/></button>{onCollapse && <button onClick={onCollapse} aria-label="Minimize task sidebar" title="Minimize"><ChevronsRight size={16}/></button>}</div></header>
       <div className={styles.search}><Search size={15}/><input aria-label="Search tasks" placeholder="Find a task…" value={query} onChange={e => setQuery(e.target.value)}/>{query && <button aria-label="Clear task search" onClick={() => setQuery('')}><X size={14}/></button>}</div>
-      <div className={styles.filters} aria-label="Filter tasks">{([['open','Open'],['today','Today'],['note','This note'],['done','Done'],['archive','Archive']] as [Filter,string][]).map(([key,label]) => <button key={key} aria-pressed={filter === key} disabled={key === 'note' && !note} onClick={() => setFilter(key)}>{label}</button>)}</div>
+      <div className={styles.filters} aria-label="Filter tasks">{([['open','Open'],['today','Today'],['note','This note'],['done','Done'],['archive','Archive']] as [Filter,string][]).map(([key,label]) => <button key={key} aria-pressed={filter === key} disabled={key === 'note' && !note} onClick={() => setFilter(key)}>{label}</button>)}<button aria-pressed={grouped} className={styles.groupSwitch} onClick={toggleGrouped} title={grouped ? 'Grouped by project or vendor. Click for one list.' : 'Group by project or vendor'}><Layers size={12}/>Group</button></div>
       <form className={styles.quickAdd} onSubmit={e => {e.preventDefault(); if (!quickTitle.trim() || busy.includes('quick')) return; const title = quickTitle.trim(); void execute('quick', async () => {await api.create({title, priority: 'None', status: 'todo', ...(filter === 'today' ? {dueDate: new Date(new Date().setHours(17,0,0,0)).toISOString()} : {}), ...(filter === 'note' && note ? {sourcePageId: note.id} : {})}); setQuickTitle(''); setFilter(filter === 'done' || filter === 'archive' ? 'open' : filter); setNotice('Task added');});}}><Plus size={16}/><input aria-label="Quick add task" placeholder="Add a task, press Enter" value={quickTitle} disabled={busy.includes('quick')} onChange={e => setQuickTitle(e.target.value)}/><button type="submit" disabled={!quickTitle.trim() || busy.includes('quick')} aria-label="Add task"><ChevronRight size={17}/></button></form>
       {(error || actionError) && <div className={styles.error} role="alert">{error || actionError}{error && <button onClick={() => void refresh()}>Try again</button>}</div>}
       <div className={styles.list}>
         {compact && editor && <div className={styles.inlineEditor}><button className={styles.back} onClick={() => setSelected(null)}><ArrowLeft size={14}/>Back to list</button>{editor}</div>}
-        {(!compact || !editor) && <>{loading && !tasks.length ? <div className={styles.empty} role="status">Loading your tasks…</div> : !visible.length ? <div className={styles.empty}><CheckCheck size={30}/><strong>{query ? 'No matches' : filter === 'done' ? 'Progress will live here' : filter === 'archive' ? 'Nothing archived' : 'A little breathing room'}</strong><p>{query ? 'Try another title, project, or tag.' : filter === 'note' ? 'Add a task linked to this note.' : 'Add a task above, or explore another view.'}</p></div> : visible.map(task => <article className={styles.taskRow} data-glow={glowOf(task) || undefined} data-selected={selected === task._id} key={task._id} style={glowStyle(task)}><button className={styles.checkbox} aria-label={`${statusOf(task) === 'done' ? 'Reopen' : 'Complete'} ${task.title}`} aria-pressed={statusOf(task) === 'done'} disabled={busy.includes(task._id)} onClick={() => toggle(task)}>{statusOf(task) === 'done' && <Check size={12}/>}</button><div className={styles.rowBody}><button className={styles.taskSummary} onClick={() => setSelected(task._id)}><strong data-done={statusOf(task) === 'done'}>{task.title}</strong><span>{task.priority !== 'None' && <i data-priority={task.priority}>{task.priority}</i>}{task.dueDate && <time data-overdue={statusOf(task) !== 'done' && (daysUntil(task.dueDate) || 0) < 0}>{formatDue(task.dueDate)}</time>}{task.category && <span>{task.category}</span>}{task.subtasks?.length ? <span>{task.subtasks.filter(item => item.isCompleted).length}/{task.subtasks.length} steps</span> : null}{drafts[task._id] && <span>Draft</span>}{task.sourcePageId && <FileText size={12}/>}</span></button><div className={styles.rowExtras}><VendorPill task={task}/><GlowToggles task={task}/></div></div><ChevronRight size={13}/></article>)}</>}
+        {(!compact || !editor) && <>{loading && !tasks.length ? <div className={styles.empty} role="status">Loading your tasks…</div> : !visible.length ? <div className={styles.empty}><CheckCheck size={30}/><strong>{query ? 'No matches' : filter === 'done' ? 'Progress will live here' : filter === 'archive' ? 'Nothing archived' : 'A little breathing room'}</strong><p>{query ? 'Try another title, project, or tag.' : filter === 'note' ? 'Add a task linked to this note.' : 'Add a task above, or explore another view.'}</p></div> : grouped ? renderGroups() : visible.map(task => renderRow(task, false))}</>}
       </div>
       <footer className={styles.footer}><span role="status">{notice || `${visible.length} ${visible.length === 1 ? 'task' : 'tasks'} in this view`}</span>{onAdvanced && <button onClick={onAdvanced}>Board & tools</button>}</footer>
     </div>

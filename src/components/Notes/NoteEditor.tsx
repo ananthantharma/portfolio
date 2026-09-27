@@ -69,14 +69,15 @@ interface NoteEditorProps {
   onSave: (id: string, data: any) => Promise<void>;
   page: INotePage | null;
   initialTabId?: string;
-  // Set when the note belongs to a project: enables "Create from note" (task / decision / attention)
+  // Set when the note belongs to a project or vendor: enables "Create from note" (task / decision / attention)
   project?: TaskVendor | null;
+  projectKind?: 'project' | 'vendor';
 }
 
 // Keep in-session edits when navigating between notes. Nothing is written to browser storage.
 const noteDrafts = new Map<string, {tabs: NonNullable<INotePage['tabs']>; activeTabId: string | null}>();
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId, project}) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId, project, projectKind}) => {
   const {data: session} = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<
@@ -2216,6 +2217,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           {page?._id && <LinkTasksButton pageId={String(page._id)} pageTitle={page.title || 'this note'} vendor={project} variant="toolbar" />}
           {page?._id && project && (
             <ProjectNoteActions
+              allowDecisions={projectKind !== 'vendor'}
               getHtml={() => editorContent}
               note={{id: String(page._id), title: page.title || 'this note'}}
               project={project}

@@ -2226,3 +2226,32 @@ button.activityRow:hover {
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
+
+/* ── Vendor workspace ── */
+.logoSmall {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.ovAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 650;
+}
+.tone_warn {
+  color: #9a6a12 !important;
+  font-weight: 600;
+}
+.tone_bad {
+  color: #a5382a !important;
+  font-weight: 600;
+}

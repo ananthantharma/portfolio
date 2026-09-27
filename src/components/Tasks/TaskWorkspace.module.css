@@ -19,3 +19,18 @@
 .vendorLink { padding:14px 0 4px; font-size:10px; }
 .vendorLink > div { display:flex; align-items:center; gap:8px; margin-top:4px; }
 .vendorLink select { flex:1; min-width:0; }
+
+/* Grouping by project / vendor */
+.groupSwitch { display:inline-flex; align-items:center; gap:4px; margin-left:auto; }
+.group { margin-bottom:6px; }
+.groupHead { display:flex; align-items:center; gap:6px; position:sticky; top:0; z-index:1; background:#f7f8f2; padding:8px 4px 4px; }
+.groupToggle { display:flex; align-items:center; gap:6px; flex:1; min-width:0; font-size:11px; font-weight:650; color:#4d544a; text-align:left; }
+.groupToggle span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.groupToggle small { font-size:10px; font-weight:600; color:#a2a79b; background:#eef0ea; border-radius:999px; padding:0 6px; line-height:16px; }
+.group[data-kind=project] .groupToggle > svg:nth-of-type(2) { color:#5b3f93; }
+.group[data-kind=vendor] .groupToggle > svg:nth-of-type(2) { color:#2f5d8a; }
+.group[data-kind=none] .groupToggle { color:#8a9580; }
+.groupChevron { color:#a8b09f; transition:transform .15s; flex-shrink:0; }
+.groupChevron[data-collapsed=true] { transform:rotate(-90deg); }
+.groupOpen { font-size:10px; font-weight:600; color:#5e8050; padding:1px 6px; border-radius:5px; }
+.groupOpen:hover { background:#eef4e7; }

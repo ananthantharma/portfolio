@@ -10,18 +10,18 @@ export interface ActivityEntry {
   refId?: string | null;
 }
 
-/** True when the section is a project (a section of a project notebook) owned by the user. */
-export async function isProjectSection(userEmail: string, sectionId: unknown): Promise<boolean> {
-  if (!sectionId) return false;
+/** 'project' or 'vendor' when the section belongs to a project or vendor notebook owned by the user. */
+export async function profileKind(userEmail: string, sectionId: unknown): Promise<'project' | 'vendor' | null> {
+  if (!sectionId) return null;
   const section = await NoteSection.findOne({_id: sectionId, userEmail}).select('categoryId').lean();
-  if (!section) return false;
+  if (!section) return null;
   const notebook = await NoteCategory.findOne({_id: section.categoryId, userEmail}).select('kind').lean();
-  return notebook?.kind === 'project';
+  return notebook?.kind === 'project' || notebook?.kind === 'vendor' ? notebook.kind : null;
 }
 
 /**
- * Records project activity. Only project sections keep a history, and a failure here
- * never breaks the action that triggered it.
+ * Records activity for a project or vendor page. Other sections keep no history, and a failure
+ * here never breaks the action that triggered it.
  */
 export async function logActivity(
   userEmail: string,
@@ -32,7 +32,7 @@ export async function logActivity(
   const list = (Array.isArray(entries) ? entries : [entries]).filter(e => e.label);
   if (!list.length || !sectionId) return;
   try {
-    if (!knownProject && !(await isProjectSection(userEmail, sectionId))) return;
+    if (!knownProject && !(await profileKind(userEmail, sectionId))) return;
     await ProjectActivity.insertMany(
       list.map(e => ({
         userEmail,

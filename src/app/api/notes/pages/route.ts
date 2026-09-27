@@ -183,9 +183,9 @@ export async function POST(request: Request) {
       order: count,
       image: body.image || null,
     });
-    // Project history: notes and meeting notes added to a project
+    // Project/vendor history: notes and meeting notes added
     if (page.sectionId) {
-      const meeting = /^project meeting\b/i.test(page.title);
+      const meeting = /^(project|vendor) meeting\b/i.test(page.title);
       await logActivity(session.user.email, page.sectionId, {
         type: 'note',
         action: meeting ? 'meeting' : 'created',
