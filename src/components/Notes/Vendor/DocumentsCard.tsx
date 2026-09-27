@@ -4,6 +4,8 @@
 import {Download, ExternalLink, FileSignature, FileText, Link as LinkIcon, Pencil, Trash2, Upload} from 'lucide-react';
 import React, {useMemo, useRef, useState} from 'react';
 
+import InlineNote from './InlineNote';
+import PinButton from './PinButton';
 import {
   dateInputToIso,
   daysUntil,
@@ -25,6 +27,8 @@ import styles from './VendorPage.module.css';
 interface Props {
   documents: VendorDocument[];
   onPatch: (patch: VendorPatch) => Promise<void>;
+  // Projects use their own categories (Agreement, Report, Architecture…); vendors use MSA/DPA/SOW…
+  types?: readonly VendorDocType[];
 }
 
 type Draft = {
@@ -36,6 +40,7 @@ type Draft = {
   docType: VendorDocType;
   signedDate: string;
   expiryDate: string;
+  notes: string;
 };
 
 const EXPIRY_WARNING_DAYS = 60;
@@ -54,18 +59,19 @@ function expiryBadge(doc: VendorDocument) {
   return <span className={`${styles.pill} ${styles.pillGood}`}>Active</span>;
 }
 
-const emptyDraft = (): Draft => ({
+const emptyDraft = (docType: VendorDocType): Draft => ({
   index: null,
   source: 'file',
   file: null,
   url: '',
   title: '',
-  docType: 'MSA',
+  docType,
   signedDate: '',
   expiryDate: '',
+  notes: '',
 });
 
-export default function DocumentsCard({documents, onPatch}: Props) {
+export default function DocumentsCard({documents, onPatch, types = VENDOR_DOC_TYPES}: Props) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -73,13 +79,14 @@ export default function DocumentsCard({documents, onPatch}: Props) {
   const [typeFilter, setTypeFilter] = useState<VendorDocType | 'all'>('all');
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // Soonest expiry first, then newest; documents without an expiry go last
+  // Pinned first, then soonest expiry, then newest; documents without an expiry go last
   const sorted = useMemo(
     () =>
       documents
         .map((doc, index) => ({doc, index}))
         .filter(({doc}) => typeFilter === 'all' || doc.docType === typeFilter)
         .sort((a, b) => {
+          if (!!a.doc.pinned !== !!b.doc.pinned) return a.doc.pinned ? -1 : 1;
           const ea = a.doc.expiryDate ? new Date(a.doc.expiryDate).getTime() : Infinity;
           const eb = b.doc.expiryDate ? new Date(b.doc.expiryDate).getTime() : Infinity;
           if (ea !== eb) return ea - eb;
@@ -87,7 +94,10 @@ export default function DocumentsCard({documents, onPatch}: Props) {
         }),
     [documents, typeFilter],
   );
-  const typesInUse = useMemo(() => VENDOR_DOC_TYPES.filter(t => documents.some(d => d.docType === t)), [documents]);
+  const typesInUse = useMemo(
+    () => [...new Set(documents.map(d => d.docType))].sort((a, b) => a.localeCompare(b)),
+    [documents],
+  );
 
   const pickFile = (file: File | undefined) => {
     if (!file || !draft) return;
@@ -111,6 +121,7 @@ export default function DocumentsCard({documents, onPatch}: Props) {
       docType: doc.docType,
       signedDate: isoToDateInput(doc.signedDate),
       expiryDate: isoToDateInput(doc.expiryDate),
+      notes: doc.notes || '',
     });
   };
 
@@ -143,6 +154,7 @@ export default function DocumentsCard({documents, onPatch}: Props) {
         docType: draft.docType,
         signedDate: dateInputToIso(draft.signedDate),
         expiryDate: dateInputToIso(draft.expiryDate),
+        notes: draft.notes.trim(),
       };
       const next = existing ? documents.map((d, i) => (i === draft.index ? entry : d)) : [...documents, entry];
       await onPatch({documents: next});
@@ -153,6 +165,11 @@ export default function DocumentsCard({documents, onPatch}: Props) {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Edited in place on the page; errors propagate so the note editor keeps the text
+  const saveNotes = async (index: number, notes: string) => {
+    await onPatch({documents: documents.map((d, i) => (i === index ? {...d, notes} : d))});
   };
 
   const remove = async (index: number) => {
@@ -191,7 +208,7 @@ export default function DocumentsCard({documents, onPatch}: Props) {
           className={styles.btn}
           onClick={() => {
             setError('');
-            setDraft(emptyDraft());
+            setDraft(emptyDraft(types[0]));
           }}>
           <Upload size={14} /> Add document
         </button>
@@ -258,7 +275,7 @@ export default function DocumentsCard({documents, onPatch}: Props) {
           <label>
             Type
             <select onChange={e => setDraft({...draft, docType: e.target.value as VendorDocType})} value={draft.docType}>
-              {VENDOR_DOC_TYPES.map(t => (
+              {[...types, ...(draft.docType && !types.includes(draft.docType) ? [draft.docType] : [])].map(t => (
                 <option key={t}>{t}</option>
               ))}
             </select>
@@ -270,6 +287,16 @@ export default function DocumentsCard({documents, onPatch}: Props) {
           <label>
             Expires
             <input onChange={e => setDraft({...draft, expiryDate: e.target.value})} type="date" value={draft.expiryDate} />
+          </label>
+          <label className={styles.formFull}>
+            Notes
+            <textarea
+              maxLength={4000}
+              onChange={e => setDraft({...draft, notes: e.target.value})}
+              placeholder="What this covers, key terms, renewal notice period, who signed it…"
+              rows={3}
+              value={draft.notes}
+            />
           </label>
           <div className={styles.formActions}>
             <button className={styles.btn} onClick={() => setDraft(null)} type="button">
@@ -296,17 +323,40 @@ export default function DocumentsCard({documents, onPatch}: Props) {
               doc.fileId ? formatBytes(doc.size) : doc.url ? 'Link' : '',
             ].filter(Boolean);
             return (
-              <div className={styles.row} key={doc._id || doc.title + index}>
+              <div
+                className={styles.row}
+                data-pinned={!!doc.pinned}
+                id={doc._id ? `doc-${doc._id}` : undefined}
+                key={doc._id || doc.title + index}
+                style={{alignItems: 'flex-start'}}>
                 <span className={styles.fileIcon}>{doc.fileId ? <FileText size={16} /> : <LinkIcon size={16} />}</span>
-                <a className={styles.rowMain} href={href || undefined} rel="noopener noreferrer" target="_blank">
-                  <div className={styles.rowTitle}>
-                    <span>{doc.title}</span>
-                    <span className={styles.pill}>{doc.docType}</span>
-                  </div>
-                  <div className={styles.rowSub}>{meta.join(' · ') || 'No dates yet'}</div>
-                </a>
+                <div className={styles.rowMain}>
+                  <a className={styles.rowLink} href={href || undefined} rel="noopener noreferrer" target="_blank">
+                    <div className={styles.rowTitle}>
+                      <span>{doc.title}</span>
+                      <span className={styles.pill}>{doc.docType}</span>
+                    </div>
+                    <div className={styles.rowSub}>{meta.join(' · ') || 'No dates yet'}</div>
+                  </a>
+                  <InlineNote
+                    addLabel="Add notes"
+                    maxLength={4000}
+                    onSave={next => saveNotes(index, next)}
+                    placeholder="What this covers, key terms, renewal notice period, who signed it…"
+                    value={doc.notes || ''}
+                  />
+                </div>
                 {expiryBadge(doc)}
-                <div className={styles.rowActions}>
+                <div className={styles.rowActions} data-keep={!!doc.pinned}>
+                  <PinButton
+                    label={doc.title}
+                    onToggle={() =>
+                      onPatch({documents: documents.map((d, i) => (i === index ? {...d, pinned: !d.pinned} : d))}).catch(err =>
+                        setError(err instanceof Error ? err.message : 'Could not update the document.'),
+                      )
+                    }
+                    pinned={!!doc.pinned}
+                  />
                   {doc.fileId ? (
                     <a aria-label={`Download ${doc.title}`} className={styles.iconBtn} href={vendorFileUrl(doc.fileId, true)}>
                       <Download size={14} />

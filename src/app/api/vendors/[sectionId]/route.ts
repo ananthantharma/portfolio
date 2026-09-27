@@ -1,42 +1,15 @@
-/* eslint-disable simple-import-sort/imports */
 import mongoose from 'mongoose';
 import {NextResponse} from 'next/server';
-import {getServerSession} from 'next-auth';
 
-import {authOptions} from '@/lib/auth';
-import dbConnect from '@/lib/dbConnect';
-import '@/models/Contact';
-import NoteSection from '@/models/NoteSection';
+import {ActivityEntry, isProjectSection, logActivity} from '@/lib/projectActivity';
+import {authorizeSection, isHttpUrl, keepId, loadProfile, toDateOrNull} from '@/lib/vendorProfileServer';
 import VendorFile from '@/models/VendorFile';
-import VendorProfile, {IVendorProfile, VENDOR_DOC_TYPES, VENDOR_STATUSES} from '@/models/VendorProfile';
+import VendorProfile, {IVendorProfile, PROJECT_HEALTH, VENDOR_DOC_TYPES, VENDOR_STATUSES} from '@/models/VendorProfile';
 
 export const dynamic = 'force-dynamic';
 
 interface RouteParams {
   params: {sectionId: string};
-}
-
-const CONTACT_FIELDS = 'name company email phone position department type image';
-
-function isHttpUrl(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
-// Existing subdocuments keep their ids; new ones get a fresh id from Mongoose
-function keepId(id: unknown) {
-  return mongoose.isValidObjectId(id) ? {_id: id} : {};
-}
-
-function toDateOrNull(value: unknown): Date | null {
-  if (!value) return null;
-  const date = new Date(value as string);
-  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function referencedFileIds(profile: Pick<IVendorProfile, 'orgChart' | 'documents'>): string[] {
@@ -49,48 +22,22 @@ function referencedFileIds(profile: Pick<IVendorProfile, 'orgChart' | 'documents
     .map(id => String(id));
 }
 
-async function authorize(sectionId: string) {
-  const session = await getServerSession(authOptions);
-  const userEmail = session?.user?.email;
-  if (!userEmail) return {error: NextResponse.json({error: 'Unauthorized'}, {status: 401})};
-  if (!mongoose.isValidObjectId(sectionId)) {
-    return {error: NextResponse.json({error: 'Vendor not found'}, {status: 404})};
-  }
-  await dbConnect();
-  const section = await NoteSection.findOne({_id: sectionId, userEmail}).select('_id');
-  if (!section) return {error: NextResponse.json({error: 'Vendor not found'}, {status: 404})};
-  return {userEmail};
-}
-
-async function loadProfile(userEmail: string, sectionId: string) {
-  const profile = await VendorProfile.findOneAndUpdate(
-    {userEmail, sectionId},
-    {$setOnInsert: {status: 'Active'}}, // userEmail/sectionId come from the filter on insert
-    {new: true, upsert: true},
-  ).populate([
-    {path: 'keyContacts.contactId', select: CONTACT_FIELDS, match: {userEmail}},
-    {path: 'internalContacts.contactId', select: CONTACT_FIELDS, match: {userEmail}},
-  ]);
-  const data = profile.toObject();
-  // Contacts deleted from the Contacts list drop out of key contacts
-  data.keyContacts = data.keyContacts.filter(kc => kc.contactId);
-  data.internalContacts = (data.internalContacts || []).filter(kc => kc.contactId);
-  return data;
-}
+const shortDate = (d?: Date | null) =>
+  d ? new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'}) : 'none';
 
 export async function GET(_req: Request, {params}: RouteParams) {
-  const auth = await authorize(params.sectionId);
+  const auth = await authorizeSection(params.sectionId);
   if ('error' in auth) return auth.error;
   try {
     return NextResponse.json({success: true, data: await loadProfile(auth.userEmail, params.sectionId)});
   } catch (error) {
-    console.error('Vendor profile GET error:', error);
-    return NextResponse.json({error: 'Failed to load vendor'}, {status: 500});
+    console.error('Profile GET error:', error);
+    return NextResponse.json({error: 'Failed to load'}, {status: 500});
   }
 }
 
 export async function PUT(req: Request, {params}: RouteParams) {
-  const auth = await authorize(params.sectionId);
+  const auth = await authorizeSection(params.sectionId);
   if ('error' in auth) return auth.error;
   const {userEmail} = auth;
   try {
@@ -98,10 +45,28 @@ export async function PUT(req: Request, {params}: RouteParams) {
     const existing = await VendorProfile.findOne({userEmail, sectionId: params.sectionId});
     const profile = existing || new VendorProfile({userEmail, sectionId: params.sectionId});
     const before = referencedFileIds(profile);
+    const prev = {
+      status: profile.status,
+      health: profile.health,
+      phase: profile.phase,
+      targetDate: profile.targetDate,
+      docs: new Map((profile.documents || []).map(d => [String(d._id), d.title])),
+    };
 
-    if (typeof body.summary === 'string') profile.summary = body.summary.slice(0, 200);
+    if (typeof body.summary === 'string') profile.summary = body.summary.slice(0, 400);
     if (VENDOR_STATUSES.includes(body.status)) profile.status = body.status;
     if (typeof body.website === 'string') profile.website = isHttpUrl(body.website) ? body.website : '';
+
+    // Project header fields
+    if (typeof body.phase === 'string') profile.phase = body.phase.trim().slice(0, 40);
+    if (PROJECT_HEALTH.includes(body.health)) profile.health = body.health;
+    if ('startDate' in body) profile.startDate = toDateOrNull(body.startDate);
+    if ('targetDate' in body) profile.targetDate = toDateOrNull(body.targetDate);
+    if (typeof body.owner === 'string') profile.owner = body.owner.trim().slice(0, 80);
+    if (typeof body.currentFocus === 'string') profile.currentFocus = body.currentFocus.trim().slice(0, 240);
+    if (body.brief && typeof body.brief.text === 'string') {
+      profile.brief = {text: body.brief.text.trim().slice(0, 3000), source: 'manual', updatedAt: new Date()};
+    }
 
     if (body.orgChart && typeof body.orgChart === 'object') {
       const oc = body.orgChart;
@@ -121,7 +86,11 @@ export async function PUT(req: Request, {params}: RouteParams) {
         field,
         body[field]
           .filter((kc: {contactId?: unknown}) => mongoose.isValidObjectId(kc?.contactId))
-          .map((kc: {contactId: string; role?: string}) => ({contactId: kc.contactId, role: String(kc.role || '').slice(0, 60)})),
+          .map((kc: {contactId: string; role?: string; note?: string}) => ({
+            contactId: kc.contactId,
+            role: String(kc.role || '').slice(0, 60),
+            note: String(kc.note || '').slice(0, 2000),
+          })),
       );
     }
 
@@ -130,10 +99,11 @@ export async function PUT(req: Request, {params}: RouteParams) {
         'links',
         body.links
           .filter((link: {title?: string; url?: string}) => link?.title?.trim() && isHttpUrl(link.url))
-          .map((link: {_id?: string; title: string; url: string}) => ({
+          .map((link: {_id?: string; title: string; url: string; pinned?: boolean}) => ({
             ...keepId(link._id),
             title: link.title.trim(),
             url: link.url,
+            pinned: !!link.pinned,
           })),
       );
     }
@@ -154,6 +124,8 @@ export async function PUT(req: Request, {params}: RouteParams) {
             contentType: String(doc.contentType || ''),
             size: Number(doc.size) || 0,
             url: isHttpUrl(doc.url) ? doc.url : '',
+            notes: String(doc.notes || '').slice(0, 4000),
+            pinned: !!doc.pinned,
             createdAt: toDateOrNull(doc.createdAt) || new Date(),
           })),
       );
@@ -161,14 +133,36 @@ export async function PUT(req: Request, {params}: RouteParams) {
 
     await profile.save();
 
-    // Remove files this vendor no longer references (replaced org chart, deleted documents)
+    // Remove files this page no longer references (replaced org chart, deleted documents)
     const after = new Set(referencedFileIds(profile));
     const orphaned = before.filter(id => !after.has(id));
     if (orphaned.length) await VendorFile.deleteMany({_id: {$in: orphaned}, userEmail});
 
+    // Project history: status, health, phase, target date, and documents
+    if (await isProjectSection(userEmail, params.sectionId)) {
+      const entries: ActivityEntry[] = [];
+      if (prev.status !== profile.status)
+        entries.push({type: 'project', action: 'status', label: 'Project status changed', title: `${prev.status} → ${profile.status}`});
+      if (prev.health !== profile.health)
+        entries.push({type: 'project', action: 'health', label: 'Project health changed', title: `${prev.health} → ${profile.health}`});
+      if ((prev.phase || '') !== (profile.phase || ''))
+        entries.push({type: 'project', action: 'phase', label: 'Project phase changed', title: `${prev.phase || 'none'} → ${profile.phase || 'none'}`});
+      if (String(prev.targetDate || '') !== String(profile.targetDate || ''))
+        entries.push({type: 'project', action: 'target', label: 'Target date changed', title: `${shortDate(prev.targetDate)} → ${shortDate(profile.targetDate)}`});
+      const now = new Set((profile.documents || []).map(d => String(d._id)));
+      (profile.documents || []).forEach(d => {
+        if (!prev.docs.has(String(d._id)))
+          entries.push({type: 'document', action: 'added', label: 'Document added', title: d.title, refId: String(d._id)});
+      });
+      prev.docs.forEach((title, id) => {
+        if (!now.has(id)) entries.push({type: 'document', action: 'removed', label: 'Document removed', title, refId: id});
+      });
+      await logActivity(userEmail, params.sectionId, entries, {knownProject: true});
+    }
+
     return NextResponse.json({success: true, data: await loadProfile(userEmail, params.sectionId)});
   } catch (error) {
-    console.error('Vendor profile PUT error:', error);
-    return NextResponse.json({error: 'Failed to save vendor'}, {status: 400});
+    console.error('Profile PUT error:', error);
+    return NextResponse.json({error: 'Failed to save'}, {status: 400});
   }
 }

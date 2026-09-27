@@ -4,6 +4,7 @@
 import {ExternalLink, Globe, Link as LinkIcon, Pencil, Plus, Trash2} from 'lucide-react';
 import React, {useState} from 'react';
 
+import PinButton from './PinButton';
 import {hostOf, normalizeUrl, VendorLink, VendorPatch} from './vendorApi';
 import styles from './VendorPage.module.css';
 
@@ -100,37 +101,55 @@ export default function LinksCard({links, onPatch}: Props) {
       )}
 
       {links.length === 0 && !draft ? (
-        <div className={styles.empty}>Save portals, status pages, shared folders, and anything else you open often.</div>
+        <div className={styles.empty}>
+          Save portals, status pages, shared folders, and anything else you open often.
+        </div>
       ) : (
         <div className={styles.list}>
-          {links.map((link, index) => (
-            <div className={styles.row} key={link._id || link.url + index}>
-              <span className={styles.fileIcon}>
-                <Globe size={16} />
-              </span>
-              <a className={styles.rowMain} href={link.url} rel="noopener noreferrer" target="_blank">
-                <div className={styles.rowTitle}>
-                  <span>{link.title}</span>
-                  <ExternalLink size={12} color="#a2a79b" />
+          {links
+            .map((link, index) => ({link, index}))
+            .sort((a, b) => Number(!!b.link.pinned) - Number(!!a.link.pinned))
+            .map(({link, index}) => (
+              <div
+                className={styles.row}
+                data-pinned={!!link.pinned}
+                id={link._id ? `link-${link._id}` : undefined}
+                key={link._id || link.url + index}>
+                <span className={styles.fileIcon}>
+                  <Globe size={16} />
+                </span>
+                <a className={styles.rowMain} href={link.url} rel="noopener noreferrer" target="_blank">
+                  <div className={styles.rowTitle}>
+                    <span>{link.title}</span>
+                    <ExternalLink size={12} color="#a2a79b" />
+                  </div>
+                  <div className={styles.rowSub}>{hostOf(link.url)}</div>
+                </a>
+                <div className={styles.rowActions} data-keep={!!link.pinned}>
+                  <PinButton
+                    label={link.title}
+                    onToggle={() =>
+                      onPatch({links: links.map((l, i) => (i === index ? {...l, pinned: !l.pinned} : l))}).catch(err =>
+                        setError(err instanceof Error ? err.message : 'Could not update the link.'),
+                      )
+                    }
+                    pinned={!!link.pinned}
+                  />
+                  <button
+                    aria-label={`Edit ${link.title}`}
+                    className={styles.iconBtn}
+                    onClick={() => setDraft({index, title: link.title, url: link.url})}>
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    aria-label={`Remove ${link.title}`}
+                    className={`${styles.iconBtn} ${styles.danger}`}
+                    onClick={() => remove(index)}>
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-                <div className={styles.rowSub}>{hostOf(link.url)}</div>
-              </a>
-              <div className={styles.rowActions}>
-                <button
-                  aria-label={`Edit ${link.title}`}
-                  className={styles.iconBtn}
-                  onClick={() => setDraft({index, title: link.title, url: link.url})}>
-                  <Pencil size={14} />
-                </button>
-                <button
-                  aria-label={`Remove ${link.title}`}
-                  className={`${styles.iconBtn} ${styles.danger}`}
-                  onClick={() => remove(index)}>
-                  <Trash2 size={14} />
-                </button>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
       {error && <p className={styles.error}>{error}</p>}

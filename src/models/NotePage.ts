@@ -28,7 +28,10 @@ export interface INotePage extends Document {
   description?: string;
   isStarred?: boolean;
   isPinned?: boolean;
-  noteClass?: string | null; // _id of one of the notebook's noteClasses
+  noteClass?: string | null; // legacy single classification (first of noteClasses)
+  noteClasses?: string[]; // _ids of the notebook's noteClasses; a note can have several
+  noteDate?: Date | null; // the date the note is about (e.g. meeting date); defaults to createdAt
+  relatedDocumentId?: string | null; // a vendor/project document this note relates to
   createdAt: Date;
   updatedAt: Date;
 }
@@ -118,6 +121,9 @@ const NotePageSchema: Schema = new Schema(
       type: String,
       default: null,
     },
+    noteClasses: [{type: String}],
+    noteDate: {type: Date, default: null},
+    relatedDocumentId: {type: String, default: null},
   },
   {
     timestamps: true,

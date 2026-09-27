@@ -33,6 +33,9 @@ import RichTextEditor from './RichTextEditor';
 import {notifyTasksChanged} from '../Tasks/api';
 
 import ToDoModal from './ToDoModal';
+import LinkTasksButton from '../Tasks/LinkTasksButton';
+import {TaskVendor} from '../Tasks/types';
+import ProjectNoteActions from './Vendor/ProjectNoteActions';
 import PromptEditorModal from './PromptEditorModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -66,12 +69,14 @@ interface NoteEditorProps {
   onSave: (id: string, data: any) => Promise<void>;
   page: INotePage | null;
   initialTabId?: string;
+  // Set when the note belongs to a project: enables "Create from note" (task / decision / attention)
+  project?: TaskVendor | null;
 }
 
 // Keep in-session edits when navigating between notes. Nothing is written to browser storage.
 const noteDrafts = new Map<string, {tabs: NonNullable<INotePage['tabs']>; activeTabId: string | null}>();
 
-const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId}) => {
+const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initialTabId, project}) => {
   const {data: session} = useSession(); // Get session data
   // Tab State
   const [tabs, setTabs] = useState<
@@ -2206,6 +2211,16 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
             <ClipboardDocumentListIcon className="h-3.5 w-3.5" />
             To Do
           </button>
+
+          {/* Link tasks you already have to this note */}
+          {page?._id && <LinkTasksButton pageId={String(page._id)} pageTitle={page.title || 'this note'} vendor={project} variant="toolbar" />}
+          {page?._id && project && (
+            <ProjectNoteActions
+              getHtml={() => editorContent}
+              note={{id: String(page._id), title: page.title || 'this note'}}
+              project={project}
+            />
+          )}
 
           <div className="flex items-center gap-1">
             <button

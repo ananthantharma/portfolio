@@ -7,6 +7,7 @@ import '@/models/NoteSection'; // registered for vendor population
 import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
+import {ActivityEntry, logActivity} from '@/lib/projectActivity';
 import ToDo, {VENDOR_POPULATE} from '@/models/ToDo';
 
 export const dynamic = 'force-dynamic';
@@ -116,6 +117,7 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     } else if (data.isCompleted !== undefined) data.status = data.isCompleted ? 'done' : 'todo';
     if (data.dueDate === '') data.dueDate = null;
     if (data.vendorSectionId !== undefined && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
+    const before = await ToDo.findOne({_id: id, userEmail: session.user.email}).select('isCompleted status vendorSectionId').lean();
     const updatedToDo = await ToDo.findOneAndUpdate({_id: id, userEmail: session.user.email}, {$set: data}, {new: true, runValidators: true})
       .populate({
         path: 'sourcePageId',
@@ -127,6 +129,19 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
       return NextResponse.json({success: false, error: 'To Do not found'}, {status: 404});
     }
 
+    // Project history: tasks completed, reopened, or linked to a project
+    const vendorId = String((updatedToDo.vendorSectionId as {_id?: unknown} | null)?._id || updatedToDo.vendorSectionId || '');
+    if (vendorId && before) {
+      const entries: ActivityEntry[] = [];
+      const wasDone = before.isCompleted || before.status === 'done';
+      const isDone = updatedToDo.isCompleted || updatedToDo.status === 'done';
+      const ref = String(updatedToDo._id);
+      if (String(before.vendorSectionId || '') !== vendorId)
+        entries.push({type: 'task', action: 'linked', label: 'Task linked', title: updatedToDo.title, refId: ref});
+      if (!wasDone && isDone) entries.push({type: 'task', action: 'completed', label: 'Task completed', title: updatedToDo.title, refId: ref});
+      if (wasDone && !isDone) entries.push({type: 'task', action: 'reopened', label: 'Task reopened', title: updatedToDo.title, refId: ref});
+      await logActivity(session.user.email, vendorId, entries);
+    }
     return NextResponse.json({success: true, data: updatedToDo});
   } catch (error) {
     console.error('Error updating To Do:', error);

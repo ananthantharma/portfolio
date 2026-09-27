@@ -282,6 +282,7 @@ export default function VendorPage(props: VendorPageProps) {
               emptyText={isProject ? `Meeting notes, decisions, and updates for ${section.name} will show up here.` : undefined}
               loading={loadingPages}
               meetingPrefix={isProject ? 'Project meeting' : undefined}
+              vendor={{_id: sectionId, name: section.name, categoryId: String(section.categoryId)}}
               onAddPage={onAddPage}
               onOpenPage={onOpenPage}
               onReorderPages={onReorderPages}

@@ -5,6 +5,7 @@ import {getServerSession} from 'next-auth';
 import {NextResponse} from 'next/server';
 
 import dbConnect from '@/lib/dbConnect';
+import {logActivity} from '@/lib/projectActivity';
 import NoteCategory from '@/models/NoteCategory'; // Ensure registration
 import NotePage from '@/models/NotePage';
 import NoteSection from '@/models/NoteSection'; // Ensure registration
@@ -182,6 +183,17 @@ export async function POST(request: Request) {
       order: count,
       image: body.image || null,
     });
+    // Project history: notes and meeting notes added to a project
+    if (page.sectionId) {
+      const meeting = /^project meeting\b/i.test(page.title);
+      await logActivity(session.user.email, page.sectionId, {
+        type: 'note',
+        action: meeting ? 'meeting' : 'created',
+        label: meeting ? 'Meeting note added' : 'Note added',
+        title: page.title,
+        refId: String(page._id),
+      });
+    }
     return NextResponse.json({success: true, data: page}, {status: 201});
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

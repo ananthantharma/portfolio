@@ -10,12 +10,31 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {CalendarPlus, GripVertical, NotebookPen, Plus, Search, Tags, Trash2, X} from 'lucide-react';
-import React, {useMemo, useState} from 'react';
+import {
+  CalendarPlus,
+  Check,
+  ChevronDown,
+  ExternalLink,
+  FileText,
+  Gavel,
+  GripVertical,
+  NotebookPen,
+  Plus,
+  Search,
+  Tags,
+  Trash2,
+  X,
+} from 'lucide-react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {INoteClass} from '@/models/NoteCategory';
 import {INotePage} from '@/models/NotePage';
 
+import LinkTasksButton from '../../Tasks/LinkTasksButton';
+import {TaskVendor} from '../../Tasks/types';
+import {meetingNoteHtml} from './meetingNotes';
+import PinButton from './PinButton';
+import {dateInputToIso, formatDate, isoToDateInput, ProjectDecision, VendorDocument} from './vendorApi';
 import styles from './VendorPage.module.css';
 
 export type NoteSort = 'custom' | 'updated' | 'newest' | 'oldest' | 'title' | 'class';
@@ -31,17 +50,23 @@ const SORT_LABELS: Record<NoteSort, string> = {
 
 const CLASS_COLORS = ['#46674d', '#3f6f9f', '#b4532a', '#8a6a14', '#6a4fa3', '#9a3e5c', '#2f7d7a', '#5f5e5a'];
 const UNCLASSIFIED = '__none__';
-const NEW_CLASS = '__new__';
 
 interface Props {
   vendorName: string;
-  // When set, shows a "Meeting note" button that creates "<prefix> – <today>"
+  // When set, shows a "Meeting note" button that creates a structured "<prefix> – <today>" note
   meetingPrefix?: string;
+  // The vendor/project these notes belong to; tasks linked to a note from here also join it
+  vendor?: TaskVendor;
   emptyText?: string;
   pages: INotePage[];
   loading: boolean;
   classes: INoteClass[];
   sort: NoteSort;
+  // Project extras: related documents and decisions, and "Convert to decision"
+  documents?: VendorDocument[];
+  decisions?: ProjectDecision[];
+  onConvertToDecision?: (page: INotePage) => void;
+  onOpenDecision?: (id: string) => void;
   onOpenPage: (id: string) => void;
   onAddPage: (title: string, extra?: Partial<INotePage>) => void;
   onUpdatePage: (id: string, updates: Partial<INotePage>) => Promise<void>;
@@ -49,7 +74,7 @@ interface Props {
   onUpdateNotebook: (updates: {noteClasses?: INoteClass[]; noteSort?: string}) => Promise<INoteClass[] | void>;
 }
 
-function snippet(page: INotePage) {
+export function noteSnippet(page: INotePage, max = 160) {
   const tabs = [...(page.tabs || [])].sort((a, b) => a.order - b.order);
   const html = tabs.map(t => t.content || '').join(' ') || page.content || '';
   return html
@@ -65,8 +90,17 @@ function snippet(page: INotePage) {
     .replace(/&quot;/g, '"')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, 160);
+    .slice(0, max);
 }
+
+/** A note's classifications (several allowed; older notes stored a single one). */
+export function classesOf(page: Pick<INotePage, 'noteClasses' | 'noteClass'>): string[] {
+  if (page.noteClasses?.length) return page.noteClasses.map(String);
+  return page.noteClass ? [String(page.noteClass)] : [];
+}
+
+/** The date a note is about: its own date if set, otherwise when it was created. */
+export const noteDateOf = (page: INotePage) => page.noteDate || page.createdAt;
 
 function timeAgo(value: Date | string) {
   const mins = Math.floor((Date.now() - new Date(value).getTime()) / 60000);
@@ -81,51 +115,70 @@ function timeAgo(value: Date | string) {
 
 export default function VendorNotes(props: Props) {
   const {vendorName, pages, loading, classes, sort, onOpenPage, onAddPage, onUpdatePage, onReorderPages, onUpdateNotebook} = props;
-  const {meetingPrefix, emptyText} = props;
+  const {meetingPrefix, emptyText, vendor, documents, decisions, onConvertToDecision, onOpenDecision} = props;
   const [query, setQuery] = useState('');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [editingClasses, setEditingClasses] = useState(false);
   const [addingClass, setAddingClass] = useState(false);
   const [newClassName, setNewClassName] = useState('');
   const [classError, setClassError] = useState('');
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const classById = useMemo(() => new Map(classes.map(c => [String(c._id), c])), [classes]);
-  const classOf = (page: INotePage) => (page.noteClass && classById.has(page.noteClass) ? page.noteClass : UNCLASSIFIED);
+  const knownClasses = (page: INotePage) => classesOf(page).filter(id => classById.has(id));
 
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
     pages.forEach(p => {
-      const key = p.noteClass && classById.has(p.noteClass) ? p.noteClass : UNCLASSIFIED;
-      map[key] = (map[key] || 0) + 1;
+      const own = classesOf(p).filter(id => classById.has(id));
+      if (!own.length) map[UNCLASSIFIED] = (map[UNCLASSIFIED] || 0) + 1;
+      own.forEach(id => (map[id] = (map[id] || 0) + 1));
     });
     return map;
   }, [pages, classById]);
 
+  const decisionsByNote = useMemo(() => {
+    const map = new Map<string, ProjectDecision[]>();
+    (decisions || []).forEach(d => d.noteId && map.set(d.noteId, [...(map.get(d.noteId) || []), d]));
+    return map;
+  }, [decisions]);
+
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = pages.filter(p => {
-      if (classFilter !== 'all' && classOf(p) !== classFilter) return false;
-      return !q || p.title.toLowerCase().includes(q) || snippet(p).toLowerCase().includes(q);
+      const own = knownClasses(p);
+      if (classFilter === UNCLASSIFIED && own.length) return false;
+      if (classFilter !== 'all' && classFilter !== UNCLASSIFIED && !own.includes(classFilter)) return false;
+      return !q || p.title.toLowerCase().includes(q) || noteSnippet(p, 4000).toLowerCase().includes(q);
     });
     const time = (v: Date | string) => new Date(v).getTime();
     const classRank = (p: INotePage) => {
-      const i = classes.findIndex(c => String(c._id) === p.noteClass);
-      return i === -1 ? classes.length : i;
+      const own = knownClasses(p);
+      const ranks = own.map(id => classes.findIndex(c => String(c._id) === id)).filter(i => i >= 0);
+      return ranks.length ? Math.min(...ranks) : classes.length;
     };
+    let sorted: INotePage[];
     switch (sort) {
       case 'updated':
-        return [...list].sort((a, b) => time(b.updatedAt) - time(a.updatedAt));
+        sorted = [...list].sort((a, b) => time(b.updatedAt) - time(a.updatedAt));
+        break;
       case 'newest':
-        return [...list].sort((a, b) => time(b.createdAt) - time(a.createdAt));
+        sorted = [...list].sort((a, b) => time(noteDateOf(b)) - time(noteDateOf(a)));
+        break;
       case 'oldest':
-        return [...list].sort((a, b) => time(a.createdAt) - time(b.createdAt));
+        sorted = [...list].sort((a, b) => time(noteDateOf(a)) - time(noteDateOf(b)));
+        break;
       case 'title':
-        return [...list].sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}));
+        sorted = [...list].sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}));
+        break;
       case 'class':
-        return [...list].sort((a, b) => classRank(a) - classRank(b) || time(b.updatedAt) - time(a.updatedAt));
+        sorted = [...list].sort((a, b) => classRank(a) - classRank(b) || time(b.updatedAt) - time(a.updatedAt));
+        break;
       default:
-        return list; // pages arrive in the user's saved order
+        sorted = list; // pages arrive in the user's saved order
     }
+    // Pinned notes always sit at the top (except while grouping by classification)
+    return sort === 'class' ? sorted : [...sorted.filter(p => p.isPinned), ...sorted.filter(p => !p.isPinned)];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages, query, classFilter, sort, classes, classById]);
 
@@ -146,17 +199,25 @@ export default function VendorNotes(props: Props) {
     onReorderPages(pages.map(p => (visibleIds.has(String(p._id)) ? moved[next++] : p)));
   };
 
-  // One click: a note titled "Project meeting – Sep 26, 2026", filed under the meetings classification if there is one
+  // A structured meeting note titled "Project meeting – Sep 26, 2026", filed under Meetings if that exists
   const addMeetingNote = () => {
     const date = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+    const title = `${meetingPrefix} – ${date}`;
     const meetings = classes.find(c => /meeting/i.test(c.name));
-    onAddPage(`${meetingPrefix} – ${date}`, meetings ? {noteClass: String(meetings._id)} : undefined);
+    onAddPage(title, {
+      ...(meetings ? {noteClass: String(meetings._id), noteClasses: [String(meetings._id)]} : {}),
+      noteDate: new Date(),
+      tabs: [{title: 'Meeting', content: meetingNoteHtml(title, date), order: 0}],
+    });
   };
 
   const addNote = () => {
-    const extra = classFilter !== 'all' && classFilter !== UNCLASSIFIED ? {noteClass: classFilter} : undefined;
-    const label = extra ? classById.get(classFilter)?.name : '';
-    onAddPage(label ? `${label} – ${new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}` : 'New note', extra);
+    const cls = classFilter !== 'all' && classFilter !== UNCLASSIFIED ? classFilter : null;
+    const label = cls ? classById.get(cls)?.name : '';
+    onAddPage(
+      label ? `${label} – ${new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}` : 'New note',
+      cls ? {noteClass: cls, noteClasses: [cls]} : undefined,
+    );
   };
 
   // Adds a classification and returns its id (null if the name was empty, taken, or saving failed)
@@ -194,7 +255,7 @@ export default function VendorNotes(props: Props) {
     const id = String(c._id);
     const used = counts[id] || 0;
     const message = used
-      ? `Remove "${c.name}"? ${used} note${used === 1 ? '' : 's'} will become unclassified. The notes themselves are kept.`
+      ? `Remove "${c.name}"? It comes off ${used} note${used === 1 ? '' : 's'}. The notes themselves are kept.`
       : `Remove "${c.name}"?`;
     if (!confirm(message)) return;
     try {
@@ -206,16 +267,8 @@ export default function VendorNotes(props: Props) {
     }
   };
 
-  const setNoteClass = async (page: INotePage, value: string | null) => {
-    if (value !== NEW_CLASS) {
-      onUpdatePage(String(page._id), {noteClass: value});
-      return;
-    }
-    const name = window.prompt(`Name the new classification for "${page.title || 'this note'}"`);
-    if (!name?.trim()) return;
-    const id = await createClass(name);
-    if (id) onUpdatePage(String(page._id), {noteClass: id});
-  };
+  const saveClasses = (page: INotePage, ids: string[]) =>
+    onUpdatePage(String(page._id), {noteClasses: ids, noteClass: ids[0] || null});
 
   let lastGroup: string | null = null;
 
@@ -231,7 +284,7 @@ export default function VendorNotes(props: Props) {
           <Tags size={14} /> Classifications
         </button>
         {meetingPrefix && (
-          <button className={styles.btn} onClick={addMeetingNote} title={`Create “${meetingPrefix} – today's date” and open it`}>
+          <button className={styles.btn} onClick={addMeetingNote} title="Create a structured meeting note for today and open it">
             <CalendarPlus size={14} /> Meeting note
           </button>
         )}
@@ -241,9 +294,13 @@ export default function VendorNotes(props: Props) {
       </div>
 
       {editingClasses && (
-        <ClassEditor classes={classes} onClose={() => setEditingClasses(false)} onSave={async noteClasses => {
+        <ClassEditor
+          classes={classes}
+          onClose={() => setEditingClasses(false)}
+          onSave={async noteClasses => {
             await onUpdateNotebook({noteClasses});
-          }} />
+          }}
+        />
       )}
 
       <div className={styles.notesBar}>
@@ -323,7 +380,11 @@ export default function VendorNotes(props: Props) {
           </button>
         )}
       </div>
-      {classError && <p className={styles.error} style={{marginTop: -4, marginBottom: 8}}>{classError}</p>}
+      {classError && (
+        <p className={styles.error} style={{marginTop: -4, marginBottom: 8}}>
+          {classError}
+        </p>
+      )}
 
       {loading && !pages.length ? (
         <div className={styles.empty}>Loading notes…</div>
@@ -337,25 +398,37 @@ export default function VendorNotes(props: Props) {
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>
           <SortableContext items={visible.map(p => String(p._id))} strategy={verticalListSortingStrategy}>
             {visible.map(page => {
-              const key = classOf(page);
+              const own = knownClasses(page);
+              const key = own[0] || UNCLASSIFIED;
               const showGroup = sort === 'class' && key !== lastGroup;
               lastGroup = key;
-              const cls = classById.get(key);
+              const primary = classById.get(key);
+              const id = String(page._id);
               return (
-                <React.Fragment key={String(page._id)}>
+                <React.Fragment key={id}>
                   {showGroup && (
                     <div className={styles.noteGroup}>
-                      <span className={styles.dot} style={{background: cls?.color || '#c2c6bb'}} />
-                      {cls?.name || 'Unclassified'}
+                      <span className={styles.dot} style={{background: primary?.color || '#c2c6bb'}} />
+                      {primary?.name || 'Unclassified'}
                     </div>
                   )}
                   <NoteRow
                     canDrag={canDrag}
+                    classById={classById}
                     classes={classes}
-                    currentClass={cls}
-                    onOpen={() => onOpenPage(String(page._id))}
-                    onSetClass={value => setNoteClass(page, value)}
+                    decisions={decisionsByNote.get(id) || []}
+                    documents={documents}
+                    expanded={expanded === id}
+                    onConvertToDecision={onConvertToDecision}
+                    onCreateClass={createClass}
+                    onOpen={() => onOpenPage(id)}
+                    onOpenDecision={onOpenDecision}
+                    onSetClasses={ids => saveClasses(page, ids)}
+                    onToggleExpanded={() => setExpanded(expanded === id ? null : id)}
+                    onUpdate={updates => onUpdatePage(id, updates)}
+                    own={own}
                     page={page}
+                    vendor={vendor}
                   />
                 </React.Fragment>
               );
@@ -370,29 +443,139 @@ export default function VendorNotes(props: Props) {
   );
 }
 
+/** Chips for a note's classifications plus a picker to tick several. */
+function ClassPicker({
+  own,
+  classes,
+  classById,
+  onChange,
+  onCreate,
+}: {
+  own: string[];
+  classes: INoteClass[];
+  classById: Map<string, INoteClass>;
+  onChange: (ids: string[]) => void;
+  onCreate: (name: string) => Promise<string | null>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [open]);
+
+  const toggle = (id: string) => onChange(own.includes(id) ? own.filter(x => x !== id) : [...own, id]);
+
+  return (
+    <div className={styles.classPicker} ref={ref}>
+      <button
+        aria-expanded={open}
+        aria-label="Classifications for this note"
+        className={styles.classChips}
+        onClick={() => setOpen(v => !v)}
+        type="button">
+        {own.length ? (
+          own.slice(0, 2).map(id => {
+            const c = classById.get(id)!;
+            return (
+              <span className={styles.classChip} key={id} style={{background: `${c.color}1f`, color: c.color}}>
+                {c.name}
+              </span>
+            );
+          })
+        ) : (
+          <span className={styles.classChip} data-empty="true">
+            Classify
+          </span>
+        )}
+        {own.length > 2 && <span className={styles.classChip}>+{own.length - 2}</span>}
+      </button>
+      {open && (
+        <div className={styles.classMenu} role="group" aria-label="Choose classifications">
+          {classes.map(c => {
+            const id = String(c._id);
+            const on = own.includes(id);
+            return (
+              <button aria-pressed={on} className={styles.classOption} key={id} onClick={() => toggle(id)} type="button">
+                <span className={styles.classCheck} data-on={on} style={on ? {background: c.color, borderColor: c.color} : undefined}>
+                  {on && <Check size={10} />}
+                </span>
+                <span className={styles.dot} style={{background: c.color}} />
+                {c.name}
+              </button>
+            );
+          })}
+          <form
+            className={styles.classNew}
+            onSubmit={async e => {
+              e.preventDefault();
+              if (!name.trim()) return;
+              const id = await onCreate(name);
+              if (id && !own.includes(id)) onChange([...own, id]);
+              setName('');
+            }}>
+            <Plus size={12} />
+            <input aria-label="New classification" maxLength={40} onChange={e => setName(e.target.value)} placeholder="New classification" value={name} />
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function NoteRow({
   page,
+  own,
   canDrag,
   classes,
-  currentClass,
+  classById,
+  documents,
+  decisions,
+  expanded,
+  vendor,
   onOpen,
-  onSetClass,
+  onSetClasses,
+  onCreateClass,
+  onUpdate,
+  onToggleExpanded,
+  onConvertToDecision,
+  onOpenDecision,
 }: {
   page: INotePage;
+  own: string[];
   canDrag: boolean;
   classes: INoteClass[];
-  currentClass?: INoteClass;
+  classById: Map<string, INoteClass>;
+  documents?: VendorDocument[];
+  decisions: ProjectDecision[];
+  expanded: boolean;
+  vendor?: TaskVendor;
   onOpen: () => void;
-  onSetClass: (noteClass: string | null) => void;
+  onSetClasses: (ids: string[]) => void;
+  onCreateClass: (name: string) => Promise<string | null>;
+  onUpdate: (updates: Partial<INotePage>) => Promise<void>;
+  onToggleExpanded: () => void;
+  onConvertToDecision?: (page: INotePage) => void;
+  onOpenDecision?: (id: string) => void;
 }) {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
     id: String(page._id),
     disabled: !canDrag,
   });
-  const text = snippet(page);
+  const text = noteSnippet(page);
+  const primary = own[0] ? classById.get(own[0]) : undefined;
+  const relatedDoc = page.relatedDocumentId ? documents?.find(d => String(d._id) === page.relatedDocumentId) : undefined;
+  const showDetails = !!documents || !!onConvertToDecision;
+
   return (
     <div
-      className={styles.noteRow}
+      className={styles.noteRowWrap}
+      data-pinned={!!page.isPinned}
+      id={`note-${page._id}`}
       ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
@@ -400,39 +583,99 @@ function NoteRow({
         opacity: isDragging ? 0.6 : 1,
         position: 'relative',
         zIndex: isDragging ? 5 : 'auto',
-        borderLeft: `3px solid ${currentClass?.color || 'transparent'}`,
       }}>
-      {canDrag && (
-        <span aria-label={`Drag ${page.title}`} className={styles.handle} {...attributes} {...listeners}>
-          <GripVertical size={15} />
-        </span>
-      )}
-      <button className={styles.noteOpen} onClick={onOpen}>
-        <strong>{page.title || 'Untitled'}</strong>
-        <span>{text || 'Empty note'}</span>
-      </button>
-      <select
-        aria-label={`Classification for ${page.title}`}
-        className={styles.classSelect}
-        onChange={e => onSetClass(e.target.value || null)}
-        style={
-          currentClass
-            ? {background: `${currentClass.color}1f`, color: currentClass.color, borderColor: 'transparent'}
-            : {color: '#7d8576'}
-        }
-        value={currentClass ? String(currentClass._id) : ''}>
-        <option value="">Unclassified</option>
-        {classes.map(c => (
-          <option key={String(c._id)} value={String(c._id)}>
-            {c.name}
-          </option>
-        ))}
-        <option value={NEW_CLASS}>+ New classification…</option>
-      </select>
-      <div className={styles.noteMeta}>
-        <div>Edited {timeAgo(page.updatedAt)}</div>
-        <div>Created {new Date(page.createdAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}</div>
+      <div className={styles.noteRow} style={{borderLeft: `3px solid ${primary?.color || 'transparent'}`}}>
+        {canDrag && (
+          <span aria-label={`Drag ${page.title}`} className={styles.handle} {...attributes} {...listeners}>
+            <GripVertical size={15} />
+          </span>
+        )}
+        <button className={styles.noteOpen} onClick={onOpen}>
+          <strong>{page.title || 'Untitled'}</strong>
+          <span>{text || 'Empty note'}</span>
+        </button>
+        {decisions.length > 0 && (
+          <span className={styles.miniBadge} title={`${decisions.length} related decision${decisions.length === 1 ? '' : 's'}`}>
+            <Gavel size={11} /> {decisions.length}
+          </span>
+        )}
+        {relatedDoc && (
+          <span className={styles.miniBadge} title={`Related document: ${relatedDoc.title}`}>
+            <FileText size={11} />
+          </span>
+        )}
+        <LinkTasksButton pageId={String(page._id)} pageTitle={page.title || 'Untitled'} vendor={vendor} />
+        <ClassPicker classById={classById} classes={classes} onChange={onSetClasses} onCreate={onCreateClass} own={own} />
+        <PinButton label={page.title || 'note'} onToggle={() => onUpdate({isPinned: !page.isPinned})} pinned={!!page.isPinned} />
+        <div className={styles.noteMeta}>
+          <div>{formatDate(String(page.noteDate || page.createdAt))}</div>
+          <div>Edited {timeAgo(page.updatedAt)}</div>
+        </div>
+        {showDetails && (
+          <button
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Hide' : 'Show'} details for ${page.title}`}
+            className={styles.iconBtn}
+            onClick={onToggleExpanded}
+            type="button">
+            <ChevronDown className={styles.expandIcon} data-open={expanded} size={15} />
+          </button>
+        )}
       </div>
+      {expanded && showDetails && (
+        <div className={styles.noteDetails}>
+          <label>
+            Date
+            <input
+              onChange={e => onUpdate({noteDate: (dateInputToIso(e.target.value) as unknown as Date) || null})}
+              type="date"
+              value={isoToDateInput(page.noteDate ? String(page.noteDate) : String(page.createdAt))}
+            />
+          </label>
+          {documents && (
+            <label>
+              Related document
+              <select onChange={e => onUpdate({relatedDocumentId: e.target.value || null})} value={page.relatedDocumentId || ''}>
+                <option value="">None</option>
+                {documents.map(d => (
+                  <option key={d._id} value={d._id}>
+                    {d.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <div className={styles.noteDetailsWide}>
+            {decisions.map(d => (
+              <button className={styles.relChip} key={d._id} onClick={() => onOpenDecision?.(d._id)} type="button">
+                <Gavel size={12} /> {d.title}
+              </button>
+            ))}
+            {relatedDoc && (relatedDoc.fileId || relatedDoc.url) && (
+              <a
+                className={styles.relChip}
+                href={relatedDoc.fileId ? `/api/vendors/files/${relatedDoc.fileId}` : relatedDoc.url}
+                rel="noopener noreferrer"
+                target="_blank">
+                <ExternalLink size={12} /> {relatedDoc.title}
+              </a>
+            )}
+          </div>
+          <div className={styles.noteDetailsActions}>
+            <span className={styles.muted}>
+              Created {formatDate(String(page.createdAt))} · Last modified {formatDate(String(page.updatedAt))}
+            </span>
+            {onConvertToDecision && (
+              <button className={styles.btn} onClick={() => onConvertToDecision(page)} type="button">
+                <Gavel size={13} /> Convert to decision
+              </button>
+            )}
+            <button className={styles.btn} onClick={onOpen} type="button">
+              <NotebookPen size={13} /> Open note
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -472,7 +715,7 @@ function ClassEditor({
   return (
     <div className={styles.classEditor}>
       <p className={styles.muted} style={{margin: '0 0 10px'}}>
-        Classifications are shared by every vendor in this notebook. Removing one leaves its notes unclassified.
+        Classifications are shared by every page in this notebook. Removing one takes it off its notes; the notes are kept.
       </p>
       {draft.map((c, i) => (
         <div className={styles.classEditorRow} key={c._id || `new-${i}`}>

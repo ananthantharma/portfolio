@@ -3,7 +3,7 @@ import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
-import {DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
+import {DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
 import NoteCategory from '@/models/NoteCategory';
 import {authOptions} from '@/lib/auth';
 
@@ -102,7 +102,9 @@ export async function POST(request: Request) {
       // Vendor notebooks start with a useful set of note classifications the user can edit
       noteClasses:
         kind !== 'standard' && !Array.isArray(body.noteClasses)
-          ? DEFAULT_VENDOR_NOTE_CLASSES
+          ? kind === 'project'
+            ? DEFAULT_PROJECT_NOTE_CLASSES
+            : DEFAULT_VENDOR_NOTE_CLASSES
           : body.noteClasses,
       userEmail: session.user.email,
       order: count,

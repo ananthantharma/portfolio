@@ -50,7 +50,7 @@ import {signOut, useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
-import {DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
+import {DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
@@ -64,6 +64,7 @@ import NoteEditor from './NoteEditor';
 // import SearchModal from './SearchModal'; // Replaced by CommandPalette
 import SectionPageList from './SectionPageList';
 import SectionDashboard from './SectionDashboard';
+import ProjectPage from './Vendor/ProjectPage';
 import VendorPage from './Vendor/VendorPage';
 import ExecutiveModal from './ExecutiveModal';
 import ToDoListModal from './ToDoListModal';
@@ -962,6 +963,15 @@ const NotesLayout: React.FC = React.memo(() => {
     return counts;
   }, [workspaceTasks]);
 
+  // Notes opened from a project page get the "Create from note" actions (task / decision / attention)
+  const noteProject = useMemo(
+    () =>
+      notebookKind === 'project' && currentSection && pages.some(p => p._id === selectedPageId)
+        ? {_id: String(currentSection._id), name: currentSection.name, categoryId: String(currentSection.categoryId)}
+        : null,
+    [notebookKind, currentSection, pages, selectedPageId],
+  );
+
   const changeNotebookKind = useCallback(
     (next: 'standard' | 'vendor' | 'project') => {
       if (!currentCategory || next === (currentCategory.kind || 'standard')) return;
@@ -974,7 +984,9 @@ const NotesLayout: React.FC = React.memo(() => {
       if (!confirm(message)) return;
       handleUpdateCategory(currentCategory._id as string, {
         kind: next,
-        ...(next !== 'standard' && !currentCategory.noteClasses?.length ? {noteClasses: DEFAULT_VENDOR_NOTE_CLASSES} : {}),
+        ...(next !== 'standard' && !currentCategory.noteClasses?.length
+          ? {noteClasses: next === 'project' ? DEFAULT_PROJECT_NOTE_CLASSES : DEFAULT_VENDOR_NOTE_CLASSES}
+          : {}),
       }).catch(() => alert('Could not change the notebook type. Try again.'));
     },
     [currentCategory, handleUpdateCategory],
@@ -1572,10 +1584,23 @@ const NotesLayout: React.FC = React.memo(() => {
                     key={selectedPageId}
                     onSave={handleSavePageContent}
                     page={selectedPage || null}
+                    project={noteProject}
                   />
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
-              selectedSectionId && notebookKind && currentSection && currentCategory ? (
+              selectedSectionId && notebookKind === 'project' && currentSection && currentCategory ? (
+                <ProjectPage
+                  loadingPages={loadingPages}
+                  notebook={currentCategory}
+                  onAddPage={handleAddVendorNote}
+                  onOpenPage={handleOpenPageFromDashboard}
+                  onReorderPages={handleReorderPages}
+                  onUpdateNotebook={handleUpdateCategory}
+                  onUpdatePage={handleUpdatePage}
+                  pages={pages}
+                  section={currentSection}
+                />
+              ) : selectedSectionId && notebookKind && currentSection && currentCategory ? (
                 <VendorPage
                   kind={notebookKind}
                   loadingPages={loadingPages}

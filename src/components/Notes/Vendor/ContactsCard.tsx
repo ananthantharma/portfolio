@@ -5,6 +5,7 @@ import {BookUser, Building2, ChevronDown, Link2, Mail, Phone, Plus, Search, User
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import ContactFormModal, {ContactFormData} from '../ContactFormModal';
+import InlineNote from './InlineNote';
 import {initials, VendorContact, VendorKeyContact, VendorPatch} from './vendorApi';
 import styles from './VendorPage.module.css';
 
@@ -51,7 +52,8 @@ const COPY = {
   },
 } as const;
 
-const toPatch = (list: VendorKeyContact[]) => list.map(kc => ({contactId: kc.contactId._id, role: kc.role || ''}));
+const toPatch = (list: VendorKeyContact[]) =>
+  list.map(kc => ({contactId: kc.contactId._id, role: kc.role || '', note: kc.note || ''}));
 
 // "Acme" matches contacts at "Acme Cloud Inc." and vice versa
 function worksAt(contact: VendorContact, vendorName: string) {
@@ -183,6 +185,12 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch, wi
     }
   };
 
+  // Notes belong to this page's link, so the same person can have different notes per vendor or project.
+  // Errors are rethrown so the note editor stays open with the text still in it.
+  const saveNote = async (contactId: string, note: string) => {
+    await onPatch({[copy.field]: toPatch(contacts.map(kc => (kc.contactId._id === contactId ? {...kc, note} : kc)))});
+  };
+
   const commitRole = (contactId: string) => {
     setEditingRole(null);
     const current = contacts.find(kc => kc.contactId._id === contactId);
@@ -275,8 +283,8 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch, wi
             <div className={styles.empty}>{copy.empty(vendorName)}</div>
           ) : (
             <div className={styles.list}>
-              {contacts.map(({contactId: c, role}) => (
-                <div className={styles.row} key={c._id}>
+              {contacts.map(({contactId: c, role, note}) => (
+                <div className={styles.row} key={c._id} style={{alignItems: 'flex-start'}}>
                   <Avatar contact={c} />
                   <div className={styles.rowMain}>
                     <div className={styles.rowTitle}>
@@ -329,6 +337,17 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch, wi
                       )}
                       {!c.email && !c.phone && <span>No email or phone in Contacts yet</span>}
                     </div>
+                    <InlineNote
+                      addLabel="Add note"
+                      maxLength={2000}
+                      onSave={next => saveNote(c._id, next)}
+                      placeholder={
+                        variant === 'project'
+                          ? `What ${c.name.split(' ')[0]} does on this project, decisions, follow-ups…`
+                          : `Notes about ${c.name.split(' ')[0]}…`
+                      }
+                      value={note || ''}
+                    />
                   </div>
                   <span className={`${styles.pill} ${styles.pillGood} ${styles.linkedPill}`} title="Details come from your Contacts list">
                     <Link2 size={11} /> Contacts

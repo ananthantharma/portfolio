@@ -91,3 +91,8 @@ export function useTaskCollection() {
   if (!context) throw new Error('TaskProvider is required');
   return context;
 }
+
+/** Same as useTaskCollection, but returns null outside a TaskProvider instead of throwing. */
+export function useOptionalTaskCollection() {
+  return useContext(TaskContext);
+}

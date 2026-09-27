@@ -1,10 +1,33 @@
 export const VENDOR_STATUSES = ['Active', 'Onboarding', 'Under review', 'Inactive'] as const;
 export const PROJECT_STATUSES = ['Planning', 'Active', 'On hold', 'Complete'] as const;
 export const VENDOR_DOC_TYPES = ['MSA', 'DPA', 'SOW', 'NDA', 'Order form', 'Other'] as const;
+export const PROJECT_DOC_TYPES = [
+  'Agreement',
+  'Contract',
+  'SOW',
+  'Presentation',
+  'Report',
+  'Analysis',
+  'Requirements',
+  'Architecture',
+  'Commercial',
+  'Other',
+] as const;
+export const PROJECT_HEALTH = ['On Track', 'At Risk', 'Critical', 'Complete'] as const;
+export const PROJECT_PHASES = ['Initiation', 'Planning', 'Design', 'Execution', 'Testing', 'Deployment', 'Closure'] as const;
+export const DECISION_STATUSES = ['Active', 'Superseded', 'Reversed'] as const;
+export const ATTENTION_TYPES = ['Risk', 'Issue', 'Blocker', 'Dependency'] as const;
+export const ATTENTION_SEVERITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
+export const ATTENTION_STATUSES = ['Open', 'Monitoring', 'Resolved'] as const;
 
 export type VendorStatus = (typeof VENDOR_STATUSES)[number] | (typeof PROJECT_STATUSES)[number];
 export type ProfileKind = 'vendor' | 'project';
-export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number];
+export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number] | (typeof PROJECT_DOC_TYPES)[number];
+export type ProjectHealth = (typeof PROJECT_HEALTH)[number];
+export type DecisionStatus = (typeof DECISION_STATUSES)[number];
+export type AttentionType = (typeof ATTENTION_TYPES)[number];
+export type AttentionSeverity = (typeof ATTENTION_SEVERITIES)[number];
+export type AttentionStatus = (typeof ATTENTION_STATUSES)[number];
 
 export interface VendorContact {
   _id: string;
@@ -21,12 +44,14 @@ export interface VendorContact {
 export interface VendorKeyContact {
   contactId: VendorContact;
   role: string;
+  note?: string;
 }
 
 export interface VendorLink {
   _id?: string;
   title: string;
   url: string;
+  pinned?: boolean;
 }
 
 export interface VendorDocument {
@@ -40,7 +65,53 @@ export interface VendorDocument {
   contentType?: string;
   size?: number;
   url?: string;
+  notes?: string;
+  pinned?: boolean;
   createdAt?: string;
+}
+
+export interface ProjectDecision {
+  _id: string;
+  title: string;
+  details: string;
+  decisionDate?: string | null;
+  reason: string;
+  status: DecisionStatus;
+  noteId?: string | null;
+  documentId?: string | null;
+  pinned?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AttentionItem {
+  _id: string;
+  title: string;
+  type: AttentionType;
+  description: string;
+  severity: AttentionSeverity;
+  status: AttentionStatus;
+  dueDate?: string | null;
+  resolution: string;
+  createdAt?: string;
+  updatedAt?: string;
+  resolvedAt?: string | null;
+}
+
+export interface ProjectBrief {
+  text: string;
+  source: 'manual' | 'ai';
+  updatedAt?: string | null;
+}
+
+export interface ActivityItem {
+  _id: string;
+  type: 'note' | 'task' | 'document' | 'decision' | 'attention' | 'project';
+  action: string;
+  label: string;
+  title: string;
+  refId?: string | null;
+  createdAt: string;
 }
 
 export interface FlowNode {
@@ -86,6 +157,17 @@ export interface VendorProfile {
   internalContacts: VendorKeyContact[];
   links: VendorLink[];
   documents: VendorDocument[];
+  // Project fields
+  phase?: string;
+  health?: ProjectHealth;
+  startDate?: string | null;
+  targetDate?: string | null;
+  owner?: string;
+  currentFocus?: string;
+  brief?: ProjectBrief;
+  decisions?: ProjectDecision[];
+  attention?: AttentionItem[];
+  updatedAt?: string;
 }
 
 export type VendorPatch = Partial<{
@@ -93,10 +175,17 @@ export type VendorPatch = Partial<{
   status: VendorStatus;
   website: string;
   orgChart: Partial<VendorOrgChart>;
-  keyContacts: {contactId: string; role: string}[];
-  internalContacts: {contactId: string; role: string}[];
+  keyContacts: {contactId: string; role: string; note?: string}[];
+  internalContacts: {contactId: string; role: string; note?: string}[];
   links: VendorLink[];
   documents: VendorDocument[];
+  phase: string;
+  health: ProjectHealth;
+  startDate: string | null;
+  targetDate: string | null;
+  owner: string;
+  currentFocus: string;
+  brief: {text: string};
 }>;
 
 export interface UploadedFile {
@@ -124,6 +213,79 @@ export async function saveVendor(sectionId: string, patch: VendorPatch): Promise
       body: JSON.stringify(patch),
     }),
   );
+}
+
+export type RecordCollection = 'decisions' | 'attention';
+
+/** Add a decision or attention item; returns the updated profile and the new item's id. */
+export async function createRecord(
+  sectionId: string,
+  coll: RecordCollection,
+  item: Record<string, unknown>,
+): Promise<{profile: VendorProfile; id: string}> {
+  const res = await fetch(`/api/vendors/${sectionId}/${coll}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(item),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || 'Could not save. Try again.');
+  return {profile: json.data, id: json.id};
+}
+
+export async function updateRecord(
+  sectionId: string,
+  coll: RecordCollection,
+  id: string,
+  changes: Record<string, unknown>,
+): Promise<VendorProfile> {
+  return readJson(
+    await fetch(`/api/vendors/${sectionId}/${coll}/${id}`, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(changes),
+    }),
+  );
+}
+
+export async function deleteRecord(sectionId: string, coll: RecordCollection, id: string): Promise<VendorProfile> {
+  return readJson(await fetch(`/api/vendors/${sectionId}/${coll}/${id}`, {method: 'DELETE'}));
+}
+
+export async function fetchActivity(
+  sectionId: string,
+  {type, since, limit}: {type?: string; since?: string | null; limit?: number} = {},
+): Promise<ActivityItem[]> {
+  const params = new URLSearchParams();
+  if (type && type !== 'all') params.set('type', type);
+  if (since) params.set('since', since);
+  if (limit) params.set('limit', String(limit));
+  return readJson(await fetch(`/api/vendors/${sectionId}/activity?${params}`, {cache: 'no-store'}));
+}
+
+/** Records this visit; resolves to when the previous visit was (null on the first visit). */
+export async function recordVisit(sectionId: string): Promise<string | null> {
+  const data = await readJson<{previousVisitAt: string | null}>(
+    await fetch(`/api/vendors/${sectionId}/visit`, {method: 'POST'}),
+  );
+  return data.previousVisitAt;
+}
+
+/** Plain text from note HTML (block tags become spaces, inline tags vanish). */
+export function htmlToText(html: string) {
+  return (html || '')
+    .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<\/?(p|div|br|li|ul|ol|h\d|tr|td|th|table|blockquote)\b[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n+/g, '\n')
+    .trim();
 }
 
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;

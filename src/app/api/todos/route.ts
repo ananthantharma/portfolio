@@ -11,6 +11,7 @@ import {NextResponse} from 'next/server';
 import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
+import {logActivity} from '@/lib/projectActivity';
 import ToDo, {VENDOR_POPULATE} from '@/models/ToDo';
 
 export const runtime = 'nodejs';
@@ -115,6 +116,17 @@ export async function POST(req: Request) {
     await newToDo.populate(VENDOR_POPULATE(session.user.email));
 
     console.log('To Do Created:', newToDo._id);
+    // Project history: tasks created on (or for) a project
+    const vendorId = (newToDo.vendorSectionId as {_id?: unknown} | null)?._id || newToDo.vendorSectionId;
+    if (vendorId) {
+      await logActivity(session.user.email, vendorId, {
+        type: 'task',
+        action: 'created',
+        label: 'Task created',
+        title: newToDo.title,
+        refId: String(newToDo._id),
+      });
+    }
     return NextResponse.json({success: true, data: newToDo}, {status: 201});
   } catch (error) {
     console.error('Error in POST /api/todos:', error);
