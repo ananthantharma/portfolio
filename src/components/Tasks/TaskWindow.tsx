@@ -640,7 +640,7 @@ export default function TaskWindow({
               </div>
             </PropertyCard>
 
-            <PropertyCard icon={<Building2 className="h-3 w-3" />} label="Vendor" tint="sky">
+            <PropertyCard icon={<Building2 className="h-3 w-3" />} label="Vendor or project" tint="sky">
               <div className="[&_select]:w-full [&_select]:rounded-lg [&_select]:border [&_select]:border-slate-200 [&_select]:bg-white [&_select]:px-2.5 [&_select]:py-1.5 [&_select]:text-[12.5px] [&_select]:text-slate-700 dark:[&_select]:border-slate-600 dark:[&_select]:bg-slate-800 dark:[&_select]:text-white">
                 <VendorSelect
                   onChange={next => {

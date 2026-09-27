@@ -19,8 +19,10 @@ import {
 } from '@dnd-kit/core';
 import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
 import {
+  ArrowsUpDownIcon,
   CheckIcon,
   ChevronDownIcon,
+  ClipboardDocumentListIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   DocumentPlusIcon,
@@ -60,6 +62,8 @@ export interface SectionPageListProps {
   onReorderSections: (newOrder: INoteSection[]) => void;
   loadingSections: boolean;
   sectionBadgeCounts?: Record<string, BadgeStat>;
+  // Open tasks linked to each section (vendor / project sections)
+  sectionTaskCounts?: Record<string, number>;
 
   // Pages (always for selectedSectionId)
   pages: INotePage[];
@@ -342,6 +346,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     onReorderSections,
     loadingSections,
     sectionBadgeCounts,
+    sectionTaskCounts,
     pages,
     selectedPageId,
     onSelectPage,
@@ -429,9 +434,39 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       return map;
     }, [pages]);
 
+    // A–Z sort is a display preference remembered in this browser; your own order is kept underneath
+    const [sortSectionsAlpha, setSortSectionsAlpha] = useState(false);
+    useEffect(() => {
+      try {
+        setSortSectionsAlpha(localStorage.getItem('NOTES_SECTIONS_SORT_ALPHA') === 'true');
+      } catch {
+        // storage unavailable
+      }
+    }, []);
+    const toggleSectionSort = useCallback(() => {
+      setSortSectionsAlpha(prev => {
+        try {
+          localStorage.setItem('NOTES_SECTIONS_SORT_ALPHA', String(!prev));
+        } catch {
+          // storage unavailable
+        }
+        return !prev;
+      });
+    }, []);
+    const orderedSections = useMemo(
+      () =>
+        sortSectionsAlpha
+          ? [...sections].sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}))
+          : sections,
+      [sections, sortSectionsAlpha],
+    );
+
     const filteredSections = useMemo(
-      () => searchQuery.trim() ? sections.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())) : sections,
-      [sections, searchQuery],
+      () =>
+        searchQuery.trim()
+          ? orderedSections.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+          : orderedSections,
+      [orderedSections, searchQuery],
     );
 
     const availableParents = useMemo(() => {
@@ -481,8 +516,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
         const a = parseDndId(String(active.id));
         const o = parseDndId(String(over.id));
 
-        // 1. Section reorder
+        // 1. Section reorder (not while sorted A–Z: the list shows a computed order)
         if (a.type === 'sec' && o.type === 'sec') {
+          if (sortSectionsAlpha) return;
           const oldIdx = sections.findIndex(s => s._id === a.id);
           const newIdx = sections.findIndex(s => s._id === o.id);
           if (oldIdx !== -1 && newIdx !== -1) onReorderSections(arrayMove(sections, oldIdx, newIdx));
@@ -537,6 +573,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
         onReorderPages,
         onReorderCategoryPages,
         onMovePageTo,
+        sortSectionsAlpha,
       ],
     );
 
@@ -667,7 +704,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             <PlusIcon className="h-3.5 w-3.5" />
           </button>
           <div className="w-5 h-px bg-slate-200/70 my-0.5" />
-          {sections.map(sec => {
+          {orderedSections.map(sec => {
             const SectionIcon = ICON_options[sec.icon as keyof typeof ICON_options] || ICON_options.Folder;
             const isSelected = selectedSectionId === sec._id;
             return (
@@ -919,7 +956,19 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           </CategoryRootDrop>
 
           {/* Sections label */}
-          <p className="mb-1 mt-1 px-1.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">Sections</p>
+          <div className="mb-1 mt-1 flex items-center justify-between px-1.5">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">Sections</p>
+            <button
+              aria-pressed={sortSectionsAlpha}
+              className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-semibold transition-colors ${
+                sortSectionsAlpha ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
+              }`}
+              onClick={toggleSectionSort}
+              title={sortSectionsAlpha ? 'Sorted A–Z. Click to use your own order.' : 'Sort sections A–Z'}>
+              <ArrowsUpDownIcon className="h-3 w-3" />
+              A–Z
+            </button>
+          </div>
 
           {/* Add-section inline form */}
           {isAddingSection && (
@@ -1033,6 +1082,14 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 />
                               )}
                               <span className="truncate leading-snug">{section.name}</span>
+                              {(sectionTaskCounts?.[sid] ?? 0) > 0 && (
+                                <span
+                                  className="flex flex-shrink-0 items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                                  title={`${sectionTaskCounts![sid]} open task${sectionTaskCounts![sid] === 1 ? '' : 's'} linked`}>
+                                  <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
+                                  {sectionTaskCounts![sid]}
+                                </span>
+                              )}
                               {/* Count chip */}
                               {isSelectedSec ? (
                                 pages.length > 0 && (

@@ -59,3 +59,13 @@ button.vendorPill:hover {
   background: #d9e6f6;
   border-color: #b3c9e8;
 }
+
+.projectPill {
+  background: #efe9f8;
+  color: #5b3f93;
+  border-color: #ddd0f1;
+}
+button.projectPill:hover {
+  background: #e6dcf5;
+  border-color: #cdbbeb;
+}

@@ -8,6 +8,7 @@ import TaskWorkspace from '../Tasks/TaskWorkspace';
 import {TaskProvider, useTaskCollection} from '../Tasks/TaskProvider';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from '../Tasks/WorkspaceNavigation';
 import {refreshVendorOptions} from '../Tasks/TaskExtras';
+import {statusOf, vendorIdOf} from '../Tasks/types';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -535,7 +536,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Category Operations
   const handleAddCategory = useCallback(
-    async (name: string, color?: string, icon?: string, image?: string | null, kind?: 'standard' | 'vendor') => {
+    async (name: string, color?: string, icon?: string, image?: string | null, kind?: 'standard' | 'vendor' | 'project') => {
     try {
       const response = await axios.post('/api/notes/categories', {name, color, icon, image, kind});
       setCategories(prev => [...prev, response.data.data]);
@@ -548,7 +549,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Notebook-level settings (vendor note classifications and sort order)
   const handleUpdateCategory = useCallback(
-    async (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string; kind?: 'standard' | 'vendor'}) => {
+    async (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string; kind?: 'standard' | 'vendor' | 'project'}) => {
       // Sort changes feel instant; classifications wait for the server so new ones get ids
       if (updates.noteSort) {
         setCategories(prev => prev.map(cat => (cat._id === id ? ({...cat, noteSort: updates.noteSort} as INoteCategory) : cat)));
@@ -941,12 +942,43 @@ const NotesLayout: React.FC = React.memo(() => {
     pages.find(p => p._id === selectedPageId) || categoryPages.find(p => p._id === selectedPageId) || null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
-  const isVendorNotebook = currentCategory?.kind === 'vendor';
+  // Vendor and project notebooks turn each section into a vendor or project page
+  const notebookKind = currentCategory?.kind === 'vendor' || currentCategory?.kind === 'project' ? currentCategory.kind : null;
+  const sectionNoun = notebookKind || 'section';
 
   const handleAddVendor = useCallback(() => {
-    const name = window.prompt('Vendor name');
+    const name = window.prompt(notebookKind === 'project' ? 'Project name' : 'Vendor name');
     if (name?.trim()) handleAddSection(name.trim().slice(0, 60));
-  }, [handleAddSection]);
+  }, [handleAddSection, notebookKind]);
+
+  // Open tasks linked to each section, for the sidebar badges and the overview banners
+  const sectionTaskCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    workspaceTasks.forEach(task => {
+      const id = vendorIdOf(task);
+      if (!id || task.isArchived || task.isTemplate || statusOf(task) === 'done') return;
+      counts[id] = (counts[id] || 0) + 1;
+    });
+    return counts;
+  }, [workspaceTasks]);
+
+  const changeNotebookKind = useCallback(
+    (next: 'standard' | 'vendor' | 'project') => {
+      if (!currentCategory || next === (currentCategory.kind || 'standard')) return;
+      const message =
+        next === 'vendor'
+          ? `Make "${currentCategory.name}" a vendor notebook? Each section becomes a vendor page with an org chart, contacts, tasks, links, agreements, and classified notes. Your existing pages stay as they are.`
+          : next === 'project'
+          ? `Make "${currentCategory.name}" a project notebook? Each section becomes a project page with project contacts, tasks, links, agreements, and notes. Your existing pages stay as they are.`
+          : `Make "${currentCategory.name}" a regular notebook? Vendor and project details are kept and come back if you switch again.`;
+      if (!confirm(message)) return;
+      handleUpdateCategory(currentCategory._id as string, {
+        kind: next,
+        ...(next !== 'standard' && !currentCategory.noteClasses?.length ? {noteClasses: DEFAULT_VENDOR_NOTE_CLASSES} : {}),
+      }).catch(() => alert('Could not change the notebook type. Try again.'));
+    },
+    [currentCategory, handleUpdateCategory],
+  );
 
   // Load recent pages from localStorage on mount
   useEffect(() => {
@@ -1342,7 +1374,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 <>
                   <ChevronRightIcon />
                   {selectedPage ? (
-                    <button onClick={() => setSelectedPageId(null)} title={isVendorNotebook ? 'Back to vendor page' : 'Back to section'}>
+                    <button onClick={() => setSelectedPageId(null)} title={notebookKind ? `Back to ${notebookKind} page` : 'Back to section'}>
                       {currentSection.name}
                     </button>
                   ) : (
@@ -1523,6 +1555,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   pageBadgeCounts={badgeCounts.pages}
                   pages={pages}
                   sectionBadgeCounts={badgeCounts.sections}
+                  sectionTaskCounts={sectionTaskCounts}
                   sections={sections}
                   selectedCategoryId={selectedCategoryId}
                   selectedPageId={selectedPageId}
@@ -1542,8 +1575,9 @@ const NotesLayout: React.FC = React.memo(() => {
                   />
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
-              selectedSectionId && isVendorNotebook && currentSection && currentCategory ? (
+              selectedSectionId && notebookKind && currentSection && currentCategory ? (
                 <VendorPage
+                  kind={notebookKind}
                   loadingPages={loadingPages}
                   notebook={currentCategory}
                   onAddPage={handleAddVendorNote}
@@ -1568,33 +1602,23 @@ const NotesLayout: React.FC = React.memo(() => {
               ) : /* Category selected, no section: Sections overview */
               selectedCategoryId ? (
                 <div className={styles.home}>
-                  <div className={styles.eyebrow}>{isVendorNotebook ? 'Vendor notebook' : 'Notebook'}</div>
+                  <div className={styles.eyebrow}>
+                    {notebookKind === 'vendor' ? 'Vendor notebook' : notebookKind === 'project' ? 'Project notebook' : 'Notebook'}
+                  </div>
                   <h1>{currentCategory?.name}</h1>
                   <p className={styles.intro}>
-                    {isVendorNotebook
-                      ? `${sections.length} vendor${sections.length === 1 ? '' : 's'} · ${categoryPages.length} pages`
-                      : `${sections.length} sections · ${categoryPages.length} pages`}
+                    {`${sections.length} ${sectionNoun}${sections.length === 1 ? '' : 's'} · ${categoryPages.length} pages`}
                   </p>
-                  <button
-                    className={styles.notebookKindToggle}
-                    onClick={() => {
-                      if (!currentCategory) return;
-                      const toVendor = !isVendorNotebook;
-                      const message = toVendor
-                        ? `Make "${currentCategory.name}" a vendor notebook? Each section becomes a vendor page with an org chart, key contacts, links, agreements, and classified notes. Your existing pages stay as they are.`
-                        : `Make "${currentCategory.name}" a regular notebook? Vendor details are kept and come back if you switch again.`;
-                      if (!confirm(message)) return;
-                      handleUpdateCategory(currentCategory._id as string, {
-                        kind: toVendor ? 'vendor' : 'standard',
-                        ...(toVendor && !currentCategory.noteClasses?.length
-                          ? {
-                              noteClasses: DEFAULT_VENDOR_NOTE_CLASSES,
-                            }
-                          : {}),
-                      }).catch(() => alert('Could not change the notebook type. Try again.'));
-                    }}>
-                    {isVendorNotebook ? 'Switch to a regular notebook' : 'Use as a vendor notebook'}
-                  </button>
+                  <label className={styles.notebookKindToggle}>
+                    Notebook type
+                    <select
+                      onChange={e => changeNotebookKind(e.target.value as 'standard' | 'vendor' | 'project')}
+                      value={currentCategory?.kind || 'standard'}>
+                      <option value="standard">Regular</option>
+                      <option value="vendor">Vendors</option>
+                      <option value="project">Projects</option>
+                    </select>
+                  </label>
                   <div className={styles.quickActions}>
                     <button onClick={() => handleAddCategoryPage('New Page')}>
                       <span className={styles.actionIcon}>
@@ -1603,14 +1627,16 @@ const NotesLayout: React.FC = React.memo(() => {
                       <strong>New page</strong>
                       <span>Give your next idea a place.</span>
                     </button>
-                    <button onClick={isVendorNotebook ? handleAddVendor : () => handleAddSection('New Section')}>
+                    <button onClick={notebookKind ? handleAddVendor : () => handleAddSection('New Section')}>
                       <span className={styles.actionIcon}>
                         <PlusCircleIcon />
                       </span>
-                      <strong>{isVendorNotebook ? 'New vendor' : 'New section'}</strong>
+                      <strong>{notebookKind === 'vendor' ? 'New vendor' : notebookKind === 'project' ? 'New project' : 'New section'}</strong>
                       <span>
-                        {isVendorNotebook
-                          ? 'Org chart, contacts, links, agreements, and notes in one place.'
+                        {notebookKind === 'vendor'
+                          ? 'Org chart, contacts, tasks, links, agreements, and notes in one place.'
+                          : notebookKind === 'project'
+                          ? 'Contacts, tasks, links, agreements, and meeting notes in one place.'
                           : 'Keep related pages together.'}
                       </span>
                     </button>
@@ -1636,21 +1662,30 @@ const NotesLayout: React.FC = React.memo(() => {
                     <p className={styles.intro}>No pages yet. Create one above or explore a section below.</p>
                   )}
                   <div className={styles.sectionHeading} style={{marginTop: 30}}>
-                    <h2>{isVendorNotebook ? 'Vendors' : 'Sections'}</h2>
+                    <h2>{notebookKind === 'vendor' ? 'Vendors' : notebookKind === 'project' ? 'Projects' : 'Sections'}</h2>
                   </div>
                   {loadingSections ? (
                     <p className={styles.intro}>Loading sections…</p>
                   ) : (
                     <div className={styles.notebookGrid}>
-                      {sections.map(section => (
-                        <button key={section._id as string} onClick={() => handleSelectSection(section._id as string)}>
-                          <BookOpenIcon />
-                          <strong>{section.name}</strong>
-                          <span>
-                            {isVendorNotebook ? 'Open vendor' : 'Open section'} <ChevronRightIcon />
-                          </span>
-                        </button>
-                      ))}
+                      {sections.map(section => {
+                        const openTasks = sectionTaskCounts[section._id as string] || 0;
+                        return (
+                          <button key={section._id as string} onClick={() => handleSelectSection(section._id as string)}>
+                            {openTasks > 0 && (
+                              <em className={styles.taskBanner}>
+                                <ClipboardDocumentListIcon />
+                                {openTasks} open task{openTasks === 1 ? '' : 's'}
+                              </em>
+                            )}
+                            <BookOpenIcon />
+                            <strong>{section.name}</strong>
+                            <span>
+                              Open {sectionNoun} <ChevronRightIcon />
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

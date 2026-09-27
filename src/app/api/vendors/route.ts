@@ -8,7 +8,7 @@ import NoteSection from '@/models/NoteSection';
 
 export const dynamic = 'force-dynamic';
 
-// Every vendor the user has: the sections of their vendor notebooks
+// Every vendor and project the user has: the sections of their vendor and project notebooks
 export async function GET() {
   const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email;
@@ -16,8 +16,9 @@ export async function GET() {
 
   try {
     await dbConnect();
-    const notebooks = await NoteCategory.find({userEmail, kind: 'vendor'}).select('name').lean();
+    const notebooks = await NoteCategory.find({userEmail, kind: {$in: ['vendor', 'project']}}).select('name kind').lean();
     const names = new Map(notebooks.map(n => [String(n._id), n.name]));
+    const kinds = new Map(notebooks.map(n => [String(n._id), n.kind]));
     const sections = await NoteSection.find({userEmail, categoryId: {$in: [...names.keys()]}})
       .select('name categoryId')
       .sort({name: 1})
@@ -29,6 +30,7 @@ export async function GET() {
         name: s.name,
         categoryId: String(s.categoryId),
         notebook: names.get(String(s.categoryId)) || '',
+        kind: kinds.get(String(s.categoryId)) === 'project' ? 'project' : 'vendor',
       })),
     });
   } catch (error) {

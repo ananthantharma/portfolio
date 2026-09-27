@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-usememo, react-memo/require-memo, react/jsx-sort-props */
 'use client';
 
-import {BookUser, Building2, ExternalLink, FileSignature, Globe, Link as LinkIcon, ListTodo, Network, NotebookPen} from 'lucide-react';
+import {BookUser, Building2, ExternalLink, FileSignature, Globe, Link as LinkIcon, ListTodo, Network, NotebookPen, Users} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
@@ -20,6 +20,8 @@ import {
   hostOf,
   initials,
   normalizeUrl,
+  ProfileKind,
+  PROJECT_STATUSES,
   saveVendor,
   VENDOR_STATUSES,
   VendorPatch,
@@ -31,6 +33,8 @@ import styles from './VendorPage.module.css';
 import VendorTasksCard from './VendorTasksCard';
 
 export interface VendorPageProps {
+  // Vendor notebooks and project notebooks share this page; projects skip the org chart and internal contacts
+  kind?: ProfileKind;
   section: INoteSection;
   notebook: INoteCategory;
   pages: INotePage[];
@@ -59,6 +63,8 @@ function Logo({domain, name}: {domain: string; name: string}) {
 
 export default function VendorPage(props: VendorPageProps) {
   const {section, notebook, pages, loadingPages, onOpenPage, onAddPage, onUpdatePage, onReorderPages, onUpdateNotebook} = props;
+  const kind: ProfileKind = props.kind || 'vendor';
+  const isProject = kind === 'project';
   const sectionId = String(section._id);
   const [profile, setProfile] = useState<VendorProfile | null>(null);
   const [loadError, setLoadError] = useState('');
@@ -104,12 +110,15 @@ export default function VendorPage(props: VendorPageProps) {
   if (loadError) {
     return (
       <div className={styles.page}>
-        <div className={styles.empty}>This vendor couldn’t be loaded. {loadError}</div>
+        <div className={styles.empty}>
+          This {kind} couldn’t be loaded. {loadError}
+        </div>
       </div>
     );
   }
 
-  const domain = profile?.website ? hostOf(profile.website) : section.image || '';
+  // Company logos suit vendors; a project's site is usually SharePoint, so projects show initials
+  const domain = isProject ? section.image || '' : profile?.website ? hostOf(profile.website) : section.image || '';
   const expiryDays = (profile?.documents || []).map(d => daysUntil(d.expiryDate)).filter((d): d is number => d !== null);
   const expired = expiryDays.filter(d => d < 0).length;
   const expiring = expiryDays.filter(d => d >= 0 && d <= 60).length;
@@ -123,7 +132,7 @@ export default function VendorPage(props: VendorPageProps) {
           <h1>{section.name}</h1>
           {editing === 'summary' ? (
             <input
-              aria-label="What this vendor provides"
+              aria-label={isProject ? 'What this project is about' : 'What this vendor provides'}
               autoFocus
               className={styles.summaryInput}
               maxLength={200}
@@ -133,7 +142,7 @@ export default function VendorPage(props: VendorPageProps) {
                 if (e.key === 'Enter') commitHeader();
                 if (e.key === 'Escape') setEditing(null);
               }}
-              placeholder="Cloud hosting · Vendor since 2022"
+              placeholder={isProject ? 'Migrate billing to the new platform · Target Q2' : 'Cloud hosting · Vendor since 2022'}
               value={draft}
             />
           ) : (
@@ -145,7 +154,10 @@ export default function VendorPage(props: VendorPageProps) {
                 setEditing('summary');
               }}
               title="Edit description">
-              {profile?.summary || 'Add a short description, like what they provide and since when'}
+              {profile?.summary ||
+                (isProject
+                  ? 'Add a short description, like the goal and target date'
+                  : 'Add a short description, like what they provide and since when')}
             </button>
           )}
         </div>
@@ -153,7 +165,7 @@ export default function VendorPage(props: VendorPageProps) {
           <div className={styles.headerMeta}>
             {editing === 'website' ? (
               <input
-                aria-label="Vendor website"
+                aria-label={isProject ? 'Project site' : 'Vendor website'}
                 autoFocus
                 onBlur={commitHeader}
                 onChange={e => setDraft(e.target.value)}
@@ -161,7 +173,7 @@ export default function VendorPage(props: VendorPageProps) {
                   if (e.key === 'Enter') commitHeader();
                   if (e.key === 'Escape') setEditing(null);
                 }}
-                placeholder="vendor.com"
+                placeholder={isProject ? 'SharePoint or project site' : 'vendor.com'}
                 style={{width: 180}}
                 value={draft}
               />
@@ -186,16 +198,16 @@ export default function VendorPage(props: VendorPageProps) {
                   setDraft('');
                   setEditing('website');
                 }}>
-                <Globe size={13} /> Add website
+                <Globe size={13} /> {isProject ? 'Add project site' : 'Add website'}
               </button>
             )}
             <select
-              aria-label="Vendor status"
+              aria-label={isProject ? 'Project status' : 'Vendor status'}
               className={styles.statusSelect}
               data-status={profile.status}
               onChange={e => patch({status: e.target.value as VendorStatus}).catch(() => undefined)}
               value={profile.status}>
-              {VENDOR_STATUSES.map(s => (
+              {(isProject ? PROJECT_STATUSES : VENDOR_STATUSES).map(s => (
                 <option key={s}>{s}</option>
               ))}
             </select>
@@ -206,21 +218,29 @@ export default function VendorPage(props: VendorPageProps) {
       {!profile ? (
         <div className={styles.grid}>
           <div className={`${styles.card} ${styles.wide}`}>
-            <div className={styles.empty}>Loading vendor…</div>
+            <div className={styles.empty}>Loading {kind}…</div>
           </div>
         </div>
       ) : (
         <>
-          <nav aria-label="Vendor sections" className={styles.jump}>
-            <button onClick={() => jump('vendor-org')}>
-              <Network size={13} /> Org chart
-            </button>
-            <button onClick={() => jump('vendor-contacts')}>
-              <BookUser size={13} /> Key contacts <span>{profile.keyContacts.length}</span>
-            </button>
-            <button onClick={() => jump('vendor-internal-contacts')}>
-              <Building2 size={13} /> Internal contacts <span>{(profile.internalContacts || []).length}</span>
-            </button>
+          <nav aria-label={isProject ? 'Project sections' : 'Vendor sections'} className={styles.jump}>
+            {isProject ? (
+              <button onClick={() => jump('project-contacts')}>
+                <Users size={13} /> Project contacts <span>{profile.keyContacts.length}</span>
+              </button>
+            ) : (
+              <>
+                <button onClick={() => jump('vendor-org')}>
+                  <Network size={13} /> Org chart
+                </button>
+                <button onClick={() => jump('vendor-contacts')}>
+                  <BookUser size={13} /> Key contacts <span>{profile.keyContacts.length}</span>
+                </button>
+                <button onClick={() => jump('vendor-internal-contacts')}>
+                  <Building2 size={13} /> Internal contacts <span>{(profile.internalContacts || []).length}</span>
+                </button>
+              </>
+            )}
             <button onClick={() => jump('vendor-tasks')}>
               <ListTodo size={13} /> Tasks <span>{openTaskCount}</span>
             </button>
@@ -238,14 +258,20 @@ export default function VendorPage(props: VendorPageProps) {
           </nav>
 
           <div className={styles.grid}>
-            <OrgChartCard onPatch={patch} profile={profile} vendorName={section.name} />
-            <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="vendor" vendorName={section.name} />
-            <ContactsCard
-              contacts={profile.internalContacts || []}
-              onPatch={patch}
-              variant="internal"
-              vendorName={section.name}
-            />
+            {isProject ? (
+              <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="project" vendorName={section.name} wide />
+            ) : (
+              <>
+                <OrgChartCard onPatch={patch} profile={profile} vendorName={section.name} />
+                <ContactsCard contacts={profile.keyContacts} onPatch={patch} variant="vendor" vendorName={section.name} />
+                <ContactsCard
+                  contacts={profile.internalContacts || []}
+                  onPatch={patch}
+                  variant="internal"
+                  vendorName={section.name}
+                />
+              </>
+            )}
             <VendorTasksCard
               vendor={{_id: sectionId, name: section.name, categoryId: String(section.categoryId)}}
             />
@@ -253,7 +279,9 @@ export default function VendorPage(props: VendorPageProps) {
             <DocumentsCard documents={profile.documents} onPatch={patch} />
             <VendorNotes
               classes={notebook.noteClasses || []}
+              emptyText={isProject ? `Meeting notes, decisions, and updates for ${section.name} will show up here.` : undefined}
               loading={loadingPages}
+              meetingPrefix={isProject ? 'Project meeting' : undefined}
               onAddPage={onAddPage}
               onOpenPage={onOpenPage}
               onReorderPages={onReorderPages}

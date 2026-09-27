@@ -10,7 +10,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {GripVertical, NotebookPen, Plus, Search, Tags, Trash2, X} from 'lucide-react';
+import {CalendarPlus, GripVertical, NotebookPen, Plus, Search, Tags, Trash2, X} from 'lucide-react';
 import React, {useMemo, useState} from 'react';
 
 import {INoteClass} from '@/models/NoteCategory';
@@ -35,6 +35,9 @@ const NEW_CLASS = '__new__';
 
 interface Props {
   vendorName: string;
+  // When set, shows a "Meeting note" button that creates "<prefix> – <today>"
+  meetingPrefix?: string;
+  emptyText?: string;
   pages: INotePage[];
   loading: boolean;
   classes: INoteClass[];
@@ -78,6 +81,7 @@ function timeAgo(value: Date | string) {
 
 export default function VendorNotes(props: Props) {
   const {vendorName, pages, loading, classes, sort, onOpenPage, onAddPage, onUpdatePage, onReorderPages, onUpdateNotebook} = props;
+  const {meetingPrefix, emptyText} = props;
   const [query, setQuery] = useState('');
   const [classFilter, setClassFilter] = useState<string>('all');
   const [editingClasses, setEditingClasses] = useState(false);
@@ -140,6 +144,13 @@ export default function VendorNotes(props: Props) {
     const visibleIds = new Set(ids);
     let next = 0;
     onReorderPages(pages.map(p => (visibleIds.has(String(p._id)) ? moved[next++] : p)));
+  };
+
+  // One click: a note titled "Project meeting – Sep 26, 2026", filed under the meetings classification if there is one
+  const addMeetingNote = () => {
+    const date = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+    const meetings = classes.find(c => /meeting/i.test(c.name));
+    onAddPage(`${meetingPrefix} – ${date}`, meetings ? {noteClass: String(meetings._id)} : undefined);
   };
 
   const addNote = () => {
@@ -219,6 +230,11 @@ export default function VendorNotes(props: Props) {
         <button aria-expanded={editingClasses} className={styles.btn} onClick={() => setEditingClasses(v => !v)}>
           <Tags size={14} /> Classifications
         </button>
+        {meetingPrefix && (
+          <button className={styles.btn} onClick={addMeetingNote} title={`Create “${meetingPrefix} – today's date” and open it`}>
+            <CalendarPlus size={14} /> Meeting note
+          </button>
+        )}
         <button className={`${styles.btn} ${styles.primary}`} onClick={addNote}>
           <Plus size={14} /> New note
         </button>
@@ -315,7 +331,7 @@ export default function VendorNotes(props: Props) {
         <div className={styles.empty}>
           {pages.length
             ? 'No notes match. Try another search or classification.'
-            : `Meeting notes, QBR prep, and decisions about ${vendorName} will show up here.`}
+            : emptyText || `Meeting notes, QBR prep, and decisions about ${vendorName} will show up here.`}
         </div>
       ) : (
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd} sensors={sensors}>

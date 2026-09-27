@@ -8,7 +8,7 @@ export interface INoteClass {
 
 export interface INoteCategory extends Document {
   name: string;
-  kind?: 'standard' | 'vendor';
+  kind?: 'standard' | 'vendor' | 'project';
   noteClasses?: INoteClass[];
   noteSort?: string;
   color?: string;
@@ -50,10 +50,10 @@ const NoteCategorySchema: Schema = new Schema(
       type: Number,
       default: 0,
     },
-    // 'vendor' notebooks treat every section as a vendor with a profile page
+    // 'vendor' and 'project' notebooks turn every section into a vendor or project page
     kind: {
       type: String,
-      enum: ['standard', 'vendor'],
+      enum: ['standard', 'vendor', 'project'],
       default: 'standard',
     },
     // User-defined classifications for notes in this notebook (used by vendor notebooks)

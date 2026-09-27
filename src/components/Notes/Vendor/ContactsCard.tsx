@@ -1,21 +1,23 @@
 /* eslint-disable react-memo/require-usememo, react-memo/require-memo, react/jsx-sort-props */
 'use client';
 
-import {BookUser, Building2, ChevronDown, Link2, Mail, Phone, Plus, Search, UserPlus, X} from 'lucide-react';
+import {BookUser, Building2, ChevronDown, Link2, Mail, Phone, Plus, Search, UserPlus, Users, X} from 'lucide-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import ContactFormModal, {ContactFormData} from '../ContactFormModal';
 import {initials, VendorContact, VendorKeyContact, VendorPatch} from './vendorApi';
 import styles from './VendorPage.module.css';
 
-// 'vendor' = people at the vendor (key contacts); 'internal' = people in your own organization
-export type ContactsVariant = 'vendor' | 'internal';
+// 'vendor' = people at the vendor (key contacts); 'internal' = people in your own organization;
+// 'project' = everyone involved in a project
+export type ContactsVariant = 'vendor' | 'internal' | 'project';
 
 interface Props {
   variant: ContactsVariant;
   vendorName: string;
   contacts: VendorKeyContact[];
   onPatch: (patch: VendorPatch) => Promise<void>;
+  wide?: boolean;
 }
 
 const COPY = {
@@ -37,6 +39,15 @@ const COPY = {
     rolePlaceholder: 'Their role with this vendor',
     createLabel: () => 'Create a new internal contact',
     matchGroup: () => 'Internal contacts',
+  },
+  project: {
+    id: 'project-contacts',
+    title: 'Project contacts',
+    field: 'keyContacts',
+    empty: (project: string) => `Add the people involved in ${project}. They stay linked to your Contacts.`,
+    rolePlaceholder: 'Role on this project',
+    createLabel: () => 'Create a new contact',
+    matchGroup: () => 'Suggested',
   },
 } as const;
 
@@ -61,7 +72,7 @@ function Avatar({contact}: {contact: VendorContact}) {
 
 const collapsedKey = (variant: ContactsVariant) => `VENDOR_CARD_COLLAPSED_${variant}`;
 
-export default function ContactsCard({variant, vendorName, contacts, onPatch}: Props) {
+export default function ContactsCard({variant, vendorName, contacts, onPatch, wide}: Props) {
   const copy = COPY[variant];
   const [allContacts, setAllContacts] = useState<VendorContact[] | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -110,7 +121,8 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
   }, [pickerOpen]);
 
   // Who belongs at the top of the picker: people at the vendor, or people marked Internal
-  const isMatch = (c: VendorContact) => (variant === 'vendor' ? worksAt(c, vendorName) : c.type === 'Internal');
+  const isMatch = (c: VendorContact) =>
+    variant === 'vendor' ? worksAt(c, vendorName) : variant === 'internal' ? c.type === 'Internal' : false;
 
   const linkedIds = useMemo(() => new Set(contacts.map(kc => kc.contactId._id)), [contacts]);
   const available = useMemo(() => (allContacts || []).filter(c => !linkedIds.has(c._id)), [allContacts, linkedIds]);
@@ -131,6 +143,7 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
   // New internal contacts default to the company your other internal contacts use
   const newContactDefaults = useMemo(() => {
     if (variant === 'vendor') return {company: vendorName, type: 'External' as const};
+    if (variant === 'project') return {company: '', type: 'External' as const};
     const tally = new Map<string, number>();
     (allContacts || [])
       .filter(c => c.type === 'Internal' && c.company)
@@ -187,11 +200,11 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
     </button>
   );
 
-  const Icon = variant === 'vendor' ? BookUser : Building2;
+  const Icon = variant === 'vendor' ? BookUser : variant === 'internal' ? Building2 : Users;
   const bodyId = `${copy.id}-body`;
 
   return (
-    <section aria-label={copy.title} className={styles.card} data-collapsed={collapsed} id={copy.id}>
+    <section aria-label={copy.title} className={`${styles.card} ${wide ? styles.wide : ''}`} data-collapsed={collapsed} id={copy.id}>
       <div className={styles.cardHead} style={collapsed ? {marginBottom: 0} : undefined}>
         <h2>
           <button
@@ -230,7 +243,7 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
                   )}
                   {filtered.others.length > 0 && (
                     <>
-                      <div className={styles.pickerGroup}>Everyone else</div>
+                      <div className={styles.pickerGroup}>{variant === 'project' ? 'Your contacts' : 'Everyone else'}</div>
                       {filtered.others.map(renderPickerItem)}
                     </>
                   )}
@@ -289,7 +302,13 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
                             setEditingRole(c._id);
                             setRoleDraft(role);
                           }}
-                          title={variant === 'vendor' ? 'Set their role for this vendor' : 'Set their role with this vendor'}>
+                          title={
+                            variant === 'vendor'
+                              ? 'Set their role for this vendor'
+                              : variant === 'internal'
+                              ? 'Set their role with this vendor'
+                              : 'Set their role on this project'
+                          }>
                           {role || c.position || 'Add role'}
                         </button>
                       )}
@@ -319,7 +338,7 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
                       aria-label={`Remove ${c.name} from ${copy.title.toLowerCase()}`}
                       className={`${styles.iconBtn} ${styles.danger}`}
                       onClick={() => save(contacts.filter(kc => kc.contactId._id !== c._id))}
-                      title="Remove from this vendor (keeps the contact)">
+                      title={`Remove from ${variant === 'project' ? 'this project' : 'this vendor'} (keeps the contact)`}>
                       <X size={15} />
                     </button>
                   </div>
@@ -349,7 +368,7 @@ export default function ContactsCard({variant, vendorName, contacts, onPatch}: P
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         onSave={createContact}
-        title={variant === 'vendor' ? `New contact at ${vendorName}` : 'New internal contact'}
+        title={variant === 'vendor' ? `New contact at ${vendorName}` : variant === 'internal' ? 'New internal contact' : `New contact for ${vendorName}`}
       />
     </section>
   );

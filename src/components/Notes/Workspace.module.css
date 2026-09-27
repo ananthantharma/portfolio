@@ -741,5 +741,11 @@
 .toolbarItems::-webkit-scrollbar { display:none; }
 @media(min-width:901px) { .tools { display:none; } }
 @media(max-width:900px) { .toolbar { display:none; } }
-.notebookKindToggle { margin-top:10px; padding:5px 10px; border:1px solid #e0e1d8; border-radius:999px; font-size:11px; color:#6f7b68; }
-.notebookKindToggle:hover { border-color:#b9c4ae; color:#365238; background:#f2f5eb; }
+.notebookKindToggle { display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#6f7b68; }
+.notebookKindToggle select { padding:4px 8px; border:1px solid #e0e1d8; border-radius:999px; background:#fffefa; font-size:11px; color:#365238; cursor:pointer; }
+.notebookKindToggle select:hover { border-color:#b9c4ae; background:#f2f5eb; }
+/* Overview card banner: vendor/project has open linked tasks */
+.notebookGrid button { position:relative; overflow:hidden; }
+.taskBanner { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:5px; padding:4px 10px; background:#e2efd9; color:#2f5a2c; font-size:10px; font-style:normal; font-weight:650; letter-spacing:.2px; }
+.notebookGrid .taskBanner svg { width:12px; height:12px; margin:0; color:inherit; }
+.notebookGrid button:has(.taskBanner) { padding-top:34px; }

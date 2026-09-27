@@ -1,6 +1,7 @@
 import mongoose, {Document, Model, Schema} from 'mongoose';
 
-export const VENDOR_STATUSES = ['Active', 'Onboarding', 'Under review', 'Inactive'] as const;
+// Vendor and project pages share this profile (keyed by section); statuses cover both
+export const VENDOR_STATUSES = ['Active', 'Onboarding', 'Under review', 'Inactive', 'Planning', 'On hold', 'Complete'] as const;
 export const VENDOR_DOC_TYPES = ['MSA', 'DPA', 'SOW', 'NDA', 'Order form', 'Other'] as const;
 
 export interface IVendorKeyContact {

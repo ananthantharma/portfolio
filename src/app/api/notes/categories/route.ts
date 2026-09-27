@@ -95,13 +95,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const count = await NoteCategory.countDocuments({userEmail: session.user.email});
-    const kind = body.kind === 'vendor' ? 'vendor' : 'standard';
+    const kind = body.kind === 'vendor' || body.kind === 'project' ? body.kind : 'standard';
     const category = await NoteCategory.create({
       ...body,
       kind,
       // Vendor notebooks start with a useful set of note classifications the user can edit
       noteClasses:
-        kind === 'vendor' && !Array.isArray(body.noteClasses)
+        kind !== 'standard' && !Array.isArray(body.noteClasses)
           ? DEFAULT_VENDOR_NOTE_CLASSES
           : body.noteClasses,
       userEmail: session.user.email,

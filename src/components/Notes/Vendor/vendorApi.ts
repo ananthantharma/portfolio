@@ -1,7 +1,9 @@
 export const VENDOR_STATUSES = ['Active', 'Onboarding', 'Under review', 'Inactive'] as const;
+export const PROJECT_STATUSES = ['Planning', 'Active', 'On hold', 'Complete'] as const;
 export const VENDOR_DOC_TYPES = ['MSA', 'DPA', 'SOW', 'NDA', 'Order form', 'Other'] as const;
 
-export type VendorStatus = (typeof VENDOR_STATUSES)[number];
+export type VendorStatus = (typeof VENDOR_STATUSES)[number] | (typeof PROJECT_STATUSES)[number];
+export type ProfileKind = 'vendor' | 'project';
 export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number];
 
 export interface VendorContact {

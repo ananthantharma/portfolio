@@ -126,6 +126,17 @@
   color: var(--warn-ink);
   border-color: transparent !important;
 }
+.statusSelect[data-status='Planning'] {
+  background: #e7eef8 !important;
+  color: #2f5d8a;
+  border-color: transparent !important;
+}
+.statusSelect[data-status='On hold'] {
+  background: var(--warn-soft) !important;
+  color: var(--warn-ink);
+  border-color: transparent !important;
+}
+.statusSelect[data-status='Complete'],
 .statusSelect[data-status='Inactive'] {
   background: #eceae3 !important;
   color: #5f5e5a;

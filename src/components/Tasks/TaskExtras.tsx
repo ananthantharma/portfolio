@@ -3,7 +3,7 @@
 
 // Shared bits for every task card: neon glow toggles, the vendor pill, and the vendor picker.
 
-import {Building2, Droplet, Flame, Leaf} from 'lucide-react';
+import {Building2, Droplet, Flame, FolderKanban, Leaf} from 'lucide-react';
 import React, {useContext, useEffect, useState} from 'react';
 
 import {api} from './api';
@@ -81,32 +81,36 @@ export function GlowToggles({task, size = 13}: {task: Task; size?: number}) {
   );
 }
 
-/** Pill naming the task's vendor; opens the vendor page when the workspace supports it. */
+/** Pill naming the task's vendor or project; opens its page when the workspace supports it. */
 export function VendorPill({task, className}: {task: Task; className?: string}) {
   const openVendor = useContext(OpenVendorContext);
+  const options = useVendorOptions();
   const vendor = vendorOf(task);
   if (!vendor) return null;
+  const isProject = options?.find(o => o._id === vendor._id)?.kind === 'project';
+  const Icon = isProject ? FolderKanban : Building2;
+  const classes = `${styles.vendorPill} ${isProject ? styles.projectPill : ''} ${className || ''}`;
   const content = (
     <>
-      <Building2 size={11} />
+      <Icon size={11} />
       <span>{vendor.name}</span>
     </>
   );
   if (!openVendor) {
     return (
-      <span className={`${styles.vendorPill} ${className || ''}`} title={`Linked to ${vendor.name}`}>
+      <span className={classes} title={`Linked to ${vendor.name}`}>
         {content}
       </span>
     );
   }
   return (
     <button
-      className={`${styles.vendorPill} ${className || ''}`}
+      className={classes}
       onClick={e => {
         e.stopPropagation();
         openVendor(vendor._id, vendor.categoryId);
       }}
-      title={`Open the ${vendor.name} vendor page`}
+      title={`Open the ${vendor.name} ${isProject ? 'project' : 'vendor'} page`}
       type="button">
       {content}
     </button>
@@ -115,11 +119,12 @@ export function VendorPill({task, className}: {task: Task; className?: string}) 
 
 export interface VendorOption extends TaskVendor {
   notebook: string;
+  kind: 'vendor' | 'project';
 }
 
 let vendorCache: Promise<VendorOption[]> | null = null;
 
-/** All vendors (sections of vendor notebooks), loaded once per page visit. */
+/** All vendors and projects (sections of vendor / project notebooks), loaded once per page visit. */
 export function useVendorOptions() {
   const [vendors, setVendors] = useState<VendorOption[] | null>(null);
   useEffect(() => {
@@ -146,7 +151,7 @@ export function refreshVendorOptions() {
   vendorCache = null;
 }
 
-/** Dropdown for linking a task to a vendor. */
+/** Dropdown for linking a task to a vendor or project. */
 export function VendorSelect({
   id,
   value,
@@ -169,7 +174,9 @@ export function VendorSelect({
         onChange(picked ? {_id: picked._id, name: picked.name, categoryId: picked.categoryId} : null);
       }}
       value={value?._id || ''}>
-      <option value="">{vendors === null ? 'Loading vendors…' : vendors.length ? 'No vendor' : 'No vendors yet'}</option>
+      <option value="">
+        {vendors === null ? 'Loading…' : vendors.length ? 'Not linked' : 'No vendors or projects yet'}
+      </option>
       {!known && value && <option value={value._id}>{value.name}</option>}
       {[...notebooks.entries()].map(([notebook, list]) =>
         notebooks.size > 1 ? (

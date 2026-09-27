@@ -67,7 +67,7 @@ interface CategoryListProps {
     color?: string,
     icon?: string,
     image?: string | null,
-    kind?: 'standard' | 'vendor',
+    kind?: 'standard' | 'vendor' | 'project',
   ) => Promise<void>;
   onRenameCategory: (id: string, name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
@@ -238,7 +238,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     dbSize,
   }) => {
     const [isAdding, setIsAdding] = useState(false);
-    const [newIsVendor, setNewIsVendor] = useState(false);
+    const [newKind, setNewKind] = useState<'standard' | 'vendor' | 'project'>('standard');
 
     const {data: session} = useSession();
     const userName = useMemo(() => {
@@ -327,15 +327,15 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
 
     const handleAdd = useCallback(() => {
       if (newCategoryName.trim()) {
-        onAddCategory(newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newIsVendor ? 'vendor' : 'standard');
-        setNewIsVendor(false);
+        onAddCategory(newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newKind);
+        setNewKind('standard');
         setNewCategoryName('');
         setNewCategoryColor('#000000');
         setNewCategoryIcon('Folder');
         setNewCategoryImage(null);
         setIsAdding(false);
       }
-    }, [newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newIsVendor, onAddCategory]);
+    }, [newCategoryName, newCategoryColor, newCategoryIcon, newCategoryImage, newKind, onAddCategory]);
 
     const startEditing = useCallback((category: INoteCategory) => {
       setEditingId(category._id as string);
@@ -458,20 +458,30 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 <div className="mb-3">
                   <ColorPicker onSelectColor={setNewCategoryColor} selectedColor={newCategoryColor} />
                 </div>
-                <label className="mb-3 flex cursor-pointer items-start gap-2 rounded-lg bg-slate-50 p-2 text-[12px] text-gray-700">
-                  <input
-                    checked={newIsVendor}
-                    className="mt-0.5"
-                    onChange={e => setNewIsVendor(e.target.checked)}
-                    type="checkbox"
-                  />
-                  <span>
-                    <strong className="font-semibold">Vendor notebook</strong>
-                    <span className="block text-[11px] text-gray-500">
-                      Each section is a vendor with an org chart, key contacts, links, agreements, and classified notes.
-                    </span>
-                  </span>
-                </label>
+                <fieldset className="mb-3 rounded-lg bg-slate-50 p-2 text-[12px] text-gray-700">
+                  <legend className="sr-only">Notebook type</legend>
+                  {(
+                    [
+                      ['standard', 'Regular notebook', 'Sections hold pages.'],
+                      ['vendor', 'Vendor notebook', 'Each section is a vendor: org chart, contacts, tasks, links, agreements, notes.'],
+                      ['project', 'Project notebook', 'Each section is a project: contacts, tasks, links, agreements, meeting notes.'],
+                    ] as const
+                  ).map(([value, label, hint]) => (
+                    <label className="flex cursor-pointer items-start gap-2 rounded-md p-1 hover:bg-white" key={value}>
+                      <input
+                        checked={newKind === value}
+                        className="mt-0.5"
+                        name="new-notebook-kind"
+                        onChange={() => setNewKind(value)}
+                        type="radio"
+                      />
+                      <span>
+                        <strong className="font-semibold">{label}</strong>
+                        <span className="block text-[11px] text-gray-500">{hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
                 <div className="flex justify-end gap-2">
                   <button
                     className="rounded-lg px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100"
