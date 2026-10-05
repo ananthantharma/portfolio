@@ -3,7 +3,7 @@
 
 // Shared bits for every task card: neon glow toggles, the vendor pill, and the vendor picker.
 
-import {Building2, Droplet, Flame, FolderKanban, Leaf, Plus, Tag, X} from 'lucide-react';
+import {Building2, Check, Copy, Droplet, Flame, FolderKanban, Leaf, Plus, Tag, X} from 'lucide-react';
 import React, {useContext, useEffect, useState} from 'react';
 import {createPortal} from 'react-dom';
 
@@ -79,6 +79,49 @@ export function GlowToggles({task, size = 13}: {task: Task; size?: number}) {
         </span>
       )}
     </span>
+  );
+}
+
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Older browsers / insecure contexts
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    area.remove();
+  }
+}
+
+/** Small copy icon that puts the task's email subject on the clipboard (renders nothing without one). */
+export function CopySubjectButton({subject, size = 13, className}: {subject?: string; size?: number; className?: string}) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1400);
+    return () => clearTimeout(t);
+  }, [copied]);
+  const text = subject?.trim();
+  if (!text) return null;
+  return (
+    <button
+      aria-label={copied ? 'Email subject copied' : `Copy email subject: ${text}`}
+      className={`${styles.copySubject} ${className || ''}`}
+      data-copied={copied}
+      onClick={async e => {
+        e.stopPropagation();
+        await copyToClipboard(text);
+        setCopied(true);
+      }}
+      title={copied ? 'Copied' : `Copy email subject for Outlook search:\n${text}`}
+      type="button">
+      {copied ? <Check size={size} /> : <Copy size={size} />}
+    </button>
   );
 }
 

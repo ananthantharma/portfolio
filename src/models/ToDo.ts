@@ -28,6 +28,7 @@ export interface IToDo extends Document {
   isMinimized?: boolean;
   // Sidebar category tab; tasks without one count as work
   bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | null;
+  emailSubject?: string; // subject line of the source email chain, for searching Outlook
   taskGroupId?: mongoose.Types.ObjectId | null; // user-made group for tasks not linked to a project or vendor
   completedAt?: Date | null; // when the task was last marked complete (Done is sorted by this)
   order?: number;
@@ -121,6 +122,7 @@ const ToDoSchema = new Schema<IToDo>(
     bucket: {type: String, enum: ['work', 'personal-short', 'personal-long', 'career', null], default: null},
     completedAt: {type: Date, default: null},
     taskGroupId: {type: Schema.Types.ObjectId, ref: 'TaskGroup', default: null},
+    emailSubject: {type: String, default: '', trim: true, maxlength: 500},
   },
   {timestamps: true},
 );

@@ -13,7 +13,9 @@ export async function GET() {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) return NextResponse.json({success: false, error: 'Unauthorized'}, {status: 401});
     await dbConnect();
-    const groups = await TaskGroup.find({userEmail: session.user.email}).collation({locale: 'en'}).sort({name: 1}).lean();
+    // Sorted here rather than with a collation, which the hosted database doesn't support
+    const groups = await TaskGroup.find({userEmail: session.user.email}).lean();
+    groups.sort((a, b) => a.name.localeCompare(b.name, 'en', {sensitivity: 'base'}));
     return NextResponse.json({success: true, data: groups});
   } catch (error) {
     console.error('Error fetching task groups:', error);
@@ -30,7 +32,9 @@ export async function POST(req: Request) {
     const clean = typeof name === 'string' ? name.trim().slice(0, 80) : '';
     if (!clean) return NextResponse.json({success: false, error: 'Give the group a name.'}, {status: 400});
     await dbConnect();
-    const existing = await TaskGroup.findOne({userEmail: session.user.email, name: clean}).collation({locale: 'en', strength: 2});
+    // Same name in any letter case counts as the same group
+    const sameName = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    const existing = await TaskGroup.findOne({userEmail: session.user.email, name: sameName});
     const group = existing || (await TaskGroup.create({userEmail: session.user.email, name: clean}));
     return NextResponse.json({success: true, data: group}, {status: existing ? 200 : 201});
   } catch (error) {

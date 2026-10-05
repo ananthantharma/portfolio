@@ -137,7 +137,10 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(_req: Request) {
+// Tasks completed longer ago than this are left out unless ?olderDone=1 is passed
+const DONE_WINDOW_DAYS = 30;
+
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
@@ -146,7 +149,24 @@ export async function GET(_req: Request) {
 
     await dbConnect();
 
-    const todos = await ToDo.find({userEmail: session.user.email})
+    const includeOlderDone = new URL(req.url).searchParams.get('olderDone') === '1';
+    const cutoff = new Date(Date.now() - DONE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    // Tasks completed before completedAt existed fall back to their last update time
+    const recentOrOpen = {
+      $or: [
+        {isCompleted: {$ne: true}, status: {$ne: 'done'}},
+        {completedAt: {$gte: cutoff}},
+        {completedAt: null, updatedAt: {$gte: cutoff}},
+      ],
+    };
+    const olderDone = {
+      $and: [
+        {$or: [{isCompleted: true}, {status: 'done'}]},
+        {$or: [{completedAt: {$lt: cutoff}}, {completedAt: null, updatedAt: {$lt: cutoff}}]},
+      ],
+    };
+
+    const todos = await ToDo.find({userEmail: session.user.email, ...(includeOlderDone ? {} : recentOrOpen)})
       .select('-attachments.data') // Exclude heavy data to prevent 2GB transfers
       .sort({createdAt: -1})
       .populate({
@@ -159,8 +179,18 @@ export async function GET(_req: Request) {
       })
       .populate(VENDOR_POPULATE(session.user.email));
 
-    console.log(`Fetched ${todos.length} todos`);
-    return NextResponse.json({success: true, data: todos});
+    // How many older completed tasks were left out, so the list can offer to load them
+    let olderDoneCount = 0;
+    if (!includeOlderDone) {
+      try {
+        olderDoneCount = await ToDo.countDocuments({userEmail: session.user.email, ...olderDone});
+      } catch (countError) {
+        console.error('Could not count older completed To Dos:', countError);
+      }
+    }
+
+    console.log(`Fetched ${todos.length} todos${includeOlderDone ? ' (including older completed)' : `, ${olderDoneCount} older completed skipped`}`);
+    return NextResponse.json({success: true, data: todos, olderDoneCount, doneWindowDays: DONE_WINDOW_DAYS});
   } catch (error) {
     console.error('Error fetching To Dos:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

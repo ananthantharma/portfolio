@@ -53,6 +53,8 @@ export interface Task {
   bucket?: TaskBucket | null;
   /** Your own group (only used when the task isn't linked to a project or vendor) */
   taskGroupId?: string | null;
+  /** Subject of the email chain this task came from, for finding it in Outlook */
+  emailSubject?: string;
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;

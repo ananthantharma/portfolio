@@ -154,3 +154,8 @@ button.projectPill:hover {
 .linkList .linkCreate svg, .linkList .linkMine svg { color:#c4882a; }
 .linkList .linkMine[aria-pressed=true] { background:#fdf4e3; }
 .linkError { margin:6px 2px 0; font-size:11px; color:#a4483a; }
+
+/* Copy the email subject from a task card */
+.copySubject { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; color:#8a9a7c; flex-shrink:0; transition:color .12s, background .12s; }
+.copySubject:hover { color:#2f6db0; background:#eaf2fb; }
+.copySubject[data-copied=true] { color:#2f8a4d; background:#e6f4ea; }

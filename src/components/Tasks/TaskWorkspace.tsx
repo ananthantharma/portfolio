@@ -9,7 +9,7 @@ import AttachmentGallery from './AttachmentGallery';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
-import {glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
+import {CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, glowOf, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
@@ -79,6 +79,11 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
           <div><label htmlFor={`${prefix}-due`}>Due date</label><input id={`${prefix}-due`} onChange={e => change({dueDate: e.target.value ? new Date(`${e.target.value}T17:00:00`).toISOString() : ''})} type="date" value={toDate(value.dueDate)}/></div>
           <div><label htmlFor={`${prefix}-bucket`}>Category</label><select id={`${prefix}-bucket`} onChange={e => change({bucket: e.target.value as TaskBucket})} value={bucketOf(value)}>{TASK_BUCKETS.map(b => <option key={b.key} value={b.key}>{b.label}</option>)}</select></div>
         </div>
+        <label htmlFor={`${prefix}-subject`}>Email subject</label>
+        <div className={styles.subjectField}>
+          <input id={`${prefix}-subject`} onChange={e => change({emailSubject: e.target.value})} placeholder="Paste the email chain's subject to find it in Outlook" value={value.emailSubject || ''}/>
+          <CopySubjectButton subject={value.emailSubject}/>
+        </div>
         <label htmlFor={`${prefix}-notes`}>Description</label><textarea id={`${prefix}-notes`} onChange={e => change({notes: e.target.value})} placeholder="Add context, a plan, or a useful detail…" rows={4} value={value.notes || ''}/>
         <label htmlFor={`${prefix}-tags`}>Tags</label><input id={`${prefix}-tags`} onChange={e => change({tags: e.target.value.split(',').map(tag => tag.trimStart())})} placeholder="Separate tags with commas" value={(value.tags || []).join(', ')}/>
         <div className={styles.subtaskHeading}>Checklist <span>{value.subtasks?.filter(item => item.isCompleted).length || 0}/{value.subtasks?.length || 0}</span></div>
@@ -110,7 +115,7 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
     </form>
     {task && <div className={styles.taskActions}>
       <button disabled={pending} onClick={() => void action(() => api.update(task._id, {isArchived: !task.isArchived}), true)}><Archive size={14}/>{task.isArchived ? 'Restore' : 'Archive'}</button>
-      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), taskGroupId: task.taskGroupId || null, subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
+      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), taskGroupId: task.taskGroupId || null, emailSubject: task.emailSubject || '', subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
       <button className={styles.danger} disabled={pending} onClick={() => {if (window.confirm(`Permanently delete “${task.title}”? You can archive it instead.`)) void action(async () => {await api.remove(task._id); setDraft(key, null);}, true);}}><Trash2 size={14}/>Delete</button>
     </div>}
     {linking && <NoteLinkModal onClose={() => setLinking(false)} onLinked={page => {change({sourcePageId: page}); setLinking(false);}} taskTitle={value.title || 'New note'}/>}
@@ -133,7 +138,7 @@ function completedAgo(task: Task) {
 }
 
 export default function TaskWorkspace({compact = false, note, onExpand, onAdvanced, onCollapse}: {compact?: boolean; note?: NoteContext; onExpand?: () => void; onAdvanced?: () => void; onCollapse?: () => void}) {
-  const {tasks, loading, error, refresh, busy, run, drafts} = useTaskCollection();
+  const {tasks, loading, error, refresh, busy, run, drafts, olderDone, loadOlderDone} = useTaskCollection();
   const [filter, setFilter] = useState<Filter>('open');
   const [bucket, setBucket] = useState<BucketTab>('work');
   const [query, setQuery] = useState('');
@@ -300,6 +305,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
         {filter === 'done' && <time className={styles.rowTime}>{completedAgo(task)}</time>}
         <div className={styles.rowTools}>
           {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
+          <CopySubjectButton size={12} subject={task.emailSubject} />
           <GlowToggles size={12} task={task} />
         </div>
       </article>
@@ -625,6 +631,22 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
             ) : (
               visible.map(task => renderRow(task, false))
             ))}
+          {(!compact || !editor) && (filter === 'done' || filter === 'archive') && !loading && (
+            <div className={styles.olderDone}>
+              {olderDone.loaded ? (
+                <span>Showing every completed task.</span>
+              ) : (
+                <>
+                  <span>Completed tasks from the last {olderDone.windowDays} days.</span>
+                  {olderDone.hidden > 0 && (
+                    <button disabled={busy.includes('older-done')} onClick={() => void execute('older-done', loadOlderDone)}>
+                      {busy.includes('older-done') ? 'Loading…' : `Load ${olderDone.hidden} older`}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <footer className={styles.footer}>

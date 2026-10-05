@@ -89,3 +89,6 @@
 .group .row { margin-left:2px; }
 .compact .bucketTab:not([aria-selected=true]) span { display:none; }
 .workspace button.groupToggle:hover:not(:disabled) { background:transparent; }.workspace .groupTools button:hover:not(:disabled) { background:#ffffffb3; }
+
+.subjectField { display:flex; align-items:center; gap:6px; }.subjectField input { flex:1; }
+.olderDone { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 10px; margin:14px 6px 6px; padding:10px; border-top:1px dashed #e1e6d9; font-size:10.5px; color:#929c85; text-align:center; }.olderDone button { font-size:10.5px; font-weight:600; color:#46674d; padding:4px 9px; border-radius:6px; border:1px solid #d5dfcb; background:#fffefa; }

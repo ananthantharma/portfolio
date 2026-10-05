@@ -111,6 +111,7 @@ export default function CaptureModal({seed, onClose, onCreated, defaults}: Captu
         priority: Task['priority'];
         dueDate: string | null;
         category: string;
+        emailSubject?: string;
         subtasks: string[];
       };
 
@@ -122,6 +123,7 @@ export default function CaptureModal({seed, onClose, onCreated, defaults}: Captu
         status: 'todo',
         aiGenerated: true,
         ...(d.category ? {category: d.category} : {}),
+        ...(d.emailSubject ? {emailSubject: d.emailSubject} : {}),
         ...(d.dueDate ? {dueDate: new Date(`${d.dueDate}T17:00:00`).toISOString()} : {}),
         subtasks: (d.subtasks || []).slice(0, 4).map(s => ({title: s, isCompleted: false})),
       });

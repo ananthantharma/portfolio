@@ -34,6 +34,13 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   list: () => request<Task[]>('/api/todos'),
+  /** The task list plus how many completed tasks older than the window were left out. */
+  listWithMeta: async (includeOlderDone = false) => {
+    const res = await fetch(`/api/todos${includeOlderDone ? '?olderDone=1' : ''}`, {headers: {'Content-Type': 'application/json'}});
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body?.success) throw new Error(body?.error ? String(body.error) : `Request failed (${res.status})`);
+    return {tasks: body.data as Task[], olderDoneCount: Number(body.olderDoneCount) || 0, doneWindowDays: Number(body.doneWindowDays) || 30};
+  },
   create: async (payload: Record<string, unknown>) => {
     const task = await request<Task>('/api/todos', {method: 'POST', body: JSON.stringify({dueDate: null, ...payload})});
     publish({type: 'upsert', task});

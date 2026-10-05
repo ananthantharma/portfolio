@@ -12,6 +12,9 @@ type Collection = {
   setDraft: (key: string, draft: Partial<Task> | null) => void;
   busy: string[];
   run: (key: string, action: () => Promise<unknown>) => Promise<void>;
+  /** Completed tasks older than doneWindowDays are skipped until loadOlderDone() is called. */
+  olderDone: {hidden: number; loaded: boolean; windowDays: number};
+  loadOlderDone: () => Promise<void>;
 };
 const TaskContext = createContext<Collection | null>(null);
 
@@ -25,6 +28,9 @@ export const TaskProvider = React.memo(function TaskProvider({children}: {childr
   const changes = useRef(new Map<string, {revision: number; change: Exclude<TaskChange, {type: 'reload'}>}>());
   const [drafts, setDrafts] = useState<Record<string, Partial<Task>>>({});
   const [busy, setBusy] = useState<string[]>([]);
+  // Older completed tasks stay out of every refresh until asked for once this visit
+  const includeOlderDone = useRef(false);
+  const [olderDone, setOlderDone] = useState({hidden: 0, loaded: false, windowDays: 30});
   const inFlight = useRef(new Set<string>());
   const setDraft = useCallback((key: string, draft: Partial<Task> | null) => setDrafts(previous => {
     const next = {...previous};
@@ -44,8 +50,10 @@ export const TaskProvider = React.memo(function TaskProvider({children}: {childr
     const startedAt = revision.current;
     setLoading(true);
     try {
-      const result = await api.list();
+      const page = await api.listWithMeta(includeOlderDone.current);
+      const result = page.tasks;
       if (request !== generation.current) return;
+      setOlderDone({hidden: page.olderDoneCount, loaded: includeOlderDone.current, windowDays: page.doneWindowDays});
       // Merge writes that landed during the request, including deletions, over the snapshot.
       const merged = new Map(result.map(task => [task._id, task]));
       changes.current.forEach(entry => {
@@ -82,7 +90,11 @@ export const TaskProvider = React.memo(function TaskProvider({children}: {childr
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [refresh]);
-  const value = useMemo(() => ({tasks, loading, error, refresh, drafts, setDraft, busy, run}), [tasks, loading, error, refresh, drafts, setDraft, busy, run]);
+  const loadOlderDone = useCallback(async () => {
+    includeOlderDone.current = true;
+    await refresh();
+  }, [refresh]);
+  const value = useMemo(() => ({tasks, loading, error, refresh, drafts, setDraft, busy, run, olderDone, loadOlderDone}), [tasks, loading, error, refresh, drafts, setDraft, busy, run, olderDone, loadOlderDone]);
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
 });
 

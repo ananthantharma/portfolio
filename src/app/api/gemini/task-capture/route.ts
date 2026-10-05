@@ -37,6 +37,7 @@ Return ONLY valid JSON in this exact shape:
   "priority": "High" | "Medium" | "Low" | "None",
   "dueDate": "YYYY-MM-DD, or null if none is stated or clearly implied",
   "category": "one short label, e.g. Projects!, Admin!, Vendor Management",
+  "emailSubject": "the email's Subject line exactly as written, without RE:/FW: prefixes, or null if this is not an email",
   "subtasks": ["high-level checklist items only"]
 }
 
@@ -101,8 +102,18 @@ export async function POST(req: Request) {
     const followUp = raw.followUp === true || FOLLOW_UP_PREFIX.test(rawTitle);
     const baseTitle = rawTitle.replace(FOLLOW_UP_PREFIX, '').trim() || 'New task';
 
+    // Strip reply/forward prefixes so the subject matches every message in the Outlook thread
+    const emailSubject =
+      typeof raw.emailSubject === 'string'
+        ? raw.emailSubject
+            .replace(/^(\s*(re|fw|fwd|aw|wg|tr)\s*(\[\d+\])?\s*:\s*)+/i, '')
+            .trim()
+            .slice(0, 500)
+        : '';
+
     const data = {
       title: followUp ? `Follow Up: ${baseTitle}` : baseTitle,
+      emailSubject,
       followUp,
       notes: typeof raw.notes === 'string' ? raw.notes.trim() : '',
       priority,
