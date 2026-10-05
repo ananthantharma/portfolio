@@ -16,16 +16,16 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-type Provider = 'gemini' | 'openai';
+export type Provider = 'gemini' | 'openai';
 
-interface ModelOption {
+export interface ModelOption {
   id: string;
   label: string;
   provider: Provider;
   supportsImages: boolean;
 }
 
-const MODEL_OPTIONS: ModelOption[] = [
+export const MODEL_OPTIONS: ModelOption[] = [
   {id: 'gemini-pro-latest', label: 'Gemini Pro', provider: 'gemini', supportsImages: true},
   {id: 'gemini-flash-latest', label: 'Gemini Flash', provider: 'gemini', supportsImages: true},
   {id: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite', provider: 'gemini', supportsImages: true},
@@ -34,7 +34,7 @@ const MODEL_OPTIONS: ModelOption[] = [
   {id: 'gpt-3.5-turbo', label: 'GPT-5 nano', provider: 'openai', supportsImages: false},
 ];
 
-const DEFAULT_MODEL = MODEL_OPTIONS[0]; // gemini-pro-latest
+export const DEFAULT_MODEL = MODEL_OPTIONS[0]; // gemini-pro-latest
 
 const SYSTEM_PROMPT = `You are a Senior Commercial and Legal Negotiator representing the Owner (Ontario Power Generation / OPG). You are reviewing supplier/vendor redlines and comments on a contract.
 1. Transcribe the tracked changes accurately, paying strict attention to insertions and deletions.
@@ -73,7 +73,7 @@ interface AnalysisResult {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const RiskBadge: React.FC<{level: string}> = ({level}) => {
+export const RiskBadge: React.FC<{level: string}> = ({level}) => {
   // Normalize to title-case so we match regardless of AI casing (high / HIGH / High)
   const normalized =
     level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
@@ -103,7 +103,7 @@ const RiskBadge: React.FC<{level: string}> = ({level}) => {
   );
 };
 
-function useDropdown() {
+export function useDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {

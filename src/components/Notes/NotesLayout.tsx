@@ -44,8 +44,10 @@ import {
   ShieldCheckIcon,
   VideoCameraIcon,
   WrenchScrewdriverIcon,
+  DocumentMagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {signOut, useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
@@ -1142,6 +1144,7 @@ const NotesLayout: React.FC = React.memo(() => {
   }, [session]);
 
   const isAdmin = session?.user?.email === 'lankanprinze@gmail.com';
+  const router = useRouter();
 
   // AI Chat Modal handlers
   const handleOpenAIChat = useCallback(() => setIsAIChatOpen(true), []);
@@ -1193,7 +1196,13 @@ const NotesLayout: React.FC = React.memo(() => {
       {label: 'Contract review', Icon: ScaleIcon, action: handleOpenRedline},
       {label: 'Humanizer', Icon: FaceSmileIcon, action: handleOpenHumanizer},
       {label: 'Truth teller', Icon: ShieldCheckIcon, action: handleOpenTruthTeller},
-      ...(isAdmin ? [{label: 'Camera', Icon: VideoCameraIcon, action: () => setIsCameraOpen(true)}] : []),
+      ...(isAdmin
+        ? [
+            {label: 'Camera', Icon: VideoCameraIcon, action: () => setIsCameraOpen(true)},
+            // Admin-only v2 of the contract analyzer lives on its own page under /notes
+            {label: 'Contract review v2', Icon: DocumentMagnifyingGlassIcon, action: () => router.push('/notes/contract-review')},
+          ]
+        : []),
     ],
     [
       handleOpenAIChat,
@@ -1209,6 +1218,7 @@ const NotesLayout: React.FC = React.memo(() => {
       handleOpenHumanizer,
       handleOpenTruthTeller,
       isAdmin,
+      router,
     ],
   );
 
