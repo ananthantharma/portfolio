@@ -72,9 +72,15 @@ function buildPrompt({comments, guidance, tolerance}: {comments: string; guidanc
 6. Draft a direct, professional response to the vendor that defends OPG's interests. Use everyday language, no legal fluff, and do not concede leverage.
 
 RISK TOLERANCE for this topic: ${tolerance} out of 5 (${t.label}). ${t.instruction}
-Let this tolerance shape the risk level, the stance, how much you change in the redraft, and the tone of both replies.
+Let this tolerance shape the risk level, the stance, how much you change in the redraft, and how firm both replies are. This rating is private to OPG: never mention it, the 1-5 scale, "importance", "priority", "risk tolerance", or how much OPG cares about the topic anywhere in your output — especially not in the replies.
 ${guidance.trim() ? `\nANALYST GUIDANCE (from the OPG reviewer — follow it unless it would clearly harm OPG, and say so if it would):\n${guidance.trim()}\n` : ''}
 The user may provide only an image of redlines, only text comments, or both. Assess whatever is provided.
+
+REPLY RULES (casualResponse and draftResponse):
+- Write as the OPG reviewer, in the first person ("I" / "we"), speaking DIRECTLY TO the vendor ("you" / "your").
+- It is either my reply to the vendor's comment, or my first note to them raising OPG's concerns with their exceptions/redlines — whichever fits the inputs.
+- Never refer to the vendor in the third person ("they", "them", "the vendor", "the supplier", or their company name as a subject). Say "you asked for…", "your change to Clause A…", not "they want…".
+- State OPG's position and what we need changed. Do not reveal internal analysis, risk ratings, or the reviewer's guidance as such.
 
 REDRAFT RULES:
 - "segments" must reconstruct each clause in reading order. Concatenating every segment's text in order gives the marked-up clause.
@@ -116,8 +122,8 @@ Respond with ONLY a valid JSON object — no markdown fences, no preamble, no tr
       }
     ]
   },
-  "casualResponse": "A relaxed, conversational reply to the vendor — formality level 6 out of 10. Still professional and firm, but written like a confident colleague. No stiff legal phrasing. Short sentences. Gets to the point fast.",
-  "draftResponse": "The formal version — exact text to copy-paste to the vendor/supplier. Formality level 10 out of 10."
+  "casualResponse": "My reply addressed directly to the vendor ('you'), formality 6 out of 10. Relaxed and conversational but firm, like a confident colleague writing back. No stiff legal phrasing. Short sentences. Gets to the point fast.",
+  "draftResponse": "The formal version of my reply, addressed directly to the vendor ('you') — exact text to copy-paste. Formality 10 out of 10."
 }${comments.trim() ? `\n\nVendor comments / email chain:\n${comments.trim()}` : ''}`;
 }
 
@@ -449,14 +455,15 @@ export default function ContractRedlineStudio() {
     mark(`rich-${clause.reference}`);
   };
 
+  const [zoomed, setZoomed] = useState(false);
   const providerDot: Record<Provider, string> = {gemini: 'bg-blue-500', openai: 'bg-emerald-500'};
   const t = TOLERANCE[tolerance];
   const clauses = result?.redraft?.clauses || [];
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-50/60">
+    <div className="h-full flex flex-col bg-slate-50/60">
       {/* Header */}
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b border-slate-200 bg-white flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Link className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-700" href="/notes">
             <ArrowLeftIcon className="h-3.5 w-3.5" /> Notes
@@ -508,112 +515,114 @@ export default function ContractRedlineStudio() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl p-5 flex flex-col gap-4">
-        {/* Inputs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* A — screenshot */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <SectionLabel>Input A — Redline Screenshot</SectionLabel>
-              {!selectedModel.supportsImages && (
-                <span className="flex items-center gap-1 text-[10px] text-amber-500 font-medium">
-                  <ExclamationTriangleIcon className="h-3 w-3" /> Image ignored by selected model
-                </span>
+      {/* Two panes: inputs on the left, results use the rest of the screen */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
+        <aside className="lg:w-[400px] xl:w-[440px] 2xl:w-[500px] flex-shrink-0 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-200 bg-white lg:min-h-0">
+          <div className="flex-1 lg:overflow-y-auto p-4 flex flex-col gap-4">
+            {/* A — screenshot */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <SectionLabel>A — Redline Screenshot</SectionLabel>
+                {!selectedModel.supportsImages && (
+                  <span className="flex items-center gap-1 text-[10px] text-amber-500 font-medium">
+                    <ExclamationTriangleIcon className="h-3 w-3" /> Ignored by this model
+                  </span>
+                )}
+              </div>
+              {!imageDataUrl ? (
+                <div
+                  ref={dropzoneRef}
+                  tabIndex={0}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    setIsDraggingOver(true);
+                  }}
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    setIsDraggingOver(false);
+                    const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+                    if (file) loadImage(file);
+                  }}
+                  className={`flex items-center gap-3 rounded-xl border-2 border-dashed px-4 py-5 outline-none focus:border-violet-400 ${isDraggingOver ? 'border-violet-400 bg-violet-50' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'}`}>
+                  <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm flex-shrink-0">
+                    <PhotoIcon className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-semibold text-slate-500">Paste a screenshot (Ctrl+V)</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Or drag &amp; drop, or{' '}
+                      <label className="text-violet-600 cursor-pointer hover:underline">
+                        browse
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) loadImage(file);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group flex items-center justify-center">
+                  <img
+                    src={imageDataUrl}
+                    alt="Redline screenshot"
+                    className="max-h-[220px] max-w-full object-contain cursor-zoom-in"
+                    onClick={() => setZoomed(true)}
+                    title="Click to view full size"
+                  />
+                  <button
+                    onClick={() => setImageDataUrl(null)}
+                    aria-label="Remove screenshot"
+                    className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/90 border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all shadow-sm">
+                    <TrashIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               )}
             </div>
-            {!imageDataUrl ? (
-              <div
-                ref={dropzoneRef}
-                tabIndex={0}
-                onDragOver={e => {
-                  e.preventDefault();
-                  setIsDraggingOver(true);
-                }}
-                onDragLeave={() => setIsDraggingOver(false)}
-                onDrop={e => {
-                  e.preventDefault();
-                  setIsDraggingOver(false);
-                  const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
-                  if (file) loadImage(file);
-                }}
-                className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed min-h-[170px] bg-white outline-none focus:border-violet-400 ${isDraggingOver ? 'border-violet-400 bg-violet-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                  <PhotoIcon className="h-5 w-5 text-slate-400" />
-                </div>
-                <div className="text-center px-4">
-                  <p className="text-[12px] font-semibold text-slate-500">Paste screenshot here</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Ctrl+V · drag &amp; drop · or{' '}
-                    <label className="text-violet-600 cursor-pointer hover:underline">
-                      browse
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={e => {
-                          const file = e.target.files?.[0];
-                          if (file) loadImage(file);
-                          e.target.value = '';
-                        }}
-                      />
-                    </label>
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white group min-h-[170px] flex items-center justify-center">
-                <img src={imageDataUrl} alt="Redline screenshot" className="max-h-[240px] max-w-full object-contain" />
-                <button
-                  onClick={() => setImageDataUrl(null)}
-                  aria-label="Remove screenshot"
-                  className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/90 border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all shadow-sm">
-                  <TrashIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
 
-          {/* B — vendor comments */}
-          <div className="flex flex-col gap-2">
-            <SectionLabel>Input B — Vendor Comments / Email Chain</SectionLabel>
-            <textarea
-              className="flex-1 min-h-[170px] resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-300 focus:border-slate-300"
-              placeholder="Paste vendor comments, email chains, or negotiation notes here…"
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-            />
-          </div>
+            {/* B — vendor comments */}
+            <div className="flex flex-col gap-1.5">
+              <SectionLabel>B — Vendor Comments / Email Chain</SectionLabel>
+              <textarea
+                className="min-h-[150px] resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-300 focus:border-slate-300"
+                placeholder="Paste vendor comments, email chains, or the clause wording…"
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+              />
+            </div>
 
-          {/* C — reviewer guidance */}
-          <div className="flex flex-col gap-2">
-            <SectionLabel>Input C — Your Guidance for the AI</SectionLabel>
-            <textarea
-              className="min-h-[120px] resize-y rounded-xl border border-violet-200 bg-violet-50/30 px-4 py-3 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-400 focus:border-violet-300 focus:bg-white"
-              placeholder="Context the AI should take into account, e.g. “We already agreed a 12-month cap in the RFP”, “Legal is fine with mutual indemnity”, “Keep the relationship warm — sole source”."
-              value={guidance}
-              onChange={e => setGuidance(e.target.value)}
-            />
-          </div>
+            {/* C — reviewer guidance */}
+            <div className="flex flex-col gap-1.5">
+              <SectionLabel>C — Your Guidance for the AI</SectionLabel>
+              <textarea
+                className="min-h-[110px] resize-y rounded-xl border border-violet-200 bg-violet-50/30 px-3 py-2.5 text-[12.5px] text-slate-700 leading-relaxed outline-none placeholder-slate-400 focus:border-violet-300 focus:bg-white"
+                placeholder="Context to take into account, e.g. “OPG must own all outputs”, “Legal is fine with mutual indemnity”."
+                value={guidance}
+                onChange={e => setGuidance(e.target.value)}
+              />
+            </div>
 
-          {/* D — risk tolerance */}
-          <div className="flex flex-col gap-2">
-            <SectionLabel>Input D — How Important Is This Topic?</SectionLabel>
-            <div className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[22px] font-bold text-slate-800">
-                  {tolerance}
-                  <span className="text-[13px] font-semibold text-slate-400"> / 5</span>
-                </span>
+            {/* D — importance */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <SectionLabel>D — How Important Is This Topic?</SectionLabel>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                  className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${
                     tolerance <= 2 ? 'bg-emerald-50 text-emerald-700' : tolerance === 3 ? 'bg-slate-100 text-slate-600' : tolerance === 4 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
                   }`}>
-                  {t.label}
+                  {tolerance}/5 · {t.label}
                 </span>
               </div>
               <input
-                aria-label="Risk tolerance from 1 (not important) to 5 (very important)"
-                className="mt-2 w-full accent-slate-800"
+                aria-label="Importance from 1 (not important) to 5 (very important)"
+                className="w-full accent-slate-800"
                 max={5}
                 min={1}
                 onChange={e => setTolerance(Number(e.target.value))}
@@ -626,26 +635,12 @@ export default function ContractRedlineStudio() {
                 <span>3 · Default</span>
                 <span>5 · Very important</span>
               </div>
-              <p className="mt-2 text-[11.5px] text-slate-500">{t.hint}</p>
+              <p className="text-[11px] text-slate-500">{t.hint} Only used to shape the advice; never mentioned to the vendor.</p>
             </div>
           </div>
-        </div>
 
-        {/* Submit */}
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-            {!hasImage && !hasText ? (
-              <span>Provide a redline screenshot, vendor comments, or both to begin.</span>
-            ) : (
-              <>
-                {hasImage && <span className="rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600">Image ready</span>}
-                {hasText && <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-600">{commentText.trim().length} chars of comments</span>}
-                {guidance.trim() && <span className="rounded-full bg-violet-50 border border-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-600">Guidance included</span>}
-                <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 text-[10px] font-semibold text-slate-600">Importance {tolerance}/5</span>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+          {/* Actions stay visible at the bottom of the input pane */}
+          <div className="flex-shrink-0 flex items-center gap-2 border-t border-slate-200 bg-white px-4 py-3">
             {(hasImage || hasText || guidance || status !== 'idle') && (
               <button
                 onClick={handleClear}
@@ -656,151 +651,169 @@ export default function ContractRedlineStudio() {
             <button
               onClick={runAnalysis}
               disabled={!canSubmit}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 text-white text-[12.5px] font-bold shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-slate-700 to-slate-900 text-white text-[12.5px] font-bold shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
               {status === 'loading' ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <DocumentMagnifyingGlassIcon className="h-4 w-4" />}
-              {status === 'loading' ? 'Analyzing…' : 'Assess Risk'}
+              {status === 'loading' ? 'Analyzing…' : status === 'success' ? 'Re-assess' : 'Assess Risk'}
             </button>
           </div>
-        </div>
+        </aside>
 
-        {status === 'loading' && (
-          <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-4">
-            <ArrowPathIcon className="h-5 w-5 text-slate-400 animate-spin" />
-            <p className="text-[12px] text-slate-500">Reading the redline, weighing the risk at importance {tolerance}/5, and drafting the redraft…</p>
-          </div>
-        )}
-
-        {status === 'error' && (
-          <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
-            <ExclamationTriangleIcon className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[13px] font-semibold text-rose-700">Analysis failed</p>
-              <p className="text-[12px] text-rose-600 mt-0.5">{errorText}</p>
+        {/* Results */}
+        <main className="flex-1 min-w-0 lg:min-h-0 lg:overflow-y-auto p-4 xl:p-5">
+          {status === 'idle' && (
+            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center text-slate-400">
+              <DocumentMagnifyingGlassIcon className="h-10 w-10 mb-3 text-slate-300" />
+              <p className="text-[14px] font-semibold text-slate-500">Results appear here</p>
+              <p className="text-[12px] mt-1 max-w-sm">Add a redline screenshot or vendor comments on the left, then Assess Risk.</p>
             </div>
-            <button
-              onClick={runAnalysis}
-              className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex-shrink-0">
-              <ArrowPathIcon className="h-3.5 w-3.5" /> Retry
-            </button>
-          </div>
-        )}
+          )}
 
-        {status === 'success' && result && (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <RiskBadge level={result.riskLevel || 'Medium'} />
-                <span className="text-[11px] text-slate-400">at importance {tolerance}/5 ({t.label.toLowerCase()})</span>
+          {status === 'loading' && (
+            <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-4">
+              <ArrowPathIcon className="h-5 w-5 text-slate-400 animate-spin" />
+              <p className="text-[12px] text-slate-500">Reading the redline, weighing the risk, and drafting the redraft…</p>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
+              <ExclamationTriangleIcon className="h-5 w-5 text-rose-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[13px] font-semibold text-rose-700">Analysis failed</p>
+                <p className="text-[12px] text-rose-600 mt-0.5">{errorText}</p>
               </div>
               <button
                 onClick={runAnalysis}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold bg-white border border-slate-200 text-slate-500 hover:text-slate-700">
-                <ArrowPathIcon className="h-3 w-3" /> Re-analyze
+                className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex-shrink-0">
+                <ArrowPathIcon className="h-3.5 w-3.5" /> Retry
               </button>
             </div>
+          )}
 
-            {result.transcriptionCheck && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
-                <button onClick={() => setTranscriptionOpen(v => !v)} className="w-full flex items-center justify-between px-4 py-2.5 text-left">
-                  <div className="flex items-center gap-2">
-                    <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Transcription Check</span>
-                    <span className="text-[10px] text-amber-500">— verify AI accuracy before proceeding</span>
+          {status === 'success' && result && (
+            <div className="flex flex-col gap-3">
+              {/* Risk + transcription on one line when there's room */}
+              <div className="grid grid-cols-1 xl:grid-cols-[auto_1fr] gap-3 items-start">
+                <div className="flex items-center gap-2 xl:pt-1">
+                  <RiskBadge level={result.riskLevel || 'Medium'} />
+                </div>
+                {result.transcriptionCheck && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
+                    <button onClick={() => setTranscriptionOpen(v => !v)} className="w-full flex items-center justify-between px-4 py-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Transcription Check</span>
+                        <span className="text-[10px] text-amber-500">— verify AI accuracy before proceeding</span>
+                      </div>
+                      <ChevronDownIcon className={`h-4 w-4 text-amber-400 transition-transform ${transcriptionOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {transcriptionOpen && (
+                      <p className="px-4 pb-2.5 pt-2 border-t border-amber-200/60 text-[12.5px] text-amber-800 leading-relaxed">{result.transcriptionCheck}</p>
+                    )}
                   </div>
-                  <ChevronDownIcon className={`h-4 w-4 text-amber-400 transition-transform ${transcriptionOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {transcriptionOpen && (
-                  <p className="px-4 pb-3 pt-2.5 border-t border-amber-200/60 text-[12.5px] text-amber-800 leading-relaxed">{result.transcriptionCheck}</p>
                 )}
               </div>
-            )}
 
-            {/* Analogy — new */}
-            {result.analogy && (
-              <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <LightBulbIcon className="h-4 w-4 text-sky-600" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-sky-700">Explain It Simply — Analogy for OPG</p>
+              {/* Analogy, commercial, legal side by side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
+                {result.analogy && (
+                  <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-4 md:col-span-2 2xl:col-span-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <LightBulbIcon className="h-4 w-4 text-sky-600" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-sky-700">Explain It Simply</p>
+                      </div>
+                      <CopyButton done={copied === 'analogy'} label="Copy" onClick={() => copyText('analogy', result.analogy)} />
+                    </div>
+                    <p className="text-[13.5px] text-slate-800 leading-relaxed">{result.analogy}</p>
                   </div>
-                  <CopyButton done={copied === 'analogy'} label="Copy" onClick={() => copyText('analogy', result.analogy)} />
-                </div>
-                <p className="text-[14px] text-slate-800 leading-relaxed">{result.analogy}</p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600">$</span>
-                  <SectionLabel>Commercial Impact</SectionLabel>
-                </div>
-                <p className="text-[13px] text-slate-700 leading-relaxed">{result.assessment?.commercial}</p>
-              </div>
-              <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-6 h-6 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-[10px] font-black text-violet-600">§</span>
-                  <SectionLabel>Legal Impact</SectionLabel>
-                </div>
-                <p className="text-[13px] text-slate-700 leading-relaxed">{result.assessment?.legal}</p>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-slate-900 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5">OPG Negotiation Stance</p>
-              <p className="text-[13px] text-white leading-relaxed">{result.recommendedStance}</p>
-            </div>
-
-            {/* Redraft — new */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <PencilSquareIcon className="h-4 w-4 text-slate-500" />
-                <SectionLabel>Redrafted Wording — Original, Tracked Changes &amp; Suggestions</SectionLabel>
-              </div>
-              {clauses.length ? (
-                clauses.map((clause, i) => (
-                  <ClauseView
-                    clause={clause}
-                    copied={copied}
-                    key={`${clause.reference}-${i}`}
-                    onCopyClean={() => copyText(`clean-${clause.reference}`, clause.proposedClean)}
-                    onCopyRich={() => copyRich(clause)}
-                  />
-                ))
-              ) : (
-                <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-[12px] text-slate-500">
-                  No clause text to redraft. Add a redline screenshot or paste the clause wording into Input B.
-                </div>
-              )}
-            </div>
-
-            {result.casualResponse && (
-              <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 overflow-hidden shadow-sm">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-indigo-100/70">
-                  <div className="flex items-center gap-2">
-                    <ChatBubbleBottomCenterTextIcon className="h-4 w-4 text-indigo-400" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Casual Reply</p>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-500 font-semibold border border-indigo-200">6 / 10 formality</span>
+                )}
+                <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600">$</span>
+                    <SectionLabel>Commercial Impact</SectionLabel>
                   </div>
-                  <CopyButton done={copied === 'casual'} label="Copy" onClick={() => copyText('casual', result.casualResponse)} />
+                  <p className="text-[13px] text-slate-700 leading-relaxed">{result.assessment?.commercial}</p>
                 </div>
-                <p className="p-4 text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap">{result.casualResponse}</p>
+                <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-6 h-6 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-[10px] font-black text-violet-600">§</span>
+                    <SectionLabel>Legal Impact</SectionLabel>
+                  </div>
+                  <p className="text-[13px] text-slate-700 leading-relaxed">{result.assessment?.legal}</p>
+                </div>
               </div>
-            )}
 
-            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
+              <div className="rounded-xl border border-slate-200 bg-slate-900 px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">OPG Negotiation Stance</p>
+                <p className="text-[13px] text-white leading-relaxed">{result.recommendedStance}</p>
+              </div>
+
+              {/* Redraft — two clauses per row on very wide screens */}
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Draft Response to Vendor</p>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold border border-slate-200">10 / 10 formality</span>
+                  <PencilSquareIcon className="h-4 w-4 text-slate-500" />
+                  <SectionLabel>Redrafted Wording — Original, Tracked Changes &amp; Suggestions</SectionLabel>
                 </div>
-                <CopyButton done={copied === 'draft'} label="Copy to Clipboard" onClick={() => copyText('draft', result.draftResponse)} />
+                {clauses.length ? (
+                  <div className={`grid grid-cols-1 gap-3 ${clauses.length > 1 ? '2xl:grid-cols-2' : ''}`}>
+                    {clauses.map((clause, i) => (
+                      <ClauseView
+                        clause={clause}
+                        copied={copied}
+                        key={`${clause.reference}-${i}`}
+                        onCopyClean={() => copyText(`clean-${clause.reference}`, clause.proposedClean)}
+                        onCopyRich={() => copyRich(clause)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-[12px] text-slate-500">
+                    No clause text to redraft. Add a redline screenshot or paste the clause wording into Input B.
+                  </div>
+                )}
               </div>
-              <p className="p-4 text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-mono">{result.draftResponse}</p>
+
+              {/* Both replies side by side */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 items-start">
+                {result.casualResponse && (
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 overflow-hidden shadow-sm">
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-indigo-100/70">
+                      <div className="flex items-center gap-2">
+                        <ChatBubbleBottomCenterTextIcon className="h-4 w-4 text-indigo-400" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Casual Reply</p>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-500 font-semibold border border-indigo-200">6 / 10 formality</span>
+                      </div>
+                      <CopyButton done={copied === 'casual'} label="Copy" onClick={() => copyText('casual', result.casualResponse)} />
+                    </div>
+                    <p className="p-4 text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap">{result.casualResponse}</p>
+                  </div>
+                )}
+                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50/60">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Draft Response to Vendor</p>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold border border-slate-200">10 / 10 formality</span>
+                    </div>
+                    <CopyButton done={copied === 'draft'} label="Copy to Clipboard" onClick={() => copyText('draft', result.draftResponse)} />
+                  </div>
+                  <p className="p-4 text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap">{result.draftResponse}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
+
+      {zoomed && imageDataUrl && (
+        <div
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-slate-900/80 p-6 cursor-zoom-out"
+          onClick={() => setZoomed(false)}
+          role="dialog"
+          aria-label="Redline screenshot, full size">
+          <img src={imageDataUrl} alt="Redline screenshot, full size" className="max-h-full max-w-full rounded-lg bg-white shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 }
