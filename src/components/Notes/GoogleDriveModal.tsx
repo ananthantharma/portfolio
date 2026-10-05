@@ -7,6 +7,7 @@ import {
   ArrowUp,
   ChevronRight,
   ClipboardList,
+  Download,
   ExternalLink,
   File,
   FileArchive,
@@ -43,6 +44,8 @@ interface DriveFile {
   modifiedTime?: string;
   iconLink?: string;
   webViewLink?: string;
+  webContentLink?: string;
+  exportLinks?: Record<string, string>;
 }
 
 type Crumb = {id: string; name: string};
@@ -51,6 +54,23 @@ type SortKey = 'name' | 'modified' | 'size';
 // The browser opens here every time (a folder called "Temp" at the top of My Drive)
 const START_FOLDER = 'Temp';
 const FOLDER = 'application/vnd.google-apps.folder';
+
+// Google Docs/Sheets/Slides have no file of their own; download them as the Office equivalent
+const EXPORT_AS: Record<string, {mime: string; ext: string}> = {
+  'application/vnd.google-apps.document': {mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ext: 'docx'},
+  'application/vnd.google-apps.spreadsheet': {mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ext: 'xlsx'},
+  'application/vnd.google-apps.presentation': {mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', ext: 'pptx'},
+  'application/vnd.google-apps.drawing': {mime: 'image/png', ext: 'png'},
+};
+
+/** Where to download a file from, straight from Google (null for folders, forms, shortcuts). */
+function downloadOf(file: DriveFile): {url: string; ext?: string} | null {
+  if (file.webContentLink) return {url: file.webContentLink};
+  const target = EXPORT_AS[file.mimeType];
+  if (target && file.exportLinks?.[target.mime]) return {url: file.exportLinks[target.mime], ext: target.ext};
+  const pdf = file.exportLinks?.['application/pdf'];
+  return pdf ? {url: pdf, ext: 'pdf'} : null;
+}
 
 /** A small icon + tint + label for each kind of file. */
 function kindOf(mime: string): {Icon: typeof File; tint: string; label: string} {
@@ -324,7 +344,7 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
                   <th className="hidden w-20 border-b border-slate-100 px-2 py-2 text-right md:table-cell">
                     <button className="ml-auto flex items-center gap-1 hover:text-slate-600" onClick={() => toggleSort('size')} type="button">Size <SortIcon k="size" /></button>
                   </th>
-                  <th className="w-20 border-b border-slate-100 px-2 py-2"><span className="sr-only">Actions</span></th>
+                  <th className="w-28 border-b border-slate-100 px-2 py-2"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -359,6 +379,21 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
                           <td className="hidden whitespace-nowrap px-2 py-1.5 text-right text-[12px] text-slate-500 group-hover:bg-slate-50 md:table-cell">{isFolder ? '—' : formatSize(file.size)}</td>
                           <td className="rounded-r-lg px-2 py-1.5 group-hover:bg-slate-50">
                             <div className="flex items-center justify-end gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                              {(() => {
+                                const dl = downloadOf(file);
+                                return dl ? (
+                                  <a
+                                    aria-label={`Download ${file.name}`}
+                                    className="rounded-md p-1.5 text-slate-400 hover:bg-white hover:text-emerald-600"
+                                    href={dl.url}
+                                    onClick={e => e.stopPropagation()}
+                                    rel="noreferrer"
+                                    target="_blank"
+                                    title={dl.ext ? `Download as .${dl.ext}` : 'Download'}>
+                                    <Download className="h-3.5 w-3.5" />
+                                  </a>
+                                ) : null;
+                              })()}
                               {file.webViewLink && (
                                 <a aria-label={`Open ${file.name} in a new tab`} className="rounded-md p-1.5 text-slate-400 hover:bg-white hover:text-slate-700" href={file.webViewLink} onClick={e => e.stopPropagation()} rel="noreferrer" target="_blank" title="Open in new tab">
                                   <ExternalLink className="h-3.5 w-3.5" />

@@ -160,7 +160,8 @@ function completedAgo(task: Task) {
   return new Date(completedTime(task)).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
 }
 
-export default function TaskWorkspace({compact = false, note, onExpand, onAdvanced, onCollapse}: {compact?: boolean; note?: NoteContext; onExpand?: () => void; onAdvanced?: () => void; onCollapse?: () => void}) {
+/** `mobile` (used by the /tasks page on phones) builds on the compact sidebar layout with touch-sized controls. */
+export default function TaskWorkspace({compact = false, mobile = false, note, onExpand, onAdvanced, onCollapse}: {compact?: boolean; mobile?: boolean; note?: NoteContext; onExpand?: () => void; onAdvanced?: () => void; onCollapse?: () => void}) {
   const {tasks, loading, error, refresh, busy, run, drafts, olderDone, loadOlderDone} = useTaskCollection();
   const [filter, setFilter] = useState<Filter>('open');
   const [bucket, setBucket] = useState<BucketTab>('work');
@@ -201,7 +202,19 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       // storage unavailable
     }
   };
+  // Keep the chosen category chip visible when the strip scrolls sideways (phones)
+  const bucketNavRef = useRef<HTMLElement>(null);
+  const tappedBucket = useRef(false);
+  useEffect(() => {
+    const active = bucketNavRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
+    const nav = bucketNavRef.current;
+    if (!active || !nav || nav.scrollWidth <= nav.clientWidth) return;
+    // Smooth when you tap a chip; instant when restoring the last tab (a smooth scroll gets cut off while tasks load)
+    nav.scrollTo({left: active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2, behavior: tappedBucket.current ? 'smooth' : 'auto'});
+    tappedBucket.current = false;
+  }, [bucket, loading]);
   const chooseBucket = (next: BucketTab) => {
+    tappedBucket.current = true;
     setBucket(next);
     remember(BUCKET_KEY, next);
   };
@@ -521,7 +534,10 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
     : `Add a task to ${bucket === 'all' ? 'any category' : bucketLabel} above.`;
 
   return (
-    <section aria-label={compact ? 'Task sidebar' : 'Tasks workspace'} className={`${styles.workspace} ${compact ? styles.compact : ''}`}>
+    <section
+      aria-label={compact && !mobile ? 'Task sidebar' : 'Tasks workspace'}
+      className={`${styles.workspace} ${compact ? styles.compact : ''} ${mobile ? styles.mobile : ''}`}
+      data-editing={!!(compact && editor)}>
       {assigning && <AssignWorkWindow onClose={() => setAssigning(false)} />}
       {capture && (
         <CaptureModal
@@ -572,7 +588,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
           </div>
         </header>
 
-        <nav aria-label="Task categories" className={styles.bucketTabs} role="tablist">
+        <nav aria-label="Task categories" className={styles.bucketTabs} ref={bucketNavRef} role="tablist">
           {[
             ...TASK_BUCKETS.map(b => ({key: b.key as BucketTab, label: b.short, title: b.label})),
             {key: 'people' as BucketTab, label: 'Follow up', title: 'Everything you assigned to someone, grouped by person'},
@@ -667,8 +683,8 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
           {compact && editor && (
             <div className={styles.inlineEditor}>
               <button className={styles.back} onClick={() => setSelected(null)}>
-                <ArrowLeft size={14} />
-                Back to list
+                <ArrowLeft size={mobile ? 18 : 14} />
+                {mobile ? 'Tasks' : 'Back to list'}
               </button>
               {editor}
             </div>
@@ -708,6 +724,17 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
           )}
         </div>
 
+        {mobile && !editor && (
+          <button
+            aria-label={`New ${bucketLabel} task`}
+            className={styles.fab}
+            onClick={() => {
+              setNewDefaults({key: '', fields: {}});
+              setSelected('new');
+            }}>
+            <Plus size={24} />
+          </button>
+        )}
         <footer className={styles.footer}>
           <span role="status">{notice || `${visible.length} ${visible.length === 1 ? 'task' : 'tasks'} in this view`}</span>
           {onAdvanced && <button onClick={onAdvanced}>Board & tools</button>}

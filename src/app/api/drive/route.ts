@@ -49,7 +49,8 @@ export async function GET(req: Request) {
 
     const response = await drive.files.list({
       q: `'${folderId}' in parents and trashed = false`,
-      fields: 'nextPageToken, files(id, name, mimeType, iconLink, webViewLink, size, modifiedTime, thumbnailLink)',
+      // webContentLink / exportLinks let the browser download straight from Google (no server size limit)
+      fields: 'nextPageToken, files(id, name, mimeType, iconLink, webViewLink, webContentLink, exportLinks, size, modifiedTime, thumbnailLink)',
       orderBy: 'folder, name',
       pageSize: 200,
       pageToken,
