@@ -21,16 +21,46 @@ export async function GET(req: Request) {
     }
 
     const {searchParams} = new URL(req.url);
-    const folderId = searchParams.get('folderId') || 'root';
+    let folderId = searchParams.get('folderId') || 'root';
+    // Drive ids are URL-safe base64; anything else would end up inside the query string
+    if (folderId !== 'root' && !/^[A-Za-z0-9_-]+$/.test(folderId)) {
+      return NextResponse.json({error: 'Invalid folder'}, {status: 400});
+    }
+    const pageToken = searchParams.get('pageToken') || undefined;
 
     const drive = await getDriveClient(session.accessToken);
+
+    // ?start=Temp opens a folder of that name at the top of My Drive (falls back to My Drive)
+    const start = searchParams.get('start');
+    let folder: {id: string; name: string} | null = null;
+    if (start) {
+      const safeName = start.slice(0, 200).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const found = await drive.files.list({
+        q: `'root' in parents and name = '${safeName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+        fields: 'files(id, name)',
+        pageSize: 1,
+      });
+      const match = found.data.files?.[0];
+      if (match?.id) {
+        folderId = match.id;
+        folder = {id: match.id, name: match.name || start};
+      }
+    }
+
     const response = await drive.files.list({
       q: `'${folderId}' in parents and trashed = false`,
-      fields: 'files(id, name, mimeType, iconLink, webViewLink, size, modifiedTime, thumbnailLink)',
+      fields: 'nextPageToken, files(id, name, mimeType, iconLink, webViewLink, size, modifiedTime, thumbnailLink)',
       orderBy: 'folder, name',
+      pageSize: 200,
+      pageToken,
     });
 
-    return NextResponse.json({files: response.data.files});
+    return NextResponse.json({
+      files: response.data.files,
+      nextPageToken: response.data.nextPageToken || null,
+      folder,
+      startMissing: !!start && !folder,
+    });
   } catch (error: any) {
     console.error('Drive API Error:', error);
     return NextResponse.json({error: error.message}, {status: 500});
