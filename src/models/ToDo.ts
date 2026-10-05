@@ -28,6 +28,7 @@ export interface IToDo extends Document {
   isMinimized?: boolean;
   // Sidebar category tab; tasks without one count as work
   bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | null;
+  taskGroupId?: mongoose.Types.ObjectId | null; // user-made group for tasks not linked to a project or vendor
   completedAt?: Date | null; // when the task was last marked complete (Done is sorted by this)
   order?: number;
   attachments?: {
@@ -119,6 +120,7 @@ const ToDoSchema = new Schema<IToDo>(
     actualMinutes: {type: Number, default: 0},
     bucket: {type: String, enum: ['work', 'personal-short', 'personal-long', 'career', null], default: null},
     completedAt: {type: Date, default: null},
+    taskGroupId: {type: Schema.Types.ObjectId, ref: 'TaskGroup', default: null},
   },
   {timestamps: true},
 );

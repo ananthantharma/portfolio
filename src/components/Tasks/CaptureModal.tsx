@@ -3,6 +3,7 @@
 
 import {ClipboardPaste, ImageIcon, Loader2, Paperclip, Sparkles, X} from 'lucide-react';
 import React, {useEffect, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 
 import {api} from './api';
 import {fileToEmailText, isSupportedEmailFile} from './emailParse';
@@ -27,6 +28,8 @@ interface CaptureModalProps {
   seed?: CaptureSeed | null;
   onClose: () => void;
   onCreated: (task: Task) => void;
+  /** Fields every captured task starts with, e.g. the open category tab or the current note. */
+  defaults?: Record<string, unknown>;
 }
 
 const IMAGE_RE = /^image\//;
@@ -40,7 +43,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-export default function CaptureModal({seed, onClose, onCreated}: CaptureModalProps) {
+export default function CaptureModal({seed, onClose, onCreated, defaults}: CaptureModalProps) {
   const seededEmailFile = seed?.file && !IMAGE_RE.test(seed.file.type) ? seed.file : null;
   const [text, setText] = useState(seed?.text || '');
   const [image, setImage] = useState<PastedImage | null>(null);
@@ -112,6 +115,7 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
       };
 
       const created = await api.create({
+        ...defaults,
         title: d.title,
         notes: d.notes || undefined,
         priority: d.priority || 'None',
@@ -119,7 +123,7 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
         aiGenerated: true,
         ...(d.category ? {category: d.category} : {}),
         ...(d.dueDate ? {dueDate: new Date(`${d.dueDate}T17:00:00`).toISOString()} : {}),
-        subtasks: (d.subtasks || []).slice(0, 5).map(s => ({title: s, isCompleted: false})),
+        subtasks: (d.subtasks || []).slice(0, 4).map(s => ({title: s, isCompleted: false})),
       });
 
       onCreated(created);
@@ -175,7 +179,8 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
 
   const canRun = !!(text.trim() || image || file);
 
-  return (
+  // Portal so the modal is never clipped by a sidebar or container-query parent
+  return createPortal(
     <div
       className="fixed inset-0 z-[235] flex items-start justify-center bg-slate-900/40 px-4 pt-[10vh] backdrop-blur-[2px]"
       onMouseDown={e => e.target === e.currentTarget && !busy && onClose()}
@@ -187,7 +192,7 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
           </span>
           <div>
             <h2 className="text-[14px] font-bold text-slate-800 dark:text-white">Create task with AI</h2>
-            <p className="text-[10.5px] text-slate-400">Paste an email chain, a screenshot, or notes — I&apos;ll write the task for Ananthan.</p>
+            <p className="text-[10.5px] text-slate-400">Paste an email chain, a screenshot, or notes. Gemini Flash writes the task for Ananthan; requests you made of others become “Follow Up:” tasks.</p>
           </div>
           <button
             className="ml-auto rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700"
@@ -295,6 +300,7 @@ export default function CaptureModal({seed, onClose, onCreated}: CaptureModalPro
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -10,27 +10,41 @@ export const runtime = 'nodejs';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
 
 const PRIORITIES = ['High', 'Medium', 'Low', 'None'] as const;
+const MAX_CHECKLIST = 4;
+const FOLLOW_UP_PREFIX = /^\s*follow[\s-]*up\s*[:\-–—]\s*/i;
 
 const PROMPT = `You are the personal assistant for Ananthan. Ananthan just pasted some raw content — it could be an
 email chain, a screenshot of a conversation or document, a chat log, or rough notes.
 
-Create exactly ONE actionable task for Ananthan out of it. Write everything from Ananthan's point of view —
-what HE needs to do next.
+Who is who:
+- Ananthan is the user. In an email chain he is the sender or recipient named Ananthan; in rough notes "I" / "me" is Ananthan.
+- Everyone else is another person (a colleague, a vendor, a manager, etc.).
+
+Create exactly ONE task for Ananthan out of it, written from Ananthan's point of view.
+
+First decide the direction:
+- FOLLOW-UP: Ananthan is the one who asked someone else to do something (he delegated it, requested information,
+  or is waiting on them to deliver). Set "followUp": true. The title says who owes what, e.g. "Sarah to send the revised SOW".
+- OWN ACTION: someone asked Ananthan to do something, or it is something Ananthan must do himself.
+  Set "followUp": false. The title starts with a verb, e.g. "Review the Q3 vendor invoice".
+If the latest message in a chain is Ananthan's request to someone else, it is a FOLLOW-UP.
 
 Return ONLY valid JSON in this exact shape:
 {
-  "title": "concise, action-oriented, starts with a verb",
+  "followUp": true | false,
+  "title": "short task title WITHOUT any 'Follow Up' prefix (it is added automatically)",
   "notes": "2-4 sentences: the request, the key context, and anything Ananthan must not forget (names, amounts, links, dates)",
   "priority": "High" | "Medium" | "Low" | "None",
   "dueDate": "YYYY-MM-DD, or null if none is stated or clearly implied",
   "category": "one short label, e.g. Projects!, Admin!, Vendor Management",
-  "subtasks": ["ONLY the major steps / milestones"]
+  "subtasks": ["high-level checklist items only"]
 }
 
-Subtask rules — important:
-- At most 5. Aim for 4-5 for a real project, fewer for something simple, and an empty array [] if the task is a single atomic action.
-- Each subtask is one short line describing a milestone, NOT a fine-grained step-by-step instruction.
-- Do not pad the list to reach 5.`;
+Checklist rules — important:
+- Keep it HIGH-LEVEL: 2-4 items for a real piece of work, never more than ${MAX_CHECKLIST}. Use [] for a single simple action.
+- Each item is one short line naming a milestone (e.g. "Agree pricing with vendor"), never a detailed step-by-step instruction.
+- For a FOLLOW-UP, list only what Ananthan is waiting to receive or confirm (often 1-2 items, or []).
+- Do not pad the list. Fewer is better.`;
 
 export async function POST(req: Request) {
   try {
@@ -79,11 +93,17 @@ export async function POST(req: Request) {
       ? raw.subtasks
           .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
           .map(s => s.trim())
-          .slice(0, 5)
+          .slice(0, MAX_CHECKLIST)
       : [];
 
+    // The "Follow Up:" prefix is applied here so it is always spelled the same way
+    const rawTitle = typeof raw.title === 'string' ? raw.title.trim() : '';
+    const followUp = raw.followUp === true || FOLLOW_UP_PREFIX.test(rawTitle);
+    const baseTitle = rawTitle.replace(FOLLOW_UP_PREFIX, '').trim() || 'New task';
+
     const data = {
-      title: typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim() : 'New task',
+      title: followUp ? `Follow Up: ${baseTitle}` : baseTitle,
+      followUp,
       notes: typeof raw.notes === 'string' ? raw.notes.trim() : '',
       priority,
       dueDate: typeof raw.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}/.test(raw.dueDate) ? raw.dueDate.slice(0, 10) : null,

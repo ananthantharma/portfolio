@@ -112,6 +112,7 @@ export async function POST(req: Request) {
     });
 
     if (data.vendorSectionId && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
+    if (data.taskGroupId && !mongoose.isValidObjectId(data.taskGroupId)) data.taskGroupId = null;
     const newToDo = await ToDo.create(data);
     // Return the vendor name with the new task so its vendor pill can render immediately
     await newToDo.populate(VENDOR_POPULATE(session.user.email));

@@ -3,7 +3,7 @@
 
 // Shared bits for every task card: neon glow toggles, the vendor pill, and the vendor picker.
 
-import {Building2, Droplet, Flame, FolderKanban, Leaf} from 'lucide-react';
+import {Building2, Droplet, Flame, FolderKanban, Leaf, Plus, Tag, X} from 'lucide-react';
 import React, {useContext, useEffect, useState} from 'react';
 import {createPortal} from 'react-dom';
 
@@ -152,6 +152,65 @@ export function refreshVendorOptions() {
   vendorCache = null;
 }
 
+export interface TaskGroupOption {
+  _id: string;
+  name: string;
+}
+
+// Your own task groups, shared by every task list on the page
+let groupState: TaskGroupOption[] | null = null;
+let groupLoad: Promise<void> | null = null;
+const groupListeners = new Set<(groups: TaskGroupOption[] | null) => void>();
+const setGroupState = (next: TaskGroupOption[]) => {
+  groupState = [...next].sort((a, b) => a.name.localeCompare(b.name));
+  groupListeners.forEach(fn => fn(groupState));
+};
+
+async function groupRequest<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, {...init, headers: {'Content-Type': 'application/json'}});
+  const json = await res.json().catch(() => null);
+  if (!res.ok || !json?.success) throw new Error(json?.error || `Request failed (${res.status})`);
+  return json.data as T;
+}
+
+/** The groups you created for tasks that aren't linked to a project or vendor (null while loading). */
+export function useTaskGroups() {
+  const [groups, setGroups] = useState<TaskGroupOption[] | null>(groupState);
+  useEffect(() => {
+    groupListeners.add(setGroups);
+    if (!groupLoad) {
+      groupLoad = groupRequest<TaskGroupOption[]>('/api/task-groups')
+        .then(list => setGroupState(list.map(({_id, name}) => ({_id, name}))))
+        .catch(() => {
+          groupLoad = null;
+          setGroupState([]);
+        });
+    } else setGroups(groupState);
+    return () => {
+      groupListeners.delete(setGroups);
+    };
+  }, []);
+  return groups;
+}
+
+export const taskGroupsApi = {
+  create: async (name: string) => {
+    const group = await groupRequest<TaskGroupOption>('/api/task-groups', {method: 'POST', body: JSON.stringify({name})});
+    const clean = {_id: group._id, name: group.name};
+    setGroupState([...(groupState || []).filter(g => g._id !== clean._id), clean]);
+    return clean;
+  },
+  rename: async (id: string, name: string) => {
+    const group = await groupRequest<TaskGroupOption>(`/api/task-groups/${id}`, {method: 'PATCH', body: JSON.stringify({name})});
+    setGroupState((groupState || []).map(g => (g._id === id ? {_id: id, name: group.name} : g)));
+  },
+  /** Tasks in the group stay; they just become ungrouped. */
+  remove: async (id: string) => {
+    await groupRequest<unknown>(`/api/task-groups/${id}`, {method: 'DELETE'});
+    setGroupState((groupState || []).filter(g => g._id !== id));
+  },
+};
+
 /** Dropdown for linking a task to a vendor or project. */
 export function VendorSelect({
   id,
@@ -200,9 +259,11 @@ export function VendorSelect({
   );
 }
 
-/** Dashed "Link" pill on unlinked tasks: pick a project or vendor without opening the task. */
+/** Dashed "+ Group" pill on unlinked tasks: put it under a project, a vendor, or one of your own groups. */
 export function LinkVendorButton({task}: {task: Task}) {
   const vendors = useVendorOptions();
+  const taskGroups = useTaskGroups();
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [saving, setSaving] = useState(false);
@@ -232,11 +293,35 @@ export function LinkVendorButton({task}: {task: Task}) {
     ['Vendors', matches.filter(v => v.kind !== 'project')],
   ];
 
-  const pick = async (v: VendorOption) => {
+  const groupMatches = (taskGroups || []).filter(g => !q || g.name.toLowerCase().includes(q));
+  const exactGroup = (taskGroups || []).some(g => g.name.toLowerCase() === q);
+  const currentGroup = (taskGroups || []).find(g => g._id === task.taskGroupId);
+
+  const save = async (patch: Record<string, unknown>) => {
     setSaving(true);
+    setError(null);
     try {
-      await api.update(task._id, {vendorSectionId: v._id});
+      await api.update(task._id, patch);
       setOpen(false);
+      setQuery('');
+    } catch {
+      setError('Not saved. Try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+  const pick = (v: VendorOption) => save({vendorSectionId: v._id, taskGroupId: null});
+  const pickGroup = (id: string | null) => save({taskGroupId: id});
+  const createGroup = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const group = await taskGroupsApi.create(query.trim());
+      await api.update(task._id, {taskGroupId: group._id});
+      setOpen(false);
+      setQuery('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create the group.');
     } finally {
       setSaving(false);
     }
@@ -253,25 +338,59 @@ export function LinkVendorButton({task}: {task: Task}) {
           setOpen(v => !v);
         }}
         ref={buttonRef}
-        title="Link this task to a project or vendor"
+        title="Put this task under a project, a vendor, or your own group"
         type="button">
-        + Link
+        + Group
       </button>
       {open &&
         pos &&
         createPortal(
           <div className={styles.linkPanel} onClick={e => e.stopPropagation()} ref={panelRef} style={{top: pos.top, left: pos.left}}>
             <input
-              aria-label="Find a project or vendor"
+              aria-label="Find or create a group"
               autoFocus
               onChange={e => setQuery(e.target.value)}
-              placeholder="Find a project or vendor"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && q && !exactGroup && !saving) void createGroup();
+              }}
+              placeholder="Find a project, vendor or group"
               value={query}
             />
+            {error && (
+              <p className={styles.linkError} role="alert">
+                {error}
+              </p>
+            )}
             <div className={styles.linkList}>
+              {q && !exactGroup && (
+                <button className={styles.linkCreate} disabled={saving} onClick={() => void createGroup()} type="button">
+                  <Plus size={13} /> <span>Create group “{query.trim()}”</span>
+                </button>
+              )}
+              {currentGroup && !q && (
+                <button disabled={saving} onClick={() => void pickGroup(null)} type="button">
+                  <X size={13} /> <span>Take out of {currentGroup.name}</span>
+                </button>
+              )}
+              {groupMatches.length > 0 && (
+                <>
+                  <div className={styles.linkGroup}>My groups</div>
+                  {groupMatches.map(g => (
+                    <button
+                      aria-pressed={g._id === task.taskGroupId}
+                      className={styles.linkMine}
+                      disabled={saving}
+                      key={g._id}
+                      onClick={() => void pickGroup(g._id)}
+                      type="button">
+                      <Tag size={13} /> <span>{g.name}</span>
+                    </button>
+                  ))}
+                </>
+              )}
               {vendors === null && <p className={styles.linkEmpty}>Loading…</p>}
-              {vendors !== null && !matches.length && (
-                <p className={styles.linkEmpty}>{vendors.length ? 'No match.' : 'Create a project or vendor notebook first.'}</p>
+              {vendors !== null && !matches.length && !groupMatches.length && !q && (
+                <p className={styles.linkEmpty}>Type a name to create your first group.</p>
               )}
               {groups.map(([label, list]) =>
                 list.length ? (

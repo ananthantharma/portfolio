@@ -51,6 +51,8 @@ export interface Task {
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
   bucket?: TaskBucket | null;
+  /** Your own group (only used when the task isn't linked to a project or vendor) */
+  taskGroupId?: string | null;
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;

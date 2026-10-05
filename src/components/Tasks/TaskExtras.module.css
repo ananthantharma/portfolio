@@ -148,3 +148,9 @@ button.projectPill:hover {
   color: #7d8576;
   font-size: 12px;
 }
+
+/* Your own groups inside the picker */
+.linkList .linkCreate { color:#8a5a12; font-weight:600; }
+.linkList .linkCreate svg, .linkList .linkMine svg { color:#c4882a; }
+.linkList .linkMine[aria-pressed=true] { background:#fdf4e3; }
+.linkError { margin:6px 2px 0; font-size:11px; color:#a4483a; }

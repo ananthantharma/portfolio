@@ -1,14 +1,15 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Plus, Search, Trash2, X} from 'lucide-react';
-import React, {useContext, useEffect, useId, useMemo, useState} from 'react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Sparkles, Tag, Trash2, X} from 'lucide-react';
+import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
 import {api} from './api';
 import AttachmentGallery from './AttachmentGallery';
+import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
-import {glowStyle, GlowToggles, LinkVendorButton, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
+import {glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, glowOf, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
@@ -34,6 +35,7 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
   const change = (patch: Partial<Task>) => {setDraft(key, {...draft, ...patch}); setSaved(false);};
   const linkedId = typeof value.sourcePageId === 'string' ? value.sourcePageId : value.sourcePageId?._id;
   const linkedTitle = typeof value.sourcePageId === 'object' ? value.sourcePageId?.title : 'Linked note';
+  const taskGroups = useTaskGroups();
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -90,6 +92,17 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
           <label htmlFor={`${prefix}-vendor`}>Vendor or project</label>
           <div><VendorSelect id={`${prefix}-vendor`} onChange={vendor => change({vendorSectionId: vendor})} value={vendorOf(value) || (vendorIdOf(value) ? {_id: vendorIdOf(value)!, name: 'Linked vendor'} : null)}/>{vendorOf(value) && task && <VendorPill task={value as Task}/>}</div>
         </div>
+        {!vendorIdOf(value) && (
+          <div className={styles.vendorLink}>
+            <label htmlFor={`${prefix}-group`}>My group</label>
+            <div>
+              <select id={`${prefix}-group`} onChange={e => change({taskGroupId: e.target.value || null})} value={value.taskGroupId || ''}>
+                <option value="">{taskGroups?.length ? 'No group' : 'No groups yet (create one from the task list)'}</option>
+                {(taskGroups || []).map(g => <option key={g._id} value={g._id}>{g.name}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
         <details className={styles.more}><summary>More options <ChevronDown size={14}/></summary><label htmlFor={`${prefix}-category`}>Label</label><input id={`${prefix}-category`} onChange={e => change({category: e.target.value})} placeholder="Optional, e.g. Vendor Management" value={value.category || ''}/><label htmlFor={`${prefix}-repeat`}>Repeat</label><select id={`${prefix}-repeat`} onChange={e => change({recurrence: {freq: e.target.value as NonNullable<Task['recurrence']>['freq'], interval: 1}})} value={value.recurrence?.freq || 'none'}><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><p>Repeating tasks need a due date. Completing one creates the next occurrence.</p><label htmlFor={`${prefix}-estimate`}>Estimated minutes</label><input id={`${prefix}-estimate`} min="0" onChange={e => change({estimatedTime: e.target.value ? Number(e.target.value) : 0})} type="number" value={value.estimatedTime ?? ''}/>{task?.attachments?.length ? <AttachmentGallery attachments={task.attachments} compact taskId={task._id}/> : null}</details>
         {error && <div className={styles.error} role="alert">{error}</div>}
         <div className={styles.saveRow}><span role="status">{pending ? 'Saving…' : dirty ? 'Unsaved changes' : saved ? 'All changes saved' : 'Up to date'}</span><button className={styles.primary} disabled={pending || (!!task && !dirty)} type="submit"><Check size={14}/>{task ? 'Save changes' : 'Create task'}</button></div>
@@ -97,7 +110,7 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
     </form>
     {task && <div className={styles.taskActions}>
       <button disabled={pending} onClick={() => void action(() => api.update(task._id, {isArchived: !task.isArchived}), true)}><Archive size={14}/>{task.isArchived ? 'Restore' : 'Archive'}</button>
-      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
+      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), taskGroupId: task.taskGroupId || null, subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
       <button className={styles.danger} disabled={pending} onClick={() => {if (window.confirm(`Permanently delete “${task.title}”? You can archive it instead.`)) void action(async () => {await api.remove(task._id); setDraft(key, null);}, true);}}><Trash2 size={14}/>Delete</button>
     </div>}
     {linking && <NoteLinkModal onClose={() => setLinking(false)} onLinked={page => {change({sourcePageId: page}); setLinking(false);}} taskTitle={value.title || 'New note'}/>}
@@ -128,11 +141,19 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const [quickTitle, setQuickTitle] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
+  // AI capture: null = closed; an object (possibly empty) = open, seeded with what was pasted
+  const [capture, setCapture] = useState<CaptureSeed | null>(null);
   // Group the list by the project or vendor each task is linked to (remembered in this browser)
   const [grouped, setGrouped] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const vendorOptions = useVendorOptions();
+  const taskGroups = useTaskGroups();
   const openVendor = useContext(OpenVendorContext);
+  // A new task started from a group header lands in that group
+  const [newDefaults, setNewDefaults] = useState<{key: string; fields: Partial<Task>}>({key: '', fields: {}});
+  // Creating / renaming your own groups inline: null = idle, '' = creating, an id = renaming
+  const [groupForm, setGroupForm] = useState<{id: string; name: string} | null>(null);
+  const groupFormCancelled = useRef(false);
 
   useEffect(() => {
     try {
@@ -221,19 +242,35 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
     });
 
   const kindOf = (id: string) => vendorOptions?.find(v => v._id === id)?.kind || 'vendor';
-  // Projects first, then vendors, each A–Z; tasks keep the list's order inside a group; unlinked last
+  // Projects, then vendors, then your own groups, each A–Z; tasks keep the list's order inside a group; the rest last
+  type GroupKind = 'project' | 'vendor' | 'mine' | 'none';
+  type TaskGroupView = {key: string; id: string; kind: GroupKind; name: string; notebookId?: string; tasks: Task[]};
   const groups = useMemo(() => {
-    const map = new Map<string, {key: string; name: string; notebookId?: string; tasks: Task[]}>();
+    const map = new Map<string, TaskGroupView>();
+    const mine = new Map((taskGroups || []).map(g => [g._id, g.name]));
+    // Your groups show even when empty in Open, so a new group is somewhere to add tasks
+    if (filter === 'open' && !query.trim()) mine.forEach((name, id) => map.set(`g:${id}`, {key: `g:${id}`, id, kind: 'mine', name, tasks: []}));
     visible.forEach(task => {
-      const id = vendorIdOf(task) || 'none';
-      const known = vendorOf(task);
-      if (!map.has(id)) map.set(id, {key: id, name: id === 'none' ? 'Not linked' : known?.name || 'Linked', notebookId: known?.categoryId, tasks: []});
-      map.get(id)!.tasks.push(task);
+      const vendorId = vendorIdOf(task);
+      const groupId = !vendorId && task.taskGroupId && mine.has(task.taskGroupId) ? task.taskGroupId : null;
+      const key = vendorId || (groupId ? `g:${groupId}` : 'none');
+      if (!map.has(key)) {
+        const known = vendorOf(task);
+        map.set(
+          key,
+          vendorId
+            ? {key, id: vendorId, kind: kindOf(vendorId) === 'project' ? 'project' : 'vendor', name: known?.name || 'Linked', notebookId: known?.categoryId, tasks: []}
+            : groupId
+              ? {key, id: groupId, kind: 'mine', name: mine.get(groupId)!, tasks: []}
+              : {key, id: '', kind: 'none', name: 'No group', tasks: []},
+        );
+      }
+      map.get(key)!.tasks.push(task);
     });
-    const rank = (g: {key: string}) => (g.key === 'none' ? 2 : kindOf(g.key) === 'project' ? 0 : 1);
-    return [...map.values()].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+    const rank: Record<GroupKind, number> = {project: 0, vendor: 1, mine: 2, none: 3};
+    return [...map.values()].sort((a, b) => rank[a.kind] - rank[b.kind] || a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, vendorOptions]);
+  }, [visible, vendorOptions, taskGroups, filter, query]);
   // Done and Archive read best as one recency-ordered list
   const showGroups = grouped && filter !== 'done' && filter !== 'archive';
 
@@ -269,30 +306,126 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
     );
   };
 
-  const renderGroups = () =>
-    groups.map(group => {
-      const collapsed = collapsedGroups.includes(group.key);
-      const isProject = group.key !== 'none' && kindOf(group.key) === 'project';
-      const Icon = group.key === 'none' ? Inbox : isProject ? FolderKanban : Building2;
-      return (
-        <div className={styles.group} data-kind={group.key === 'none' ? 'none' : isProject ? 'project' : 'vendor'} key={group.key}>
-          <div className={styles.groupHead}>
-            <button aria-expanded={!collapsed} className={styles.groupToggle} onClick={() => toggleGroup(group.key)}>
-              <ChevronDown className={styles.groupChevron} data-collapsed={collapsed} size={13} />
-              <Icon size={13} />
-              <span>{group.name}</span>
-              <small>{group.tasks.length}</small>
-            </button>
-            {group.key !== 'none' && openVendor && (
-              <button className={styles.groupOpen} onClick={() => openVendor(group.key, group.notebookId)} title={`Open the ${group.name} page`}>
-                Open
-              </button>
-            )}
-          </div>
-          {!collapsed && group.tasks.map(task => renderRow(task, true))}
-        </div>
-      );
+  const startTaskIn = (group: TaskGroupView) => {
+    setNewDefaults({key: group.key, fields: group.kind === 'mine' ? {taskGroupId: group.id} : group.kind === 'none' ? {} : {vendorSectionId: group.id}});
+    setSelected('new');
+  };
+  const saveGroupForm = async () => {
+    if (!groupForm || groupFormCancelled.current) return;
+    const name = groupForm.name.trim();
+    if (!name) {
+      setGroupForm(null);
+      return;
+    }
+    await execute('group-form', async () => {
+      if (groupForm.id) await taskGroupsApi.rename(groupForm.id, name);
+      else await taskGroupsApi.create(name);
+      setGroupForm(null);
+      setNotice(groupForm.id ? 'Group renamed' : `Group “${name}” created`);
     });
+  };
+  const deleteGroup = (group: TaskGroupView) => {
+    const count = group.tasks.length;
+    if (!window.confirm(`Delete the group “${group.name}”?${count ? ` Its ${count} task${count === 1 ? '' : 's'} will stay, just without a group.` : ''}`)) return;
+    void execute(`group-${group.id}`, async () => {
+      await taskGroupsApi.remove(group.id);
+      setNotice('Group deleted');
+    });
+  };
+  const groupInput = (placeholder: string) =>
+    groupForm && (
+      <form
+        className={styles.groupForm}
+        onSubmit={e => {
+          e.preventDefault();
+          void saveGroupForm();
+        }}>
+        <Tag size={13} />
+        <input
+          aria-label={placeholder}
+          autoFocus
+          maxLength={80}
+          onBlur={() => void saveGroupForm()}
+          onChange={e => setGroupForm({...groupForm, name: e.target.value})}
+          onKeyDown={e => {
+            if (e.key !== 'Escape') return;
+            groupFormCancelled.current = true;
+            setGroupForm(null);
+          }}
+          placeholder={placeholder}
+          value={groupForm.name}
+        />
+      </form>
+    );
+
+  const KIND_LABEL: Record<GroupKind, string> = {project: 'Project', vendor: 'Vendor', mine: 'My group', none: ''};
+  const renderGroups = () => (
+    <>
+      {groups.map(group => {
+        const collapsed = collapsedGroups.includes(group.key);
+        const Icon = group.kind === 'none' ? Inbox : group.kind === 'project' ? FolderKanban : group.kind === 'vendor' ? Building2 : Tag;
+        const renaming = groupForm?.id && groupForm.id === group.id && group.kind === 'mine';
+        return (
+          <div className={styles.group} data-kind={group.kind} key={group.key}>
+            <div className={styles.groupHead}>
+              {renaming ? (
+                groupInput('Group name')
+              ) : (
+                <button aria-expanded={!collapsed} className={styles.groupToggle} onClick={() => toggleGroup(group.key)}>
+                  <ChevronDown className={styles.groupChevron} data-collapsed={collapsed} size={13} />
+                  <span className={styles.groupIcon}>
+                    <Icon size={13} />
+                  </span>
+                  <span className={styles.groupText}>
+                    {KIND_LABEL[group.kind] && <small className={styles.groupKind}>{KIND_LABEL[group.kind]}</small>}
+                    <strong className={styles.groupName}>{group.name}</strong>
+                  </span>
+                  <span className={styles.groupCount}>{group.tasks.length}</span>
+                </button>
+              )}
+              {!renaming && (
+                <span className={styles.groupTools}>
+                  <button aria-label={`Add a task to ${group.name}`} onClick={() => startTaskIn(group)} title={`New task in ${group.name}`}>
+                    <Plus size={14} />
+                  </button>
+                  {group.kind === 'mine' && (
+                    <>
+                      <button aria-label={`Rename ${group.name}`} onClick={() => {
+                          groupFormCancelled.current = false;
+                          setGroupForm({id: group.id, name: group.name});
+                        }} title="Rename group">
+                        <Pencil size={13} />
+                      </button>
+                      <button aria-label={`Delete ${group.name}`} disabled={busy.includes(`group-${group.id}`)} onClick={() => deleteGroup(group)} title="Delete group (tasks are kept)">
+                        <Trash2 size={13} />
+                      </button>
+                    </>
+                  )}
+                  {(group.kind === 'project' || group.kind === 'vendor') && openVendor && (
+                    <button className={styles.groupOpen} onClick={() => openVendor(group.id, group.notebookId)} title={`Open the ${group.name} page`}>
+                      Open
+                    </button>
+                  )}
+                </span>
+              )}
+            </div>
+            {!collapsed && group.tasks.map(task => renderRow(task, group.kind === 'project' || group.kind === 'vendor'))}
+            {!collapsed && !group.tasks.length && <p className={styles.groupEmpty}>No open tasks. Use + or “+ Group” on any task.</p>}
+          </div>
+        );
+      })}
+      {groupForm && !groupForm.id ? (
+        <div className={styles.newGroupRow}>{groupInput('New group name, press Enter')}</div>
+      ) : (
+        <button className={styles.newGroup} onClick={() => {
+          groupFormCancelled.current = false;
+          setGroupForm({id: '', name: ''});
+        }}>
+          <Plus size={13} /> New group
+        </button>
+      )}
+    </>
+  );
 
   const statusTabs: [Filter, string][] = [
     ['open', 'Open'],
@@ -305,14 +438,15 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const editor =
     selected === 'new' || selectedTask ? (
       <TaskEditor
-        defaults={{bucket: newBucket}}
-        draftKey={`new-${newBucket}`}
-        key={selected === 'new' ? `new-${newBucket}` : selected}
+        defaults={{bucket: newBucket, ...newDefaults.fields}}
+        draftKey={`new-${newBucket}${newDefaults.key ? `-${newDefaults.key}` : ''}`}
+        key={selected === 'new' ? `new-${newBucket}-${newDefaults.key}` : selected}
         note={note}
         onClose={() => {
           if (selected === 'new') {
             setFilter('open');
             setQuery('');
+            setNewDefaults({key: '', fields: {}});
           }
           setSelected(null);
         }}
@@ -331,6 +465,20 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
 
   return (
     <section aria-label={compact ? 'Task sidebar' : 'Tasks workspace'} className={`${styles.workspace} ${compact ? styles.compact : ''}`}>
+      {capture && (
+        <CaptureModal
+          defaults={{bucket: newBucket, ...(filter === 'note' && note ? {sourcePageId: note.id} : {})}}
+          onClose={() => setCapture(null)}
+          onCreated={task => {
+            setCapture(null);
+            if (filter === 'done' || filter === 'archive') setFilter('open');
+            setQuery('');
+            setSelected(task._id);
+            setNotice(`AI task added to ${bucketLabel}`);
+          }}
+          seed={capture}
+        />
+      )}
       <div className={styles.listPane}>
         <header className={styles.header}>
           <div>
@@ -345,7 +493,14 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
                 <Maximize2 size={16} />
               </button>
             )}
-            <button aria-label={`New ${bucketLabel} task`} className={styles.addButton} onClick={() => setSelected('new')} title={`New task in ${bucketLabel}`}>
+            <button aria-label="Create task from pasted email or notes with AI" className={styles.aiButton} onClick={() => setCapture({})} title={`Paste an email or notes, Gemini writes the task (${bucketLabel})`}>
+              <Sparkles size={16} />
+            </button>
+            <button aria-label={`New ${bucketLabel} task`} className={styles.addButton} onClick={() => {
+                setNewDefaults({key: '', fields: {}});
+                setSelected('new');
+              }}
+              title={`New task in ${bucketLabel}`}>
               <Plus size={18} />
             </button>
             {onCollapse && (
@@ -418,7 +573,16 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
               aria-label="Quick add task"
               disabled={busy.includes('quick')}
               onChange={e => setQuickTitle(e.target.value)}
-              placeholder={`Add to ${bucketLabel}, press Enter`}
+              onPaste={e => {
+                // An email chain, long notes or a screenshot goes to the AI instead of becoming a title
+                const image = Array.from(e.clipboardData.files).find(f => f.type.startsWith('image/'));
+                const pasted = e.clipboardData.getData('text');
+                if (image || /\n/.test(pasted.trim()) || pasted.trim().length > 120) {
+                  e.preventDefault();
+                  setCapture(image ? {file: image} : {text: pasted});
+                }
+              }}
+              placeholder={`Add to ${bucketLabel}, or paste an email for AI`}
               value={quickTitle}
             />
             <button aria-label="Add task" disabled={!quickTitle.trim() || busy.includes('quick')} type="submit">
@@ -449,11 +613,12 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
               <div className={styles.empty} role="status">
                 Loading your tasks…
               </div>
-            ) : !visible.length ? (
+            ) : !visible.length && !(showGroups && groups.length) ? (
               <div className={styles.empty}>
                 <CheckCheck size={28} />
                 <strong>{emptyTitle}</strong>
                 <p>{emptyText}</p>
+                {showGroups && filter === 'open' && renderGroups()}
               </div>
             ) : showGroups ? (
               renderGroups()
