@@ -1,9 +1,10 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Sparkles, Tag, Trash2, X} from 'lucide-react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, X} from 'lucide-react';
 import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
+import AssignWorkWindow from '../Notes/AssignWorkWindow';
 import {api} from './api';
 import AttachmentGallery from './AttachmentGallery';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
@@ -144,7 +145,8 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
 }
 
 const BUCKET_KEY = 'TASKS_BUCKET';
-type BucketTab = TaskBucket | 'all';
+// 'people' is the Follow up tab: tasks you assigned to someone, grouped by person
+type BucketTab = TaskBucket | 'all' | 'people';
 
 /** "Just now", "3h", "Yesterday", "Oct 3" — shown on Done rows only. */
 function completedAgo(task: Task) {
@@ -169,6 +171,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const [notice, setNotice] = useState('');
   // AI capture: null = closed; an object (possibly empty) = open, seeded with what was pasted
   const [capture, setCapture] = useState<CaptureSeed | null>(null);
+  const [assigning, setAssigning] = useState(false);
   // Group the list by the project or vendor each task is linked to (remembered in this browser)
   const [grouped, setGrouped] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
@@ -186,7 +189,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       setGrouped(localStorage.getItem('TASKS_GROUPED') !== 'false');
       setCollapsedGroups(JSON.parse(localStorage.getItem('TASKS_COLLAPSED_GROUPS') || '[]'));
       const savedBucket = localStorage.getItem(BUCKET_KEY) as BucketTab | null;
-      if (savedBucket && (savedBucket === 'all' || TASK_BUCKETS.some(b => b.key === savedBucket))) setBucket(savedBucket);
+      if (savedBucket && (savedBucket === 'all' || savedBucket === 'people' || TASK_BUCKETS.some(b => b.key === savedBucket))) setBucket(savedBucket);
     } catch {
       // storage unavailable
     }
@@ -217,7 +220,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   };
 
   // New tasks go into the open category tab ("All" files them under Work)
-  const newBucket: TaskBucket = bucket === 'all' ? 'work' : bucket;
+  const newBucket: TaskBucket = bucket === 'all' || bucket === 'people' ? 'work' : bucket;
   const bucketLabel = TASK_BUCKETS.find(b => b.key === newBucket)!.label;
 
   const live = useMemo(() => tasks.filter(task => !task.isTemplate), [tasks]);
@@ -227,6 +230,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       if (task.isArchived || statusOf(task) === 'done') return;
       counts.all += 1;
       counts[bucketOf(task)] = (counts[bucketOf(task)] || 0) + 1;
+      if (task.assignedTo?.name) counts.people = (counts.people || 0) + 1;
     });
     return counts;
   }, [live]);
@@ -234,7 +238,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = live.filter(task => {
-      if (bucket !== 'all' && bucketOf(task) !== bucket) return false;
+      if (bucket === 'people' ? !task.assignedTo?.name : bucket !== 'all' && bucketOf(task) !== bucket) return false;
       if (filter === 'archive') {
         if (!task.isArchived) return false;
       } else if (task.isArchived) return false;
@@ -269,10 +273,20 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
 
   const kindOf = (id: string) => vendorOptions?.find(v => v._id === id)?.kind || 'vendor';
   // Projects, then vendors, then your own groups, each A–Z; tasks keep the list's order inside a group; the rest last
-  type GroupKind = 'project' | 'vendor' | 'mine' | 'none';
-  type TaskGroupView = {key: string; id: string; kind: GroupKind; name: string; notebookId?: string; tasks: Task[]};
+  type GroupKind = 'project' | 'vendor' | 'mine' | 'none' | 'person';
+  type TaskGroupView = {key: string; id: string; kind: GroupKind; name: string; notebookId?: string; assignee?: Task['assignedTo']; tasks: Task[]};
   const groups = useMemo(() => {
     const map = new Map<string, TaskGroupView>();
+    // Follow up tab: one heading per person you assigned work to, A–Z
+    if (bucket === 'people') {
+      visible.forEach(task => {
+        const a = task.assignedTo!;
+        const key = `p:${a.staffId || a.name.trim().toLowerCase()}`;
+        if (!map.has(key)) map.set(key, {key, id: a.staffId || '', kind: 'person', name: a.name, assignee: a, tasks: []});
+        map.get(key)!.tasks.push(task);
+      });
+      return [...map.values()].sort((x, y) => x.name.localeCompare(y.name));
+    }
     const mine = new Map((taskGroups || []).map(g => [g._id, g.name]));
     // Your groups show even when empty in Open, so a new group is somewhere to add tasks
     if (filter === 'open' && !query.trim()) mine.forEach((name, id) => map.set(`g:${id}`, {key: `g:${id}`, id, kind: 'mine', name, tasks: []}));
@@ -293,15 +307,15 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       }
       map.get(key)!.tasks.push(task);
     });
-    const rank: Record<GroupKind, number> = {project: 0, vendor: 1, mine: 2, none: 3};
+    const rank: Record<GroupKind, number> = {person: 0, project: 0, vendor: 1, mine: 2, none: 3};
     return [...map.values()].sort((a, b) => rank[a.kind] - rank[b.kind] || a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, vendorOptions, taskGroups, filter, query]);
+  }, [visible, vendorOptions, taskGroups, filter, query, bucket]);
   // Done and Archive read best as one recency-ordered list
   const showGroups = grouped && filter !== 'done' && filter !== 'archive';
 
   // A row is just the checkbox and title; glow icons and linking appear on hover
-  const renderRow = (task: Task, inGroup: boolean) => {
+  const renderRow = (task: Task, inGroup: boolean, underPerson = false) => {
     const done = statusOf(task) === 'done';
     return (
       <article
@@ -326,7 +340,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
         {filter === 'done' && <time className={styles.rowTime}>{completedAgo(task)}</time>}
         <div className={styles.rowTools}>
           {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
-          <AssigneePill assignee={task.assignedTo} />
+          {!underPerson && <AssigneePill assignee={task.assignedTo} />}
           <CopySubjectButton size={12} subject={task.emailSubject} />
           <GlowToggles size={12} task={task} />
         </div>
@@ -335,7 +349,15 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
   };
 
   const startTaskIn = (group: TaskGroupView) => {
-    setNewDefaults({key: group.key, fields: group.kind === 'mine' ? {taskGroupId: group.id} : group.kind === 'none' ? {} : {vendorSectionId: group.id}});
+    const fields: Partial<Task> =
+      group.kind === 'mine'
+        ? {taskGroupId: group.id}
+        : group.kind === 'person'
+          ? {assignedTo: group.assignee || null}
+          : group.kind === 'none'
+            ? {}
+            : {vendorSectionId: group.id};
+    setNewDefaults({key: group.key, fields});
     setSelected('new');
   };
   const saveGroupForm = async () => {
@@ -386,12 +408,18 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
       </form>
     );
 
-  const KIND_LABEL: Record<GroupKind, string> = {project: 'Project', vendor: 'Vendor', mine: 'My group', none: ''};
+  const KIND_LABEL: Record<GroupKind, string> = {project: 'Project', vendor: 'Vendor', mine: 'My group', none: '', person: 'Assigned to'};
   const renderGroups = () => (
     <>
       {groups.map(group => {
         const collapsed = collapsedGroups.includes(group.key);
         const Icon = group.kind === 'none' ? Inbox : group.kind === 'project' ? FolderKanban : group.kind === 'vendor' ? Building2 : Tag;
+        const initials = group.name
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map(part => part[0]!.toUpperCase())
+          .join('');
         const renaming = groupForm?.id && groupForm.id === group.id && group.kind === 'mine';
         return (
           <div className={styles.group} data-kind={group.kind} key={group.key}>
@@ -401,9 +429,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
               ) : (
                 <button aria-expanded={!collapsed} className={styles.groupToggle} onClick={() => toggleGroup(group.key)}>
                   <ChevronDown className={styles.groupChevron} data-collapsed={collapsed} size={13} />
-                  <span className={styles.groupIcon}>
-                    <Icon size={13} />
-                  </span>
+                  <span className={styles.groupIcon}>{group.kind === 'person' ? initials : <Icon size={13} />}</span>
                   <span className={styles.groupText}>
                     {KIND_LABEL[group.kind] && <small className={styles.groupKind}>{KIND_LABEL[group.kind]}</small>}
                     <strong className={styles.groupName}>{group.name}</strong>
@@ -437,12 +463,12 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
                 </span>
               )}
             </div>
-            {!collapsed && group.tasks.map(task => renderRow(task, group.kind === 'project' || group.kind === 'vendor'))}
+            {!collapsed && group.tasks.map(task => renderRow(task, group.kind === 'project' || group.kind === 'vendor', group.kind === 'person'))}
             {!collapsed && !group.tasks.length && <p className={styles.groupEmpty}>No open tasks. Use + or “+ Group” on any task.</p>}
           </div>
         );
       })}
-      {groupForm && !groupForm.id ? (
+      {bucket === 'people' ? null : groupForm && !groupForm.id ? (
         <div className={styles.newGroupRow}>{groupInput('New group name, press Enter')}</div>
       ) : (
         <button className={styles.newGroup} onClick={() => {
@@ -483,7 +509,10 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
     ) : null;
 
   const emptyTitle = query ? 'No matches' : filter === 'done' ? 'Nothing completed here yet' : filter === 'archive' ? 'Nothing archived' : 'A little breathing room';
-  const emptyText = query
+  const emptyText =
+    bucket === 'people' && !query
+      ? 'Tasks you hand to someone with Assign work (or assign in a task) show here, grouped by person.'
+      : query
     ? 'Try another title, label, or tag.'
     : filter === 'note'
     ? 'Add a task linked to this note.'
@@ -493,6 +522,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
 
   return (
     <section aria-label={compact ? 'Task sidebar' : 'Tasks workspace'} className={`${styles.workspace} ${compact ? styles.compact : ''}`}>
+      {assigning && <AssignWorkWindow onClose={() => setAssigning(false)} />}
       {capture && (
         <CaptureModal
           defaults={{bucket: newBucket, ...(filter === 'note' && note ? {sourcePageId: note.id} : {})}}
@@ -524,6 +554,9 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
             <button aria-label="Create task from pasted email or notes with AI" className={styles.aiButton} onClick={() => setCapture({})} title={`Paste an email or notes, Gemini writes the task (${bucketLabel})`}>
               <Sparkles size={16} />
             </button>
+            <button aria-label="Assign work to someone" className={styles.assignButton} onClick={() => setAssigning(true)} title="Assign work: draft an email to a staff member and add a follow-up task">
+              <Send size={15} />
+            </button>
             <button aria-label={`New ${bucketLabel} task`} className={styles.addButton} onClick={() => {
                 setNewDefaults({key: '', fields: {}});
                 setSelected('new');
@@ -540,7 +573,11 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
         </header>
 
         <nav aria-label="Task categories" className={styles.bucketTabs} role="tablist">
-          {[...TASK_BUCKETS.map(b => ({key: b.key as BucketTab, label: b.short, title: b.label})), {key: 'all' as BucketTab, label: 'All', title: 'All categories'}].map(tab => (
+          {[
+            ...TASK_BUCKETS.map(b => ({key: b.key as BucketTab, label: b.short, title: b.label})),
+            {key: 'people' as BucketTab, label: 'Follow up', title: 'Everything you assigned to someone, grouped by person'},
+            {key: 'all' as BucketTab, label: 'All', title: 'All categories'},
+          ].map(tab => (
             <button aria-selected={bucket === tab.key} className={styles.bucketTab} key={tab.key} onClick={() => chooseBucket(tab.key)} role="tab" title={tab.title}>
               {tab.label}
               {(openCounts[tab.key] || 0) > 0 && <span>{openCounts[tab.key]}</span>}
@@ -576,7 +613,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
           ))}
         </div>
 
-        {filter !== 'done' && filter !== 'archive' && (
+        {filter !== 'done' && filter !== 'archive' && bucket !== 'people' && (
           <form
             className={styles.quickAdd}
             onSubmit={e => {

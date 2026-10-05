@@ -721,9 +721,9 @@
 .sidebarRail .railBottom { margin-top:auto; }
 .taskRail { border-right:0; border-left:1px solid #e5e4dd; background:#f7f8f2; }
 .railBadge { position:absolute; top:-2px; right:-4px; min-width:17px; padding:1px 4px; border-radius:9px; background:#46674d; color:#fff; font-size:9px; font-weight:600; line-height:15px; text-align:center; }
-.taskSidebar { width:340px; flex-shrink:0; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-left:1px solid #e5e4dd; background:#f7f8f2; }
+.taskSidebar { width:408px; flex-shrink:0; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-left:1px solid #e5e4dd; background:#f7f8f2; }
 .taskSidebar > section { flex:1; min-height:0; }
-@media(max-width:1250px) and (min-width:901px) { .taskSidebar { width:290px; } }
+@media(max-width:1250px) and (min-width:901px) { .taskSidebar { width:348px; } }
 @media(max-width:900px) {
   .sidebarRail, .taskSidebar, .viewTabs .showTaskSidebar { display:none; }
 }

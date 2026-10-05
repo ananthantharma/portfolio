@@ -50,7 +50,7 @@ export interface Task {
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
-  bucket?: TaskBucket | null;
+  bucket?: TaskBucket | 'follow-up' | null;
   /** Your own group (only used when the task isn't linked to a project or vendor) */
   taskGroupId?: string | null;
   /** Subject of the email chain this task came from, for finding it in Outlook */
@@ -87,15 +87,15 @@ export interface TaskAssignee {
   email?: string;
 }
 
-export type TaskBucket = 'work' | 'personal-short' | 'personal-long' | 'career' | 'follow-up';
+export type TaskBucket = 'work' | 'personal-short' | 'personal-long' | 'career';
 export const TASK_BUCKETS: {key: TaskBucket; label: string; short: string}[] = [
   {key: 'work', label: 'Work', short: 'Work'},
   {key: 'personal-short', label: 'Personal – short term', short: 'Personal ST'},
   {key: 'personal-long', label: 'Personal – long term', short: 'Personal LT'},
   {key: 'career', label: 'Career', short: 'Career'},
-  {key: 'follow-up', label: 'Follow up', short: 'Follow up'},
 ];
-export const bucketOf = (task: Pick<Task, 'bucket'>): TaskBucket => task.bucket || 'work';
+// Tasks saved in the short-lived "follow-up" category count as Work
+export const bucketOf = (task: Pick<Task, 'bucket'>): TaskBucket => (task.bucket && task.bucket !== 'follow-up' ? task.bucket : 'work');
 
 /** Newest completion first; older tasks without a completion time fall back to their last update. */
 export const completedTime = (task: Pick<Task, 'completedAt' | 'updatedAt'>) =>

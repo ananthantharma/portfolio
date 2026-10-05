@@ -6,7 +6,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 
 import {api} from '../Tasks/api';
-import {AssigneePill, initialsOf, staffApi, StaffMember, useStaffList} from '../Tasks/TaskExtras';
+import {AssigneePill, initialsOf, staffApi, StaffMember, taskGroupsApi, useStaffList, useTaskGroups} from '../Tasks/TaskExtras';
 import {Task} from '../Tasks/types';
 
 type Draft = {
@@ -16,6 +16,8 @@ type Draft = {
 };
 
 const LAST_STAFF_KEY = 'ASSIGN_WORK_LAST_STAFF';
+const FOLLOW_UP_GROUP = 'Follow Up';
+const isFollowUpGroup = (name: string) => name.toLowerCase().replace(/[\s_-]/g, '') === 'followup';
 
 /** Follow-up date when the ask has no deadline: three working days from today, 5 pm. */
 function defaultFollowUp(): Date {
@@ -124,6 +126,7 @@ function StaffManager({staff, onPicked}: {staff: StaffMember[] | null; onPicked:
 /** Floating in-page window: paste an ask, pick a staff member, get a short email and a follow-up task. */
 export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
   const staff = useStaffList();
+  const taskGroups = useTaskGroups();
   const [staffId, setStaffId] = useState('');
   const [managing, setManaging] = useState(false);
   const [text, setText] = useState('');
@@ -209,12 +212,22 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
 
       // Create (or, when re-drafting, update) the follow-up task
       const due = d.task.dueDate ? new Date(`${d.task.dueDate}T17:00:00`) : defaultFollowUp();
+      // File it in your "Follow Up" group (created the first time if it doesn't exist yet)
+      let groupId = task?.taskGroupId || (taskGroups || []).find(g => isFollowUpGroup(g.name))?._id || null;
+      if (!groupId) {
+        try {
+          groupId = (await taskGroupsApi.create(FOLLOW_UP_GROUP))._id;
+        } catch {
+          groupId = null;
+        }
+      }
       const payload = {
         title: d.task.title,
         notes: d.task.notes,
         priority: d.task.priority || 'None',
         dueDate: due.toISOString(),
-        bucket: 'follow-up',
+        bucket: 'work',
+        taskGroupId: groupId,
         emailSubject: d.searchSubject,
         assignedTo: {staffId: person._id, name: person.name, email: person.email || ''},
         subtasks: d.task.subtasks.map(s => ({title: s, isCompleted: false})),
@@ -364,7 +377,7 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
             <div className="flex h-full min-h-[240px] flex-col items-center justify-center text-center text-slate-400">
               <Mail className="mb-3 h-9 w-9 text-slate-300" />
               <p className="text-[13.5px] font-semibold text-slate-500">Your email appears here</p>
-              <p className="mt-1 max-w-xs text-[12px]">A follow-up task is added to Tasks › Follow up, showing who you assigned it to.</p>
+              <p className="mt-1 max-w-xs text-[12px]">A follow-up task is added to your Follow Up group in Work, and listed under the person in the Follow up tab.</p>
             </div>
           )}
           {status === 'loading' && (
@@ -420,7 +433,7 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-600 text-white">
                     {task ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700">{task ? 'Follow-up task added to Tasks › Follow up' : 'Follow-up task'}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700">{task ? 'Follow-up task added to your Follow Up group' : 'Follow-up task'}</span>
                   {task && (
                     <button className="ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => void removeTask()} title="Delete this task" type="button">
                       <Trash2 className="h-3.5 w-3.5" /> Remove
