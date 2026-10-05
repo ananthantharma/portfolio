@@ -108,7 +108,7 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     }
 
     // Never accept ownership changes or Mongo operators from a client payload.
-    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId'];
+    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId', 'bucket'];
     data = Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key)));
     if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) return NextResponse.json({success: false, error: 'A task title is required'}, {status: 400});
     if (data.status !== undefined) {
@@ -118,6 +118,12 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     if (data.dueDate === '') data.dueDate = null;
     if (data.vendorSectionId !== undefined && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
     const before = await ToDo.findOne({_id: id, userEmail: session.user.email}).select('isCompleted status vendorSectionId').lean();
+    // Remember when a task was completed so Done can list the most recent first
+    if (data.isCompleted !== undefined && before) {
+      const wasDone = before.isCompleted || before.status === 'done';
+      if (data.isCompleted && !wasDone) data.completedAt = new Date();
+      if (!data.isCompleted) data.completedAt = null;
+    }
     const updatedToDo = await ToDo.findOneAndUpdate({_id: id, userEmail: session.user.email}, {$set: data}, {new: true, runValidators: true})
       .populate({
         path: 'sourcePageId',

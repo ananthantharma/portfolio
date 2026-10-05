@@ -26,6 +26,9 @@ export interface IToDo extends Document {
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
+  // Sidebar category tab; tasks without one count as work
+  bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | null;
+  completedAt?: Date | null; // when the task was last marked complete (Done is sorted by this)
   order?: number;
   attachments?: {
     name: string;
@@ -114,6 +117,8 @@ const ToDoSchema = new Schema<IToDo>(
     },
     blockedBy: [{type: Schema.Types.ObjectId, ref: 'ToDo'}],
     actualMinutes: {type: Number, default: 0},
+    bucket: {type: String, enum: ['work', 'personal-short', 'personal-long', 'career', null], default: null},
+    completedAt: {type: Date, default: null},
   },
   {timestamps: true},
 );

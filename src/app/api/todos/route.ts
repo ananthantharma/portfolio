@@ -102,6 +102,7 @@ export async function POST(req: Request) {
       // Though our frontend will switch to FormData.
       const body = await req.json();
       data = {...body, userEmail: session.user.email};
+      if ((data.isCompleted || data.status === 'done') && !data.completedAt) data.completedAt = new Date();
     }
 
     console.log('Creating To Do:', {

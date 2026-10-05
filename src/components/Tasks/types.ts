@@ -50,6 +50,8 @@ export interface Task {
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
+  bucket?: TaskBucket | null;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -71,6 +73,20 @@ export function vendorIdOf(task: Pick<Task, 'vendorSectionId'>): string | null {
   if (!v) return null;
   return typeof v === 'string' ? v : v._id || null;
 }
+
+// Sidebar category tabs. Tasks saved before categories existed count as Work.
+export type TaskBucket = 'work' | 'personal-short' | 'personal-long' | 'career';
+export const TASK_BUCKETS: {key: TaskBucket; label: string; short: string}[] = [
+  {key: 'work', label: 'Work', short: 'Work'},
+  {key: 'personal-short', label: 'Personal – short term', short: 'Personal ST'},
+  {key: 'personal-long', label: 'Personal – long term', short: 'Personal LT'},
+  {key: 'career', label: 'Career', short: 'Career'},
+];
+export const bucketOf = (task: Pick<Task, 'bucket'>): TaskBucket => task.bucket || 'work';
+
+/** Newest completion first; older tasks without a completion time fall back to their last update. */
+export const completedTime = (task: Pick<Task, 'completedAt' | 'updatedAt'>) =>
+  new Date(task.completedAt || task.updatedAt || 0).getTime();
 
 export type ViewMode = 'list' | 'board' | 'matrix' | 'calendar' | 'insights';
 export type Status = 'todo' | 'in-progress' | 'done';

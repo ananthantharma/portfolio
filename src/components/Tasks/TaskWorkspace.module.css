@@ -21,7 +21,7 @@
 .vendorLink select { flex:1; min-width:0; }
 
 /* Grouping by project / vendor */
-.groupSwitch { display:inline-flex; align-items:center; gap:4px; margin-left:auto; }
+
 .group { margin-bottom:6px; }
 .groupHead { display:flex; align-items:center; gap:6px; position:sticky; top:0; z-index:1; background:#f7f8f2; padding:8px 4px 4px; }
 .groupToggle { display:flex; align-items:center; gap:6px; flex:1; min-width:0; font-size:11px; font-weight:650; color:#4d544a; text-align:left; }
@@ -34,3 +34,41 @@
 .groupChevron[data-collapsed=true] { transform:rotate(-90deg); }
 .groupOpen { font-size:10px; font-weight:600; color:#5e8050; padding:1px 6px; border-radius:5px; }
 .groupOpen:hover { background:#eef4e7; }
+
+/* ── Redesigned list: category tabs, slim toolbar, one-line rows ── */
+.bucketTabs { display:flex; gap:2px; margin:0 14px 10px; padding:3px; border-radius:10px; background:#eceee6; overflow-x:auto; scrollbar-width:none; }
+.bucketTabs::-webkit-scrollbar { display:none; }
+.bucketTab { flex:1 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:4px; padding:6px 6px; border-radius:7px; font-size:11px; font-weight:550; color:#6e7a66; white-space:nowrap; }
+.bucketTab:hover { color:#3e5d40; }
+.bucketTab[aria-selected=true] { background:#fffefa; color:#2f4c33; font-weight:650; box-shadow:0 1px 2px #26332318; }
+.bucketTab span { font-size:9.5px; font-weight:650; color:#8a9583; background:#e2e6dc; border-radius:999px; padding:0 5px; line-height:15px; }
+.bucketTab[aria-selected=true] span { background:#e2eada; color:#3e5d40; }
+.toolbar { display:flex; align-items:center; gap:6px; margin:0 14px 6px; }
+.toolbar .search { flex:1; margin:0; padding:7px 10px; }
+.groupSwitch { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; margin:0; border-radius:8px; border:1px solid var(--line); background:#fffefa; color:#8a9583; flex-shrink:0; }
+.groupSwitch[aria-pressed=true] { color:#3e5d40; background:#e2eada; border-color:#cfdcc4; }
+.statusTabs { display:flex; gap:14px; margin:0 18px 10px; border-bottom:1px solid var(--line); }
+.statusTabs button { padding:6px 0 7px; margin-bottom:-1px; border-bottom:2px solid transparent; font-size:11px; color:#8a9583; }
+.statusTabs button:hover { color:#3e5d40; }
+.statusTabs button[aria-pressed=true] { color:#2f4c33; border-bottom-color:#46674d; font-weight:650; }
+.toolbar + .statusTabs + .quickAdd, .statusTabs + .quickAdd { margin:0 14px 10px; padding:9px 12px; }
+.row { display:flex; align-items:center; gap:10px; min-height:40px; padding:7px 8px; border:1px solid transparent; border-radius:8px; }
+.row + .row { border-top-color:#eceee6; }
+.row:hover { background:#f0f3eb; }
+.row[data-selected=true] { background:#eef4e7; border-color:#cbd9bf; }
+.row[data-glow] { margin:5px 2px; background:#fff; }
+.row .checkbox { margin-top:0; }
+.rowTitle { flex:1; min-width:0; text-align:left; font-size:12.5px; line-height:1.4; font-weight:500; color:#2c332b; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+.row[data-done=true] .rowTitle { color:#909984; text-decoration:line-through; text-decoration-color:#c2c8b9; }
+.draftDot { display:inline-block; width:6px; height:6px; margin-left:6px; border-radius:50%; background:#d49a1e; vertical-align:middle; }
+.rowTime { flex-shrink:0; font-size:10.5px; color:#a2a79b; white-space:nowrap; }
+.rowTools { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+/* Only the active glow icon shows until you hover; touch screens always show everything */
+.rowTools [data-on=false] { display:none; }
+.hoverOnly { display:none; }
+.row:hover .rowTools [data-on=false], .row:focus-within .rowTools [data-on=false] { display:inline-flex; }
+.row:hover .hoverOnly, .row:focus-within .hoverOnly { display:inline-flex; }
+@media (hover: none) { .rowTools [data-on=false] { display:inline-flex; } .hoverOnly { display:inline-flex; } }
+.compact .row { padding:6px 6px; }
+.group .row { margin-left:2px; }
+.compact .bucketTab:not([aria-selected=true]) span { display:none; }
