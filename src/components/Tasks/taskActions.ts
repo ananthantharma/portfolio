@@ -17,6 +17,7 @@ export async function saveTaskChanges(task: Task, patch: Record<string, unknown>
           bucket: saved.bucket || null,
           taskGroupId: saved.taskGroupId || null,
           emailSubject: saved.emailSubject || '',
+          assignedTo: saved.assignedTo || null,
           subtasks: saved.subtasks?.map(item => ({title: item.title, isCompleted: false})),
           status: 'todo', isCompleted: false,
         });

@@ -27,7 +27,8 @@ export interface IToDo extends Document {
   neonColor?: 'red' | 'blue' | 'green' | null;
   isMinimized?: boolean;
   // Sidebar category tab; tasks without one count as work
-  bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | null;
+  bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | 'follow-up' | null;
+  assignedTo?: {staffId?: mongoose.Types.ObjectId | null; name: string; email?: string} | null; // who you handed it to
   emailSubject?: string; // subject line of the source email chain, for searching Outlook
   taskGroupId?: mongoose.Types.ObjectId | null; // user-made group for tasks not linked to a project or vendor
   completedAt?: Date | null; // when the task was last marked complete (Done is sorted by this)
@@ -119,7 +120,12 @@ const ToDoSchema = new Schema<IToDo>(
     },
     blockedBy: [{type: Schema.Types.ObjectId, ref: 'ToDo'}],
     actualMinutes: {type: Number, default: 0},
-    bucket: {type: String, enum: ['work', 'personal-short', 'personal-long', 'career', null], default: null},
+    bucket: {type: String, enum: ['work', 'personal-short', 'personal-long', 'career', 'follow-up', null], default: null},
+    // A snapshot, so the task still shows the name if the person is later removed from your staff list
+    assignedTo: {
+      type: new Schema({staffId: {type: Schema.Types.ObjectId, ref: 'Staff', default: null}, name: {type: String, trim: true}, email: {type: String, default: '', trim: true}}, {_id: false}),
+      default: null,
+    },
     completedAt: {type: Date, default: null},
     taskGroupId: {type: Schema.Types.ObjectId, ref: 'TaskGroup', default: null},
     emailSubject: {type: String, default: '', trim: true, maxlength: 500},

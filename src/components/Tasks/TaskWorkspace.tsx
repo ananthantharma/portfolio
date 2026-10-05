@@ -9,7 +9,7 @@ import AttachmentGallery from './AttachmentGallery';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
-import {CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
+import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, glowOf, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
@@ -36,6 +36,9 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
   const linkedId = typeof value.sourcePageId === 'string' ? value.sourcePageId : value.sourcePageId?._id;
   const linkedTitle = typeof value.sourcePageId === 'object' ? value.sourcePageId?.title : 'Linked note';
   const taskGroups = useTaskGroups();
+  const staff = useStaffList();
+  // Keep a removed staff member selectable on tasks already assigned to them
+  const assigneeKnown = !value.assignedTo || (staff || []).some(p => p._id === value.assignedTo?.staffId);
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,6 +82,24 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
           <div><label htmlFor={`${prefix}-due`}>Due date</label><input id={`${prefix}-due`} onChange={e => change({dueDate: e.target.value ? new Date(`${e.target.value}T17:00:00`).toISOString() : ''})} type="date" value={toDate(value.dueDate)}/></div>
           <div><label htmlFor={`${prefix}-bucket`}>Category</label><select id={`${prefix}-bucket`} onChange={e => change({bucket: e.target.value as TaskBucket})} value={bucketOf(value)}>{TASK_BUCKETS.map(b => <option key={b.key} value={b.key}>{b.label}</option>)}</select></div>
         </div>
+        <div className={styles.vendorLink}>
+          <label htmlFor={`${prefix}-assignee`}>Assigned to</label>
+          <div>
+            <select
+              id={`${prefix}-assignee`}
+              onChange={e => {
+                const person = (staff || []).find(p => p._id === e.target.value);
+                if (e.target.value === 'current') return;
+                change({assignedTo: person ? {staffId: person._id, name: person.name, email: person.email || ''} : null});
+              }}
+              value={value.assignedTo ? (assigneeKnown ? value.assignedTo.staffId || '' : 'current') : ''}>
+              <option value="">{staff === null ? 'Loading…' : 'Not assigned'}</option>
+              {!assigneeKnown && value.assignedTo && <option value="current">{value.assignedTo.name}</option>}
+              {(staff || []).map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+            </select>
+            <AssigneePill assignee={value.assignedTo} />
+          </div>
+        </div>
         <label htmlFor={`${prefix}-subject`}>Email subject</label>
         <div className={styles.subjectField}>
           <input id={`${prefix}-subject`} onChange={e => change({emailSubject: e.target.value})} placeholder="Paste the email chain's subject to find it in Outlook" value={value.emailSubject || ''}/>
@@ -115,7 +136,7 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
     </form>
     {task && <div className={styles.taskActions}>
       <button disabled={pending} onClick={() => void action(() => api.update(task._id, {isArchived: !task.isArchived}), true)}><Archive size={14}/>{task.isArchived ? 'Restore' : 'Archive'}</button>
-      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), taskGroupId: task.taskGroupId || null, emailSubject: task.emailSubject || '', subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
+      <button disabled={pending} onClick={() => void action(() => api.create({title: `${task.title} (copy)`, notes: task.notes, priority: task.priority, dueDate: task.dueDate || null, tags: task.tags, category: task.category, sourcePageId: typeof task.sourcePageId === 'object' ? task.sourcePageId?._id : task.sourcePageId, vendorSectionId: vendorIdOf(task), bucket: bucketOf(task), taskGroupId: task.taskGroupId || null, emailSubject: task.emailSubject || '', assignedTo: task.assignedTo || null, subtasks: task.subtasks?.map(item => ({title: item.title, isCompleted: false}))}))}><Copy size={14}/>Duplicate</button>
       <button className={styles.danger} disabled={pending} onClick={() => {if (window.confirm(`Permanently delete “${task.title}”? You can archive it instead.`)) void action(async () => {await api.remove(task._id); setDraft(key, null);}, true);}}><Trash2 size={14}/>Delete</button>
     </div>}
     {linking && <NoteLinkModal onClose={() => setLinking(false)} onLinked={page => {change({sourcePageId: page}); setLinking(false);}} taskTitle={value.title || 'New note'}/>}
@@ -305,6 +326,7 @@ export default function TaskWorkspace({compact = false, note, onExpand, onAdvanc
         {filter === 'done' && <time className={styles.rowTime}>{completedAgo(task)}</time>}
         <div className={styles.rowTools}>
           {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
+          <AssigneePill assignee={task.assignedTo} />
           <CopySubjectButton size={12} subject={task.emailSubject} />
           <GlowToggles size={12} task={task} />
         </div>

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
 
@@ -60,6 +61,8 @@ export async function GET(_req: Request) {
       const byPage = new Map<string, {count: number; minDate: number | null}>();
       todos.forEach(t => {
         const pageId = String(t.sourcePageId);
+        // Some older tasks stored a bad link (e.g. the text "undefined"); skip those
+        if (!/^[a-f\d]{24}$/i.test(pageId) || !mongoose.isValidObjectId(pageId)) return;
         const entry = byPage.get(pageId) || {count: 0, minDate: null};
         entry.count += 1;
         const due = t.dueDate ? new Date(t.dueDate).getTime() : NaN;

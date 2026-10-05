@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import {CopySubjectButton, GlowToggles, glowStyle, VendorPill} from './TaskExtras';
+import {AssigneePill, CopySubjectButton, GlowToggles, glowStyle, VendorPill} from './TaskExtras';
 import {colorForLabel, daysUntil, formatDue, formatMinutes, PRIORITY_META, staleDays, subtaskProgress, Task} from './types';
 
 interface TaskCardProps {
@@ -200,6 +200,7 @@ export default function TaskCard({
 
           {!bulkMode && (
             <div className="mt-1.5 flex items-center justify-end gap-1">
+              <AssigneePill assignee={task.assignedTo} className="mr-auto" />
               <CopySubjectButton subject={task.emailSubject} />
               <GlowToggles task={task} />
             </div>

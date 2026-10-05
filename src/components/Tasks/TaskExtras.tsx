@@ -9,7 +9,7 @@ import {createPortal} from 'react-dom';
 
 import {api} from './api';
 import styles from './TaskExtras.module.css';
-import {glowOf, NEON_GLOW, Task, TaskVendor, vendorOf} from './types';
+import {glowOf, NEON_GLOW, Task, TaskAssignee, TaskVendor, vendorOf} from './types';
 import {OpenVendorContext} from './WorkspaceNavigation';
 
 type GlowKey = NonNullable<Task['neonColor']>;
@@ -253,6 +253,78 @@ export const taskGroupsApi = {
     setGroupState((groupState || []).filter(g => g._id !== id));
   },
 };
+
+export interface StaffMember {
+  _id: string;
+  name: string;
+  email?: string;
+  role?: string;
+}
+
+// Your staff list (people you assign work to), shared by everything on the page
+let staffState: StaffMember[] | null = null;
+let staffLoad: Promise<void> | null = null;
+const staffListeners = new Set<(staff: StaffMember[] | null) => void>();
+const setStaffState = (next: StaffMember[]) => {
+  staffState = [...next].sort((a, b) => a.name.localeCompare(b.name));
+  staffListeners.forEach(fn => fn(staffState));
+};
+
+/** Everyone in your staff list (null while loading). */
+export function useStaffList() {
+  const [staff, setStaff] = useState<StaffMember[] | null>(staffState);
+  useEffect(() => {
+    staffListeners.add(setStaff);
+    if (!staffLoad) {
+      staffLoad = groupRequest<StaffMember[]>('/api/staff')
+        .then(list => setStaffState(list.map(({_id, name, email, role}) => ({_id, name, email, role}))))
+        .catch(() => {
+          staffLoad = null;
+          setStaffState([]);
+        });
+    } else setStaff(staffState);
+    return () => {
+      staffListeners.delete(setStaff);
+    };
+  }, []);
+  return staff;
+}
+
+export const staffApi = {
+  add: async (person: {name: string; email?: string; role?: string}) => {
+    const added = await groupRequest<StaffMember>('/api/staff', {method: 'POST', body: JSON.stringify(person)});
+    setStaffState([...(staffState || []), added]);
+    return added;
+  },
+  remove: async (id: string) => {
+    await groupRequest<unknown>(`/api/staff/${id}`, {method: 'DELETE'});
+    setStaffState((staffState || []).filter(p => p._id !== id));
+  },
+};
+
+export const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]!.toUpperCase())
+    .join('');
+
+/** Avatar + first name of the person a task was handed to, so you remember to follow up. */
+export function AssigneePill({assignee, className}: {assignee?: TaskAssignee | null; className?: string}) {
+  if (!assignee?.name) return null;
+  const first = assignee.name.trim().split(/\s+/)[0];
+  return (
+    <span
+      className={`${styles.assignee} ${className || ''}`}
+      title={`Assigned to ${assignee.name}${assignee.email ? ` <${assignee.email}>` : ''}. Follow up with them.`}>
+      <span aria-hidden className={styles.assigneeAvatar}>
+        {initialsOf(assignee.name)}
+      </span>
+      <span className={styles.assigneeName}>{first}</span>
+    </span>
+  );
+}
 
 /** Dropdown for linking a task to a vendor or project. */
 export function VendorSelect({

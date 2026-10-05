@@ -55,6 +55,8 @@ export interface Task {
   taskGroupId?: string | null;
   /** Subject of the email chain this task came from, for finding it in Outlook */
   emailSubject?: string;
+  /** The staff member you handed this to (follow-up tasks) */
+  assignedTo?: TaskAssignee | null;
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -79,12 +81,19 @@ export function vendorIdOf(task: Pick<Task, 'vendorSectionId'>): string | null {
 }
 
 // Sidebar category tabs. Tasks saved before categories existed count as Work.
-export type TaskBucket = 'work' | 'personal-short' | 'personal-long' | 'career';
+export interface TaskAssignee {
+  staffId?: string | null;
+  name: string;
+  email?: string;
+}
+
+export type TaskBucket = 'work' | 'personal-short' | 'personal-long' | 'career' | 'follow-up';
 export const TASK_BUCKETS: {key: TaskBucket; label: string; short: string}[] = [
   {key: 'work', label: 'Work', short: 'Work'},
   {key: 'personal-short', label: 'Personal – short term', short: 'Personal ST'},
   {key: 'personal-long', label: 'Personal – long term', short: 'Personal LT'},
   {key: 'career', label: 'Career', short: 'Career'},
+  {key: 'follow-up', label: 'Follow up', short: 'Follow up'},
 ];
 export const bucketOf = (task: Pick<Task, 'bucket'>): TaskBucket => task.bucket || 'work';
 

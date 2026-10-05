@@ -45,6 +45,7 @@ import {
   VideoCameraIcon,
   WrenchScrewdriverIcon,
   DocumentMagnifyingGlassIcon,
+  UserPlusIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -79,6 +80,7 @@ import PromptLibraryModal from '../PromptLibrary/PromptLibraryModal';
 import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 import CameraModal from './CameraModal';
+import AssignWorkWindow from './AssignWorkWindow';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
@@ -144,6 +146,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isDriveOpen, setIsDriveOpen] = useState(false);
   const [isAudioRecorderOpen, setIsAudioRecorderOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isAssignWorkOpen, setIsAssignWorkOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
@@ -1180,6 +1183,7 @@ const NotesLayout: React.FC = React.memo(() => {
     () => [
       {label: 'Executive overview', Icon: PresentationChartBarIcon, action: () => setIsExecutiveModalOpen(true)},
       {label: 'AI assistant', Icon: SparklesIcon, action: handleOpenAIChat},
+      {label: 'Assign work', Icon: UserPlusIcon, action: () => setIsAssignWorkOpen(true)},
       {label: 'Calendar', Icon: CalendarDaysIcon, action: () => setIsCalendarOpen(true)},
       {label: 'Google Drive', Icon: CloudIcon, action: () => setIsDriveOpen(true)},
       {label: 'Contacts', Icon: UserGroupIcon, action: handleOpenContactList},
@@ -1826,6 +1830,7 @@ const NotesLayout: React.FC = React.memo(() => {
         <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
         <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
         {isAdmin && isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} />}
+        {isAssignWorkOpen && <AssignWorkWindow onClose={() => setIsAssignWorkOpen(false)} />}
         {isPromptLibraryOpen && <PromptLibraryModal onClose={() => setIsPromptLibraryOpen(false)} />}
         <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
         <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />

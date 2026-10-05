@@ -6,7 +6,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {api} from '../../Tasks/api';
 import {saveTaskChanges} from '../../Tasks/taskActions';
-import {CopySubjectButton, glowStyle, GlowToggles} from '../../Tasks/TaskExtras';
+import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles} from '../../Tasks/TaskExtras';
 import {useTaskCollection} from '../../Tasks/TaskProvider';
 import {TaskEditor} from '../../Tasks/TaskWorkspace';
 import {daysUntil, formatDue, glowOf, smartCompare, statusOf, Task, TaskVendor, vendorIdOf} from '../../Tasks/types';
@@ -240,6 +240,7 @@ export default function VendorTasksCard({vendor}: Props) {
                           ) : null}
                         </span>
                       </button>
+                      <AssigneePill assignee={task.assignedTo} />
                       <CopySubjectButton subject={task.emailSubject} />
                       <GlowToggles task={task} />
                       <button

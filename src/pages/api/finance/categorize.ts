@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       apiKey,
       [],
       prompt,
-      'gemini-3-flash-preview', // User requested model update
+      'gemini-flash-latest',
     );
 
     // Clean response of markdown if present

@@ -34,7 +34,7 @@ export const MODEL_OPTIONS: ModelOption[] = [
   {id: 'gpt-3.5-turbo', label: 'GPT-5 nano', provider: 'openai', supportsImages: false},
 ];
 
-export const DEFAULT_MODEL = MODEL_OPTIONS[0]; // gemini-pro-latest
+export const DEFAULT_MODEL = MODEL_OPTIONS.find(m => m.id === 'gemini-flash-latest')!;
 
 const SYSTEM_PROMPT = `You are a Senior Commercial and Legal Negotiator representing the Owner (Ontario Power Generation / OPG). You are reviewing supplier/vendor redlines and comments on a contract.
 1. Transcribe the tracked changes accurately, paying strict attention to insertions and deletions.

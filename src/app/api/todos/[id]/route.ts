@@ -108,7 +108,7 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     }
 
     // Never accept ownership changes or Mongo operators from a client payload.
-    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId', 'bucket', 'taskGroupId', 'emailSubject'];
+    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId', 'bucket', 'taskGroupId', 'emailSubject', 'assignedTo'];
     data = Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key)));
     if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) return NextResponse.json({success: false, error: 'A task title is required'}, {status: 400});
     if (data.status !== undefined) {
@@ -118,6 +118,13 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     if (data.dueDate === '') data.dueDate = null;
     if (data.vendorSectionId !== undefined && !mongoose.isValidObjectId(data.vendorSectionId)) data.vendorSectionId = null;
     if (data.taskGroupId !== undefined && !mongoose.isValidObjectId(data.taskGroupId)) data.taskGroupId = null;
+    if (data.sourcePageId !== undefined && !mongoose.isValidObjectId(data.sourcePageId)) data.sourcePageId = null;
+    if (data.assignedTo !== undefined) {
+      const a = data.assignedTo;
+      data.assignedTo = a && typeof a.name === 'string' && a.name.trim()
+        ? {name: a.name.trim().slice(0, 120), email: typeof a.email === 'string' ? a.email.trim().slice(0, 200) : '', staffId: mongoose.isValidObjectId(a.staffId) ? a.staffId : null}
+        : null;
+    }
     const before = await ToDo.findOne({_id: id, userEmail: session.user.email}).select('isCompleted status vendorSectionId').lean();
     // Remember when a task was completed so Done can list the most recent first
     if (data.isCompleted !== undefined && before) {
