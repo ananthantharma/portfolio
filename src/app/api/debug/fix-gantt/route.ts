@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import {NextResponse} from 'next/server';
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
+import {getServerSession} from 'next-auth';
+import {ADMIN_EMAIL, authOptions} from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 // @ts-ignore
 import GanttChart from '@/models/GanttChart';
@@ -9,13 +9,14 @@ import mongoose from 'mongoose';
 
 export async function GET(_req: Request) {
   // UPDATE THIS STRING TO FORCE DEPLOYMENT
-  const VERSION = '2026-01-08-FIX-V4-NO-AUTH';
+  const VERSION = '2026-10-07-FIX-V5-ADMIN';
   const logs: string[] = [];
   logs.push(`Script Version: ${VERSION}`);
 
   try {
-    // const session = await getServerSession(authOptions);
-    // if (!session) logs.push("WARNING: No session found (Auth check bypassed for debug)");
+    // One-off index cleanup: admin only (it changes the database)
+    const session = await getServerSession(authOptions);
+    if (session?.user?.email !== ADMIN_EMAIL) return new NextResponse('Admin only', {status: 403});
 
     logs.push('Connecting to DB...');
     await dbConnect();
