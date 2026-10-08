@@ -1,348 +1,112 @@
 /* eslint-disable react/jsx-sort-props */
 'use client';
-import {Award, Compass, Mail, Network, Shield, Target} from 'lucide-react';
-import {FC, memo, useEffect, useRef, useState} from 'react';
+import {ArrowRight, GraduationCap, Layers, Mail, Network, Shield} from 'lucide-react';
+import {FC, memo} from 'react';
 
-import {heroData, SectionId, socialLinks} from '../../data/data';
+import {SectionId, socialLinks} from '../../data/data';
 import Section from '../Layout/Section';
+import SpaceBackground from './SpaceBackground';
 
 /* ─── Credential badges ───────────────────────────────────────────────── */
 const BADGES = [
   {Icon: Shield, text: 'P.ENG'},
-  {Icon: Target, text: 'PMP'},
+  {Icon: Layers, text: 'PMP'},
   {Icon: Network, text: 'CSCP'},
-  {Icon: Award, text: 'MBA'},
+  {Icon: GraduationCap, text: 'MBA'},
 ] as const;
+
+const DISCIPLINES = ['Engineering', 'Operations', 'Supply Chain', 'Leadership'];
 
 /* ─── Hero ───────────────────────────────────────────────────────────── */
 const Hero: FC = memo(() => {
-  const {actions} = heroData;
-
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Use a ref so the canvas loop reads fresh values without recreating
-  const mousePosRef = useRef({x: 0, y: 0});
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  /* mouse tracking */
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      mousePosRef.current = {
-        x: (e.clientX / window.innerWidth) * 2 - 1,
-        y: -(e.clientY / window.innerHeight) * 2 + 1,
-      };
-    };
-    window.addEventListener('mousemove', onMove);
-    const t = setTimeout(() => setIsLoaded(true), 200);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      clearTimeout(t);
-    };
-  }, []);
-
-  /* 3D tilt values — we derive inline from a state that only updates on raf */
-  const [tilt, setTilt] = useState({x: 0, y: 0});
-  useEffect(() => {
-    let rafId: number;
-    const loop = () => {
-      setTilt(prev => {
-        const tx = mousePosRef.current.y * 5;
-        const ty = mousePosRef.current.x * 5;
-        // Lerp for smoothness
-        return {
-          x: prev.x + (tx - prev.x) * 0.05,
-          y: prev.y + (ty - prev.y) * 0.05,
-        };
-      });
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  /* galaxy canvas — runs once, reads mousePosRef each frame */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let rafId: number;
-    let globalRotation = 0;
-    const maxDepth = 2500;
-    const numStars = 1200;
-
-    type Star = {x: number; y: number; z: number; color: string; baseSize: number};
-    type Comet = {x: number; y: number; length: number; speed: number; angle: number; opacity: number};
-
-    const stars: Star[] = [];
-    const comets: Comet[] = [];
-
-    for (let i = 0; i < numStars; i++) {
-      const t = Math.random();
-      const color = t > 0.85 ? '192,132,252' : t > 0.7 ? '147,197,253' : '255,255,255';
-      stars.push({
-        x: (Math.random() - 0.5) * 4000,
-        y: (Math.random() - 0.5) * 4000,
-        z: Math.random() * maxDepth,
-        color,
-        baseSize: Math.random() * 2 + 0.5,
-      });
-    }
-
-    const render = () => {
-      const {x: mx, y: my} = mousePosRef.current;
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-
-      if (canvas.width !== W || canvas.height !== H) {
-        canvas.width = W;
-        canvas.height = H;
-      }
-
-      ctx.clearRect(0, 0, W, H);
-      const cx = W / 2;
-      const cy = H / 2;
-
-      globalRotation += 0.0003;
-
-      const driftX = mx * 10;
-      const driftY = -my * 10;
-      const cosR = Math.cos(globalRotation);
-      const sinR = Math.sin(globalRotation);
-      const fov = 600;
-      const now = Date.now();
-
-      for (const star of stars) {
-        star.z -= 0.5;
-        if (star.z < 1) {
-          star.z = maxDepth;
-          star.x = (Math.random() - 0.5) * 4000;
-          star.y = (Math.random() - 0.5) * 4000;
-        }
-
-        const rx = star.x * cosR - star.y * sinR;
-        const ry = star.y * cosR + star.x * sinR;
-        const sc = fov / star.z;
-
-        const x2d = cx + (rx + driftX * star.z * 0.05) * sc;
-        const y2d = cy + (ry + driftY * star.z * 0.05) * sc;
-
-        const distAlpha = Math.min(1, (maxDepth - star.z) / 1000);
-        const twinkle = 0.5 + Math.sin(now * 0.002 + star.x) * 0.5;
-        const alpha = distAlpha * (0.4 + twinkle * 0.6);
-        const r = Math.max(0.1, star.baseSize * sc);
-
-        ctx.beginPath();
-        ctx.arc(x2d, y2d, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${star.color},${alpha})`;
-        ctx.fill();
-
-        if (star.baseSize > 2 && alpha > 0.5) {
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = `rgba(${star.color},${alpha})`;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-      }
-
-      /* comets */
-      if (Math.random() < 0.005) {
-        comets.push({
-          x: (Math.random() - 0.5) * W * 2,
-          y: (Math.random() - 0.5) * H * 2,
-          length: Math.random() * 150 + 50,
-          speed: Math.random() * 5 + 5,
-          angle: Math.PI / 4 + (Math.random() * 0.2 - 0.1),
-          opacity: 1,
-        });
-      }
-
-      for (let i = comets.length - 1; i >= 0; i--) {
-        const c = comets[i];
-        c.x += Math.cos(c.angle) * c.speed;
-        c.y += Math.sin(c.angle) * c.speed;
-        c.opacity -= 0.005;
-
-        if (c.opacity <= 0) {
-          comets.splice(i, 1);
-          continue;
-        }
-
-        const grad = ctx.createLinearGradient(
-          c.x,
-          c.y,
-          c.x - Math.cos(c.angle) * c.length,
-          c.y - Math.sin(c.angle) * c.length,
-        );
-        grad.addColorStop(0, `rgba(255,255,255,${c.opacity})`);
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-
-        ctx.beginPath();
-        ctx.moveTo(c.x, c.y);
-        ctx.lineTo(c.x - Math.cos(c.angle) * c.length, c.y - Math.sin(c.angle) * c.length);
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-
-      rafId = requestAnimationFrame(render);
-    };
-
-    render();
-    return () => cancelAnimationFrame(rafId);
-  }, []); // runs once — reads mouse via ref
-
-  const linkedIn = socialLinks.find(s => s.label === 'LinkedIn')?.href ?? '#';
+  const linkedIn = socialLinks.find(s => s.label === 'LinkedIn');
+  const LinkedInIcon = linkedIn?.Icon;
 
   return (
     <Section noPadding sectionId={SectionId.Hero}>
-      <div className="relative min-h-screen overflow-hidden bg-[#020106] font-sans text-white selection:bg-purple-500/30 selection:text-white">
-        {/* Galaxy canvas */}
-        <canvas
-          ref={canvasRef}
-          className={`absolute inset-0 z-0 transition-opacity duration-[3000ms] ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
+      <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#03020a] font-sans text-white selection:bg-indigo-500/30 selection:text-white">
+        {/* Animated space scene */}
+        <SpaceBackground className="hero-fade absolute inset-0 z-0 h-full w-full" />
+        {/* Keeps the name readable over the brightest parts of the scene */}
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-[#03020a]/85 via-[#03020a]/35 to-transparent md:from-[#03020a]/70 md:via-[#03020a]/20" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-[#03020a]/80 to-transparent" />
 
-        {/* Nebula blobs */}
-        <div className="pointer-events-none absolute -left-[10%] -top-[10%] z-0 h-[60vw] w-[60vw] rounded-full bg-indigo-900/15 blur-[150px] mix-blend-screen animate-nebula-breathe" />
-        <div className="pointer-events-none absolute -bottom-[10%] -right-[10%] z-0 h-[60vw] w-[60vw] rounded-full bg-purple-900/15 blur-[150px] mix-blend-screen animate-nebula-breathe-delayed" />
+        <div className="relative z-20 mx-auto flex w-full max-w-[86rem] flex-1 flex-col px-6 sm:px-10 lg:px-16">
+          <main className="flex flex-1 flex-col justify-center pb-16 pt-32 sm:pt-36 lg:pl-[6%]">
+            {/* Name */}
+            <h1 className="hero-rise leading-[0.92]" style={{animationDelay: '0.15s'}}>
+              <span className="block text-[clamp(3rem,9vw,6.75rem)] font-bold tracking-[-0.03em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
+                ANANTHAN
+              </span>
+              <span className="mt-1 block text-[clamp(1.6rem,5.6vw,4.6rem)] font-light tracking-[-0.01em] text-white/80">
+                <span className="hero-sheen bg-gradient-to-r from-white via-indigo-100 to-white/60 bg-clip-text text-transparent">
+                  THARMAVELAUTHAM
+                </span>
+                <span className="hero-dot ml-1 inline-block h-[0.16em] w-[0.16em] rounded-full bg-indigo-400 align-baseline" />
+              </span>
+            </h1>
 
-        {/* 3-D container */}
-        <div
-          className="relative z-30 mx-auto flex min-h-screen w-full max-w-[100rem] flex-col justify-between px-6 sm:px-12 lg:px-24"
-          style={{perspective: '2000px'}}>
-          {/* Spacer to push content down from top */}
-          <div className="py-12" />
+            {/* Credential badges */}
+            <div className="hero-rise mt-9 flex flex-wrap gap-3" style={{animationDelay: '0.35s'}}>
+              {BADGES.map(({Icon, text}) => (
+                <span
+                  className="group flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-[11px] font-semibold tracking-[0.18em] text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-300/40 hover:bg-white/[0.08] hover:shadow-[0_0_24px_rgba(129,140,248,0.25)]"
+                  key={text}>
+                  <Icon className="text-white/70 transition-colors group-hover:text-indigo-200" size={15} strokeWidth={1.8} />
+                  {text}
+                </span>
+              ))}
+            </div>
 
-          {/* Main — 3D tilt */}
-          <main
-            className="flex flex-grow flex-col items-start justify-center w-full max-w-5xl transition-transform duration-1000 ease-out"
-            style={{
-              transformStyle: 'preserve-3d',
-              transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-            }}>
-            {/* Glass monolith */}
-            <div
-              className="group relative w-full overflow-hidden rounded-3xl border border-white/5 bg-white/[0.02] p-8 shadow-2xl backdrop-blur-md transition-all duration-1000 sm:p-12 md:p-16"
-              style={{transformStyle: 'preserve-3d', transform: 'translateZ(30px)'}}>
-              {/* Glare on hover */}
-              <div
-                className="pointer-events-none absolute inset-0 z-0 opacity-0 mix-blend-screen transition-opacity duration-700 group-hover:opacity-100"
-                style={{
-                  background: `radial-gradient(circle at ${50 + mousePosRef.current.x * 50}% ${
-                    50 - mousePosRef.current.y * 50
-                  }%, rgba(255,255,255,0.06), transparent 50%)`,
-                }}
-              />
-              <div className="pointer-events-none absolute inset-0 z-0 rounded-3xl bg-gradient-to-br from-white/[0.05] to-transparent" />
+            {/* Disciplines */}
+            <p
+              className="hero-rise mt-7 flex flex-wrap items-center gap-x-3 gap-y-1 border-l border-indigo-400/60 pl-4 text-[10.5px] font-medium uppercase tracking-[0.28em] text-white/45"
+              style={{animationDelay: '0.5s'}}>
+              {DISCIPLINES.map((d, i) => (
+                <span className="flex items-center gap-3" key={d}>
+                  {i > 0 && <span className="text-white/25">×</span>}
+                  {d}
+                </span>
+              ))}
+            </p>
 
-              {/* Name */}
-              <div
-                className={`relative z-10 transition-all duration-[1500ms] delay-300 ease-out ${
-                  isLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                style={{transform: 'translateZ(60px)'}}>
-                <h1 className="mb-2 text-[10vw] font-bold leading-[0.85] tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] sm:text-[8vw] md:text-7xl lg:text-8xl">
-                  ANANTHAN
-                </h1>
-                <h1 className="bg-gradient-to-r from-neutral-100 via-neutral-300 to-neutral-600 bg-clip-text text-[8vw] font-light leading-[0.85] tracking-tight text-transparent drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] sm:text-[6vw] md:text-6xl lg:text-7xl">
-                  THARMAVELAUTHAM.
-                </h1>
-              </div>
-
-              {/* Credential badges */}
-              <div
-                className={`relative z-10 mt-12 flex flex-wrap gap-4 transition-all duration-[1500ms] delay-500 ease-out ${
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`}
-                style={{transform: 'translateZ(45px)'}}>
-                {BADGES.map(({Icon, text}) => (
-                  <div
-                    className="group/badge relative flex cursor-default items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-6 py-2.5 shadow-lg transition-all duration-500 hover:-translate-y-1 hover:border-purple-400/60 hover:bg-white/[0.1] hover:shadow-[0_0_20px_rgba(192,132,252,0.2)]"
-                    key={text}>
-                    <Icon
-                      className="text-neutral-500 transition-colors duration-500 group-hover/badge:text-purple-300"
-                      size={14}
-                    />
-                    <span className="text-[10px] font-bold tracking-[0.2em] text-neutral-300 transition-colors duration-500 group-hover/badge:text-white">
-                      {text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA buttons */}
-              <div
-                className={`relative z-10 mt-16 flex flex-col gap-6 sm:flex-row transition-all duration-[1500ms] delay-700 ease-out ${
-                  isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`}
-                style={{transform: 'translateZ(55px)'}}>
-                {/* Primary — wire to first action if exists, else contact anchor */}
-                {actions.length > 0 ? (
-                  actions.map(({href, text, primary, onClick}, i) =>
-                    primary ? (
-                      <a
-                        className="group flex w-max items-center justify-between gap-6 rounded-full bg-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-500 hover:scale-105 hover:bg-neutral-100 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]"
-                        href={href}
-                        key={i}
-                        onClick={onClick}>
-                        <span>{text}</span>
-                        <Compass className="transition-transform duration-500 group-hover:rotate-45" size={16} />
-                      </a>
-                    ) : (
-                      <a
-                        className="group flex w-max items-center justify-between gap-6 rounded-full border border-white/20 bg-transparent px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 transition-all duration-500 hover:border-white/40 hover:bg-white/5 hover:text-white"
-                        href={href}
-                        key={i}
-                        onClick={onClick}>
-                        <span>{text}</span>
-                        <Mail
-                          className="text-neutral-500 transition-colors duration-500 group-hover:text-white"
-                          size={16}
-                        />
-                      </a>
-                    ),
-                  )
-                ) : (
-                  <>
-                    <a
-                      className="group flex w-max items-center justify-between gap-6 rounded-full bg-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-500 hover:scale-105 hover:bg-neutral-100 hover:shadow-[0_0_50px_rgba(255,255,255,0.3)]"
-                      href={`/#${SectionId.Contact}`}>
-                      <span>Get in Touch</span>
-                      <Mail className="transition-transform duration-500 group-hover:translate-x-0.5" size={16} />
-                    </a>
-                    <a
-                      className="group flex w-max items-center justify-between gap-6 rounded-full border border-white/20 bg-transparent px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-neutral-300 transition-all duration-500 hover:border-white/40 hover:bg-white/5 hover:text-white"
-                      href={linkedIn}
-                      rel="noreferrer"
-                      target="_blank">
-                      <span>LinkedIn Profile</span>
-                      <Compass
-                        className="text-neutral-500 transition-transform duration-500 group-hover:rotate-45 group-hover:text-white"
-                        size={16}
-                      />
-                    </a>
-                  </>
-                )}
-              </div>
+            {/* Calls to action */}
+            <div className="hero-rise mt-10 flex flex-col gap-4 sm:flex-row" style={{animationDelay: '0.65s'}}>
+              <a
+                className="group flex w-max items-center gap-4 rounded-full bg-white px-7 py-4 text-[11.5px] font-bold uppercase tracking-[0.16em] text-[#0b0b1a] shadow-[0_0_40px_rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-[0_0_50px_rgba(165,180,252,0.35)]"
+                href={`/#${SectionId.Contact}`}>
+                <Mail size={17} strokeWidth={1.8} />
+                <span>Get in touch</span>
+                <ArrowRight className="transition-transform duration-300 group-hover:translate-x-1" size={17} />
+              </a>
+              {linkedIn && (
+                <a
+                  className="group flex w-max items-center gap-4 rounded-full border border-white/15 bg-white/[0.04] px-7 py-4 text-[11.5px] font-bold uppercase tracking-[0.16em] text-white/90 backdrop-blur-md transition-all duration-300 hover:border-indigo-300/40 hover:bg-white/[0.08]"
+                  href={linkedIn.href}
+                  rel="noreferrer"
+                  target="_blank">
+                  {LinkedInIcon && <LinkedInIcon className="h-[18px] w-[18px] fill-current text-[#4f8fe8]" />}
+                  <span>LinkedIn profile</span>
+                  <ArrowRight
+                    className="text-white/50 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white"
+                    size={17}
+                  />
+                </a>
+              )}
             </div>
           </main>
 
-          {/* Footer */}
+          {/* Footer strip */}
           <footer
-            className={`flex flex-col items-center justify-between border-t border-white/5 py-8 sm:flex-row transition-all duration-[1500ms] delay-1000 ease-out ${
-              isLoaded ? 'opacity-100' : 'opacity-0'
-            }`}>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500">
-              © {new Date().getFullYear()} Ananthan Tharmavelautham
+            className="hero-rise flex flex-col items-center justify-between gap-4 border-t border-white/[0.07] py-7 sm:flex-row"
+            style={{animationDelay: '0.9s'}}>
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
+              © {new Date().getFullYear()} Ananthan Tharmavelautham. All rights reserved.
             </p>
-            <div className="mt-4 flex gap-8 sm:mt-0">
+            <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
               {socialLinks.map(({label, href}) => (
                 <a
-                  className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 transition-all duration-300 hover:text-purple-400"
+                  className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/45 transition-colors duration-300 hover:text-indigo-200"
                   href={href}
                   key={label}
                   rel="noreferrer"
@@ -350,29 +114,79 @@ const Hero: FC = memo(() => {
                   {label}
                 </a>
               ))}
+              <span className="hidden h-5 w-px bg-white/10 sm:block" />
+              <span className="hidden items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60 sm:flex">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-indigo-300/30 text-[11px] font-bold tracking-normal text-white">
+                  A
+                </span>
+                Ananthan
+              </span>
             </div>
           </footer>
         </div>
       </div>
 
       <style jsx global>{`
-        @keyframes breathe {
+        @keyframes hero-rise {
+          from {
+            opacity: 0;
+            transform: translateY(18px);
+            filter: blur(6px);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+            filter: none;
+          }
+        }
+        @keyframes hero-fade {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes hero-sheen {
           0%,
           100% {
-            transform: scale(1);
-            opacity: 0.5;
+            background-position: 0% 50%;
           }
           50% {
-            transform: scale(1.1);
-            opacity: 0.8;
+            background-position: 100% 50%;
           }
         }
-        .animate-nebula-breathe {
-          animation: breathe 15s ease-in-out infinite;
+        @keyframes hero-dot {
+          0%,
+          100% {
+            box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.6);
+          }
+          50% {
+            box-shadow: 0 0 18px 4px rgba(129, 140, 248, 0.55);
+          }
         }
-        .animate-nebula-breathe-delayed {
-          animation: breathe 18s ease-in-out infinite;
-          animation-delay: 5s;
+        .hero-rise {
+          opacity: 0;
+          animation: hero-rise 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+        }
+        .hero-fade {
+          animation: hero-fade 2.4s ease-out both;
+        }
+        .hero-sheen {
+          background-size: 220% 100%;
+          animation: hero-sheen 9s ease-in-out infinite;
+        }
+        .hero-dot {
+          animation: hero-dot 3.2s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-rise,
+          .hero-fade,
+          .hero-sheen,
+          .hero-dot {
+            animation: none;
+            opacity: 1;
+          }
         }
       `}</style>
     </Section>
