@@ -138,6 +138,7 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
   const [body, setBody] = useState('');
   const [task, setTask] = useState<Task | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
+  const [tracking, setTracking] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [maximized, setMaximized] = useState(false);
   const [offset, setOffset] = useState({x: 0, y: 0});
@@ -209,34 +210,13 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
       setSubject(d.email.subject);
       setBody(d.email.body);
       setStatus('done');
-
-      // Create (or, when re-drafting, update) the follow-up task
-      const due = d.task.dueDate ? new Date(`${d.task.dueDate}T17:00:00`) : defaultFollowUp();
-      // File it in your "Follow Up" group (created the first time if it doesn't exist yet)
-      let groupId = task?.taskGroupId || (taskGroups || []).find(g => isFollowUpGroup(g.name))?._id || null;
-      if (!groupId) {
+      // Already tracking this ask? Keep the task in step with the new draft.
+      if (task) {
         try {
-          groupId = (await taskGroupsApi.create(FOLLOW_UP_GROUP))._id;
-        } catch {
-          groupId = null;
+          setTask(await api.update(task._id, await taskPayload(d, task.taskGroupId || null)));
+        } catch (err) {
+          setTaskError(err instanceof Error ? err.message : 'The follow-up task could not be updated.');
         }
-      }
-      const payload = {
-        title: d.task.title,
-        notes: d.task.notes,
-        priority: d.task.priority || 'None',
-        dueDate: due.toISOString(),
-        bucket: 'work',
-        taskGroupId: groupId,
-        emailSubject: d.searchSubject,
-        assignedTo: {staffId: person._id, name: person.name, email: person.email || ''},
-        subtasks: d.task.subtasks.map(s => ({title: s, isCompleted: false})),
-        aiGenerated: true,
-      };
-      try {
-        setTask(task ? await api.update(task._id, payload) : await api.create({...payload, status: 'todo', isCompleted: false}));
-      } catch (err) {
-        setTaskError(err instanceof Error ? err.message : 'The follow-up task could not be saved.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not draft the email.');
@@ -244,8 +224,48 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
     }
   };
 
+  const dueOf = (d: Draft) => (d.task.dueDate ? new Date(`${d.task.dueDate}T17:00:00`) : defaultFollowUp());
+
+  /** The follow-up task, filed in your "Follow Up" group (created the first time if it doesn't exist yet). */
+  const taskPayload = async (d: Draft, knownGroupId: string | null) => {
+    let groupId = knownGroupId || (taskGroups || []).find(g => isFollowUpGroup(g.name))?._id || null;
+    if (!groupId) {
+      try {
+        groupId = (await taskGroupsApi.create(FOLLOW_UP_GROUP))._id;
+      } catch {
+        groupId = null;
+      }
+    }
+    return {
+      title: d.task.title,
+      notes: d.task.notes,
+      priority: d.task.priority || 'None',
+      dueDate: dueOf(d).toISOString(),
+      bucket: 'work',
+      taskGroupId: groupId,
+      emailSubject: d.searchSubject,
+      assignedTo: person ? {staffId: person._id, name: person.name, email: person.email || ''} : null,
+      subtasks: d.task.subtasks.map(s => ({title: s, isCompleted: false})),
+      aiGenerated: true,
+    };
+  };
+
+  // Only saved as a task when you press "Track it"
+  const track = async () => {
+    if (!draft || !person || task || tracking) return;
+    setTracking(true);
+    setTaskError(null);
+    try {
+      setTask(await api.create({...(await taskPayload(draft, null)), status: 'todo', isCompleted: false}));
+    } catch (err) {
+      setTaskError(err instanceof Error ? err.message : 'The follow-up task could not be saved.');
+    } finally {
+      setTracking(false);
+    }
+  };
+
   const removeTask = async () => {
-    if (!task || !window.confirm('Delete the follow-up task that was created?')) return;
+    if (!task || !window.confirm('Stop tracking this? The follow-up task will be deleted.')) return;
     try {
       await api.remove(task._id);
       setTask(null);
@@ -259,7 +279,7 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
     setCopied(key);
   };
   const mailto = person?.email ? `mailto:${encodeURIComponent(person.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` : null;
-  const due = task?.dueDate ? new Date(task.dueDate) : null;
+  const due = task?.dueDate ? new Date(task.dueDate) : draft ? dueOf(draft) : null;
 
   const frame = maximized
     ? 'inset-3'
@@ -377,7 +397,7 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
             <div className="flex h-full min-h-[240px] flex-col items-center justify-center text-center text-slate-400">
               <Mail className="mb-3 h-9 w-9 text-slate-300" />
               <p className="text-[13.5px] font-semibold text-slate-500">Your email appears here</p>
-              <p className="mt-1 max-w-xs text-[12px]">A follow-up task is added to your Follow Up group in Work, and listed under the person in the Follow up tab.</p>
+              <p className="mt-1 max-w-xs text-[12px]">Then choose whether to track it as a follow-up task in your Follow Up group.</p>
             </div>
           )}
           {status === 'loading' && (
@@ -428,18 +448,29 @@ export default function AssignWorkWindow({onClose}: {onClose: () => void}) {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-teal-200 bg-white p-4 shadow-sm">
+              <div className={`rounded-xl border bg-white p-4 shadow-sm ${task ? 'border-teal-200' : 'border-dashed border-slate-300'}`}>
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-600 text-white">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full ${task ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                     {task ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700">{task ? 'Follow-up task added to your Follow Up group' : 'Follow-up task'}</span>
-                  {task && (
-                    <button className="ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => void removeTask()} title="Delete this task" type="button">
-                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${task ? 'text-teal-700' : 'text-slate-500'}`}>
+                    {task ? 'Tracking in your Follow Up group' : 'Track this as a follow-up task?'}
+                  </span>
+                  {task ? (
+                    <button className="ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => void removeTask()} title="Delete the follow-up task" type="button">
+                      <Trash2 className="h-3.5 w-3.5" /> Stop tracking
+                    </button>
+                  ) : (
+                    <button
+                      className="ml-auto flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-[12px] font-semibold text-white shadow-sm hover:bg-teal-500 disabled:opacity-50"
+                      disabled={tracking || !person}
+                      onClick={() => void track()}
+                      type="button">
+                      {tracking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Track it
                     </button>
                   )}
                 </div>
+                {!task && <p className="mb-2 text-[11.5px] text-slate-400">Nothing is saved until you press Track it.</p>}
                 {taskError && <p className="mb-2 text-[12px] font-medium text-rose-600">{taskError}</p>}
                 <p className="text-[13.5px] font-semibold text-slate-800">{task?.title || draft.task.title}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-[11.5px] text-slate-500">

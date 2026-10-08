@@ -29,7 +29,8 @@ Write TWO things.
 1. A SHORT email from ${manager} to ${staff.name} asking if they can take this on.
    - Address ${staff.name} by first name. Friendly, plain, direct. 3-6 short sentences in total.
    - Say in one or two sentences what is needed and why, and any deadline that is stated or clearly implied.
-   - Ask whether they can take it on (and, if there is no deadline, when they think it could be done).
+   - Ask simply whether they can take it on.
+   - Do NOT ask when they can get it done, when they can respond, or for a timeline or ETA, and do not set a reply-by date. End right after asking if they can take it on (then the sign-off).
    - If the paste is an email chain, assume ${manager} will forward the chain with this email, so say "see the email below" rather than repeating it.
    - Sign off with "${manager}". No subject prefix like "Request:"; no lengthy pleasantries; no bullet lists unless truly needed.
 
