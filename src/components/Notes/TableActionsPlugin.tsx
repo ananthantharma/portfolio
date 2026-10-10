@@ -283,10 +283,13 @@ export function TableActionsPlugin(): React.ReactPortal | null {
 
     document.addEventListener('selectionchange', onSelChange);
     root.addEventListener('click', onSelChange);
+    // Follow the table when the note scrolls
+    window.addEventListener('scroll', onSelChange, true);
 
     return () => {
       document.removeEventListener('selectionchange', onSelChange);
       root.removeEventListener('click', onSelChange);
+      window.removeEventListener('scroll', onSelChange, true);
     };
   }, [editor, updateToolbarPosition]);
 

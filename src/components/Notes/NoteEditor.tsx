@@ -2283,6 +2283,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
       )}
       <div className="flex-1 overflow-hidden px-5 py-3 relative">
         <RichTextEditor
+          title={page?.title}
           onChange={handleContentChange}
           placeholder="Start typing your notes here..."
           ref={quillRef}

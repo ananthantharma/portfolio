@@ -55,6 +55,8 @@ export interface Task {
   taskGroupId?: string | null;
   /** Subject of the email chain this task came from, for finding it in Outlook */
   emailSubject?: string;
+  /** Its private page has something written on it */
+  hasPage?: boolean;
   /** The staff member you handed this to (follow-up tasks) */
   assignedTo?: TaskAssignee | null;
   completedAt?: string | null;

@@ -1,56 +1,42 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
-
-// Compress an image data URL to a JPEG with a bounded width.
-// Keeps images well under the 4 MB request-body limit.
-async function compressImage(dataUrl: string, maxWidth = 1600, quality = 0.85): Promise<string> {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const ratio = Math.min(maxWidth / img.width, 1);
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * ratio);
-      canvas.height = Math.round(img.height * ratio);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { resolve(dataUrl); return; }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => resolve(dataUrl); // fallback: keep original
-    img.src = dataUrl;
-  });
-}
-
+/* eslint-disable react-memo/require-memo, react-memo/require-usememo */
+import {CodeHighlightNode,CodeNode} from '@lexical/code';
+import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
+import {AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
+import {ListItemNode, ListNode} from '@lexical/list';
+import {TRANSFORMERS} from '@lexical/markdown';
+import {AutoLinkPlugin, createLinkMatcherWithRegExp} from '@lexical/react/LexicalAutoLinkPlugin';
+import {CheckListPlugin} from '@lexical/react/LexicalCheckListPlugin';
+import {ClickableLinkPlugin} from '@lexical/react/LexicalClickableLinkPlugin';
 // Lexical Core
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
-import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
-import {ContentEditable} from '@lexical/react/LexicalContentEditable';
-import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
-import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
-import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
-import {ClickableLinkPlugin} from '@lexical/react/LexicalClickableLinkPlugin';
-
+import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
+import {HorizontalRuleNode} from '@lexical/react/LexicalHorizontalRuleNode';
+import {HorizontalRulePlugin} from '@lexical/react/LexicalHorizontalRulePlugin';
+import {LinkPlugin} from '@lexical/react/LexicalLinkPlugin';
+import {ListPlugin} from '@lexical/react/LexicalListPlugin';
+import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
+import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
+import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
+import {TableOfContentsPlugin} from '@lexical/react/LexicalTableOfContentsPlugin';
+import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
 // Lexical Nodes & Commands
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
-import {CodeNode, CodeHighlightNode} from '@lexical/code';
-import {ListItemNode, ListNode} from '@lexical/list';
-import {LinkNode, AutoLinkNode, $isLinkNode} from '@lexical/link';
-import {TableNode, TableCellNode, TableRowNode} from '@lexical/table';
-import {ImageNode, $createImageNode} from './ImageNode';
-import {DrawingNode, $createDrawingNode} from './DrawingNode';
+import {TableCellNode, TableNode, TableRowNode} from '@lexical/table';
+import {$createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, COMMAND_PRIORITY_LOW, PASTE_COMMAND} from 'lexical';
+import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
+
+import {DrawingNode} from './DrawingNode';
+import EditorToolbar from './editor/EditorToolbar';
+import FloatingFormatBar from './editor/FloatingFormatBar';
+import SlashMenuPlugin from './editor/SlashMenuPlugin';
+import {buildStyleImportMap} from './editor/styleImport';
+import {ImageNode} from './ImageNode';
 import {ImagePastePlugin} from './ImagePastePlugin';
 import {TableActionsPlugin} from './TableActionsPlugin';
-import {TRANSFORMERS} from '@lexical/markdown';
-
-import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
-import {CheckListPlugin} from '@lexical/react/LexicalCheckListPlugin';
-import {ListPlugin} from '@lexical/react/LexicalListPlugin';
-import {LinkPlugin} from '@lexical/react/LexicalLinkPlugin';
-import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
-import {AutoLinkPlugin, createLinkMatcherWithRegExp} from '@lexical/react/LexicalAutoLinkPlugin';
-import {MarkdownShortcutPlugin} from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import {TableOfContentsPlugin} from '@lexical/react/LexicalTableOfContentsPlugin';
 
 const URL_REGEX =
   /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
@@ -63,59 +49,13 @@ const MATCHERS = [
   createLinkMatcherWithRegExp(EMAIL_REGEX, text => `mailto:${text}`),
 ];
 
-import {
-  $getRoot,
-  $isElementNode,
-  $createParagraphNode,
-  FORMAT_TEXT_COMMAND,
-  FORMAT_ELEMENT_COMMAND,
-  UNDO_COMMAND,
-  REDO_COMMAND,
-  $getSelection,
-  $isRangeSelection,
-  $createTextNode,
-  COMMAND_PRIORITY_LOW,
-  PASTE_COMMAND,
-} from 'lexical';
-import {$createHeadingNode} from '@lexical/rich-text';
-import {INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND} from '@lexical/list';
-import {INSERT_TABLE_COMMAND} from '@lexical/table';
-import {TOGGLE_LINK_COMMAND} from '@lexical/link';
-import {$createCodeNode} from '@lexical/code';
-import {$setBlocksType, $patchStyleText} from '@lexical/selection';
-
-// UI components for Toolbar
-import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  List,
-  ListOrdered,
-  CheckSquare,
-  Undo,
-  Redo,
-  Type,
-  Code,
-  Link as LinkIcon,
-  Table,
-  Baseline,
-  PaintBucket,
-  ImagePlus,
-  PenLine,
-  X,
-  Check,
-} from 'lucide-react';
-
 export interface RichTextEditorProps {
   onChange: (value: string, delta: any, source: string, editor: any) => void;
   onBlur?: () => void;
   placeholder?: string;
   value: string;
+  /** Used for exported file names */
+  title?: string;
 }
 
 // ── LinkPastePlugin: ensures pasted plain-text URLs become clickable links ────
@@ -154,297 +94,6 @@ function LinkPastePlugin() {
   return null;
 }
 
-// ── Custom Toolbar Plugin ─────────────────────────────────────────────────────
-function ToolbarPlugin() {
-  const [editor] = useLexicalComposerContext();
-  const [linkPopover, setLinkPopover] = useState<{open: boolean; url: string} | null>(null);
-  const linkInputRef = useRef<HTMLInputElement>(null);
-  const linkBtnRef = useRef<HTMLButtonElement>(null);
-
-  const formatText = (format: 'bold' | 'italic' | 'underline' | 'strikethrough') => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
-  };
-
-  const formatAlign = (alignment: 'left' | 'center' | 'right' | 'justify') => {
-    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, alignment);
-  };
-
-  const formatHeading = (headingSize: 'h1' | 'h2' | 'h3') => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createHeadingNode(headingSize));
-      }
-    });
-  };
-
-  const formatBulletList = () => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
-  const formatNumberedList = () => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-  const formatCheckList = () => editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
-
-  const formatCodeBlock = () => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) $setBlocksType(selection, () => $createCodeNode());
-    });
-  };
-
-  const openLinkPopover = () => {
-    // Read current link URL if cursor is inside an existing link
-    editor.read(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        const nodes = selection.getNodes();
-        for (const node of nodes) {
-          const parent = node.getParent();
-          if ($isLinkNode(parent)) {
-            setLinkPopover({open: true, url: parent.getURL()});
-            return;
-          }
-          if ($isLinkNode(node)) {
-            setLinkPopover({open: true, url: (node as any).getURL?.() ?? ''});
-            return;
-          }
-        }
-      }
-      setLinkPopover({open: true, url: ''});
-    });
-  };
-
-  const submitLink = (url: string) => {
-    setLinkPopover(null);
-    const trimmed = url.trim();
-    if (!trimmed) {
-      editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
-      return;
-    }
-    const finalUrl = trimmed.startsWith('http') || trimmed.startsWith('mailto:') ? trimmed : `https://${trimmed}`;
-    editor.dispatchCommand(TOGGLE_LINK_COMMAND, finalUrl);
-  };
-
-  // Close popover on outside click
-  useEffect(() => {
-    if (!linkPopover) return;
-    const onDown = (e: MouseEvent) => {
-      const el = e.target as HTMLElement;
-      if (!el.closest('[data-link-popover]')) setLinkPopover(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [linkPopover]);
-
-  // Auto-focus the link input
-  useEffect(() => {
-    if (linkPopover && linkInputRef.current) {
-      setTimeout(() => linkInputRef.current?.focus(), 50);
-    }
-  }, [linkPopover]);
-
-  const insertTable = () => {
-    editor.dispatchCommand(INSERT_TABLE_COMMAND, {columns: '3', rows: '3', includeHeaders: false});
-  };
-
-  const insertDrawing = () => {
-    editor.update(() => {
-      const sel = $getSelection();
-      const node = $createDrawingNode();
-      if ($isRangeSelection(sel)) {
-        sel.insertNodes([node]);
-      } else {
-        const root = $getRoot();
-        const para = $createParagraphNode();
-        root.append(para);
-        para.insertAfter(node);
-      }
-    });
-  };
-
-  const applyTextColor = (color: string) => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) $patchStyleText(selection, {color});
-    });
-  };
-
-  const applyHighlight = (color: string) => {
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) $patchStyleText(selection, {'background-color': color});
-    });
-  };
-
-  const textColors = [
-    '#000000', '#374151', '#6B7280', '#EF4444', '#F97316',
-    '#EAB308', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899',
-    '#DC2626', '#D97706', '#15803D', '#1D4ED8', '#7C3AED', '#ffffff',
-  ];
-  const highlightColors = [
-    '#FEF08A', '#BEF264', '#6EE7B7', '#93C5FD', '#F9A8D4',
-    '#FCA5A5', '#FCD34D', '#A5F3FC', '#C4B5FD', '#FDE68A', 'transparent',
-  ];
-
-  return (
-    <div className="flex flex-wrap items-center gap-0.5">
-      {/* Undo/Redo */}
-      <button onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
-        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Undo">
-        <Undo className="w-4 h-4" />
-      </button>
-      <button onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
-        className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Redo">
-        <Redo className="w-4 h-4" />
-      </button>
-
-      <div className="w-px h-4 bg-gray-200 mx-1" />
-
-      {/* Headings */}
-      <div className="relative group">
-        <button className="flex items-center gap-1 p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900">
-          <Type className="w-4 h-4" />
-        </button>
-        <div className="absolute top-full left-0 hidden group-hover:flex flex-col bg-white border border-gray-200 shadow-lg rounded-md z-10 p-1 w-24">
-          <button onClick={() => formatHeading('h1')} className="px-3 py-1 text-left text-sm hover:bg-gray-50 rounded">Heading 1</button>
-          <button onClick={() => formatHeading('h2')} className="px-3 py-1 text-left text-sm hover:bg-gray-50 rounded">Heading 2</button>
-          <button onClick={() => formatHeading('h3')} className="px-3 py-1 text-left text-sm hover:bg-gray-50 rounded">Heading 3</button>
-        </div>
-      </div>
-
-      <div className="w-px h-4 bg-gray-200 mx-1" />
-
-      {/* Text Format */}
-      <button onClick={() => formatText('bold')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Bold"><Bold className="w-4 h-4" /></button>
-      <button onClick={() => formatText('italic')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Italic"><Italic className="w-4 h-4" /></button>
-      <button onClick={() => formatText('underline')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Underline"><Underline className="w-4 h-4" /></button>
-      <button onClick={() => formatText('strikethrough')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Strikethrough"><Strikethrough className="w-4 h-4" /></button>
-
-      {/* Text Color */}
-      <div className="relative group">
-        <button className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Text Color">
-          <Baseline className="w-4 h-4" />
-        </button>
-        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{width: '108px'}}>
-          {textColors.map(c => (
-            <button key={c} onClick={() => applyTextColor(c)}
-              style={{backgroundColor: c, border: c === '#ffffff' ? '1px solid #e5e7eb' : 'none'}}
-              className="w-6 h-6 rounded-sm hover:scale-110 transition-transform" title={c} />
-          ))}
-        </div>
-      </div>
-
-      {/* Highlight */}
-      <div className="relative group">
-        <button className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Highlight">
-          <PaintBucket className="w-4 h-4" />
-        </button>
-        <div className="absolute top-full left-0 hidden group-hover:grid grid-cols-4 gap-1 bg-white border border-gray-200 shadow-lg rounded-md z-20 p-2" style={{width: '108px'}}>
-          {highlightColors.map(c => (
-            <button key={c} onClick={() => applyHighlight(c === 'transparent' ? '' : c)}
-              style={{backgroundColor: c === 'transparent' ? '#fff' : c, border: '1px solid #e5e7eb'}}
-              className="w-6 h-6 rounded-sm hover:scale-110 transition-transform text-xs" title={c === 'transparent' ? 'Remove' : c}>
-              {c === 'transparent' ? '✕' : ''}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="w-px h-4 bg-gray-200 mx-1" />
-
-      {/* Alignment */}
-      <button onClick={() => formatAlign('left')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Align Left"><AlignLeft className="w-4 h-4" /></button>
-      <button onClick={() => formatAlign('center')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Align Center"><AlignCenter className="w-4 h-4" /></button>
-      <button onClick={() => formatAlign('right')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Align Right"><AlignRight className="w-4 h-4" /></button>
-      <button onClick={() => formatAlign('justify')} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Justify"><AlignJustify className="w-4 h-4" /></button>
-
-      <div className="w-px h-4 bg-gray-200 mx-1" />
-
-      {/* Lists */}
-      <button onClick={formatBulletList} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Bullet List"><List className="w-4 h-4" /></button>
-      <button onClick={formatNumberedList} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Numbered List"><ListOrdered className="w-4 h-4" /></button>
-      <button onClick={formatCheckList} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Check List"><CheckSquare className="w-4 h-4" /></button>
-
-      <div className="w-px h-4 bg-gray-200 mx-1" />
-
-      {/* Code */}
-      <button onClick={formatCodeBlock} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Code Block"><Code className="w-4 h-4" /></button>
-
-      {/* Link — with inline popover */}
-      <div className="relative">
-        <button
-          ref={linkBtnRef}
-          onClick={openLinkPopover}
-          className={`p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 ${linkPopover ? 'bg-blue-50 text-blue-600' : ''}`}
-          title="Insert / Edit Link (Ctrl+K)">
-          <LinkIcon className="w-4 h-4" />
-        </button>
-
-        {linkPopover && (
-          <div
-            data-link-popover="true"
-            className="absolute top-full left-0 mt-1 z-50 flex items-center gap-1 bg-white border border-slate-200 shadow-xl rounded-lg px-2 py-1.5"
-            style={{minWidth: 280}}>
-            <LinkIcon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <input
-              ref={linkInputRef}
-              type="url"
-              placeholder="https://example.com"
-              value={linkPopover.url}
-              onChange={e => setLinkPopover({...linkPopover, url: e.target.value})}
-              onKeyDown={e => {
-                if (e.key === 'Enter') submitLink(linkPopover.url);
-                if (e.key === 'Escape') setLinkPopover(null);
-              }}
-              className="flex-1 text-[12px] text-slate-700 outline-none bg-transparent placeholder-slate-300"
-            />
-            <button
-              onMouseDown={e => { e.preventDefault(); submitLink(linkPopover.url); }}
-              className="p-1 rounded hover:bg-emerald-50 text-emerald-600" title="Apply link">
-              <Check className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onMouseDown={e => { e.preventDefault(); setLinkPopover(null); }}
-              className="p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500" title="Cancel">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Table */}
-      <button onClick={insertTable} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Insert Table"><Table className="w-4 h-4" /></button>
-
-      {/* Drawing Canvas */}
-      <button onClick={insertDrawing} className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Insert Drawing Canvas">
-        <PenLine className="w-4 h-4" />
-      </button>
-
-      {/* Insert Image from file */}
-      <label className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 cursor-pointer" title="Insert Image">
-        <ImagePlus className="w-4 h-4" />
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={e => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async () => {
-              const src = await compressImage(reader.result as string);
-              editor.update(() => {
-                const node = $createImageNode({src, altText: file.name});
-                const sel = $getSelection();
-                if ($isRangeSelection(sel)) sel.insertNodes([node]);
-              });
-            };
-            reader.readAsDataURL(file);
-            e.target.value = '';
-          }}
-        />
-      </label>
-    </div>
-  );
-}
-
 // ── Logic Plugin for State Sync ───────────────────────────────────────────────
 function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
   const [editor] = useLexicalComposerContext();
@@ -467,6 +116,7 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
 
   return (
     <OnChangePlugin
+      ignoreSelectionChange
       onChange={(editorState, latestEditor) => {
         editorState.read(() => {
           const html = $generateHtmlFromNodes(latestEditor, null);
@@ -476,17 +126,38 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
           }
         });
       }}
-      ignoreSelectionChange
     />
   );
 }
 
-function CustomPlaceholder({placeholder}: {placeholder?: string}) {
+function CustomPlaceholder({placeholder, pageView}: {placeholder?: string; pageView: boolean}) {
   return (
-    <div
-      className="absolute top-[42px] left-[32px] md:left-[48px] text-slate-300 pointer-events-none select-none"
-      style={{fontSize: '16px'}}>
-      {placeholder || 'Start typing something beautiful...'}
+    <div className={`pointer-events-none absolute select-none text-slate-300 ${pageView ? 'left-[72px] top-[72px]' : 'left-8 top-10 md:left-16'}`} style={{fontSize: '17px'}}>
+      {placeholder || 'Start typing, or press “/” for headings, lists, tables…'}
+    </div>
+  );
+}
+
+/** Live word / character count from the editor itself (not the saved HTML). */
+function StatsPlugin() {
+  const [editor] = useLexicalComposerContext();
+  const [stats, setStats] = useState({words: 0, chars: 0});
+  useEffect(() => {
+    const read = () =>
+      editor.getEditorState().read(() => {
+        const text = $getRoot().getTextContent();
+        setStats({words: (text.match(/\S+/g) || []).length, chars: text.replace(/\s/g, '').length});
+      });
+    read();
+    return editor.registerUpdateListener(read);
+  }, [editor]);
+  return (
+    <div className="pointer-events-none absolute bottom-3 right-6 z-[50] flex select-none items-center gap-3 rounded-full border border-black/[0.04] bg-white/80 px-3.5 py-1 text-[10.5px] font-medium text-slate-400 shadow-sm backdrop-blur">
+      <span><b className="font-semibold text-slate-600">{stats.words.toLocaleString()}</b> words</span>
+      <span className="h-3 w-px bg-slate-200" />
+      <span><b className="font-semibold text-slate-600">{stats.chars.toLocaleString()}</b> characters</span>
+      <span className="h-3 w-px bg-slate-200" />
+      <span><b className="font-semibold text-slate-600">{Math.max(1, Math.ceil(stats.words / 220))}</b> min read</span>
     </div>
   );
 }
@@ -500,7 +171,7 @@ function EditorRefPlugin({editorRef}: {editorRef: React.MutableRefObject<any>}) 
 // ── Main Editor Component ─────────────────────────────────────────────────────
 
 const RichTextEditor = React.memo(
-  forwardRef<any, RichTextEditorProps>(({onChange, onBlur, placeholder, value}, ref) => {
+  forwardRef<any, RichTextEditorProps>(({onChange, onBlur, placeholder, value, title}, ref) => {
     const editorConfig = {
       namespace: 'NotesEditor',
       nodes: [
@@ -517,7 +188,10 @@ const RichTextEditor = React.memo(
         TableRowNode,
         CodeNode,
         CodeHighlightNode,
+        HorizontalRuleNode,
       ],
+      // Keep colours, highlights, fonts and sizes when a saved note is opened again
+      html: {import: buildStyleImportMap()},
       theme: {
         paragraph: 'mb-3',
         heading: {
@@ -525,10 +199,17 @@ const RichTextEditor = React.memo(
           h2: 'text-2xl font-semibold mb-3 mt-4 tracking-tight text-gray-800',
           h3: 'text-xl font-semibold mb-2 mt-4 text-gray-700',
         },
+        quote: 'lex-quote',
+        code: 'lex-code-block',
+        hr: 'lex-hr',
         list: {
           ul: 'list-disc pl-6 mb-3',
           ol: 'list-decimal pl-6 mb-3',
           listitem: 'mb-1',
+          listitemChecked: 'lex-check lex-check-on',
+          listitemUnchecked: 'lex-check',
+          checklist: 'lex-checklist',
+          nested: {listitem: 'lex-nested-item'},
         },
         text: {
           bold: 'font-bold text-slate-900',
@@ -536,6 +217,9 @@ const RichTextEditor = React.memo(
           underline: 'underline underline-offset-4 decoration-indigo-200/50',
           strikethrough: 'line-through text-slate-400',
           underlineStrikethrough: 'underline line-through underline-offset-4 decoration-indigo-200/50',
+          code: 'lex-inline-code',
+          superscript: 'lex-sup',
+          subscript: 'lex-sub',
         },
         link: 'lexical-link',
         table: 'lexical-table',
@@ -549,6 +233,32 @@ const RichTextEditor = React.memo(
     };
 
     const lexicalEditorRef = useRef<any>(null);
+    const [pageView, setPageView] = useState(false);
+    useEffect(() => {
+      try {
+        setPageView(localStorage.getItem('NOTE_EDITOR_PAGE_VIEW') === 'true');
+      } catch {
+        // storage unavailable
+      }
+    }, []);
+    const togglePageView = () =>
+      setPageView(v => {
+        try {
+          localStorage.setItem('NOTE_EDITOR_PAGE_VIEW', String(!v));
+        } catch {
+          // storage unavailable
+        }
+        return !v;
+      });
+    const getHtml = () => {
+      const editor = lexicalEditorRef.current;
+      if (!editor) return value || '';
+      let html = '';
+      editor.getEditorState().read(() => {
+        html = $generateHtmlFromNodes(editor, null);
+      });
+      return html;
+    };
 
     useImperativeHandle(
       ref,
@@ -599,58 +309,47 @@ const RichTextEditor = React.memo(
     );
 
     return (
-      <div className="h-full flex flex-col relative bg-white selection:bg-indigo-50/70">
+      <div className="relative flex h-full flex-col bg-white selection:bg-indigo-100/70">
         <LexicalComposer initialConfig={editorConfig}>
-          <div className="flex flex-col h-full relative">
-            {/* Sticky Toolbar */}
-            <div className="sticky top-0 z-[100] w-full bg-white/80 backdrop-blur-md border-b border-black/[0.03] px-6 py-2 transition-all duration-300">
-              <div className="max-w-4xl mx-auto flex items-center justify-between">
-                <ToolbarPlugin />
-              </div>
+          <div className="relative flex h-full flex-col">
+            {/* Sticky toolbar */}
+            <div className="sticky top-0 z-[100] w-full border-b border-slate-200/70 bg-white/90 px-3 py-1.5 backdrop-blur-md md:px-5">
+              <EditorToolbar getHtml={getHtml} onTogglePageView={togglePageView} pageView={pageView} title={title} />
             </div>
 
-            <div className="relative flex-1 overflow-hidden">
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable
-                    onBlur={onBlur}
-                    className="h-full overflow-y-auto w-full outline-none px-8 md:px-16 pt-12 pb-32 text-[17px] leading-[1.8] text-slate-800 font-sans"
-                  />
-                }
-                placeholder={<CustomPlaceholder placeholder={placeholder} />}
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <HistoryPlugin />
-              <ListPlugin />
-              <CheckListPlugin />
-              <TablePlugin hasCellMerge hasCellBackgroundColor hasHorizontalScroll />
-              <TableActionsPlugin />
-              <LinkPlugin />
-              <ClickableLinkPlugin newTab />
-              <AutoLinkPlugin matchers={MATCHERS} />
-              <LinkPastePlugin />
-              <TabIndentationPlugin />
-              <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-              <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
-              <ValueSyncPlugin value={value} onChange={onChange} />
-              <ImagePastePlugin />
-              <EditorRefPlugin editorRef={lexicalEditorRef} />
-            </div>
-
-            {/* Stats bar */}
-            <div className="absolute bottom-4 right-8 z-[50] flex items-center gap-4 px-4 py-1.5 rounded-full bg-slate-50/50 backdrop-blur-sm border border-black/[0.03] text-[10px] font-medium text-slate-400 select-none">
-              <div className="flex items-center gap-1">
-                <span className="font-bold text-slate-600">{(value || '').replace(/<[^>]*>/g, '').length}</span>
-                <span>CHARS</span>
-              </div>
-              <div className="w-[1px] h-3 bg-slate-200" />
-              <div className="flex items-center gap-1">
-                <span className="font-bold text-slate-600">
-                  {Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').split(/\s+/).length / 200))}
-                </span>
-                <span>MIN READ</span>
+            <div className={`relative flex-1 overflow-y-auto ${pageView ? 'bg-slate-100/80 px-4 py-8' : ''}`}>
+              <div className={pageView ? 'relative mx-auto min-h-[1056px] max-w-[816px] rounded-sm bg-white shadow-[0_1px_3px_rgba(15,23,42,0.08),0_8px_30px_-12px_rgba(15,23,42,0.18)]' : 'relative min-h-full'}>
+                <RichTextPlugin
+                  ErrorBoundary={LexicalErrorBoundary}
+                  contentEditable={
+                    <ContentEditable
+                      className={`lex-content w-full font-sans text-[17px] leading-[1.8] text-slate-800 outline-none ${pageView ? 'min-h-[1056px] px-[72px] py-[72px]' : 'min-h-full px-8 pb-32 pt-10 md:px-16'}`}
+                      onBlur={onBlur}
+                    />
+                  }
+                  placeholder={<CustomPlaceholder pageView={pageView} placeholder={placeholder} />}
+                />
               </div>
             </div>
+            <HistoryPlugin />
+            <ListPlugin />
+            <CheckListPlugin />
+            <TablePlugin hasCellBackgroundColor hasCellMerge hasHorizontalScroll />
+            <TableActionsPlugin />
+            <LinkPlugin />
+            <ClickableLinkPlugin newTab />
+            <AutoLinkPlugin matchers={MATCHERS} />
+            <LinkPastePlugin />
+            <TabIndentationPlugin />
+            <HorizontalRulePlugin />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <TableOfContentsPlugin>{() => <></>}</TableOfContentsPlugin>
+            <SlashMenuPlugin />
+            <FloatingFormatBar />
+            <ValueSyncPlugin onChange={onChange} value={value} />
+            <ImagePastePlugin />
+            <EditorRefPlugin editorRef={lexicalEditorRef} />
+            <StatsPlugin />
           </div>
         </LexicalComposer>
       </div>

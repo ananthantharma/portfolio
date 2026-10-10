@@ -189,3 +189,85 @@ th {
   background-color: #f3f4f6;   /* gray-100 */
   font-weight: 600;
 }
+/* ── Lexical editor: Word-style blocks ───────────────────────────────────────── */
+.lex-quote {
+  margin: 0 0 12px;
+  border-left: 3px solid #c7d2fe;
+  padding: 2px 0 2px 16px;
+  color: #475569;
+  font-style: italic;
+}
+.lex-code-block {
+  display: block;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.lex-inline-code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #f1f5f9;
+  color: #be185d;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+}
+.lex-sup { vertical-align: super; font-size: 0.75em; }
+.lex-sub { vertical-align: sub; font-size: 0.75em; }
+.lex-hr {
+  margin: 20px 0;
+  border: none;
+  height: 1px;
+  background: #e2e8f0;
+  cursor: pointer;
+}
+.lex-hr.selected { outline: 2px solid #a5b4fc; outline-offset: 4px; }
+
+/* Checklists: real checkboxes you can click */
+.lex-checklist { list-style: none; padding-left: 4px; }
+.lex-check {
+  position: relative;
+  list-style: none;
+  padding-left: 30px;
+  margin-bottom: 4px;
+  outline: none;
+}
+.lex-check::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.lex-check-on { color: #94a3b8; text-decoration: line-through; text-decoration-color: #cbd5e1; }
+.lex-check-on::before { background: #46674d; border-color: #46674d; }
+.lex-check-on::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: calc(0.42em + 3px);
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  cursor: pointer;
+}
+.lex-nested-item { list-style: none; }
+.lex-nested-item::before, .lex-nested-item::after { display: none; }
+
+/* Find & replace highlights (CSS Custom Highlight API) */
+::highlight(note-find) { background-color: #fde68a; color: inherit; }
+::highlight(note-find-current) { background-color: #f59e0b; color: #fff; }

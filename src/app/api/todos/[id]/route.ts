@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 
 import dbConnect from '@/lib/dbConnect';
 import {ActivityEntry, logActivity} from '@/lib/projectActivity';
+import TaskPage from '@/models/TaskPage';
 import ToDo, {VENDOR_POPULATE} from '@/models/ToDo';
 
 export const dynamic = 'force-dynamic';
@@ -108,7 +109,7 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     }
 
     // Never accept ownership changes or Mongo operators from a client payload.
-    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId', 'bucket', 'taskGroupId', 'emailSubject', 'assignedTo'];
+    const allowed = ['title', 'priority', 'dueDate', 'category', 'notes', 'status', 'isCompleted', 'subtasks', 'estimatedTime', 'aiGenerated', 'aiContext', 'tags', 'attachments', 'sourcePageId', 'tabId', 'tabName', 'isArchived', 'isTemplate', 'recurrence', 'blockedBy', 'actualMinutes', 'hasNeonBorder', 'neonColor', 'isMinimized', 'order', 'vendorSectionId', 'bucket', 'taskGroupId', 'emailSubject', 'assignedTo', 'hasPage'];
     data = Object.fromEntries(Object.entries(data).filter(([key]) => allowed.includes(key)));
     if (data.title !== undefined && (typeof data.title !== 'string' || !data.title.trim())) return NextResponse.json({success: false, error: 'A task title is required'}, {status: 400});
     if (data.status !== undefined) {
@@ -176,6 +177,12 @@ export async function DELETE(_req: Request, {params}: {params: {id: string}}) {
 
     if (!deletedToDo) {
       return NextResponse.json({success: false, error: 'To Do not found'}, {status: 404});
+    }
+    // The task's private page goes with it
+    try {
+      await TaskPage.deleteMany({taskId: deletedToDo._id, userEmail: session.user.email});
+    } catch (pageError) {
+      console.error('Could not delete the task page:', pageError);
     }
 
     return NextResponse.json({success: true, data: {}});

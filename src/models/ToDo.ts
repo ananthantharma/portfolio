@@ -30,6 +30,7 @@ export interface IToDo extends Document {
   bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | 'follow-up' | null;
   assignedTo?: {staffId?: mongoose.Types.ObjectId | null; name: string; email?: string} | null; // who you handed it to
   emailSubject?: string; // subject line of the source email chain, for searching Outlook
+  hasPage?: boolean; // its private page (TaskPage) has content
   taskGroupId?: mongoose.Types.ObjectId | null; // user-made group for tasks not linked to a project or vendor
   completedAt?: Date | null; // when the task was last marked complete (Done is sorted by this)
   order?: number;
@@ -129,6 +130,7 @@ const ToDoSchema = new Schema<IToDo>(
     completedAt: {type: Date, default: null},
     taskGroupId: {type: Schema.Types.ObjectId, ref: 'TaskGroup', default: null},
     emailSubject: {type: String, default: '', trim: true, maxlength: 500},
+    hasPage: {type: Boolean, default: false},
   },
   {timestamps: true},
 );
