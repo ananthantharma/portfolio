@@ -145,3 +145,4 @@
 .workspace .fab:hover:not(:disabled) { background:#385840; }
 .fab:active { transform:scale(.96); }
 .mobile .editor input:not([type=checkbox]), .mobile .editor select, .mobile .editor textarea:not(.titleInput) { font-size:16px; padding:11px 12px; }
+.pageMark { display:inline-block; margin-left:6px; vertical-align:-1px; color:#9aa58e; }

@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Columns3,
+  FileText,
   FolderKanban,
   Inbox,
   Layers,
@@ -32,6 +33,7 @@ import {api} from './api';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
 import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, useTaskGroups, useVendorOptions} from './TaskExtras';
+import {TaskPageView} from './TaskPage';
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
 import styles from './TaskWorkspace.module.css';
@@ -455,6 +457,7 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
         {priorityDot(t)}
         <span className={`min-w-0 flex-1 truncate text-[13.5px] ${done ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-800'}`} title={t.title}>
           {t.title}
+          {t.hasPage && <FileText className="ml-1.5 inline-block h-3.5 w-3.5 align-[-2px] text-slate-400" aria-label="Has a page" />}
           {drafts[t._id] && <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle" title="Unsaved edits" />}
         </span>
         {statusOf(t) === 'in-progress' && <span className="shrink-0 rounded-full bg-amber-50 px-2 text-[11px] font-semibold leading-5 text-amber-700">In progress</span>}
@@ -500,7 +503,10 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
         style={glowStyle(t)}>
         <div className="flex items-start gap-2">
           {priorityDot(t) && <span className="mt-1.5">{priorityDot(t)}</span>}
-          <p className={`min-w-0 flex-1 text-[13px] leading-snug ${statusOf(t) === 'done' ? 'text-slate-400 line-through' : 'font-medium text-slate-800'}`}>{t.title}</p>
+          <p className={`min-w-0 flex-1 text-[13px] leading-snug ${statusOf(t) === 'done' ? 'text-slate-400 line-through' : 'font-medium text-slate-800'}`}>
+            {t.title}
+            {t.hasPage && <FileText className="ml-1 inline-block h-3 w-3 align-[-1px] text-slate-400" aria-label="Has a page" />}
+          </p>
         </div>
         {(link || t.assignedTo?.name || st > 0 || t.dueDate || statusOf(t) === 'in-progress') && (
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -754,11 +760,18 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
           </div>
         </main>
 
-        {/* Detail */}
-        {(selected === 'new' || selectedTask) && (
+        {/* A task's page covers the list (the rail stays so you can jump elsewhere) */}
+        {selectedTask && (
+          <section className="absolute inset-0 z-30 bg-white md:left-[232px]">
+            <TaskPageView backLabel={title} note={note} onClose={() => setSelected(null)} taskId={selectedTask._id} />
+          </section>
+        )}
+
+        {/* New task */}
+        {selected === 'new' && (
           <section className="absolute inset-y-0 right-0 z-20 w-full max-w-[440px] overflow-y-auto border-l border-slate-200 bg-[#fffefa] shadow-[-12px_0_30px_-18px_rgba(15,23,42,0.35)] lg:static lg:shadow-none">
             <div className={`${styles.workspace} ${styles.compact}`} style={{display: 'block', height: 'auto'}}>
-              <TaskEditor defaults={scopeDefaults()} draftKey={`window-new-${scopeId(scope)}`} key={selected === 'new' ? `new-${scopeId(scope)}` : selected!} note={note} onClose={() => setSelected(null)} task={selectedTask} />
+              <TaskEditor defaults={scopeDefaults()} draftKey={`window-new-${scopeId(scope)}`} key={`new-${scopeId(scope)}`} note={note} onClose={() => setSelected(null)} />
             </div>
           </section>
         )}

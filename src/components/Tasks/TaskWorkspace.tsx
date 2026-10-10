@@ -11,6 +11,7 @@ import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
 import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
+import TaskPageWindow from './TaskPage';
 import {useTaskCollection} from './TaskProvider';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, glowOf, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
@@ -173,6 +174,8 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
   // AI capture: null = closed; an object (possibly empty) = open, seeded with what was pasted
   const [capture, setCapture] = useState<CaptureSeed | null>(null);
   const [assigning, setAssigning] = useState(false);
+  // The task whose private page is open
+  const [pageTaskId, setPageTaskId] = useState<string | null>(null);
   // Group the list by the project or vendor each task is linked to (remembered in this browser)
   const [grouped, setGrouped] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
@@ -346,8 +349,9 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
           onClick={() => toggle(task)}>
           {done && <Check size={12} />}
         </button>
-        <button className={styles.rowTitle} onClick={() => setSelected(task._id)} title={task.title}>
+        <button className={styles.rowTitle} onClick={() => (mobile ? setSelected(task._id) : setPageTaskId(task._id))} title={`${task.title}${mobile ? '' : ' (open its page)'}`}>
           {task.title}
+          {task.hasPage && <FileText aria-label="Has a page" className={styles.pageMark} size={12} />}
           {drafts[task._id] && <em className={styles.draftDot} title="Unsaved edits" />}
         </button>
         {filter === 'done' && <time className={styles.rowTime}>{completedAgo(task)}</time>}
@@ -539,6 +543,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
       className={`${styles.workspace} ${compact ? styles.compact : ''} ${mobile ? styles.mobile : ''}`}
       data-editing={!!(compact && editor)}>
       {assigning && <AssignWorkWindow onClose={() => setAssigning(false)} />}
+      {pageTaskId && <TaskPageWindow note={note} onClose={() => setPageTaskId(null)} taskId={pageTaskId} />}
       {capture && (
         <CaptureModal
           defaults={{bucket: newBucket, ...(filter === 'note' && note ? {sourcePageId: note.id} : {})}}
