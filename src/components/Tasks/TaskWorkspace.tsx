@@ -563,7 +563,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
           </div>
           <div>
             {onExpand && (
-              <button aria-label="Expand tasks workspace" onClick={onExpand}>
+              <button aria-label="Open tasks window" onClick={onExpand} title="Open tasks in a larger window">
                 <Maximize2 size={16} />
               </button>
             )}
@@ -621,13 +621,14 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
           </button>
         </div>
 
-        <div aria-label="Filter tasks" className={styles.statusTabs}>
+        {/* The sidebar always shows open tasks; Today / Done / Archive live in the pop-out window */}
+        {!(compact && !mobile) && <div aria-label="Filter tasks" className={styles.statusTabs}>
           {statusTabs.map(([key, label]) => (
             <button aria-pressed={filter === key} key={key} onClick={() => setFilter(key)}>
               {label}
             </button>
           ))}
-        </div>
+        </div>}
 
         {filter !== 'done' && filter !== 'archive' && bucket !== 'people' && (
           <form

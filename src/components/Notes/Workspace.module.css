@@ -209,6 +209,52 @@
   height: 16px;
   width: 16px;
 }
+/* Quick tool buttons beside New note: same size as New note, soft neutral tints */
+.quickTools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.quickTool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--qt-line);
+  background: var(--qt-bg);
+  color: var(--qt-ink);
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.quickTool:hover {
+  background: var(--qt-hover);
+  border-color: var(--qt-ink);
+}
+.quickTool svg {
+  height: 15px;
+  width: 15px;
+}
+.quickTool[data-tone='slate'] { --qt-bg: #eaedf0; --qt-hover: #dde2e7; --qt-line: #d3d9df; --qt-ink: #44505b; }
+.quickTool[data-tone='stone'] { --qt-bg: #eee9e4; --qt-hover: #e3dcd4; --qt-line: #ddd4ca; --qt-ink: #5c5046; }
+.quickTool[data-tone='sand'] { --qt-bg: #f1ecdf; --qt-hover: #e7dfcb; --qt-line: #e0d6bd; --qt-ink: #5f5538; }
+.quickTool[data-tone='sage'] { --qt-bg: #e6ece4; --qt-hover: #d9e2d6; --qt-line: #cfdacb; --qt-ink: #475a4c; }
+/* Narrower screens: icons only (names show on hover) */
+@media (max-width: 1350px) {
+  .quickTool {
+    padding: 9px;
+  }
+  .quickTool span {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .quickTools {
+    display: none;
+  }
+}
 .iconButton {
   padding: 7px;
   color: #777e70;

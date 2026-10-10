@@ -81,6 +81,7 @@ import AudioRecorderModal from './AudioRecorderModal';
 import GoogleDriveModal from './GoogleDriveModal';
 import CameraModal from './CameraModal';
 import AssignWorkWindow from './AssignWorkWindow';
+import TasksWindow from '../Tasks/TasksWindow';
 
 import UnifiedAIChatModal from './UnifiedAIChatModal';
 import LogicStyleRefiner from './LogicStyleRefiner';
@@ -147,6 +148,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const [isAudioRecorderOpen, setIsAudioRecorderOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isAssignWorkOpen, setIsAssignWorkOpen] = useState(false);
+  const [isTasksWindowOpen, setIsTasksWindowOpen] = useState(false);
 
   const [badgeCounts, setBadgeCounts] = useState<{
     pages: Record<string, {todo: {count: number; minDays: number | null}; important: number; flagged: number}>;
@@ -1441,6 +1443,20 @@ const NotesLayout: React.FC = React.memo(() => {
                 onClick={toggleFocusMode}>
                 {isFocusMode ? <ArrowsPointingInIcon /> : <ArrowsPointingOutIcon />}
               </button>
+              {/* Quick tools, each in its own neutral tint */}
+              <div className={styles.quickTools}>
+                {[
+                  {label: 'Google Drive', tone: 'slate', Icon: CloudIcon, action: () => setIsDriveOpen(true)},
+                  {label: 'Prompt Library', tone: 'stone', Icon: ChatBubbleBottomCenterTextIcon, action: () => setIsPromptLibraryOpen(true)},
+                  {label: 'Bookmarks', tone: 'sand', Icon: BookmarkIcon, action: () => setIsBookmarksOpen(true)},
+                  {label: 'Contacts', tone: 'sage', Icon: UserGroupIcon, action: handleOpenContactList},
+                ].map(({label, tone, Icon, action}) => (
+                  <button className={styles.quickTool} data-tone={tone} key={label} onClick={action} title={label}>
+                    <Icon />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
               <button
                 className={styles.primaryButton}
                 onClick={() => {
@@ -1814,8 +1830,11 @@ const NotesLayout: React.FC = React.memo(() => {
                 compact
                 note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null}
                 onCollapse={toggleTaskSidebar}
-                onExpand={() => changeView('tasks')}
+                onExpand={() => setIsTasksWindowOpen(true)}
               />
+              {isTasksWindowOpen && (
+                <TasksWindow note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onClose={() => setIsTasksWindowOpen(false)} />
+              )}
             </aside>
           ))}
 
