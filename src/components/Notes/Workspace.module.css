@@ -183,6 +183,15 @@
   height: 13px;
   width: 13px;
 }
+.crumbBack {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.crumbBack > svg {
+  display: none;
+}
 .headerActions {
   display: flex;
   align-items: center;
@@ -344,6 +353,8 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  /* keeps the editor's sticky toolbar layered under the header's menus */
+  isolation: isolate;
 }
 .notesPanel[hidden],
 .taskPanel[hidden] {
@@ -664,8 +675,25 @@
     font-size: 11px;
     gap: 5px;
   }
-  .breadcrumb > span:first-of-type {
+  /* Inside a section, phones show just "‹ Section" as a back link */
+  .breadcrumb[data-deep='true'] .crumbRoot,
+  .breadcrumb[data-deep='true'] .crumbPage {
     display: none;
+  }
+  .breadcrumb[data-deep='true'] .crumbBack {
+    font-size: 13px;
+    font-weight: 600;
+    color: #50574b;
+  }
+  .crumbBack > svg {
+    display: block;
+    height: 15px;
+    width: 15px;
+  }
+  .breadcrumb[data-deep='true'] > span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #50574b;
   }
   .headerActions {
     gap: 6px;

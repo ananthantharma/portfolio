@@ -375,25 +375,25 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4"
       onMouseDown={e => e.target === e.currentTarget && !editingId && !viewingId && onClose()}>
       <div className="flex h-[92vh] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[#12141d] shadow-2xl">
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-white/[0.07] px-6 py-4">
-          <div className="flex items-center gap-2.5">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.07] px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
               <BookOpen className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-[15px] font-bold text-white">Prompt Library</h2>
+              <h2 className="whitespace-nowrap text-[15px] font-bold text-white">Prompt Library</h2>
               <p className="text-[11px] text-white/35">
                 {filtered.length} prompt{filtered.length === 1 ? '' : 's'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <select
-              className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1.5 text-[12px] text-white/70 outline-none"
+              className="hidden rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1.5 text-[12px] text-white/70 outline-none sm:block"
               onChange={e => setSortBy(e.target.value as 'alpha' | 'recent')}
               value={sortBy}>
               <option value="recent">Recently added</option>
@@ -402,7 +402,7 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
             <button
               className="flex items-center gap-1.5 rounded-lg bg-violet-500/90 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-violet-400"
               onClick={createPrompt}>
-              <Plus className="h-3.5 w-3.5" /> Add prompt
+              <Plus className="h-3.5 w-3.5" /> <span className="whitespace-nowrap">Add<span className="hidden sm:inline"> prompt</span></span>
             </button>
             <button className="rounded-lg p-2 text-white/30 transition-colors hover:bg-white/[0.08] hover:text-white" onClick={onClose}>
               <X className="h-4 w-4" />

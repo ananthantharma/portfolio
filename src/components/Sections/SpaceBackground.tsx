@@ -14,6 +14,8 @@ import {FC, memo, useEffect, useRef} from 'react';
 type Star = {x: number; y: number; r: number; base: number; phase: number; speed: number; layer: number; tint: string};
 type City = {lat: number; lon: number; b: number; phase: number};
 type Shooter = {x: number; y: number; vx: number; vy: number; life: number; max: number; len: number};
+type Dust = {x: number; y: number; r: number; vx: number; vy: number; phase: number; depth: number};
+type Satellite = {x: number; y: number; vx: number; vy: number};
 
 const TAU = Math.PI * 2;
 
@@ -70,12 +72,15 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
     let last = performance.now();
     let clock = 0;
     let spin = 0;
-    let nextShooter = 2500;
+    let nextShooter = 1200;
+    let nextSatellite = 6000;
+    let satellite: Satellite | null = null;
     const mouse = {x: 0, y: 0, tx: 0, ty: 0};
 
     let stars: Star[] = [];
     const cities: City[] = [];
     const shooters: Shooter[] = [];
+    let dust: Dust[] = [];
     let nebula: HTMLCanvasElement | null = null;
     let planet: HTMLCanvasElement | null = null;
     let farHills: HTMLCanvasElement | null = null;
@@ -136,6 +141,18 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
           tint: tints[Math.floor(rand() * tints.length)],
         };
       });
+
+      // Floating dust specks in the foreground
+      const dr = rng(77);
+      dust = Array.from({length: phone ? 26 : 55}, () => ({
+        x: dr() * W,
+        y: dr() * H,
+        r: 0.6 + dr() * 1.8,
+        vx: 0.004 + dr() * 0.01,
+        vy: -(0.006 + dr() * 0.014),
+        phase: dr() * TAU,
+        depth: 0.4 + dr() * 0.6,
+      }));
 
       // Soft glow sprite for bright stars
       glow = makeCanvas(64, 64);
@@ -323,7 +340,7 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       last = now;
       if (!reduceMotion) {
         clock += dt;
-        spin += dt * 0.000018;
+        spin += dt * 0.00004;
       }
       const t = clock;
       mouse.x += (mouse.tx - mouse.x) * 0.04;
@@ -344,7 +361,7 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       // Stars, three depths: slow drift, mouse parallax and twinkle
       const drawStars = (layer: number) => {
         const par = [5, 12, 22][layer];
-        const drift = [0.004, 0.009, 0.016][layer] * t;
+        const drift = [0.009, 0.02, 0.038][layer] * t;
         for (const s of stars) {
           if (s.layer !== layer) continue;
           let x = (s.x - drift) % W;
@@ -372,14 +389,19 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
         const py = H * 0.22 + mouse.y * 14;
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
-        ctx.globalAlpha = 0.9 + 0.1 * Math.sin(t * 0.00025);
-        ctx.translate(px, py);
-        ctx.rotate(Math.sin(t * 0.00004) * 0.035);
-        ctx.scale(1 + 0.02 * Math.sin(t * 0.00009), 1 + 0.02 * Math.sin(t * 0.00009));
+        ctx.globalAlpha = 0.85 + 0.15 * Math.sin(t * 0.0004);
+        ctx.translate(px + Math.sin(t * 0.00011) * 18, py + Math.cos(t * 0.00009) * 12);
+        ctx.rotate(Math.sin(t * 0.00007) * 0.06);
+        ctx.scale(1 + 0.035 * Math.sin(t * 0.00015), 1 + 0.035 * Math.sin(t * 0.00015));
         ctx.drawImage(nebula, -W * 0.72, -H * 0.22, W, H);
-        ctx.globalAlpha = 0.22 + 0.08 * Math.sin(t * 0.0002 + 1.7);
-        ctx.rotate(-Math.sin(t * 0.00004) * 0.07);
-        ctx.scale(1.07, 1.07);
+        ctx.globalAlpha = 0.24 + 0.12 * Math.sin(t * 0.00035 + 1.7);
+        ctx.rotate(-Math.sin(t * 0.00007) * 0.12);
+        ctx.scale(1.08, 1.08);
+        ctx.drawImage(nebula, -W * 0.72, -H * 0.22, W, H);
+        // A third, faster wisp so the gas visibly swirls
+        ctx.globalAlpha = 0.14 + 0.1 * Math.sin(t * 0.0005 + 3.1);
+        ctx.rotate(t * 0.000012);
+        ctx.scale(0.9, 0.9);
         ctx.drawImage(nebula, -W * 0.72, -H * 0.22, W, H);
         ctx.restore();
       }
@@ -389,8 +411,8 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       {
         const phone = W < 768;
         const r = Math.min(W, H) * (phone ? 0.045 : 0.034);
-        const mx = W * (phone ? 0.82 : 0.82) + Math.sin(t * 0.00005) * W * 0.012 + mouse.x * 18;
-        const my = H * (phone ? 0.14 : 0.23) + Math.cos(t * 0.00005) * H * 0.012 + mouse.y * 18;
+        const mx = W * (phone ? 0.82 : 0.82) + Math.sin(t * 0.00009) * W * 0.025 + mouse.x * 18;
+        const my = H * (phone ? 0.14 : 0.23) + Math.cos(t * 0.00009) * H * 0.02 + mouse.y * 18;
         const halo = ctx.createRadialGradient(mx, my, r * 0.9, mx, my, r * 2.4);
         halo.addColorStop(0, 'rgba(130,140,255,0.16)');
         halo.addColorStop(1, 'rgba(130,140,255,0)');
@@ -414,7 +436,8 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
         nextShooter -= dt;
         if (nextShooter <= 0) {
           spawnShooter();
-          nextShooter = 2600 + Math.random() * 5200;
+          if (Math.random() < 0.3) setTimeout(spawnShooter, 140 + Math.random() * 260);
+          nextShooter = 1200 + Math.random() * 2600;
         }
       }
       for (let i = shooters.length - 1; i >= 0; i--) {
@@ -447,6 +470,31 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
         }
       }
       drawStars(2);
+
+      // A satellite now and then, gliding across the sky with a blinking light
+      if (!reduceMotion) {
+        nextSatellite -= dt;
+        if (!satellite && nextSatellite <= 0) {
+          const ltr = Math.random() < 0.5;
+          satellite = {x: ltr ? -20 : W + 20, y: H * (0.06 + Math.random() * 0.22), vx: (ltr ? 1 : -1) * (0.035 + Math.random() * 0.02), vy: (Math.random() - 0.5) * 0.008};
+        }
+      }
+      if (satellite) {
+        satellite.x += satellite.vx * dt;
+        satellite.y += satellite.vy * dt;
+        const blink = Math.sin(t * 0.008) > 0.6;
+        ctx.fillStyle = 'rgba(220,226,255,0.75)';
+        ctx.fillRect(satellite.x, satellite.y, 1.6, 1.6);
+        if (blink && glow) {
+          ctx.globalAlpha = 0.9;
+          ctx.drawImage(glow, satellite.x - 6, satellite.y - 6, 13, 13);
+          ctx.globalAlpha = 1;
+        }
+        if (satellite.x < -40 || satellite.x > W + 40) {
+          satellite = null;
+          nextSatellite = 14000 + Math.random() * 16000;
+        }
+      }
 
       // Planet
       const ox = mouse.x * 8;
@@ -485,7 +533,7 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       for (let i = 0; i < segs; i++) {
         const ang = a0 + ((a1 - a0) * i) / segs;
         if (Math.abs(ang - P.flareAngle) < 0.1) continue;
-        const n = Math.sin(ang * 9 + t * 0.00045) * 0.5 + Math.sin(ang * 23 - t * 0.0008) * 0.3 + Math.sin(ang * 4 + t * 0.00022) * 0.45;
+        const n = Math.sin(ang * 9 + t * 0.0008) * 0.5 + Math.sin(ang * 23 - t * 0.0014) * 0.3 + Math.sin(ang * 4 + t * 0.0004) * 0.45;
         if (n <= -0.15) continue;
         const ux = Math.sin(ang);
         const uy = -Math.cos(ang);
@@ -494,7 +542,7 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
         if (bx < -20 || bx > W + 20 || by > H + 20) continue;
         const h = R * (0.012 + 0.035 * (n + 0.15));
         const nearSun = Math.min(1, Math.abs(ang - P.flareAngle) / 0.35);
-        const alpha = 0.16 * (n + 0.15) * nearSun;
+        const alpha = 0.22 * (n + 0.15) * nearSun;
         const g = ctx.createLinearGradient(bx, by, bx + ux * h, by + uy * h);
         g.addColorStop(0, `rgba(110,210,255,${alpha})`);
         g.addColorStop(0.5, `rgba(130,120,255,${alpha * 0.55})`);
@@ -542,6 +590,15 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       ctx.arc(0, 0, H * 0.55, 0, TAU);
       ctx.fill();
       ctx.restore();
+      if (!reduceMotion) {
+        const cycle = (t % 6500) / 6500;
+        const ringR = R * (0.04 + cycle * 0.5);
+        ctx.strokeStyle = `rgba(190,200,255,${0.22 * (1 - cycle) ** 2})`;
+        ctx.lineWidth = 2 + 6 * (1 - cycle);
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, ringR, ringR * 0.32, P.flareAngle, 0, TAU);
+        ctx.stroke();
+      }
       ctx.restore();
 
       // Mountains with drifting mist between the ridges
@@ -550,7 +607,7 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < 4; i++) {
         const span = W + 900;
-        const x = ((t * (0.012 + i * 0.006) + i * 520) % span) - 450;
+        const x = ((t * (0.024 + i * 0.01) + i * 520) % span) - 450;
         const y = H * (0.86 + i * 0.03);
         ctx.save();
         ctx.translate(x, y);
@@ -566,6 +623,24 @@ const SpaceBackground: FC<{className?: string}> = memo(({className}) => {
       }
       ctx.restore();
       if (nearHills) ctx.drawImage(nearHills, -40 + mouse.x * 18, mouse.y * 6, W + 80, H);
+
+      // Dust specks drifting up through the scene (closest ones move most with the mouse)
+      if (glow) {
+        for (const d of dust) {
+          if (!reduceMotion) {
+            d.x += d.vx * dt;
+            d.y += d.vy * dt;
+            if (d.y < -10) d.y = H + 10;
+            if (d.x > W + 10) d.x = -10;
+          }
+          const a = (0.25 + 0.35 * Math.sin(t * 0.0012 + d.phase)) * d.depth;
+          if (a <= 0.02) continue;
+          const size = d.r * 7 * d.depth;
+          ctx.globalAlpha = a;
+          ctx.drawImage(glow, d.x + mouse.x * 30 * d.depth - size / 2, d.y + mouse.y * 30 * d.depth - size / 2, size, size);
+        }
+        ctx.globalAlpha = 1;
+      }
 
       // Vignette
       const v = ctx.createRadialGradient(W * 0.55, H * 0.45, Math.min(W, H) * 0.35, W * 0.5, H * 0.5, Math.max(W, H) * 0.85);

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-sort-props */
 'use client';
-import {PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon} from '@heroicons/react/24/outline';
+import {PaperClipIcon, TrashIcon, ArrowDownTrayIcon, CloudArrowUpIcon, ChevronUpIcon} from '@heroicons/react/24/outline';
 
 import React, {useCallback, useEffect, useState} from 'react';
 
@@ -33,6 +33,8 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [storageType, setStorageType] = useState<'local' | 'drive' | 'blob'>('local');
+  // Phones keep the list folded so the editor gets the screen; desktop always shows it
+  const [phoneOpen, setPhoneOpen] = useState(false);
 
   const fetchAttachments = useCallback(async () => {
     try {
@@ -263,20 +265,28 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
 
   return (
     <div
-      className={`border-t border-gray-200 p-4 transition-colors ${
+      className={`border-t border-gray-200 px-4 py-2.5 sm:p-4 transition-colors ${
         isDragging ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50'
       }`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+      <div className={`flex items-center justify-between gap-2 sm:mb-4 ${phoneOpen ? 'mb-3' : ''}`}>
+        <button
+          aria-expanded={phoneOpen}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 sm:pointer-events-none"
+          onClick={() => setPhoneOpen(v => !v)}
+          type="button">
           <PaperClipIcon className="h-4 w-4" />
           Attachments
-        </h3>
+          {attachments.length > 0 && (
+            <span className="rounded-full bg-gray-200 px-1.5 text-[10px] font-semibold text-gray-600">{attachments.length}</span>
+          )}
+          <ChevronUpIcon className={`h-3.5 w-3.5 text-gray-400 transition-transform sm:hidden ${phoneOpen ? '' : 'rotate-180'}`} />
+        </button>
 
-        <div className="flex items-center gap-4">
-          <div className="flex bg-gray-200 p-0.5 rounded-lg">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className={`bg-gray-200 p-0.5 rounded-lg sm:flex ${phoneOpen ? 'flex' : 'hidden'}`}>
             {(['local', 'drive', 'blob'] as const).map(type => (
               <button
                 key={type}
@@ -310,6 +320,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
         <div className="mb-3 px-3 py-2 text-xs text-red-600 bg-red-50 rounded border border-red-100">{error}</div>
       )}
 
+      <div className={phoneOpen ? '' : 'hidden sm:block'}>
       {attachments.length === 0 ? (
         <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg text-xs text-gray-400">
           No files attached
@@ -365,6 +376,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = React.memo(({
           })}
         </div>
       )}
+      </div>
     </div>
   );
 });

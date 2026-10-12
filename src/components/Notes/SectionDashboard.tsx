@@ -107,7 +107,7 @@ const PageCard = React.memo<PageCardProps>(
             : 'border-slate-100 bg-white/60 hover:bg-white hover:border-slate-200 hover:shadow-lg hover:shadow-slate-200/60'
         }`}>
         {/* ── Main row ── */}
-        <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+        <div className="flex items-start gap-2 sm:gap-3 px-3 sm:px-4 pt-4 pb-3">
           {/* Expand toggle + folder icon */}
           <div className="flex items-center gap-1 flex-shrink-0 mt-[3px]">
             <button
@@ -137,9 +137,12 @@ const PageCard = React.memo<PageCardProps>(
           <div className="flex-1 min-w-0">
             {/* Title */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[14px] font-semibold text-slate-800 leading-snug">
+              <button
+                className="text-left text-[14px] font-semibold text-slate-800 leading-snug hover:text-slate-950"
+                onClick={() => onOpenPage(pid)}
+                type="button">
                 {page.title || 'Untitled'}
-              </span>
+              </button>
               {isPinned && (
                 <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
                   <MapPinIcon className="h-2.5 w-2.5" /> Pinned
@@ -193,10 +196,10 @@ const PageCard = React.memo<PageCardProps>(
                 </button>
               )}
               {tabs.length > 0 && page.createdAt && (
-                <span className="text-slate-200 text-[11px]">·</span>
+                <span className="hidden sm:inline text-slate-200 text-[11px]">·</span>
               )}
               {page.createdAt && (
-                <span className="text-[11px] text-slate-300">Created {formatDate(page.createdAt)}</span>
+                <span className="hidden sm:inline text-[11px] text-slate-300">Created {formatDate(page.createdAt)}</span>
               )}
               {page.updatedAt && (
                 <>
@@ -208,7 +211,7 @@ const PageCard = React.memo<PageCardProps>(
           </div>
 
           {/* Right side: badge + star + pin + open */}
-          <div className="flex items-center gap-1 flex-shrink-0 mt-[3px]">
+          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 mt-[3px]">
             {taskCount > 0 && (
               <span className="text-[10px] font-semibold bg-rose-50 text-rose-500 border border-rose-100 px-1.5 py-0.5 rounded-full mr-1">
                 {taskCount} {taskCount === 1 ? 'task' : 'tasks'}
@@ -236,8 +239,9 @@ const PageCard = React.memo<PageCardProps>(
             </button>
             <button
               onClick={() => onOpenPage(pid)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1A1A1A] hover:bg-slate-800 text-white text-[11px] font-semibold transition-all ml-1 shadow-sm">
-              Open <ArrowRightIcon className="h-3 w-3" />
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#1A1A1A] hover:bg-slate-800 text-white text-[11px] font-semibold transition-all ml-1 shadow-sm"
+              title="Open page">
+              <span className="hidden sm:inline">Open</span> <ArrowRightIcon className="h-3 w-3" />
             </button>
           </div>
         </div>
@@ -396,7 +400,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
     };
 
     return (
-      <div className="h-full overflow-y-auto custom-scrollbar px-6 py-8">
+      <div className="h-full overflow-y-auto custom-scrollbar px-4 py-6 sm:px-6 sm:py-8">
         {/* ── Header ── */}
         <div className="mb-8">
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">

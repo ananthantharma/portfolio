@@ -95,6 +95,8 @@ function LinkPastePlugin() {
 }
 
 // ── Logic Plugin for State Sync ───────────────────────────────────────────────
+const VALUE_SYNC_TAG = 'value-sync';
+
 function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
   const [editor] = useLexicalComposerContext();
   const lastUpdateValue = useRef('');
@@ -109,7 +111,7 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
         const nodes = $generateNodesFromDOM(editor, dom);
         $getRoot().clear();
         $getRoot().append(...nodes);
-      });
+      }, {tag: VALUE_SYNC_TAG});
       lastUpdateValue.current = value;
     }
   }, [editor, value]);
@@ -117,9 +119,14 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
   return (
     <OnChangePlugin
       ignoreSelectionChange
-      onChange={(editorState, latestEditor) => {
+      onChange={(editorState, latestEditor, tags) => {
         editorState.read(() => {
           const html = $generateHtmlFromNodes(latestEditor, null);
+          // Loading a value re-serialises it slightly differently; that isn't an edit
+          if (tags.has(VALUE_SYNC_TAG)) {
+            lastUpdateValue.current = html;
+            return;
+          }
           if (html !== lastUpdateValue.current) {
             lastUpdateValue.current = html;
             onChange(html, null, 'user', latestEditor);
@@ -132,7 +139,7 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
 
 function CustomPlaceholder({placeholder, pageView}: {placeholder?: string; pageView: boolean}) {
   return (
-    <div className={`pointer-events-none absolute select-none text-slate-300 ${pageView ? 'left-[72px] top-[72px]' : 'left-8 top-10 md:left-16'}`} style={{fontSize: '17px'}}>
+    <div className={`pointer-events-none absolute select-none text-slate-300 ${pageView ? 'left-5 top-6 sm:left-[72px] sm:top-[72px]' : 'left-4 top-5 sm:left-8 sm:top-10 md:left-16'}`} style={{fontSize: '17px'}}>
       {placeholder || 'Start typing, or press “/” for headings, lists, tables…'}
     </div>
   );
@@ -152,7 +159,7 @@ function StatsPlugin() {
     return editor.registerUpdateListener(read);
   }, [editor]);
   return (
-    <div className="pointer-events-none absolute bottom-3 right-6 z-[50] flex select-none items-center gap-3 rounded-full border border-black/[0.04] bg-white/80 px-3.5 py-1 text-[10.5px] font-medium text-slate-400 shadow-sm backdrop-blur">
+    <div className="pointer-events-none absolute bottom-3 right-6 z-[50] hidden select-none sm:flex items-center gap-3 rounded-full border border-black/[0.04] bg-white/80 px-3.5 py-1 text-[10.5px] font-medium text-slate-400 shadow-sm backdrop-blur">
       <span><b className="font-semibold text-slate-600">{stats.words.toLocaleString()}</b> words</span>
       <span className="h-3 w-px bg-slate-200" />
       <span><b className="font-semibold text-slate-600">{stats.chars.toLocaleString()}</b> characters</span>
@@ -313,17 +320,19 @@ const RichTextEditor = React.memo(
         <LexicalComposer initialConfig={editorConfig}>
           <div className="relative flex h-full flex-col">
             {/* Sticky toolbar */}
-            <div className="sticky top-0 z-[100] w-full border-b border-slate-200/70 bg-white/90 px-3 py-1.5 backdrop-blur-md md:px-5">
+            <div className="sticky top-0 z-[100] w-full border-b border-slate-200/70 bg-white px-1.5 py-1 sm:bg-white/90 sm:px-3 sm:py-1.5 sm:backdrop-blur-md md:px-5">
               <EditorToolbar getHtml={getHtml} onTogglePageView={togglePageView} pageView={pageView} title={title} />
+              {/* Phones: hint that the single-row toolbar scrolls sideways */}
+              <span className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white sm:hidden" />
             </div>
 
-            <div className={`relative flex-1 overflow-y-auto ${pageView ? 'bg-slate-100/80 px-4 py-8' : ''}`}>
+            <div className={`relative flex-1 overflow-y-auto ${pageView ? 'bg-slate-100/80 px-2 py-3 sm:px-4 sm:py-8' : ''}`}>
               <div className={pageView ? 'relative mx-auto min-h-[1056px] max-w-[816px] rounded-sm bg-white shadow-[0_1px_3px_rgba(15,23,42,0.08),0_8px_30px_-12px_rgba(15,23,42,0.18)]' : 'relative min-h-full'}>
                 <RichTextPlugin
                   ErrorBoundary={LexicalErrorBoundary}
                   contentEditable={
                     <ContentEditable
-                      className={`lex-content w-full font-sans text-[17px] leading-[1.8] text-slate-800 outline-none ${pageView ? 'min-h-[1056px] px-[72px] py-[72px]' : 'min-h-full px-8 pb-32 pt-10 md:px-16'}`}
+                      className={`lex-content w-full font-sans text-[17px] leading-[1.8] text-slate-800 outline-none ${pageView ? 'min-h-[1056px] px-5 py-6 sm:px-[72px] sm:py-[72px]' : 'min-h-full px-4 pb-32 pt-5 sm:px-8 sm:pt-10 md:px-16'}`}
                       onBlur={onBlur}
                     />
                   }

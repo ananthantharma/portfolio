@@ -142,7 +142,7 @@ function ToolButton({active, disabled, title, onClick, children, className = ''}
     <button
       aria-label={title}
       aria-pressed={active}
-      className={`flex h-8 min-w-[32px] items-center justify-center gap-1 rounded-md px-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 ${active ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800' : ''} ${className}`}
+      className={`flex h-8 min-w-[32px] shrink-0 items-center justify-center gap-1 rounded-md px-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-30 ${active ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800' : ''} ${className}`}
       disabled={disabled}
       onClick={onClick}
       onMouseDown={e => e.preventDefault()}
@@ -156,6 +156,11 @@ function ToolButton({active, disabled, title, onClick, children, className = ''}
 /** Click-to-open menu that closes on outside click or Escape. */
 function Menu({button, children, title, width = 220, align = 'left', open, setOpen}: {button: React.ReactNode; children: React.ReactNode; title: string; width?: number; align?: 'left' | 'right'; open: boolean; setOpen: (v: boolean) => void}) {
   const ref = useRef<HTMLDivElement>(null);
+  const [phonePos, setPhonePos] = useState<React.CSSProperties | null>(null);
+  const toggle = () => {
+    if (!open) setPhonePos(phoneAnchor(ref.current, width, align));
+    setOpen(!open);
+  };
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
@@ -168,12 +173,12 @@ function Menu({button, children, title, width = 220, align = 'left', open, setOp
     };
   }, [open, setOpen]);
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
         aria-expanded={open}
         aria-label={title}
         className={`flex h-8 items-center gap-1 rounded-md px-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 ${open ? 'bg-slate-100 text-slate-900' : ''}`}
-        onClick={() => setOpen(!open)}
+        onClick={toggle}
         onMouseDown={e => e.preventDefault()}
         title={title}
         type="button">
@@ -181,7 +186,7 @@ function Menu({button, children, title, width = 220, align = 'left', open, setOp
         <ChevronDown className="h-3 w-3 opacity-60" />
       </button>
       {open && (
-        <div className={`absolute top-full z-[300] mt-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ${align === 'right' ? 'right-0' : 'left-0'}`} style={{width}}>
+        <div className={`absolute top-full z-[300] mt-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl ${align === 'right' ? 'right-0' : 'left-0'}`} style={phonePos || {width}}>
           {children}
         </div>
       )}
@@ -205,11 +210,30 @@ function MenuItem({onClick, children, active, hint}: {onClick: () => void; child
 
 const Divider = () => <span className="mx-1 h-5 w-px shrink-0 bg-slate-200" />;
 
+/** On phones, a dropdown is placed against the viewport (under its button, kept on screen). */
+function phoneAnchor(el: HTMLElement | null, width: number, align: 'left' | 'right'): React.CSSProperties | null {
+  if (!el || typeof window === 'undefined' || window.innerWidth >= 640) return null;
+  const r = el.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const w = Math.min(width, vw - 16);
+  const left = align === 'right' ? r.right - w : r.left;
+  return {
+    position: 'fixed',
+    top: r.bottom + 4,
+    left: Math.max(8, Math.min(left, vw - w - 8)),
+    right: 'auto',
+    width: w,
+    marginTop: 0,
+    maxHeight: Math.max(160, window.innerHeight - r.bottom - 16),
+    overflowY: 'auto',
+  };
+}
+
 /* ── find & replace ── */
 
 type Match = {key: string; offset: number};
 
-function FindReplacePanel({editor, onClose}: {editor: LexicalEditor; onClose: () => void}) {
+function FindReplacePanel({editor, onClose, style}: {editor: LexicalEditor; onClose: () => void; style?: React.CSSProperties}) {
   const [query, setQuery] = useState('');
   const [replacement, setReplacement] = useState('');
   const [matchCase, setMatchCase] = useState(false);
@@ -318,7 +342,7 @@ function FindReplacePanel({editor, onClose}: {editor: LexicalEditor; onClose: ()
 
   const input = 'h-8 min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-2.5 text-[13px] text-slate-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100';
   return (
-    <div className="absolute right-4 top-full z-[250] mt-2 w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-2xl">
+    <div className="absolute right-4 top-full z-[250] mt-2 w-[360px] rounded-xl border border-slate-200 bg-white p-3 shadow-2xl" style={style}>
       <div className="flex items-center gap-1.5">
         <Search className="h-4 w-4 shrink-0 text-slate-400" />
         <input
@@ -394,6 +418,15 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
   const [notice, setNotice] = useState<string | null>(null);
   const imageInput = useRef<HTMLInputElement>(null);
   const linkInput = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Phones: the link box and find panel sit full-width just under the toolbar
+  const [sheetTop, setSheetTop] = useState<number | null>(null);
+  const linkOpen = !!link;
+  useEffect(() => {
+    if (!(findOpen || linkOpen) || window.innerWidth >= 640) return setSheetTop(null);
+    setSheetTop((rootRef.current?.getBoundingClientRect().bottom ?? 0) + 6);
+  }, [findOpen, linkOpen]);
+  const sheet: React.CSSProperties | undefined = sheetTop === null ? undefined : {position: 'fixed', top: sheetTop, left: 8, right: 8, width: 'auto', marginTop: 0};
 
   const readState = useCallback(() => {
     const sel = $getSelection();
@@ -654,7 +687,10 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
   const AlignIcon = {left: AlignLeft, center: AlignCenter, right: AlignRight, justify: AlignJustify}[state.align as 'left'] || AlignLeft;
 
   return (
-    <div className="relative flex w-full flex-wrap items-center gap-0.5">
+    <div
+      className="relative flex w-full flex-nowrap items-center gap-0.5 overflow-x-auto pr-8 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pr-0 [&::-webkit-scrollbar]:hidden"
+      onScroll={() => menu && setMenu(null)}
+      ref={rootRef}>
       <ToolButton disabled={!canUndo} onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} title="Undo (Ctrl+Z)">
         <Undo className="h-4 w-4" />
       </ToolButton>
@@ -688,7 +724,7 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
       </Menu>
 
       {/* Size */}
-      <div className="flex items-center rounded-md border border-slate-200">
+      <div className="flex shrink-0 items-center rounded-md border border-slate-200">
         <ToolButton className="h-7 min-w-[26px]" onClick={() => stepSize(-1)} title="Smaller text">
           <Minus className="h-3.5 w-3.5" />
         </ToolButton>
@@ -822,12 +858,12 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
       <Divider />
 
       {/* Insert */}
-      <div className="relative">
+      <div className="relative shrink-0">
         <ToolButton active={state.link || !!link} onClick={openLink} title="Link (Ctrl+K)">
           <LinkIcon className="h-4 w-4" />
         </ToolButton>
         {link && (
-          <div className="absolute left-0 top-full z-[300] mt-1 flex w-[300px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
+          <div className="absolute left-0 top-full z-[300] mt-1 flex w-[300px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl" style={sheet}>
             <LinkIcon className="ml-1 h-3.5 w-3.5 shrink-0 text-slate-400" />
             <input
               className="h-7 min-w-0 flex-1 bg-transparent px-1 text-[13px] text-slate-700 outline-none placeholder:text-slate-300"
@@ -928,7 +964,7 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
       </Menu>
 
       {/* Right side: find, page view, export */}
-      <div className="ml-auto flex items-center gap-0.5">
+      <div className="ml-auto flex shrink-0 items-center gap-0.5">
         <ToolButton active={findOpen} onClick={() => setFindOpen(v => !v)} title="Find & replace (Ctrl+F)">
           <Search className="h-4 w-4" />
         </ToolButton>
@@ -948,8 +984,8 @@ export default function EditorToolbar({title, getHtml, pageView, onTogglePageVie
         </Menu>
       </div>
 
-      {findOpen && <FindReplacePanel editor={editor} onClose={() => setFindOpen(false)} />}
-      {notice && <div className="pointer-events-none absolute right-4 top-full z-[260] mt-2 rounded-full bg-slate-900 px-3 py-1.5 text-[12px] font-medium text-white shadow-lg">{notice}</div>}
+      {findOpen && <FindReplacePanel editor={editor} onClose={() => setFindOpen(false)} style={sheet} />}
+      {notice && <div className="pointer-events-none fixed bottom-6 left-1/2 z-[260] -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1.5 text-[12px] font-medium text-white shadow-lg sm:absolute sm:bottom-auto sm:left-auto sm:right-4 sm:top-full sm:mt-2 sm:translate-x-0">{notice}</div>}
     </div>
   );
 }

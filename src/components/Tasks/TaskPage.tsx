@@ -35,6 +35,8 @@ function write(key: string, value: unknown) {
   }
 }
 
+const isPhone = () => typeof window !== 'undefined' && window.innerWidth < 640;
+
 /**
  * The private page behind a task. Header with the task's key facts, the Word-style editor (autosaves),
  * and the full task details in a side panel.
@@ -53,7 +55,8 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPageRef = useRef(!!task?.hasPage);
 
-  useEffect(() => setShowDetails(read('TASK_PAGE_DETAILS', true)), []);
+  // Phones open straight onto the page; the details slide over it on demand (and don't change the desktop preference)
+  useEffect(() => setShowDetails(!isPhone() && read('TASK_PAGE_DETAILS', true)), []);
   useEffect(() => setTitle(task?.title || ''), [task?.title]);
   useEffect(() => {
     hasPageRef.current = !!task?.hasPage;
@@ -162,7 +165,7 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
   const chip = 'inline-flex items-center gap-1 rounded-full border px-2.5 py-[3px] text-[12px] font-medium transition hover:border-slate-300';
   const openDetails = () => {
     setShowDetails(true);
-    write('TASK_PAGE_DETAILS', true);
+    if (!isPhone()) write('TASK_PAGE_DETAILS', true);
   };
   const saveLabel = {loading: 'Opening…', saved: 'Saved', saving: 'Saving…', unsaved: 'Editing…', error: 'Not saved'}[save];
 
@@ -174,11 +177,12 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
-      <header className="flex items-start gap-3 border-b border-slate-100 px-5 py-3.5">
+      <header className="flex flex-wrap items-start gap-x-3 gap-y-1 border-b border-slate-100 px-3 py-2.5 sm:flex-nowrap sm:px-5 sm:py-3.5">
         <button className="mt-1 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12.5px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800" onClick={close} title={backLabel ? `Back to ${backLabel}` : 'Close'} type="button">
           <ArrowLeft className="h-4 w-4" />
           {backLabel && <span className="hidden sm:inline">{backLabel}</span>}
         </button>
+        <div className="order-last flex min-w-0 basis-full items-start gap-3 sm:order-none sm:flex-1 sm:basis-auto">
         <button
           aria-label={done ? 'Reopen task' : 'Complete task'}
           className={`mt-2 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2 transition ${done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500'}`}
@@ -190,7 +194,7 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
         <div className="min-w-0 flex-1">
           <input
             aria-label="Task title"
-            className={`w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-[21px] font-semibold tracking-tight outline-none hover:border-slate-200 focus:border-indigo-300 ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}
+            className={`w-full rounded-md border border-transparent bg-transparent px-1 py-0.5 text-[18px] font-semibold sm:text-[21px] tracking-tight outline-none hover:border-slate-200 focus:border-indigo-300 ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}
             onBlur={commitTitle}
             onChange={e => setTitle(e.target.value)}
             onKeyDown={e => {
@@ -233,14 +237,15 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
             <AssigneePill assignee={task.assignedTo} />
           </div>
         </div>
-        <span className={`mt-2.5 flex shrink-0 items-center gap-1 text-[11.5px] ${save === 'error' ? 'text-rose-600' : 'text-slate-400'}`} title={error || undefined}>
+        </div>
+        <span className={`ml-auto mt-2.5 flex shrink-0 items-center gap-1 sm:ml-0 text-[11.5px] ${save === 'error' ? 'text-rose-600' : 'text-slate-400'}`} title={error || undefined}>
           {save === 'saving' || save === 'loading' ? <Loader2 className="h-3 w-3 animate-spin" /> : save === 'saved' ? <Check className="h-3 w-3 text-emerald-500" /> : null}
           {saveLabel}
         </span>
         <button
           className={`mt-1 rounded-lg p-2 ${showDetails ? 'bg-slate-100 text-slate-800' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'}`}
           onClick={() => {
-            setShowDetails(v => (write('TASK_PAGE_DETAILS', !v), !v));
+            setShowDetails(v => (!isPhone() && write('TASK_PAGE_DETAILS', !v), !v));
           }}
           title={showDetails ? 'Hide task details' : 'Show task details'}
           type="button">
@@ -249,7 +254,7 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
         {actions}
       </header>
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <div className="relative min-w-0 flex-1">
           {error && save === 'error' && content === null ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-[13px] text-slate-500">
@@ -266,14 +271,14 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
           )}
         </div>
         {showDetails && (
-          <aside className="w-[360px] shrink-0 overflow-y-auto border-l border-slate-200 bg-[#fffefa] max-lg:absolute max-lg:inset-y-0 max-lg:right-0 max-lg:z-20 max-lg:shadow-2xl">
+          <aside className="absolute inset-y-0 right-0 z-[150] w-full shrink-0 overflow-y-auto border-slate-200 bg-[#fffefa] shadow-2xl sm:w-[360px] sm:border-l lg:static lg:shadow-none">
             <div className={`${styles.workspace} ${styles.compact}`} style={{display: 'block', height: 'auto'}}>
               <TaskEditor
                 key={task._id}
                 note={note}
                 onClose={() => {
                   setShowDetails(false);
-                  write('TASK_PAGE_DETAILS', false);
+                  if (!isPhone()) write('TASK_PAGE_DETAILS', false);
                 }}
                 task={task}
               />
@@ -301,11 +306,11 @@ export default function TaskPageWindow({taskId, note, onClose}: {taskId: string;
 
   return createPortal(
     <div className="fixed inset-0 z-[225] flex items-center justify-center bg-slate-900/35 backdrop-blur-[3px]" onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div aria-label="Task page" aria-modal className={`relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] transition-[width,height] duration-200 ${maximized ? 'h-[96vh] w-[97vw]' : 'h-[92vh] w-[96vw] md:h-[86vh] md:w-[82vw]'}`} role="dialog">
+      <div aria-label="Task page" aria-modal className={`relative flex h-[100dvh] w-full flex-col overflow-hidden border-slate-200 bg-white shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] transition-[width,height] duration-200 sm:rounded-2xl sm:border ${maximized ? 'sm:h-[96vh] sm:w-[97vw]' : 'sm:h-[92vh] sm:w-[96vw] md:h-[86vh] md:w-[82vw]'}`} role="dialog">
         <TaskPageView
           actions={
             <>
-              <button className="mt-1 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setMaximized(v => (write('TASK_PAGE_MAX', !v), !v))} title={maximized ? 'Restore size' : 'Fill the screen'} type="button">
+              <button className="mt-1 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 hidden sm:block" onClick={() => setMaximized(v => (write('TASK_PAGE_MAX', !v), !v))} title={maximized ? 'Restore size' : 'Fill the screen'} type="button">
                 {maximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
               <button className="mt-1 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={onClose} title="Close (Esc)" type="button">

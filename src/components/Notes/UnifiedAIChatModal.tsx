@@ -6,6 +6,7 @@ import {
   ChevronDown,
   FilePenLine,
   FileText,
+  History,
   ImageIcon,
   Loader2,
   Paperclip,
@@ -120,6 +121,8 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [selectedModel, setSelectedModel] = useState(ALL_MODELS[0].id);
     const [showModelDropdown, setShowModelDropdown] = useState(false);
+    // Phones: chat history is a drawer over the conversation
+    const [showHistory, setShowHistory] = useState(false);
     const [attachments, setAttachments] = useState<Attachment[]>([]);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -832,17 +835,20 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
 
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div className="relative w-[95vw] h-[92vh] max-w-[1400px] bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-700/50 flex overflow-hidden animate-in fade-in duration-200">
+        <div className="relative w-full h-[100dvh] sm:w-[95vw] sm:h-[92vh] max-w-[1400px] bg-zinc-900 sm:rounded-2xl shadow-2xl sm:border border-zinc-700/50 flex overflow-hidden animate-in fade-in duration-200">
           {/* Close Button */}
           <button
-            className="absolute top-4 right-4 z-50 p-2 rounded-lg bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all border border-zinc-700/50"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 p-2 rounded-lg bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all border border-zinc-700/50"
             onClick={onClose}
             title="Close">
             <X className="w-5 h-5" />
           </button>
 
           {/* Sidebar */}
-          <div className="w-72 flex-shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-950/50">
+          {showHistory && <div className="absolute inset-0 z-30 bg-black/50 sm:hidden" onClick={() => setShowHistory(false)} />}
+          <div
+            className={`${showHistory ? 'flex' : 'hidden'} absolute inset-y-0 left-0 z-40 w-72 max-w-[85%] flex-shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 shadow-2xl sm:static sm:flex sm:max-w-none sm:bg-zinc-950/50 sm:shadow-none`}
+            onClick={e => (e.target as HTMLElement).closest('button, [class*="cursor-pointer"]') && setShowHistory(false)}>
             {/* New Chat Button */}
             <div className="p-4 border-b border-zinc-800">
               <button
@@ -951,9 +957,16 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
           {/* Main Chat Area */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Header */}
-            <header className="flex items-center justify-between px-6 py-3.5 bg-zinc-800/50 border-b border-zinc-700/50 backdrop-blur-xl">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2.5">
+            <header className="flex items-center justify-between gap-2 py-3 pl-3 pr-14 sm:px-6 sm:py-3.5 bg-zinc-800/50 border-b border-zinc-700/50 backdrop-blur-xl">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+                <button
+                  className="flex-shrink-0 rounded-lg border border-zinc-700/50 bg-zinc-800/80 p-2 text-zinc-300 hover:text-white sm:hidden"
+                  onClick={() => setShowHistory(true)}
+                  title="Chats"
+                  type="button">
+                  <History className="w-4 h-4" />
+                </button>
+                <div className="hidden min-w-0 items-center gap-2.5 sm:flex">
                   <div className={`w-8 h-8 rounded-lg ${providerColor.avatarBg} flex items-center justify-center`}>
                     <Bot className="w-5 h-5 text-white" />
                   </div>
@@ -1027,7 +1040,7 @@ const UnifiedAIChatModal: React.FC<UnifiedAIChatModalProps> = React.memo(
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mr-10">
+              <div className="flex items-center gap-3 sm:mr-10">
                 {currentSession?.activeGem && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg text-purple-400 text-xs font-medium">
                     <FilePenLine className="w-3 h-3" />

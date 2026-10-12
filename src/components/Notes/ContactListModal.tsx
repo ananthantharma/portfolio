@@ -326,19 +326,19 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                 leaveTo="opacity-0 scale-95">
                 <Dialog.Panel className="w-full max-w-[96vw] xl:max-w-[96vw] transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all h-[94vh] flex flex-col">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-                    <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:flex-nowrap sm:px-6 sm:py-4 border-b border-gray-100 flex-shrink-0">
+                    <div className="contents sm:flex sm:items-center sm:gap-4">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 tracking-tight">Contacts</h3>
                         <p className="text-[11px] text-gray-400 mt-0.5">{contacts.length} total</p>
                       </div>
 
                       {/* Search */}
-                      <div className="relative">
+                      <div className="relative order-last w-full sm:order-none sm:w-auto">
                         <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-2 h-4 w-4 text-gray-400" />
                         <input
                           type="text"
-                          className="w-64 rounded-lg border border-gray-200 bg-gray-50/50 pl-9 pr-3 py-1.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
+                          className="w-full sm:w-64 rounded-lg border border-gray-200 bg-gray-50/50 pl-9 pr-3 py-1.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
                           placeholder="Search by name, company, email..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
@@ -353,7 +353,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
                         title="Paste contact info for AI extraction">
                         <SparklesIcon className="h-3.5 w-3.5" />
-                        AI Paste
+                        <span className="hidden sm:inline">AI Paste</span>
                       </button>
 
                       <button
@@ -361,7 +361,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium"
                         title="Add New Contact">
                         <PlusIcon className="h-3.5 w-3.5" />
-                        New Contact
+                        <span className="hidden sm:inline">New Contact</span>
                       </button>
                       <div className="w-px h-6 bg-gray-200 mx-1" />
                       <button
@@ -373,7 +373,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                   </div>
 
                   {/* Filters Bar */}
-                  <div className="px-6 py-2.5 flex items-center gap-4 border-b border-gray-50 flex-shrink-0 bg-gray-50/30">
+                  <div className="px-4 sm:px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-gray-50 flex-shrink-0 bg-gray-50/30">
                     {/* Type */}
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
@@ -399,10 +399,10 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                       />
                     </div>
 
-                    <div className="w-px h-5 bg-gray-200" />
+                    <div className="hidden sm:block w-px h-5 bg-gray-200" />
 
                     {/* Department */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto">
+                    <div className="flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto">
                       <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1 flex-shrink-0">
                         Dept
                       </span>
@@ -421,7 +421,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                       ))}
                     </div>
 
-                    <div className="w-px h-5 bg-gray-200" />
+                    <div className="hidden sm:block w-px h-5 bg-gray-200" />
 
                     {/* Sort */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -440,7 +440,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 overflow-y-auto px-6 py-4">
+                  <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-6 sm:py-4">
                     {loading ? (
                       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-500 mb-3" />

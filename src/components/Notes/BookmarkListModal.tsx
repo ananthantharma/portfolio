@@ -735,9 +735,9 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                 onClick={() => setOpenMenuId(null)}>
 
                 {/* ── Header ── */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
+                <div className="flex items-center justify-between gap-2 px-3 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex-shrink-0">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <div className="hidden sm:block p-2 bg-gray-100 rounded-lg">
                       <BookmarkIcon className="h-5 w-5 text-gray-700" />
                     </div>
                     <div>
@@ -753,9 +753,9 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                     {/* View toggle */}
-                    <div className="flex bg-gray-100 rounded-lg p-1 gap-0.5">
+                    <div className="hidden sm:flex bg-gray-100 rounded-lg p-1 gap-0.5">
                       <button
                         onClick={e => {
                           e.stopPropagation();
@@ -781,7 +781,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                       value={sortBy}
                       onChange={e => setSortBy(e.target.value as 'alpha' | 'recent')}
                       onClick={e => e.stopPropagation()}
-                      className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
+                      className="max-w-[96px] sm:max-w-none text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
                       <option value="alpha">A – Z</option>
                       <option value="recent">Recently added</option>
                     </select>
@@ -800,7 +800,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                     {/* Close */}
                     <button
                       onClick={onClose}
-                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                      className="rounded-lg p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
                       <XMarkIcon className="h-5 w-5" />
                     </button>
                   </div>

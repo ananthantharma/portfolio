@@ -11,6 +11,7 @@ import {refreshVendorOptions} from '../Tasks/TaskExtras';
 import {statusOf, vendorIdOf} from '../Tasks/types';
 import {
   ChevronDownIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   ClipboardDocumentListIcon,
   MagnifyingGlassIcon,
@@ -242,6 +243,14 @@ const NotesLayout: React.FC = React.memo(() => {
       setSelectedPageId(null);
     }
   }, []);
+  // On phones, picking a section (or vendor/project) in the drawer shows its page
+  const handleSelectSectionFromList = useCallback(
+    (id: string) => {
+      handleSelectSection(id);
+      if (id) setMobileNavigation(false);
+    },
+    [handleSelectSection],
+  );
 
   // Database Stats State
   const [dbSize, setDbSize] = useState<string | null>(null);
@@ -409,7 +418,8 @@ const NotesLayout: React.FC = React.memo(() => {
       try {
         const response = await axios.get('/api/notes/stats');
         if (response.data.success) {
-          setBadgeCounts(response.data.data);
+          const data = response.data.data || {};
+          setBadgeCounts({pages: data.pages || {}, sections: data.sections || {}, categories: data.categories || {}});
         }
       } catch (error) {
         console.error('Error fetching badge stats:', error);
@@ -1379,7 +1389,7 @@ const NotesLayout: React.FC = React.memo(() => {
         )}
         <div className={styles.body}>
           <header className={styles.header}>
-            <div className={styles.breadcrumb}>
+            <div className={styles.breadcrumb} data-deep={!!currentSection && workspaceView === 'notes'}>
               <button
                 aria-expanded={mobileNavigation}
                 aria-label="Toggle notebooks and pages"
@@ -1389,20 +1399,22 @@ const NotesLayout: React.FC = React.memo(() => {
               </button>
               <button
                 aria-label="Notes home"
+                className={styles.crumbRoot}
                 onClick={() => {
                   changeView('notes');
                   handleSelectCategory(null);
                 }}>
                 Workspace
               </button>
-              <ChevronRightIcon />
-              <strong>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
+              <ChevronRightIcon className={styles.crumbRoot} />
+              <strong className={styles.crumbRoot}>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
               {currentSection && workspaceView === 'notes' && (
                 <>
-                  <ChevronRightIcon />
+                  <ChevronRightIcon className={styles.crumbRoot} />
                   {selectedPage ? (
-                    <button onClick={() => setSelectedPageId(null)} title={notebookKind ? `Back to ${notebookKind} page` : 'Back to section'}>
-                      {currentSection.name}
+                    <button className={styles.crumbBack} onClick={() => setSelectedPageId(null)} title={notebookKind ? `Back to ${notebookKind} page` : 'Back to section'}>
+                      <ChevronLeftIcon />
+                      <span>{currentSection.name}</span>
                     </button>
                   ) : (
                     <span>{currentSection.name}</span>
@@ -1411,8 +1423,8 @@ const NotesLayout: React.FC = React.memo(() => {
               )}
               {selectedPage && workspaceView === 'notes' && (
                 <>
-                  <ChevronRightIcon />
-                  <span>{selectedPage.title}</span>
+                  <ChevronRightIcon className={styles.crumbPage} />
+                  <span className={styles.crumbPage}>{selectedPage.title}</span>
                 </>
               )}
             </div>
@@ -1584,12 +1596,13 @@ const NotesLayout: React.FC = React.memo(() => {
                   onSelectCategoryPage={id => {
                     setSelectedSectionId(null);
                     setSelectedPageId(id);
+                    setMobileNavigation(false);
                   }}
                   onSelectPage={id => {
                     setSelectedPageId(id);
                     setMobileNavigation(false);
                   }}
-                  onSelectSection={handleSelectSection}
+                  onSelectSection={handleSelectSectionFromList}
                   onSetParentPage={handleSetParentPage}
                   onToggleCollapse={handleToggleSectionCollapse}
                   onToggleInactive={handleTogglePageInactive}

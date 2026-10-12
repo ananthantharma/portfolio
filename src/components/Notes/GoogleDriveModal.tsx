@@ -245,7 +245,7 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-[2px]" onMouseDown={e => e.target === e.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-2 backdrop-blur-[2px] sm:p-4" onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div
         className="relative flex h-[min(760px,88vh)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
         onDragLeave={e => {
@@ -262,14 +262,14 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
           if (e.dataTransfer.files.length) void upload(e.dataTransfer.files);
         }}>
         {/* Header */}
-        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3.5">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3 sm:px-5 sm:py-3.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
             <HardDrive className="h-4 w-4" />
           </span>
-          <h2 className="text-[15px] font-semibold text-slate-800">Google Drive</h2>
+          <h2 className="whitespace-nowrap text-[15px] font-semibold text-slate-800">Google Drive</h2>
           <div className="ml-auto flex items-center gap-1.5">
             <a className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700" href={folderUrl} rel="noreferrer" target="_blank" title="Open this folder in Google Drive">
-              <ExternalLink className="h-3.5 w-3.5" /> Open in Drive
+              <ExternalLink className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Open in Drive</span>
             </a>
             <button className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[12px] font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50" disabled={!!uploading} onClick={() => fileInput.current?.click()} type="button">
               {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
@@ -286,7 +286,7 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
         </div>
 
         {/* Toolbar: back, breadcrumb, search, refresh */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-2">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-3 py-2 sm:flex-nowrap sm:px-5">
           <button
             aria-label="Up one folder"
             className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-30"
@@ -310,9 +310,9 @@ const GoogleDriveModal: React.FC<GoogleDriveModalProps> = ({isOpen, onClose}) =>
               </React.Fragment>
             ))}
           </nav>
-          <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 focus-within:border-emerald-400 focus-within:bg-white">
+          <div className="order-last flex w-full items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 focus-within:border-emerald-400 focus-within:bg-white sm:order-none sm:w-auto">
             <Search className="h-3.5 w-3.5 text-slate-400" />
-            <input aria-label="Filter this folder" className="w-40 border-0 bg-transparent p-0 text-[12.5px] outline-none placeholder:text-slate-400" onChange={e => setQuery(e.target.value)} placeholder="Filter this folder" value={query} />
+            <input aria-label="Filter this folder" className="w-full border-0 sm:w-40 bg-transparent p-0 text-[12.5px] outline-none placeholder:text-slate-400" onChange={e => setQuery(e.target.value)} placeholder="Filter this folder" value={query} />
           </div>
           <button aria-label="Refresh" className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => void load({folderId: folder.id})} title="Refresh" type="button">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
