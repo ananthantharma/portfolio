@@ -453,7 +453,7 @@ function BookmarkRow({
             ) : (
               <>
                 <GlobeAltIcon className="h-3 w-3" />
-                <span className="max-w-[140px] truncate">{getCleanDomain(bookmark.url)}</span>
+                <span className="max-w-[160px] truncate xl:max-w-[280px]">{getCleanDomain(bookmark.url)}</span>
               </>
             )}
           </span>
@@ -774,7 +774,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                 />
 
                 <div className="flex-1 overflow-y-auto">
-                  <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
+                  <div className="w-full px-4 py-8 sm:px-8 sm:py-10 lg:px-12">
                     {/* ── Header ── */}
                     <div className="mb-8 space-y-4">
                       <div className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-500">
