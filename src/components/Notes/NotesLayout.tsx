@@ -89,6 +89,7 @@ import LogicStyleRefiner from './LogicStyleRefiner';
 import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
 import Humanizer from './Humanizer';
 import TruthTeller from './TruthTeller';
+import ToolRail from './ToolRail';
 
 const LegacyTasksApp = dynamic(() => import('../Tasks/TasksApp'), {
   ssr: false,
@@ -882,6 +883,21 @@ const NotesLayout: React.FC = React.memo(() => {
     [applyPageUpdate],
   );
 
+  // Pin a page to the top of its section (shows at once; rolls back if the save fails)
+  const handleTogglePagePin = useCallback(
+    async (id: string, isPinned: boolean) => {
+      setPages(prev => prev.map(p => (p._id === id ? ({...p, isPinned} as INotePage) : p)));
+      try {
+        const response = await axios.put(`/api/notes/pages/${id}`, {isPinned});
+        applyPageUpdate(response.data.data);
+      } catch (error) {
+        console.error('Error pinning page:', error);
+        setPages(prev => prev.map(p => (p._id === id ? ({...p, isPinned: !isPinned} as INotePage) : p)));
+      }
+    },
+    [applyPageUpdate],
+  );
+
   const handleSetParentPage = useCallback(
     async (pageId: string, parentPageId: string | null) => {
       try {
@@ -1282,26 +1298,13 @@ const NotesLayout: React.FC = React.memo(() => {
     <OpenVendorContext.Provider value={openVendor}>
     <BadgeSettingsProvider>
       <div className={styles.workspace}>
-        <nav aria-label="Tools" className={styles.toolbar} data-expanded={isToolbarExpanded}>
-          <button
-            aria-expanded={isToolbarExpanded}
-            aria-label={isToolbarExpanded ? 'Collapse tools' : 'Expand tools'}
-            className={styles.toolbarToggle}
-            onClick={toggleToolbar}
-            title={isToolbarExpanded ? 'Collapse tools' : 'Expand tools'}>
-            <WrenchScrewdriverIcon />
-            <span>Tools</span>
-            {isToolbarExpanded ? <ChevronDoubleLeftIcon /> : null}
-          </button>
-          <div className={styles.toolbarItems}>
-            {toolItems.map(({label, Icon, action}) => (
-              <button aria-label={label} key={label} onClick={action} title={isToolbarExpanded ? undefined : label}>
-                <Icon />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
+        <ToolRail
+          collapseIcon={ChevronDoubleLeftIcon}
+          expanded={isToolbarExpanded}
+          items={toolItems}
+          onToggle={toggleToolbar}
+          toggleIcon={WrenchScrewdriverIcon}
+        />
         {!isFocusMode && workspaceView === 'notes' && isNotebookSidebarCollapsed && (
           <aside aria-label="Notebook sidebar (minimized)" className={styles.sidebarRail}>
             <button aria-label="Expand notebook sidebar" onClick={toggleNotebookSidebar} title="Expand sidebar">
@@ -1606,6 +1609,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   onSetParentPage={handleSetParentPage}
                   onToggleCollapse={handleToggleSectionCollapse}
                   onToggleInactive={handleTogglePageInactive}
+                  onTogglePin={handleTogglePagePin}
                   pageBadgeCounts={badgeCounts.pages}
                   pages={pages}
                   sectionBadgeCounts={badgeCounts.sections}

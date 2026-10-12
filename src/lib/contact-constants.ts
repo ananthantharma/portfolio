@@ -50,6 +50,8 @@ export interface IContactBase {
   department?: string;
   type?: 'Internal' | 'External';
   image?: string;
+  /** Headshot (JPEG data URL) */
+  photo?: string;
   createdAt: Date;
   updatedAt: Date;
 }

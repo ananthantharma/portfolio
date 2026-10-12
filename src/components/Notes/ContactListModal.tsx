@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, IContactBase as IContact} from '@/lib/contact-constants';
-import ContactFormModal, {ContactFormData} from './ContactFormModal';
+import ContactFormModal, {contactColor, ContactFormData, contactInitials} from './ContactFormModal';
 
 interface ContactListModalProps {
   isOpen: boolean;
@@ -153,18 +153,21 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
 
   const handleSaveContact = async (data: ContactFormData) => {
     try {
-      if (editingContact) {
-        await fetch(`/api/contacts/${editingContact._id}`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data),
-        });
-      } else {
-        await fetch('/api/contacts', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data),
-        });
+      const res = editingContact
+        ? await fetch(`/api/contacts/${editingContact._id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+          })
+        : await fetch('/api/contacts', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+          });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        alert(`Could not save the contact${body?.error ? `: ${body.error}` : '.'}`);
+        return;
       }
       setIsContactFormOpen(false);
       setEditingContact(null);
@@ -475,92 +478,93 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                         )}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                         {filteredContacts.map(contact => (
                           <div
-                            className="group relative bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:shadow-sm transition-all duration-150"
+                            className="group relative flex flex-col overflow-hidden rounded-[22px] border border-[#f0f0f0] bg-[#F5F5F7] shadow-[0_8px_10px_rgb(0,0,0,0.03)] transition-shadow hover:shadow-[0_12px_28px_-12px_rgb(0,0,0,0.18)]"
                             key={contact._id}>
-                            <div className="flex items-start gap-3">
-                              <ContactAvatar name={contact.name} image={contact.image} />
-
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-[13px] font-semibold text-gray-900 truncate">
-                                    {highlightMatch(contact.name, searchQuery)}
-                                  </h4>
-                                  <span
-                                    className={`flex-shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
-                                      contact.type === 'Internal'
-                                        ? 'bg-emerald-50 text-emerald-600'
-                                        : 'bg-sky-50 text-sky-600'
-                                    }`}>
-                                    {contact.type}
-                                  </span>
-                                </div>
-                                <p className="text-[11px] font-medium text-gray-500 truncate">{contact.position}</p>
-                                {contact.company && (
-                                  <p className="text-[11px] text-gray-400 truncate mt-0.5">
-                                    {highlightMatch(contact.company, searchQuery)}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Quick Info */}
-                            <div className="mt-3 space-y-1">
-                              {contact.department && (
-                                <div className="flex items-center text-[11px] text-gray-400">
-                                  <BuildingOfficeIcon className="mr-1.5 h-3 w-3 flex-shrink-0" />
-                                  <span className="truncate">{contact.department}</span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Quick Actions */}
-                            <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                {contact.email && (
-                                  <a
-                                    href={`mailto:${contact.email}`}
-                                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
-                                    onClick={e => e.stopPropagation()}
-                                    title={contact.email}>
-                                    <EnvelopeIcon className="h-3 w-3" />
-                                    Email
-                                  </a>
-                                )}
-                                {contact.phone && (
-                                  <a
-                                    href={`tel:${contact.phone}`}
-                                    className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
-                                    onClick={e => e.stopPropagation()}
-                                    title={contact.phone}>
-                                    <PhoneIcon className="h-3 w-3" />
-                                    Call
-                                  </a>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="relative flex flex-1 flex-col items-center rounded-[18px] border-b-[1.6px] border-[#EAE9F2] bg-white px-5 pb-5 pt-6 text-center">
+                              <span
+                                className={`absolute left-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                  contact.type === 'Internal' ? 'bg-emerald-50 text-emerald-600' : 'bg-sky-50 text-sky-600'
+                                }`}>
+                                {contact.type}
+                              </span>
+                              <div className="absolute right-2.5 top-2.5 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                                 <button
                                   onClick={() => handleEdit(contact)}
-                                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                                  className="rounded-full p-1.5 text-[#a0a0a0] transition-colors hover:bg-[#F5F5F7] hover:text-[#131313]"
                                   title="Edit">
                                   <PencilIcon className="h-3.5 w-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(contact._id)}
-                                  className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                                  className="rounded-full p-1.5 text-[#a0a0a0] transition-colors hover:bg-rose-50 hover:text-rose-600"
                                   title="Delete">
                                   <TrashIcon className="h-3.5 w-3.5" />
                                 </button>
                               </div>
+
+                              <button className="relative mb-3" onClick={() => handleEdit(contact)} title="Edit contact">
+                                {contact.photo ? (
+                                  <img
+                                    alt={contact.name}
+                                    className="h-24 w-24 rounded-full object-cover object-top shadow-sm ring-1 ring-[#f0f0f0]"
+                                    src={contact.photo}
+                                  />
+                                ) : (
+                                  <span className={`flex h-24 w-24 items-center justify-center rounded-full text-[26px] font-bold ring-1 ring-[#f0f0f0] ${contactColor(contact.name)}`}>
+                                    {contactInitials(contact.name)}
+                                  </span>
+                                )}
+                              </button>
+                              <h4 className="w-full truncate text-[16px] font-bold text-[#101010]">{highlightMatch(contact.name, searchQuery)}</h4>
+                              <p className="mb-3 w-full truncate text-[13px] text-[#777678]">{contact.position || '\u00a0'}</p>
+                              {contact.company && (
+                                <span className="flex max-w-full items-center gap-1.5 rounded-full bg-[#F7F7F9] px-3 py-1 text-[12px] font-medium text-[#101010]/60 shadow-sm">
+                                  {contact.image ? (
+                                    <img
+                                      alt=""
+                                      className="h-3.5 w-3.5 flex-shrink-0 rounded-sm object-contain"
+                                      onError={e => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                      src={`https://logo.clearbit.com/${contact.image}`}
+                                    />
+                                  ) : (
+                                    <BuildingOfficeIcon className="h-3 w-3 flex-shrink-0 text-[#777678]" />
+                                  )}
+                                  <span className="truncate">{highlightMatch(contact.company, searchQuery)}</span>
+                                </span>
+                              )}
+                              {contact.department && <p className="mt-2 w-full truncate text-[11px] text-[#a3a2a8]">{contact.department}</p>}
+                              {contact.notes && <p className="mt-1 w-full truncate text-[11px] italic text-[#b4b3bb]">{contact.notes}</p>}
                             </div>
 
-                            {/* Notes preview */}
-                            {contact.notes && (
-                              <p className="mt-2 text-[10px] text-gray-400 truncate">{contact.notes}</p>
-                            )}
+                            {/* Quick actions */}
+                            <div className="flex items-center justify-center gap-2 px-4 py-2.5">
+                              {contact.email && (
+                                <a
+                                  href={`mailto:${contact.email}`}
+                                  className="flex items-center gap-1.5 rounded-full border-[1.6px] border-[#E2E2E6] bg-white px-3 py-1 text-[11.5px] font-semibold text-[#0F0F0F] transition-colors hover:bg-[#fafafa]"
+                                  onClick={e => e.stopPropagation()}
+                                  title={contact.email}>
+                                  <EnvelopeIcon className="h-3.5 w-3.5" />
+                                  Email
+                                </a>
+                              )}
+                              {contact.phone && (
+                                <a
+                                  href={`tel:${contact.phone}`}
+                                  className="flex items-center gap-1.5 rounded-full bg-[#0F0F0F] px-3 py-1 text-[11.5px] font-semibold text-white transition-colors hover:bg-[#222]"
+                                  onClick={e => e.stopPropagation()}
+                                  title={contact.phone}>
+                                  <PhoneIcon className="h-3.5 w-3.5" />
+                                  Call
+                                </a>
+                              )}
+                              {!contact.email && !contact.phone && <span className="py-1 text-[11.5px] text-[#a3a2a8]">No email or phone yet</span>}
+                            </div>
                           </div>
                         ))}
                       </div>

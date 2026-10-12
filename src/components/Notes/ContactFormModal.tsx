@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-sort-props, react-memo/require-usememo, react-memo/require-memo, @typescript-eslint/no-explicit-any */
 import {Dialog, Listbox, Transition} from '@headlessui/react';
-import {ChevronUpDownIcon, XMarkIcon} from '@heroicons/react/24/outline';
-import React, {Fragment, useEffect, useMemo, useState} from 'react';
+import {BuildingOffice2Icon, ChevronUpDownIcon, PencilIcon, PhotoIcon, TrashIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import React, {Fragment, useEffect, useMemo, useRef, useState} from 'react';
 
 import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, CONTACT_TYPES, IContactBase as IContact} from '@/lib/contact-constants';
 
@@ -17,6 +17,8 @@ export interface ContactFormData {
   department: string;
   type: 'Internal' | 'External';
   image?: string;
+  /** Headshot as a JPEG data URL; null removes it */
+  photo?: string | null;
 }
 
 interface ContactFormModalProps {
@@ -27,40 +29,85 @@ interface ContactFormModalProps {
   title?: string;
 }
 
-// Select component with clean styling
-const SelectField = ({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: any) => void;
-  options: string[];
-}) => (
+/** Square-crop any picture to a small JPEG headshot (keeps contacts light to load). */
+export function toHeadshot(file: Blob, size = 256): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      // Centre horizontally; lean towards the top, where faces usually are
+      const sx = (img.naturalWidth - side) / 2;
+      const sy = Math.max(0, (img.naturalHeight - side) * 0.2);
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Could not read that picture'));
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('That file is not a picture we can read'));
+    };
+    img.src = url;
+  });
+}
+
+export function contactInitials(name: string) {
+  return (
+    name
+      .split(' ')
+      .map(n => n.charAt(0))
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || '?'
+  );
+}
+
+export function contactColor(name: string) {
+  const colors = [
+    'bg-rose-100 text-rose-700',
+    'bg-sky-100 text-sky-700',
+    'bg-amber-100 text-amber-700',
+    'bg-emerald-100 text-emerald-700',
+    'bg-violet-100 text-violet-700',
+    'bg-cyan-100 text-cyan-700',
+    'bg-pink-100 text-pink-700',
+    'bg-lime-100 text-lime-700',
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length] || colors[0];
+}
+
+const fieldClass =
+  'w-full rounded-[14px] border-[1.5px] border-[#DFDDE6] bg-white px-4 py-2.5 text-[14px] font-semibold text-[#131313] outline-none transition-colors placeholder:font-medium placeholder:text-[#b4b3bb] focus:border-black';
+const labelClass = 'mb-1.5 block text-[13px] font-medium text-[#706f6f]';
+
+const SelectField = ({label, value, onChange, options}: {label: string; value: string; onChange: (val: any) => void; options: string[]}) => (
   <div>
-    <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">{label}</label>
+    <label className={labelClass}>{label}</label>
     <Listbox value={value} onChange={onChange}>
       <div className="relative">
-        <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left border border-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 text-sm text-gray-700 transition-colors hover:border-gray-300">
+        <Listbox.Button className={`${fieldClass} relative pr-10 text-left`}>
           <span className="block truncate">{value}</span>
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <ChevronUpDownIcon className="h-4 w-4 text-[#131313]/40" />
           </span>
         </Listbox.Button>
         <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-          <Listbox.Options className="absolute mt-1 max-h-48 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none z-10">
-            {options.map((opt, idx) => (
+          <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-[14px] bg-white py-1 text-[14px] shadow-xl ring-1 ring-black/5 focus:outline-none">
+            {options.map(opt => (
               <Listbox.Option
-                key={idx}
+                key={opt}
                 value={opt}
-                className={({active}) =>
-                  `cursor-default select-none py-2 pl-3 pr-4 ${active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'}`
-                }>
-                {({selected}) => (
-                  <span className={`block truncate ${selected ? 'font-medium text-gray-900' : ''}`}>{opt}</span>
-                )}
+                className={({active}) => `cursor-default select-none px-4 py-2 ${active ? 'bg-[#F5F5F7] text-[#131313]' : 'text-[#3a3a3c]'}`}>
+                {({selected}) => <span className={`block truncate ${selected ? 'font-semibold' : ''}`}>{opt}</span>}
               </Listbox.Option>
             ))}
           </Listbox.Options>
@@ -70,274 +117,252 @@ const SelectField = ({
   </div>
 );
 
-const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(
-  ({isOpen, onClose, onSave, initialData, title}) => {
-    const [name, setName] = useState('');
-    const [company, setCompany] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
-    const [notes, setNotes] = useState('');
-    const [position, setPosition] = useState<string>(CONTACT_POSITIONS[0]);
-    const [department, setDepartment] = useState<string>(CONTACT_DEPARTMENTS[0]);
-    const [type, setType] = useState<'Internal' | 'External'>('External');
-    const [image, setImage] = useState<string | undefined>(undefined);
+const ContactFormModal: React.FC<ContactFormModalProps> = React.memo(({isOpen, onClose, onSave, initialData, title}) => {
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [notes, setNotes] = useState('');
+  const [position, setPosition] = useState<string>(CONTACT_POSITIONS[0]);
+  const [department, setDepartment] = useState<string>(CONTACT_DEPARTMENTS[0]);
+  const [type, setType] = useState<'Internal' | 'External'>('External');
+  const [image, setImage] = useState<string | undefined>(undefined);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-      if (isOpen) {
-        if (initialData) {
-          setName(initialData.name || '');
-          setCompany(initialData.company || '');
-          setPhone(initialData.phone || '');
-          setEmail(initialData.email || '');
-          setNotes(initialData.notes || '');
-          setPosition(initialData.position || CONTACT_POSITIONS[0]);
-          setDepartment(initialData.department || CONTACT_DEPARTMENTS[0]);
-          setType(initialData.type || 'External');
-          setImage(initialData.image);
-        } else {
-          setName('');
-          setCompany('');
-          setPhone('');
-          setEmail('');
-          setNotes('');
-          setPosition(CONTACT_POSITIONS[0]);
-          setDepartment(CONTACT_DEPARTMENTS[0]);
-          setType('External');
-          setImage(undefined);
-        }
-      }
-    }, [isOpen, initialData]);
+  useEffect(() => {
+    if (!isOpen) return;
+    setName(initialData?.name || '');
+    setCompany(initialData?.company || '');
+    setPhone(initialData?.phone || '');
+    setEmail(initialData?.email || '');
+    setNotes(initialData?.notes || '');
+    setPosition(initialData?.position || CONTACT_POSITIONS[0]);
+    setDepartment(initialData?.department || CONTACT_DEPARTMENTS[0]);
+    setType(initialData?.type || 'External');
+    setImage(initialData?.image);
+    setPhoto(initialData?.photo || null);
+    setPhotoError(null);
+  }, [isOpen, initialData]);
 
-    const handleIconSelect = React.useCallback((_icon: string, img?: string | null) => {
-      setImage(img || undefined);
-    }, []);
+  const takePicture = async (file: Blob | null | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return setPhotoError('Paste or drop a picture (PNG, JPG, …).');
+    try {
+      setPhoto(await toHeadshot(file));
+      setPhotoError(null);
+    } catch (e) {
+      setPhotoError(e instanceof Error ? e.message : 'Could not use that picture.');
+    }
+  };
 
-    const handleSubmit = (e: React.FormEvent) => {
+  // Paste a picture anywhere in the form to use it as the headshot
+  useEffect(() => {
+    if (!isOpen) return;
+    const onPaste = (e: ClipboardEvent) => {
+      const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+      if (!item) return;
       e.preventDefault();
-      onSave({name, company, phone, email, notes, position, department, type, image});
+      void takePicture(item.getAsFile());
     };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-    // Auto-avatar preview
-    const avatarInitials = useMemo(() => {
-      return (
-        name
-          .split(' ')
-          .map(n => n.charAt(0))
-          .slice(0, 2)
-          .join('')
-          .toUpperCase() || '?'
-      );
-    }, [name]);
+  const handleIconSelect = React.useCallback((_icon: string, img?: string | null) => setImage(img || undefined), []);
 
-    const avatarColor = useMemo(() => {
-      const colors = [
-        'bg-rose-100 text-rose-700',
-        'bg-sky-100 text-sky-700',
-        'bg-amber-100 text-amber-700',
-        'bg-emerald-100 text-emerald-700',
-        'bg-violet-100 text-violet-700',
-        'bg-cyan-100 text-cyan-700',
-        'bg-pink-100 text-pink-700',
-        'bg-lime-100 text-lime-700',
-      ];
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colors[Math.abs(hash) % colors.length] || colors[0];
-    }, [name]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({name, company, phone, email, notes, position, department, type, image, photo});
+  };
 
-    return (
-      <Transition appear={true} as={Fragment} show={isOpen}>
-        <Dialog as="div" className="relative z-[60]" onClose={onClose}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-200"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-150"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
-          </Transition.Child>
+  const initials = useMemo(() => contactInitials(name), [name]);
+  const color = useMemo(() => contactColor(name), [name]);
+  const updated = initialData?.updatedAt ? new Date(initialData.updatedAt).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) : null;
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-200"
-                enterFrom="opacity-0 scale-[0.98] translate-y-2"
-                enterTo="opacity-100 scale-100 translate-y-0"
-                leave="ease-in duration-150"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all">
-                  {/* Header with Avatar Preview */}
-                  <div className="px-6 pt-5 pb-4 border-b border-gray-100">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base font-semibold text-gray-900 tracking-tight">{title || 'New Contact'}</h3>
-                      <button
-                        onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
+  return (
+    <Transition appear={true} as={Fragment} show={isOpen}>
+      <Dialog as="div" className="relative z-[60]" onClose={onClose}>
+        <Transition.Child as={Fragment} enter="ease-out duration-200" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-150" leaveFrom="opacity-100" leaveTo="opacity-0">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-[1px]" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="transition duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1.15)]"
+              enterFrom="opacity-0 scale-90 translate-y-5"
+              enterTo="opacity-100 scale-100 translate-y-0"
+              leave="ease-in duration-150"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95">
+              <Dialog.Panel className="w-full max-w-[760px] overflow-hidden rounded-[24px] border border-[#f0f0f0] bg-[#F5F5F7] text-left shadow-[0_8px_10px_rgb(0,0,0,0.04),0_30px_60px_-30px_rgb(0,0,0,0.35)]">
+                <form onSubmit={handleSubmit}>
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-6 py-4 md:px-8">
+                    <Dialog.Title className="text-[18px] font-semibold text-[#010101]">{title || 'New contact'}</Dialog.Title>
+                    <button type="button" aria-label="Close" onClick={onClose} className="p-1 text-[#a0a0a0] transition-colors hover:text-gray-500">
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex flex-col rounded-[18px] border-y-[1.6px] border-[#EAE9F2] bg-white md:flex-row">
+                    {/* Form */}
+                    <div className="flex-1 space-y-4 p-6">
+                      <div>
+                        <label className={labelClass}>Full name</label>
+                        <input type="text" required className={fieldClass} value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" />
+                      </div>
+                      <div>
+                        <label className={labelClass}>Email</label>
+                        <input type="email" className={fieldClass} value={email} onChange={e => setEmail(e.target.value)} placeholder="jane@company.com" />
+                      </div>
+                      <div className="flex flex-col gap-4 sm:flex-row">
+                        <div className="flex-1">
+                          <label className={labelClass}>Company</label>
+                          <input type="text" required className={fieldClass} value={company} onChange={e => setCompany(e.target.value)} placeholder="Acme Corp" />
+                        </div>
+                        <div className="flex-1">
+                          <label className={labelClass}>Phone</label>
+                          <input type="tel" className={fieldClass} value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 555 123 4567" />
+                        </div>
+                      </div>
+                      <SelectField label="Title" value={position} onChange={setPosition} options={CONTACT_POSITIONS} />
+                      <SelectField label="Department" value={department} onChange={setDepartment} options={CONTACT_DEPARTMENTS} />
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                        <div>
+                          <label className={labelClass}>Type</label>
+                          <div className="inline-flex rounded-full border-[1.5px] border-[#DFDDE6] bg-[#F7F7F9] p-0.5">
+                            {(CONTACT_TYPES as Array<'Internal' | 'External'>).map(t => (
+                              <button
+                                key={t}
+                                type="button"
+                                onClick={() => setType(t)}
+                                className={`rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all ${type === t ? 'bg-white text-[#131313] shadow-sm' : 'text-[#8a8990] hover:text-[#131313]'}`}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <label className={labelClass}>Company logo</label>
+                          <IconPicker selectedIcon="User" selectedImage={image} onSelectIcon={handleIconSelect} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Notes</label>
+                        <textarea className={`${fieldClass} resize-none font-medium`} rows={2} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything worth remembering…" />
+                      </div>
                     </div>
 
-                    {/* Avatar Preview */}
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`h-14 w-14 rounded-full flex items-center justify-center text-lg font-bold transition-all ${avatarColor}`}>
-                        {image ? (
-                          <img
-                            src={`https://logo.clearbit.com/${image}`}
-                            alt={name}
-                            className="h-14 w-14 rounded-full object-contain bg-white border border-gray-100"
-                            onError={e => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
+                    {/* Divider */}
+                    <div className="h-0 w-full border-t-[1.6px] border-dashed border-[#E9E8EB] md:h-auto md:w-0 md:border-l-[1.6px] md:border-t-0" />
+
+                    {/* Preview — paste, drop or pick a headshot */}
+                    <div
+                      className={`flex flex-1 flex-col items-center justify-center px-6 py-8 transition-colors ${dragging ? 'bg-[#F5F5F7]' : ''}`}
+                      onDragLeave={() => setDragging(false)}
+                      onDragOver={e => {
+                        e.preventDefault();
+                        setDragging(true);
+                      }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setDragging(false);
+                        void takePicture(e.dataTransfer.files?.[0]);
+                      }}>
+                      <span className="mb-4 text-[14px] font-medium text-[#706f6f]">Preview</span>
+                      <div className="relative mb-4">
+                        {photo ? (
+                          <img src={photo} alt={name || 'Headshot'} className="h-32 w-32 rounded-full object-cover object-top shadow-sm ring-1 ring-[#f0f0f0]" />
                         ) : (
-                          avatarInitials
+                          <div className={`flex h-32 w-32 items-center justify-center rounded-full text-[34px] font-bold ring-1 ring-[#f0f0f0] ${color}`}>{initials}</div>
                         )}
+                        <button
+                          type="button"
+                          aria-label="Choose a headshot"
+                          title="Choose a picture"
+                          onClick={() => fileInput.current?.click()}
+                          className="absolute bottom-0 right-0 rounded-full border border-[#f0f0f0] bg-white p-2 text-[#707070]/70 shadow-md transition-colors hover:text-[#131313]">
+                          <PencilIcon className="h-5 w-5" />
+                        </button>
+                        {photo && (
+                          <button
+                            type="button"
+                            aria-label="Remove headshot"
+                            title="Remove picture"
+                            onClick={() => setPhoto(null)}
+                            className="absolute left-0 top-0 rounded-full border border-[#f0f0f0] bg-white p-1.5 text-[#707070]/70 shadow-md transition-colors hover:text-rose-600">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        )}
+                        <input
+                          ref={fileInput}
+                          accept="image/*"
+                          className="hidden"
+                          type="file"
+                          onChange={e => {
+                            void takePicture(e.target.files?.[0]);
+                            e.target.value = '';
+                          }}
+                        />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700">{name || 'Contact Name'}</p>
-                        <p className="text-xs text-gray-400">
-                          {company || 'Company'} · {position}
-                        </p>
+                      <h3 className="text-center text-[18px] font-bold text-[#101010]">{name || 'Contact name'}</h3>
+                      <p className="mb-4 text-center text-[14px] text-[#777678]">{position}</p>
+                      <div className="flex max-w-full items-center gap-2 rounded-full bg-[#F7F7F9] px-3 py-1 text-[12px] font-medium text-[#101010]/60 shadow-sm">
+                        {image ? (
+                          <img src={`https://logo.clearbit.com/${image}`} alt="" className="h-3.5 w-3.5 rounded-sm object-contain" />
+                        ) : (
+                          <BuildingOffice2Icon className="h-3.5 w-3.5 text-[#777678]" />
+                        )}
+                        <span className="truncate">{company || 'Company'}</span>
                       </div>
+                      <p className={`mt-5 flex items-center gap-1.5 text-center text-[11.5px] ${photoError ? 'text-rose-600' : 'text-[#a3a2a8]'}`}>
+                        <PhotoIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                        {photoError || 'Paste (Ctrl+V) or drop a picture for the headshot'}
+                      </p>
                     </div>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="px-6 py-4">
-                    {/* Two-column layout */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                      {/* Name - full width */}
-                      <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
-                          value={name}
-                          onChange={e => setName(e.target.value)}
-                          placeholder="John Doe"
-                        />
-                      </div>
-
-                      {/* Company - full width */}
-                      <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Company
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
-                          value={company}
-                          onChange={e => setCompany(e.target.value)}
-                          placeholder="Acme Corp"
-                        />
-                      </div>
-
-                      {/* Type */}
-                      <SelectField label="Type" value={type} onChange={setType} options={CONTACT_TYPES} />
-
-                      {/* Position */}
-                      <SelectField
-                        label="Position"
-                        value={position}
-                        onChange={setPosition}
-                        options={CONTACT_POSITIONS}
-                      />
-
-                      {/* Department - full width */}
-                      <div className="col-span-2">
-                        <SelectField
-                          label="Department"
-                          value={department}
-                          onChange={setDepartment}
-                          options={CONTACT_DEPARTMENTS}
-                        />
-                      </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Phone <span className="font-normal text-gray-300">(Optional)</span>
-                        </label>
-                        <input
-                          type="tel"
-                          className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
-                          value={phone}
-                          onChange={e => setPhone(e.target.value)}
-                          placeholder="+1 555 123 4567"
-                        />
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Email <span className="font-normal text-gray-300">(Optional)</span>
-                        </label>
-                        <input
-                          type="email"
-                          className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors"
-                          value={email}
-                          onChange={e => setEmail(e.target.value)}
-                          placeholder="john@acme.com"
-                        />
-                      </div>
-
-                      {/* Logo */}
-                      <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Logo <span className="font-normal text-gray-300">(Optional)</span>
-                        </label>
-                        <IconPicker selectedIcon="User" selectedImage={image} onSelectIcon={handleIconSelect} />
-                      </div>
-
-                      {/* Notes */}
-                      <div className="col-span-2">
-                        <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                          Notes <span className="font-normal text-gray-300">(Optional)</span>
-                        </label>
-                        <textarea
-                          className="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors resize-none"
-                          rows={2}
-                          value={notes}
-                          onChange={e => setNotes(e.target.value)}
-                          placeholder="Additional notes..."
-                        />
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end gap-2">
+                  {/* Footer */}
+                  <div className="flex flex-col-reverse items-center justify-between gap-4 bg-[#F5F5F7] px-6 py-5 sm:flex-row md:px-8">
+                    <span className="text-[13px] text-[#767578]">
+                      {updated ? (
+                        <>
+                          Last updated: <span className="font-medium">{updated}</span>
+                        </>
+                      ) : (
+                        'New contact'
+                      )}
+                    </span>
+                    <div className="flex w-full gap-3 sm:w-auto">
                       <button
                         type="button"
-                        className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                        onClick={onClose}>
+                        onClick={onClose}
+                        className="flex-1 rounded-full border-[1.6px] border-[#E2E2E6] bg-[#f3f4f6] px-5 py-2 text-[14px] font-bold text-[#0F0F0F] transition-colors hover:bg-[#ebebee] sm:flex-none">
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors">
-                        Save Contact
+                        className="flex-1 rounded-full bg-[#0F0F0F] px-5 py-2 text-[13px] font-bold text-white shadow-lg shadow-black/10 transition-colors hover:bg-[#222] sm:flex-none">
+                        {initialData?._id ? 'Save changes' : 'Save contact'}
                       </button>
                     </div>
-                  </form>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </Dialog>
-      </Transition>
-    );
-  },
-);
+        </div>
+      </Dialog>
+    </Transition>
+  );
+});
 
 ContactFormModal.displayName = 'ContactFormModal';
 export default ContactFormModal;

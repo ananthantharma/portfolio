@@ -10,11 +10,12 @@ import AttachmentGallery from './AttachmentGallery';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
-import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
+import {AssigneePill, CopySubjectButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import TaskPageWindow from './TaskPage';
 import {useTaskCollection} from './TaskProvider';
+import TaskWidget from './TaskWidget';
 import styles from './TaskWorkspace.module.css';
-import {bucketOf, completedTime, daysUntil, glowOf, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
+import {bucketOf, completedTime, daysUntil, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from './WorkspaceNavigation';
 
 export type NoteContext = {id: string; title: string} | null;
@@ -330,40 +331,19 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
   // Done and Archive read best as one recency-ordered list
   const showGroups = grouped && filter !== 'done' && filter !== 'archive';
 
-  // A row is just the checkbox and title; glow icons and linking appear on hover
-  const renderRow = (task: Task, inGroup: boolean, underPerson = false) => {
-    const done = statusOf(task) === 'done';
-    return (
-      <article
-        className={styles.row}
-        data-done={done}
-        data-glow={glowOf(task) || undefined}
-        data-selected={selected === task._id}
-        key={task._id}
-        style={glowStyle(task)}>
-        <button
-          aria-label={`${done ? 'Reopen' : 'Complete'} ${task.title}`}
-          aria-pressed={done}
-          className={styles.checkbox}
-          disabled={busy.includes(task._id)}
-          onClick={() => toggle(task)}>
-          {done && <Check size={12} />}
-        </button>
-        <button className={styles.rowTitle} onClick={() => (mobile ? setSelected(task._id) : setPageTaskId(task._id))} title={`${task.title}${mobile ? '' : ' (open its page)'}`}>
-          {task.title}
-          {task.hasPage && <FileText aria-label="Has a page" className={styles.pageMark} size={12} />}
-          {drafts[task._id] && <em className={styles.draftDot} title="Unsaved edits" />}
-        </button>
-        {filter === 'done' && <time className={styles.rowTime}>{completedAgo(task)}</time>}
-        <div className={styles.rowTools}>
-          {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
-          {!underPerson && <AssigneePill assignee={task.assignedTo} />}
-          <CopySubjectButton size={12} subject={task.emailSubject} />
-          <GlowToggles size={12} task={task} />
-        </div>
-      </article>
-    );
-  };
+  // Each task is a card: click it to edit its title and checklist; "…" opens its page (details on phones)
+  const renderRow = (task: Task, inGroup: boolean, underPerson = false) => (
+    <TaskWidget
+      completedLabel={filter === 'done' ? `Done ${completedAgo(task).toLowerCase()}` : undefined}
+      inGroup={inGroup}
+      key={task._id}
+      onOpen={() => (mobile ? setSelected(task._id) : setPageTaskId(task._id))}
+      onToggle={() => toggle(task)}
+      selected={selected === task._id}
+      task={task}
+      underPerson={underPerson}
+    />
+  );
 
   const startTaskIn = (group: TaskGroupView) => {
     const fields: Partial<Task> =

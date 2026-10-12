@@ -30,6 +30,7 @@ import {
   EyeSlashIcon,
   FolderArrowDownIcon,
   InboxIcon,
+  MapPinIcon,
   PencilIcon,
   PlusIcon,
   Squares2X2Icon,
@@ -75,6 +76,8 @@ export interface SectionPageListProps {
   onMovePage: (page: INotePage) => void;
   onReorderPages: (newOrder: INotePage[]) => void;
   onToggleInactive: (id: string, isInactive: boolean) => Promise<void>;
+  /** Pin a page to the top of its section */
+  onTogglePin?: (id: string, isPinned: boolean) => void;
   onSetParentPage: (pageId: string, parentPageId: string | null) => Promise<void>;
   loadingPages: boolean;
   pageBadgeCounts?: Record<string, BadgeStat>;
@@ -149,6 +152,7 @@ interface PageRowProps {
   onDelete: (id: string) => void;
   onMove: (page: INotePage) => void;
   onToggleInactive: (id: string, isInactive: boolean) => void;
+  onTogglePin?: (id: string, isPinned: boolean) => void;
   onShowParentPicker: (id: string) => void;
   badgeStat?: BadgeStat;
   hasChildren?: boolean;
@@ -172,6 +176,7 @@ const PageRow = React.memo<PageRowProps>(
     onDelete,
     onMove,
     onToggleInactive,
+    onTogglePin,
     onShowParentPicker,
     badgeStat,
     hasChildren,
@@ -185,73 +190,58 @@ const PageRow = React.memo<PageRowProps>(
   }) => {
     const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
     const isInactive = !!page.isInactive;
-    const iconStyle = useMemo(
-      () => ({color: page.color && page.color !== '#000000' ? page.color : undefined}),
-      [page.color],
-    );
+
+    const tint = page.color && page.color !== '#000000' ? page.color : undefined;
+    const avatarSize = isChild ? 'h-6 w-6' : 'h-8 w-8';
+    const action = darkMode
+      ? 'text-white/30 hover:bg-white/10 hover:text-white/70'
+      : 'text-zinc-400 hover:bg-zinc-200/70 hover:text-zinc-700';
 
     const inner = (
       <div
-        className={`group relative flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-[12px] transition-all duration-150 ${
+        className={`group relative flex cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-[12.5px] transition-colors duration-150 ${
           darkMode
             ? isSelected
               ? 'bg-white/[0.07] text-white/90 font-semibold'
               : 'text-white/55 hover:bg-white/[0.05] hover:text-white/80'
-            : isInactive
-            ? isSelected
-              ? 'bg-slate-200/50 text-slate-400 font-medium'
-              : 'text-slate-300 hover:bg-black/[0.02]'
             : isSelected
-            ? 'bg-indigo-50 text-slate-900 font-semibold ring-1 ring-inset ring-indigo-100'
-            : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-900'
+            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+            : isInactive
+            ? 'text-zinc-400 hover:bg-zinc-50'
+            : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
         }`}
         onClick={() => onSelect(page._id as string)}>
-        {/* Active accent bar */}
-        {isSelected && !isInactive && (
-          <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-indigo-500" />
-        )}
-        {/* Chevron / spacer */}
-        {hasChildren ? (
-          <button
-            className="flex-shrink-0 rounded p-0.5 text-slate-400 hover:bg-slate-200 transition-colors"
-            onClick={e => {
-              e.stopPropagation();
-              onToggleExpand?.(page._id as string);
-            }}>
-            {isExpanded ? <ChevronDownIcon className="h-2.5 w-2.5" /> : <ChevronRightIcon className="h-2.5 w-2.5" />}
-          </button>
-        ) : !isChild ? (
-          <span className="flex-shrink-0 w-3.5" />
-        ) : null}
-
-        {/* Icon */}
+        {/* Avatar */}
         {page.image ? (
-          <img
-            alt={page.title}
-            className="h-3.5 w-3.5 object-contain flex-shrink-0"
-            onError={e => {
-              e.currentTarget.style.display = 'none';
-              (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
-            }}
-            src={`https://logo.clearbit.com/${page.image}`}
-          />
-        ) : null}
-        <PageIcon
-          className={`h-3.5 w-3.5 flex-shrink-0 ${page.image ? 'hidden' : ''} ${
-            darkMode
-              ? isSelected ? 'text-indigo-300' : 'text-white/30'
-              : isInactive ? 'text-slate-300' : isSelected ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-400'
-          }`}
-          style={darkMode || isInactive ? undefined : iconStyle}
-        />
+          <span className={`flex ${avatarSize} flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-zinc-200`}>
+            <img
+              alt={page.title}
+              className="h-1/2 w-1/2 object-contain"
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+                (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
+              }}
+              src={`https://logo.clearbit.com/${page.image}`}
+            />
+            <PageIcon className="hidden h-1/2 w-1/2 text-zinc-500" />
+          </span>
+        ) : (
+          <span
+            className={`flex ${avatarSize} flex-shrink-0 items-center justify-center rounded-full text-white transition-colors ${
+              darkMode ? (isSelected ? 'bg-indigo-500' : 'bg-white/10') : tint && !isInactive ? '' : isInactive ? 'bg-zinc-300' : isSelected ? 'bg-zinc-900' : 'bg-zinc-800'
+            }`}
+            style={!darkMode && tint && !isInactive ? {background: tint} : undefined}>
+            <PageIcon className={isChild ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+          </span>
+        )}
 
         {/* Title + timestamp */}
-        <span className="flex-1 min-w-0 flex flex-col">
-          <span className={`truncate ${isInactive ? 'line-through decoration-slate-300' : ''}`}>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className={`truncate leading-tight ${isInactive ? 'line-through decoration-zinc-300' : ''}`}>
             {page.title || 'Untitled'}
           </span>
           {!isChild && page.updatedAt && (
-            <span className={`text-[9px] leading-none mt-0.5 truncate ${darkMode ? 'text-white/25' : 'text-slate-400/70'}`}>
+            <span className={`mt-0.5 truncate text-[10.5px] font-normal leading-none ${darkMode ? 'text-white/25' : 'text-zinc-400'}`}>
               {formatTimeAgo(page.updatedAt)}
             </span>
           )}
@@ -260,16 +250,23 @@ const PageRow = React.memo<PageRowProps>(
         {/* Dot indicator — section header already shows the count */}
         {badgeStat && <PageDot stat={badgeStat} />}
 
-        {/* Actions (hover) */}
-        <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 flex-shrink-0">
+        {/* Grouped pages toggle */}
+        {hasChildren && (
           <button
-            className={`rounded p-0.5 transition-colors ${
-              darkMode
-                ? 'text-white/30 hover:bg-white/10 hover:text-white/70'
-                : isInactive
-                ? 'text-slate-400 hover:bg-slate-200 hover:text-green-600'
-                : 'text-slate-400 hover:bg-slate-200 hover:text-amber-600'
-            }`}
+            className={`flex-shrink-0 rounded-full p-1 transition-colors ${action}`}
+            onClick={e => {
+              e.stopPropagation();
+              onToggleExpand?.(page._id as string);
+            }}
+            title={isExpanded ? 'Hide grouped pages' : 'Show grouped pages'}>
+            <ChevronDownIcon className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'}`} />
+          </button>
+        )}
+
+        {/* Actions (hover) */}
+        <div className="hidden flex-shrink-0 items-center gap-0.5 group-hover:flex">
+          <button
+            className={`rounded-full p-1 transition-colors ${darkMode ? action : isInactive ? 'text-zinc-400 hover:bg-zinc-200/70 hover:text-green-600' : 'text-zinc-400 hover:bg-zinc-200/70 hover:text-amber-600'}`}
             onClick={e => {
               e.stopPropagation();
               onToggleInactive(page._id as string, !isInactive);
@@ -279,7 +276,7 @@ const PageRow = React.memo<PageRowProps>(
           </button>
           {!hideGroupAction && (
             <button
-              className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
+              className={`rounded-full p-1 transition-colors ${action}`}
               onClick={e => {
                 e.stopPropagation();
                 onShowParentPicker(page._id as string);
@@ -289,7 +286,7 @@ const PageRow = React.memo<PageRowProps>(
             </button>
           )}
           <button
-            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
+            className={`rounded-full p-1 transition-colors ${action}`}
             onClick={e => {
               e.stopPropagation();
               onEdit(page);
@@ -298,7 +295,7 @@ const PageRow = React.memo<PageRowProps>(
             <PencilIcon className="h-3 w-3" />
           </button>
           <button
-            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-white/70' : 'text-slate-400 hover:bg-slate-200 hover:text-indigo-600'}`}
+            className={`rounded-full p-1 transition-colors ${action}`}
             onClick={e => {
               e.stopPropagation();
               onMove(page);
@@ -307,7 +304,7 @@ const PageRow = React.memo<PageRowProps>(
             <FolderArrowDownIcon className="h-3 w-3" />
           </button>
           <button
-            className={`rounded p-0.5 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-red-400' : 'text-slate-400 hover:bg-red-50 hover:text-red-600'}`}
+            className={`rounded-full p-1 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-red-400' : 'text-zinc-400 hover:bg-red-50 hover:text-red-600'}`}
             onClick={e => {
               e.stopPropagation();
               if (confirm('Delete this page?')) onDelete(page._id as string);
@@ -316,6 +313,23 @@ const PageRow = React.memo<PageRowProps>(
             <TrashIcon className="h-3 w-3" />
           </button>
         </div>
+        {onTogglePin && !isChild ? (
+          <button
+            aria-label={page.isPinned ? 'Unpin page' : 'Pin page'}
+            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 ${
+              page.isPinned ? 'bg-amber-400 opacity-100 hover:bg-amber-500' : 'bg-zinc-300 opacity-0 hover:bg-zinc-400 group-hover:opacity-100'
+            }`}
+            onClick={e => {
+              e.stopPropagation();
+              onTogglePin(page._id as string, !page.isPinned);
+            }}
+            title={page.isPinned ? 'Unpin' : 'Pin to top of section'}>
+            <MapPinIcon className="h-3.5 w-3.5" />
+          </button>
+        ) : (
+          !isChild &&
+          !hasChildren && <ChevronRightIcon className={`h-3.5 w-3.5 flex-shrink-0 group-hover:hidden ${darkMode ? 'text-white/20' : 'text-zinc-300'}`} />
+        )}
       </div>
     );
 
@@ -356,6 +370,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     onMovePage,
     onReorderPages,
     onToggleInactive,
+    onTogglePin,
     onSetParentPage,
     loadingPages,
     pageBadgeCounts,
@@ -381,6 +396,8 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     const [newSecImage, setNewSecImage] = useState<string | null>(null);
 
     const [editingSecId, setEditingSecId] = useState<string | null>(null);
+    // The selected section's card can be folded (its X) without changing the selection
+    const [foldedSecId, setFoldedSecId] = useState<string | null>(null);
     const [editSecName, setEditSecName] = useState('');
     const [editSecColor, setEditSecColor] = useState('#000000');
     const [editSecIcon, setEditSecIcon] = useState('Folder');
@@ -422,6 +439,8 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     }, [expandedParents]);
 
     const rootPages = useMemo(() => pages.filter(p => !p.parentPageId), [pages]);
+    const pinnedRoots = useMemo(() => rootPages.filter(p => p.isPinned), [rootPages]);
+    const otherRoots = useMemo(() => rootPages.filter(p => !p.isPinned), [rootPages]);
     const childrenMap = useMemo(() => {
       const map: Record<string, INotePage[]> = {};
       pages.forEach(p => {
@@ -730,6 +749,124 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
       );
     }
 
+    // One top-level page (with its grouped pages); pinned ones aren't draggable
+    const renderRootPage = (page: INotePage, sortable: boolean) => {
+      const pid = page._id as string;
+      const children = childrenMap[pid] || [];
+      const isExpanded = expandedParents.has(pid);
+
+      if (editingPageId === pid) {
+        return (
+          <li key={pid} className="p-1">
+            <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+              <div className="flex items-center gap-2">
+                <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
+                <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
+              </div>
+              <input
+                autoFocus
+                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                onChange={e => setEditPageTitle(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleRenamePage();
+                  if (e.key === 'Escape') setEditingPageId(null);
+                  e.stopPropagation();
+                }}
+                onPointerDown={e => e.stopPropagation()}
+                value={editPageTitle}
+              />
+              <div className="flex justify-end gap-1">
+                <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+                <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                  <CheckIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </li>
+        );
+      }
+
+      return (
+        <React.Fragment key={pid}>
+          <li>
+            <PageRow
+              page={page}
+              isSelected={selectedPageId === pid}
+              onSelect={onSelectPage}
+              onEdit={startEditingPage}
+              onDelete={onDeletePage}
+              onMove={onMovePage}
+              onToggleInactive={onToggleInactive}
+              onShowParentPicker={setParentPickerFor}
+              badgeStat={pageBadgeCounts?.[pid]}
+              hasChildren={children.length > 0}
+              isExpanded={isExpanded}
+              onToggleExpand={toggleParentExpanded}
+              onTogglePin={onTogglePin}
+              sortable={sortable}
+              dndId={`page:${pid}`}
+            />
+          </li>
+          {isExpanded && children.length > 0 && (
+            <li>
+              <ul className="ml-[22px] space-y-0.5 border-l border-zinc-200 pl-2">
+                {children.map(child => {
+                  const cid = child._id as string;
+                  if (editingPageId === cid) {
+                    return (
+                      <li key={cid} className="p-1">
+                        <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+                          <input
+                            autoFocus
+                            className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                            onChange={e => setEditPageTitle(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRenamePage();
+                              if (e.key === 'Escape') setEditingPageId(null);
+                              e.stopPropagation();
+                            }}
+                            onPointerDown={e => e.stopPropagation()}
+                            value={editPageTitle}
+                          />
+                          <div className="flex justify-end gap-1">
+                            <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                            <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                              <CheckIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={cid}>
+                      <PageRow
+                        page={child}
+                        isSelected={selectedPageId === cid}
+                        onSelect={onSelectPage}
+                        onEdit={startEditingPage}
+                        onDelete={onDeletePage}
+                        onMove={onMovePage}
+                        onToggleInactive={onToggleInactive}
+                        onShowParentPicker={setParentPickerFor}
+                        badgeStat={pageBadgeCounts?.[cid]}
+                        isChild
+                        sortable={false}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          )}
+        </React.Fragment>
+      );
+    };
+
     // ── Expanded ──────────────────────────────────────────────────────────────
     return (
       <div className="flex h-full flex-col relative">
@@ -1010,7 +1147,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             </div>
           ) : (
               <SortableContext items={filteredSections.map(s => `sec:${s._id as string}`)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-0.5">
+                <ul className="space-y-2">
                   {filteredSections.map(section => {
                     const sid = section._id as string;
                     const isSelectedSec = selectedSectionId === sid;
@@ -1051,104 +1188,140 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                     }
 
                     const isDropTarget = dropTargetSec === sid;
+                    const isOpen = isSelectedSec && foldedSecId !== sid;
+                    const openTasks = sectionTaskCounts?.[sid] ?? 0;
+                    const todoCount = sectionBadgeCounts?.[sid]?.todo?.count ?? 0;
+                    const tint = section.color && section.color !== '#000000' ? section.color : undefined;
                     return (
                       <li key={sid}>
+                        <div
+                          className={`overflow-hidden rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 ${
+                            isDropTarget
+                              ? 'border-indigo-300 bg-indigo-50 ring-2 ring-indigo-200'
+                              : isOpen
+                              ? 'border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_28px_-18px_rgba(0,0,0,0.35)]'
+                              : 'border-zinc-200/80 bg-zinc-100/70 hover:border-zinc-300/80 hover:bg-zinc-100'
+                          }`}>
                         <SortableItem id={`sec:${sid}`}>
-                          {/* ── Section row ───────────────────────────────── */}
+                          {/* ── Card header ───────────────────────────────── */}
                           <div
-                            className={`group relative flex cursor-pointer items-center justify-between px-2 py-1.5 text-[12.5px] transition-all duration-150 rounded-lg ${
-                              isDropTarget
-                                ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300 text-indigo-800'
-                                : isSelectedSec
-                                ? 'bg-indigo-50/80 text-indigo-900 font-semibold ring-1 ring-inset ring-indigo-100'
-                                : 'text-slate-600 hover:bg-black/[0.04] hover:text-slate-800'
-                            }`}
-                            onClick={() => onSelectSection(sid)}>
-                            {/* Active left border */}
-                            {isSelectedSec && <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-indigo-500" />}
-                            <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0 pl-1.5">
-                              {/* Expand chevron */}
-                              <span className={`flex-shrink-0 transition-transform duration-150 ${isSelectedSec ? 'text-indigo-400' : 'text-slate-300'}`}>
-                                {isSelectedSec
-                                  ? <ChevronDownIcon className="h-3 w-3" />
-                                  : <ChevronRightIcon className="h-3 w-3" />}
+                            className="group flex cursor-pointer items-center gap-2.5 p-2"
+                            onClick={() => {
+                              setFoldedSecId(null);
+                              onSelectSection(sid);
+                            }}>
+                            {/* A folded, selected section previews its first pages; others show their icon */}
+                            {isSelectedSec && !isOpen && rootPages.length > 1 ? (
+                              <span className="grid h-9 w-9 flex-shrink-0 grid-cols-2 gap-0.5">
+                                {rootPages.slice(0, 4).map(p => {
+                                  const MiniIcon = ICON_options[p.icon as keyof typeof ICON_options] || ICON_options.FileText;
+                                  return (
+                                    <span className="flex items-center justify-center rounded-full bg-zinc-300 text-white" key={p._id as string}>
+                                      <MiniIcon className="h-2.5 w-2.5" />
+                                    </span>
+                                  );
+                                })}
                               </span>
-                              {section.image ? (
-                                <img alt={section.name} className="h-3.5 w-3.5 object-contain flex-shrink-0" src={`https://logo.clearbit.com/${section.image}`} />
-                              ) : (
-                                <SectionIcon
-                                  className={`h-3.5 w-3.5 flex-shrink-0 ${isSelectedSec ? 'text-indigo-600' : 'text-slate-400'}`}
-                                  style={section.color && section.color !== '#000000' ? {color: section.color} : undefined}
-                                />
-                              )}
-                              <span className="truncate leading-snug">{section.name}</span>
-                              {(sectionTaskCounts?.[sid] ?? 0) > 0 && (
-                                <span
-                                  className="flex flex-shrink-0 items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200"
-                                  title={`${sectionTaskCounts![sid]} open task${sectionTaskCounts![sid] === 1 ? '' : 's'} linked`}>
-                                  <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
-                                  {sectionTaskCounts![sid]}
-                                </span>
-                              )}
-                              {/* Count chip */}
-                              {isSelectedSec ? (
-                                pages.length > 0 && (
-                                  <span className="flex-shrink-0 text-[9px] font-semibold text-indigo-500 bg-indigo-100 px-1.5 py-0.5 rounded-full tabular-nums">
-                                    {pages.length}
+                            ) : (
+                              <span
+                                className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white transition-colors duration-200 ${
+                                  section.image ? 'bg-white ring-1 ring-zinc-200' : tint ? '' : isOpen ? 'bg-zinc-900' : 'bg-zinc-400'
+                                }`}
+                                style={!section.image && tint ? {background: tint} : undefined}>
+                                {section.image ? (
+                                  <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
+                                ) : (
+                                  <SectionIcon className="h-4 w-4" />
+                                )}
+                              </span>
+                            )}
+                            <span className="flex min-w-0 flex-1 flex-col">
+                              <span className={`truncate text-[13.5px] leading-tight ${isOpen ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-800'}`}>
+                                {section.name}
+                              </span>
+                              <span className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] leading-tight text-zinc-500">
+                                {isSelectedSec ? (
+                                  <span>
+                                    {pages.length} page{pages.length === 1 ? '' : 's'}
                                   </span>
-                                )
-                              ) : (
-                                (sectionBadgeCounts?.[sid]?.todo?.count ?? 0) > 0 && (
-                                  <span className="flex-shrink-0 text-[9px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full tabular-nums">
-                                    {sectionBadgeCounts?.[sid]?.todo?.count}
+                                ) : todoCount > 0 ? (
+                                  <span>
+                                    {todoCount} to-do{todoCount === 1 ? '' : 's'}
                                   </span>
-                                )
-                              )}
-                            </div>
+                                ) : (
+                                  <span className="text-zinc-400">Open section</span>
+                                )}
+                                {openTasks > 0 && (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 text-[9.5px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                                    title={`${openTasks} open task${openTasks === 1 ? '' : 's'} linked`}>
+                                    <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
+                                    {openTasks}
+                                  </span>
+                                )}
+                              </span>
+                            </span>
 
                             {/* Badge */}
-                            {sectionBadgeCounts?.[sid] && (
-                              <BadgePill stat={sectionBadgeCounts[sid]} />
-                            )}
+                            {sectionBadgeCounts?.[sid] && <BadgePill stat={sectionBadgeCounts[sid]} />}
 
                             {/* Section actions */}
-                            <div className="hidden group-hover:flex items-center gap-0.5 ml-1 flex-shrink-0">
+                            <div className="hidden flex-shrink-0 items-center gap-0.5 group-hover:flex">
                               <button
-                                className="rounded p-1 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700"
                                 onClick={e => {
                                   e.stopPropagation();
+                                  setFoldedSecId(null);
                                   onSelectSection(sid);
                                   setIsAddingPage(true);
                                 }}
                                 title="New page in this section">
-                                <DocumentPlusIcon className="h-3 w-3" />
+                                <DocumentPlusIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
-                                className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
+                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700"
                                 onClick={e => {
                                   e.stopPropagation();
                                   startEditingSection(section);
                                 }}
                                 title="Rename section">
-                                <PencilIcon className="h-3 w-3" />
+                                <PencilIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
-                                className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600"
                                 onClick={e => {
                                   e.stopPropagation();
                                   if (confirm('Delete this section and all its pages?')) onDeleteSection(sid);
                                 }}
                                 title="Delete section">
-                                <TrashIcon className="h-3 w-3" />
+                                <TrashIcon className="h-3.5 w-3.5" />
                               </button>
                             </div>
+                            {isOpen ? (
+                              <button
+                                aria-label="Fold section"
+                                className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-300 text-white transition-colors hover:bg-zinc-500"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setFoldedSecId(sid);
+                                }}
+                                title="Fold">
+                                <XMarkIcon className="h-3.5 w-3.5" />
+                              </button>
+                            ) : (
+                              <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-zinc-400 group-hover:hidden" />
+                            )}
                           </div>
                         </SortableItem>
 
-                        {/* ── Pages sub-list (only under selected section) ── */}
+                        {/* ── Pages (only the selected section loads them) ── */}
+                        <div
+                          className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.2,0.9,0.25,1)]"
+                          style={{gridTemplateRows: isOpen ? '1fr' : '0fr'}}>
+                          <div className={`min-h-0 overflow-hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
                         {isSelectedSec && (
-                          <div className="pb-1 mb-0.5">
-                            <div className="ml-3 border-l border-indigo-100 pl-2 pt-1">
+                          <div className="px-1.5 pb-2">
+                            <div className="border-t border-zinc-100 pt-1.5">
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
@@ -1189,132 +1362,27 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                               </div>
                             ) : (
                               <>
-                                {rootPages.length > 0 && (
-                                    <SortableContext items={rootPages.map(p => `page:${p._id as string}`)} strategy={verticalListSortingStrategy}>
-                                      <ul className="space-y-0.5">
-                                        {rootPages.map(page => {
-                                          const pid = page._id as string;
-                                          const children = childrenMap[pid] || [];
-                                          const isExpanded = expandedParents.has(pid);
-
-                                          if (editingPageId === pid) {
-                                            return (
-                                              <li key={pid} className="p-1">
-                                                <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
-                                                  <div className="flex items-center gap-2">
-                                                    <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
-                                                    <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
-                                                  </div>
-                                                  <input
-                                                    autoFocus
-                                                    className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
-                                                    onChange={e => setEditPageTitle(e.target.value)}
-                                                    onKeyDown={e => {
-                                                      if (e.key === 'Enter') handleRenamePage();
-                                                      if (e.key === 'Escape') setEditingPageId(null);
-                                                      e.stopPropagation();
-                                                    }}
-                                                    onPointerDown={e => e.stopPropagation()}
-                                                    value={editPageTitle}
-                                                  />
-                                                  <div className="flex justify-end gap-1">
-                                                    <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
-                                                      <XMarkIcon className="h-4 w-4" />
-                                                    </button>
-                                                    <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
-                                                      <CheckIcon className="h-4 w-4" />
-                                                    </button>
-                                                  </div>
-                                                </div>
-                                              </li>
-                                            );
-                                          }
-
-                                          return (
-                                            <React.Fragment key={pid}>
-                                              <li>
-                                                <PageRow
-                                                  page={page}
-                                                  isSelected={selectedPageId === pid}
-                                                  onSelect={onSelectPage}
-                                                  onEdit={startEditingPage}
-                                                  onDelete={onDeletePage}
-                                                  onMove={onMovePage}
-                                                  onToggleInactive={onToggleInactive}
-                                                  onShowParentPicker={setParentPickerFor}
-                                                  badgeStat={pageBadgeCounts?.[pid]}
-                                                  hasChildren={children.length > 0}
-                                                  isExpanded={isExpanded}
-                                                  onToggleExpand={toggleParentExpanded}
-                                                  sortable
-                                                  dndId={`page:${pid}`}
-                                                />
-                                              </li>
-                                              {isExpanded && children.length > 0 && (
-                                                <li>
-                                                  <ul className="ml-3 space-y-0.5 border-l border-slate-200/70 pl-1">
-                                                    {children.map(child => {
-                                                      const cid = child._id as string;
-                                                      if (editingPageId === cid) {
-                                                        return (
-                                                          <li key={cid} className="p-1">
-                                                            <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
-                                                              <input
-                                                                autoFocus
-                                                                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
-                                                                onChange={e => setEditPageTitle(e.target.value)}
-                                                                onKeyDown={e => {
-                                                                  if (e.key === 'Enter') handleRenamePage();
-                                                                  if (e.key === 'Escape') setEditingPageId(null);
-                                                                  e.stopPropagation();
-                                                                }}
-                                                                onPointerDown={e => e.stopPropagation()}
-                                                                value={editPageTitle}
-                                                              />
-                                                              <div className="flex justify-end gap-1">
-                                                                <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
-                                                                  <XMarkIcon className="h-4 w-4" />
-                                                                </button>
-                                                                <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
-                                                                  <CheckIcon className="h-4 w-4" />
-                                                                </button>
-                                                              </div>
-                                                            </div>
-                                                          </li>
-                                                        );
-                                                      }
-                                                      return (
-                                                        <li key={cid}>
-                                                          <PageRow
-                                                            page={child}
-                                                            isSelected={selectedPageId === cid}
-                                                            onSelect={onSelectPage}
-                                                            onEdit={startEditingPage}
-                                                            onDelete={onDeletePage}
-                                                            onMove={onMovePage}
-                                                            onToggleInactive={onToggleInactive}
-                                                            onShowParentPicker={setParentPickerFor}
-                                                            badgeStat={pageBadgeCounts?.[cid]}
-                                                            isChild
-                                                            sortable={false}
-                                                          />
-                                                        </li>
-                                                      );
-                                                    })}
-                                                  </ul>
-                                                </li>
-                                              )}
-                                            </React.Fragment>
-                                          );
-                                        })}
-                                      </ul>
-                                    </SortableContext>
+                                {pinnedRoots.length > 0 && (
+                                  <div className="mb-1">
+                                    <p className="px-1.5 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Pinned</p>
+                                    <ul className="space-y-0.5">{pinnedRoots.map(page => renderRootPage(page, false))}</ul>
+                                    {otherRoots.length > 0 && (
+                                      <p className="px-1.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">All pages</p>
+                                    )}
+                                  </div>
+                                )}
+                                {otherRoots.length > 0 && (
+                                  <SortableContext items={otherRoots.map(p => `page:${p._id as string}`)} strategy={verticalListSortingStrategy}>
+                                    <ul className="space-y-0.5">{otherRoots.map(page => renderRootPage(page, true))}</ul>
+                                  </SortableContext>
                                 )}
                                 {!isAddingPage && (
                                   <button
-                                    className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-medium text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/60 rounded-md transition-all"
+                                    className="mt-0.5 flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-zinc-700"
                                     onClick={() => setIsAddingPage(true)}>
-                                    <PlusIcon className="h-3 w-3 flex-shrink-0" />
+                                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-300">
+                                      <PlusIcon className="h-3.5 w-3.5" />
+                                    </span>
                                     New page
                                   </button>
                                 )}
@@ -1323,6 +1391,9 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             </div>
                           </div>
                         )}
+                          </div>
+                        </div>
+                        </div>
                       </li>
                     );
                   })}

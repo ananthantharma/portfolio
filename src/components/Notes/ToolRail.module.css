@@ -1,0 +1,168 @@
+/* Far-left tools bar: a floating dark pill with a gliding tooltip */
+.rail {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+  padding: 12px 8px 12px 10px;
+  background: #fbfaf7;
+}
+
+.pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 52px;
+  max-height: 100%;
+  padding: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  border-radius: 26px;
+  background: rgba(14, 15, 14, 0.95);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 12px 32px -12px rgba(18, 24, 18, 0.45);
+  backdrop-filter: blur(8px);
+  transition:
+    width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.22s ease;
+}
+.pill::-webkit-scrollbar {
+  display: none;
+}
+.rail[data-expanded='true'] .pill {
+  width: 212px;
+  align-items: stretch;
+  border-radius: 20px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  color: #d4d4d4;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.item:hover,
+.item.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: -2px;
+}
+.rail[data-expanded='true'] .item {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+}
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.label {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.rail[data-expanded='true'] .label {
+  opacity: 1;
+  transition-delay: 0.08s;
+}
+
+.toggle {
+  color: #9ec29f;
+}
+.divider {
+  flex-shrink: 0;
+  width: 22px;
+  height: 1px;
+  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+.rail[data-expanded='true'] .divider {
+  width: auto;
+  margin-inline: 8px;
+}
+
+/* One panel holds every label; clip-path shows only the hovered one */
+.tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  pointer-events: none;
+  background: #0e0f0e;
+  color: #fff;
+  will-change: transform, clip-path;
+  transition:
+    opacity 0.2s ease,
+    transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1),
+    clip-path 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+.tooltip.instant {
+  transition: opacity 0.2s ease;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.keys {
+  display: flex;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.45);
+}
+.keys kbd {
+  padding: 0 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .rail {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  .tooltip {
+    transition: opacity 0.15s ease;
+  }
+}

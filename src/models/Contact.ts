@@ -19,6 +19,8 @@ const ContactSchema = new Schema<IContact>(
     department: {type: String, enum: CONTACT_DEPARTMENTS},
     type: {type: String, enum: CONTACT_TYPES, default: 'External'},
     image: {type: String},
+    // Headshot as a small JPEG data URL (pasted or uploaded in the contact form)
+    photo: {type: String},
   },
   {timestamps: true},
 );
