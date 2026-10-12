@@ -14,6 +14,7 @@ import {
   ArrowsUpDownIcon,
   SparklesIcon,
   ClipboardDocumentIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 import {CONTACT_DEPARTMENTS, CONTACT_POSITIONS, IContactBase as IContact} from '@/lib/contact-constants';
@@ -109,6 +110,8 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
   // Filters
   const [filterType, setFilterType] = useState<string>('All');
   const [filterDepartment, setFilterDepartment] = useState<string>('All');
+  // Vendor = the contact's company
+  const [filterVendor, setFilterVendor] = useState<string>('All');
   const [sortField, setSortField] = useState<SortField>('name');
 
   // Create/Edit State
@@ -259,6 +262,7 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
       if (!matchesSearch) return false;
       if (filterType !== 'All' && c.type !== filterType) return false;
       if (filterDepartment !== 'All' && c.department !== filterDepartment) return false;
+      if (filterVendor !== 'All' && (c.company || '').trim().toLowerCase() !== filterVendor.toLowerCase()) return false;
       return true;
     });
 
@@ -277,7 +281,21 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
     });
 
     return result;
-  }, [contacts, searchQuery, filterType, filterDepartment, sortField]);
+  }, [contacts, searchQuery, filterType, filterDepartment, filterVendor, sortField]);
+
+  // Every company with contacts, A–Z (spelling differences in case are merged)
+  const vendorOptions = useMemo(() => {
+    const byKey = new Map<string, {name: string; count: number}>();
+    contacts.forEach(c => {
+      const name = (c.company || '').trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+      const entry = byKey.get(key) || {name, count: 0};
+      entry.count += 1;
+      byKey.set(key, entry);
+    });
+    return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [contacts]);
 
   // Count stats
   const internalCount = contacts.filter(c => c.type === 'Internal').length;
@@ -401,6 +419,36 @@ const ContactListModal: React.FC<ContactListModalProps> = React.memo(({isOpen, o
                         count={externalCount}
                       />
                     </div>
+
+                    <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+                    {/* Vendor */}
+                    <label className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">Vendor</span>
+                      <span className="relative">
+                        <BuildingOfficeIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                        <select
+                          aria-label="Filter by vendor"
+                          className={`max-w-[220px] appearance-none rounded-full border py-1 pl-7 pr-7 text-[11px] font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-gray-300 ${
+                            filterVendor === 'All' ? 'border-gray-200 bg-white text-gray-600' : 'border-gray-900 bg-gray-900 text-white'
+                          }`}
+                          onChange={e => setFilterVendor(e.target.value)}
+                          value={filterVendor}>
+                          <option value="All">All vendors ({vendorOptions.length})</option>
+                          {vendorOptions.map(v => (
+                            <option key={v.name.toLowerCase()} value={v.name}>
+                              {v.name} ({v.count})
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon className={`pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 ${filterVendor === 'All' ? 'text-gray-400' : 'text-white'}`} />
+                      </span>
+                      {filterVendor !== 'All' && (
+                        <button aria-label="Clear vendor filter" className="rounded-full p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700" onClick={() => setFilterVendor('All')}>
+                          <XMarkIcon className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </label>
 
                     <div className="hidden sm:block w-px h-5 bg-gray-200" />
 

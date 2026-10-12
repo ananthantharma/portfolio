@@ -39,6 +39,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
+      // A bookmark can also be a document kept in Google Drive (downloaded from the bookmarks list)
+      const {kind, driveFileId, fileName, mimeType, size} = req.body;
+      const isFile = kind === 'file' && typeof driveFileId === 'string' && /^[A-Za-z0-9_-]+$/.test(driveFileId);
+
       const newBookmark = {
         userEmail: session.user.email,
         title,
@@ -48,7 +52,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         tags: Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string' && t.trim()) : [],
         path: [category],
         added_timestamp: Math.floor(Date.now() / 1000).toString(),
-        icon: hostname ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64` : '',
+        icon: hostname && !isFile ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64` : '',
+        ...(isFile
+          ? {
+              kind: 'file',
+              driveFileId,
+              fileName: typeof fileName === 'string' ? fileName.slice(0, 500) : title,
+              mimeType: typeof mimeType === 'string' ? mimeType.slice(0, 200) : '',
+              size: Number.isFinite(Number(size)) ? Number(size) : 0,
+            }
+          : {}),
       };
 
       const result = await collection.insertOne(newBookmark);

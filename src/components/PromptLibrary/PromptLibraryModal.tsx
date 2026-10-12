@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {BookOpen, Check, Copy, Loader2, Pencil, Plus, Search, Star, Trash2, X} from 'lucide-react';
+import {BookOpen, Check, Copy, Loader2, Minus, Pencil, Plus, Search, Star, Trash2, X} from 'lucide-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {promptLibraryApi,PromptLibraryItem, PromptLibraryItemDraft} from './api';
@@ -40,7 +40,8 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
   const [editForm, setEditForm] = useState<Partial<PromptLibraryItemDraft>>({});
   const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [viewingId, setViewingId] = useState<string | null>(null);
+  // The one prompt opened in the list (accordion)
+  const [openId, setOpenId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -57,13 +58,13 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      if (viewingId) setViewingId(null);
-      else if (!editingId) onClose();
+      if (e.key !== 'Escape' || editingId) return;
+      if (openId) setOpenId(null);
+      else onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, editingId, viewingId]);
+  }, [onClose, editingId, openId]);
 
   const copyContent = (id: string, content: string) => {
     navigator.clipboard
@@ -111,7 +112,7 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
   };
 
   const startEdit = (p: PromptLibraryItem) => {
-    setViewingId(null);
+    setOpenId(p._id);
     setEditingId(p._id);
     setEditForm({title: p.title, description: p.description, content: p.content, category: p.category});
   };
@@ -148,7 +149,7 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
     try {
       await promptLibraryApi.remove(id);
       setPrompts(prev => prev.filter(p => p._id !== id));
-      setViewingId(prev => (prev === id ? null : prev));
+      setOpenId(prev => (prev === id ? null : prev));
     } catch (err) {
       alert(`Could not delete prompt: ${err instanceof Error ? err.message : err}`);
     }
@@ -175,12 +176,10 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
     return result;
   }, [prompts, category, favoritesOnly, query, sortBy]);
 
-  const viewing = useMemo(() => prompts.find(p => p._id === viewingId) || null, [prompts, viewingId]);
-
-  const renderCard = (p: PromptLibraryItem) => {
+  const renderItem = (p: PromptLibraryItem, index: number) => {
     if (editingId === p._id) {
       return (
-        <div className="space-y-2 rounded-xl border-2 border-violet-400/40 bg-[#171a26] p-4" key={p._id}>
+        <div className="space-y-2 border-2 border-violet-400/40 bg-[#171a26] p-4" key={p._id}>
           <input
             autoFocus
             className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[13px] font-semibold text-white outline-none focus:border-violet-400/50"
@@ -239,134 +238,98 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
 
     const catColor = colorForCategory(p.category);
     const isCopied = copiedId === p._id;
+    const open = openId === p._id;
+    const num = String(index + 1).padStart(2, '0');
+    const toggle = () => setOpenId(open ? null : p._id);
 
     return (
       <div
-        className="group flex cursor-pointer flex-col rounded-xl border border-white/[0.06] border-l-[3px] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
-        key={p._id}
-        onClick={() => setViewingId(p._id)}
-        style={{borderLeftColor: catColor, backgroundColor: `${catColor}0f`}}>
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 flex-1 text-[13.5px] font-semibold text-white/90">{p.title || 'Untitled'}</h3>
-          <div className="flex shrink-0 items-center gap-0.5">
-            <button
-              className={`rounded-md p-1.5 transition-opacity ${
-                p.favorite
-                  ? 'text-amber-300'
-                  : 'text-white/30 opacity-0 hover:bg-white/[0.08] hover:text-white/70 group-hover:opacity-100'
-              }`}
-              onClick={e => {
-                e.stopPropagation();
-                toggleFavorite(p);
-              }}
-              title={p.favorite ? 'Unfavorite' : 'Favorite'}>
-              <Star className="h-3.5 w-3.5" fill={p.favorite ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              className="rounded-md p-1.5 text-white/30 opacity-0 transition-opacity hover:bg-white/[0.08] hover:text-white/70 group-hover:opacity-100"
-              onClick={e => {
-                e.stopPropagation();
-                startEdit(p);
-              }}
-              title="Edit">
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-            <button
-              className="rounded-md p-1.5 text-white/30 opacity-0 transition-opacity hover:bg-rose-500/10 hover:text-rose-400 group-hover:opacity-100"
-              onClick={e => {
-                e.stopPropagation();
-                deletePrompt(p._id);
-              }}
-              title="Delete">
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-        {p.description && <p className="mb-3 line-clamp-3 flex-1 text-[12px] leading-relaxed text-white/40">{p.description}</p>}
-        {!p.description && <div className="mb-3 flex-1" />}
-        <div className="flex items-center justify-between border-t border-white/[0.06] pt-3">
+        className={`group overflow-hidden border transition-all duration-300 ${
+          open
+            ? 'border-violet-300/30 bg-gradient-to-r from-violet-500/70 to-violet-500/50 shadow-lg shadow-violet-950/40'
+            : 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.045]'
+        }`}
+        data-state={open ? 'open' : 'closed'}
+        key={p._id}>
+        <div
+          aria-expanded={open}
+          className="flex w-full cursor-pointer items-center gap-4 px-5 py-4 sm:px-7 sm:py-3.5"
+          onClick={toggle}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggle();
+            }
+          }}
+          role="button"
+          tabIndex={0}>
           <span
-            className="flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
-            style={{backgroundColor: `${catColor}1f`, color: catColor}}>
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{backgroundColor: catColor}} />
-            {p.category}
+            className={`w-8 shrink-0 text-center text-xs font-semibold tabular-nums tracking-widest transition-colors duration-200 ${
+              open ? 'text-white/75' : 'text-white/25 group-hover:text-white/55'
+            }`}>
+            {num}
+          </span>
+          <span
+            className={`flex-1 truncate text-left text-sm font-medium leading-snug transition-colors duration-200 sm:text-[15px] ${
+              open ? 'text-white' : 'text-white/60 group-hover:text-white'
+            }`}>
+            {p.title || 'Untitled'}
           </span>
           <button
-            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11.5px] font-semibold transition-colors ${
-              isCopied
-                ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
-                : 'border-white/[0.08] bg-white/[0.04] text-white/60 hover:border-violet-400/40 hover:bg-violet-500/10 hover:text-violet-200'
+            aria-label={`Copy ${p.title || 'prompt'}`}
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
+              isCopied ? 'text-emerald-300' : open ? 'text-white/80 hover:bg-white/15 hover:text-white' : 'text-white/30 hover:bg-white/[0.08] hover:text-white'
             }`}
             onClick={e => {
               e.stopPropagation();
               copyContent(p._id, p.content);
             }}
-            title="Copy prompt">
+            title={isCopied ? 'Copied' : 'Copy prompt'}>
             {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-            {isCopied ? 'Copied' : 'Copy'}
           </button>
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center transition-colors duration-300 ${open ? 'text-white' : 'text-white/40 group-hover:text-white'}`}>
+            {open ? <Minus className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          </span>
         </div>
-      </div>
-    );
-  };
 
-  const renderDetail = (p: PromptLibraryItem) => {
-    const catColor = colorForCategory(p.category);
-    const isCopied = copiedId === p._id;
-    return (
-      <div
-        className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-        onMouseDown={e => e.target === e.currentTarget && setViewingId(null)}>
-        <div
-          className="flex max-h-[86vh] w-full max-w-[760px] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[#12141d] shadow-2xl"
-          style={{borderTop: `3px solid ${catColor}`}}>
-          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-white/[0.07] px-6 py-4">
-            <div className="min-w-0">
-              <h2 className="text-[16px] font-bold text-white">{p.title || 'Untitled'}</h2>
-              <span
-                className="mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
-                style={{backgroundColor: `${catColor}1f`, color: catColor}}>
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{backgroundColor: catColor}} />
-                {p.category}
-              </span>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <button
-                className={`rounded-md p-2 ${p.favorite ? 'text-amber-300' : 'text-white/35 hover:bg-white/[0.08] hover:text-white/70'}`}
-                onClick={() => toggleFavorite(p)}
-                title={p.favorite ? 'Unfavorite' : 'Favorite'}>
-                <Star className="h-4 w-4" fill={p.favorite ? 'currentColor' : 'none'} />
-              </button>
-              <button
-                className="rounded-md p-2 text-white/35 hover:bg-white/[0.08] hover:text-white/70"
-                onClick={() => startEdit(p)}
-                title="Edit">
-                <Pencil className="h-4 w-4" />
-              </button>
-              <button
-                className="rounded-md p-2 text-white/35 transition-colors hover:bg-white/[0.08] hover:text-white"
-                onClick={() => setViewingId(null)}>
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.12)_transparent]">
-            {p.description && <p className="mb-4 text-[13px] leading-relaxed text-white/55">{p.description}</p>}
-            <pre className="whitespace-pre-wrap break-words rounded-lg border border-white/[0.07] bg-white/[0.03] p-4 font-mono text-[12.5px] leading-relaxed text-white/80">
-              {p.content || '(empty)'}
-            </pre>
-          </div>
-          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-white/[0.07] px-6 py-3">
-            <button
-              className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[12.5px] font-semibold transition-colors ${
-                isCopied
-                  ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
-                  : 'border-white/[0.08] bg-white/[0.04] text-white/70 hover:border-violet-400/40 hover:bg-violet-500/10 hover:text-violet-200'
-              }`}
-              onClick={() => copyContent(p._id, p.content)}>
-              {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              {isCopied ? 'Copied' : 'Copy prompt'}
-            </button>
+        {/* Expanding answer: description, the full prompt and actions */}
+        <div className="grid transition-[grid-template-rows] duration-300 ease-out" style={{gridTemplateRows: open ? '1fr' : '0fr'}}>
+          <div className="min-h-0 overflow-hidden">
+            {open && (
+              <div className="px-5 pb-5 sm:pl-[4.25rem] sm:pr-7 sm:pb-6">
+                {p.description && <p className="mb-3 text-sm leading-relaxed text-white/85">{p.description}</p>}
+                <pre className="max-h-[45vh] overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-white/15 bg-black/25 p-4 font-mono text-[12.5px] leading-relaxed text-white/90 [scrollbar-width:thin]">
+                  {p.content || '(empty)'}
+                </pre>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1.5 rounded-full bg-black/25 px-2.5 py-0.5 text-[11px] font-medium text-white/85">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{backgroundColor: catColor}} />
+                    {p.category}
+                  </span>
+                  <span className="flex-1" />
+                  <button
+                    className={`rounded-md p-1.5 transition-colors ${p.favorite ? 'text-amber-300' : 'text-white/60 hover:bg-white/15 hover:text-white'}`}
+                    onClick={() => toggleFavorite(p)}
+                    title={p.favorite ? 'Unfavorite' : 'Favorite'}>
+                    <Star className="h-4 w-4" fill={p.favorite ? 'currentColor' : 'none'} />
+                  </button>
+                  <button className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-white/15 hover:text-white" onClick={() => startEdit(p)} title="Edit">
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button className="rounded-md p-1.5 text-white/60 transition-colors hover:bg-rose-500/25 hover:text-rose-100" onClick={() => deletePrompt(p._id)} title="Delete">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                      isCopied ? 'bg-emerald-500/25 text-emerald-100' : 'bg-white/15 text-white hover:bg-white/25'
+                    }`}
+                    onClick={() => copyContent(p._id, p.content)}>
+                    {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {isCopied ? 'Copied' : 'Copy prompt'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -376,7 +339,7 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4"
-      onMouseDown={e => e.target === e.currentTarget && !editingId && !viewingId && onClose()}>
+      onMouseDown={e => e.target === e.currentTarget && !editingId && onClose()}>
       <div className="flex h-[92vh] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[#12141d] shadow-2xl">
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/[0.07] px-3 py-3 sm:px-6 sm:py-4">
@@ -474,12 +437,13 @@ export default function PromptLibraryModal({onClose}: PromptLibraryModalProps) {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">{filtered.map(renderCard)}</div>
+            <div className="mx-auto flex w-full max-w-3xl flex-col [&>*+*]:-mt-px [&>*:first-child]:rounded-t-xl [&>*:last-child]:rounded-b-xl">
+              {filtered.map((p, i) => renderItem(p, i))}
+            </div>
           )}
         </div>
       </div>
 
-      {viewing && renderDetail(viewing)}
     </div>
   );
 }
