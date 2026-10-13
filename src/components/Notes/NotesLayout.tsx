@@ -96,6 +96,10 @@ const LegacyTasksApp = dynamic(() => import('../Tasks/TasksApp'), {
   loading: () => <div className="p-8 text-sm text-slate-500">Loading your tasks…</div>,
 });
 
+// Sections panel width limits (px)
+const SECTION_MIN = 200;
+const SECTION_MAX = 560;
+
 const NotesLayout: React.FC = React.memo(() => {
   const [categories, setCategories] = useState<INoteCategory[]>([]);
   const [sections, setSections] = useState<INoteSection[]>([]);
@@ -224,6 +228,57 @@ const NotesLayout: React.FC = React.memo(() => {
   useEffect(() => {
     localStorage.setItem('NOTES_SECTION_COLLAPSED', isSectionCollapsed.toString());
   }, [isSectionCollapsed]);
+
+  // Sections panel width: drag its right edge (remembered in this browser; double-click resets)
+  const [sectionWidth, setSectionWidth] = useState<number | null>(null);
+  useEffect(() => {
+    const saved = Number(localStorage.getItem('NOTES_SECTION_WIDTH'));
+    if (saved >= SECTION_MIN && saved <= SECTION_MAX) setSectionWidth(saved);
+  }, []);
+  const saveSectionWidth = useCallback((width: number | null) => {
+    setSectionWidth(width);
+    try {
+      if (width) localStorage.setItem('NOTES_SECTION_WIDTH', String(width));
+      else localStorage.removeItem('NOTES_SECTION_WIDTH');
+    } catch {
+      // storage unavailable
+    }
+  }, []);
+  const startSectionResize = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const aside = e.currentTarget.parentElement;
+      if (!aside) return;
+      const startX = e.clientX;
+      const startWidth = aside.getBoundingClientRect().width;
+      let latest = startWidth;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      const onMove = (ev: PointerEvent) => {
+        latest = Math.round(Math.min(SECTION_MAX, Math.max(SECTION_MIN, startWidth + ev.clientX - startX)));
+        setSectionWidth(latest);
+      };
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        saveSectionWidth(latest);
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    },
+    [saveSectionWidth],
+  );
+  const nudgeSectionWidth = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const current = sectionWidth ?? e.currentTarget.parentElement?.getBoundingClientRect().width ?? 260;
+      saveSectionWidth(Math.min(SECTION_MAX, Math.max(SECTION_MIN, Math.round(current + (e.key === 'ArrowRight' ? 16 : -16)))));
+    },
+    [sectionWidth, saveSectionWidth],
+  );
 
   useEffect(() => {
     localStorage.setItem('NOTES_FOCUS_MODE', isFocusMode.toString());
@@ -1556,7 +1611,10 @@ const NotesLayout: React.FC = React.memo(() => {
             id="notes-panel"
             role="tabpanel">
             {!isFocusMode && (selectedCategoryId || mobileNavigation) && (
-              <aside className={styles.pageSidebar} data-collapsed={isSectionCollapsed}>
+              <aside
+                className={styles.pageSidebar}
+                data-collapsed={isSectionCollapsed}
+                style={sectionWidth ? ({'--section-w': `${sectionWidth}px`} as React.CSSProperties) : undefined}>
                 <div className={styles.mobileNotebooks}>
                   {' '}
                   <CategoryList
@@ -1619,6 +1677,22 @@ const NotesLayout: React.FC = React.memo(() => {
                   selectedPageId={selectedPageId}
                   selectedSectionId={selectedSectionId}
                 />
+                {!isSectionCollapsed && (
+                  <div
+                    aria-label="Resize the sections panel"
+                    aria-orientation="vertical"
+                    aria-valuemax={SECTION_MAX}
+                    aria-valuemin={SECTION_MIN}
+                    aria-valuenow={sectionWidth ?? undefined}
+                    className={styles.sectionResizer}
+                    onDoubleClick={() => saveSectionWidth(null)}
+                    onKeyDown={nudgeSectionWidth}
+                    onPointerDown={startSectionResize}
+                    role="separator"
+                    tabIndex={0}
+                    title="Drag to resize · double-click to reset"
+                  />
+                )}
               </aside>
             )}
             <main className={styles.editor}>

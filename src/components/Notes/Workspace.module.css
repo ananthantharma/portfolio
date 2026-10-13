@@ -361,9 +361,10 @@
   display: none;
 }
 .pageSidebar {
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: 260px;
+  width: var(--section-w, 260px);
   flex-shrink: 0;
   background: #f8f7f3;
   border-right: 1px solid #e5e6dd;
@@ -621,7 +622,7 @@
     padding-inline: 8px;
   }
   .pageSidebar {
-    width: 225px;
+    width: var(--section-w, 225px);
   }
   .header {
     padding-inline: 20px;
@@ -811,3 +812,9 @@
 .taskBanner { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:5px; padding:4px 10px; background:#e2efd9; color:#2f5a2c; font-size:10px; font-style:normal; font-weight:650; letter-spacing:.2px; }
 .notebookGrid .taskBanner svg { width:12px; height:12px; margin:0; color:inherit; }
 .notebookGrid button:has(.taskBanner) { padding-top:34px; }
+
+/* Drag handle on the sections panel's right edge */
+.sectionResizer { position:absolute; top:0; right:0; bottom:0; z-index:5; width:7px; cursor:col-resize; touch-action:none; outline:none; }
+.sectionResizer::after { content:''; position:absolute; top:0; bottom:0; right:0; width:2px; border-radius:2px; background:transparent; transition:background-color .15s ease; }
+.sectionResizer:hover::after, .sectionResizer:focus-visible::after, .sectionResizer:active::after { background:#9fb592; }
+@media (max-width: 900px) { .sectionResizer { display:none; } }
