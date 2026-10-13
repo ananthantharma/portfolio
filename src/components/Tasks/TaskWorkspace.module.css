@@ -173,11 +173,11 @@
 .cardMeta > span { display:inline-flex; align-items:center; gap:4px; }
 .cardMeta > span > svg { flex-shrink:0; }
 .metaRight { margin-left:auto; gap:2px !important; }
-.cardPage { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:6px; color:#8a9583; }
-.cardPage:hover { background:#eef1e8; color:#3e5d40; }
-.cardPage.hoverOnly { display:none; }
-.cardMore { flex-shrink:0; display:flex; align-items:center; justify-content:center; width:34px; height:34px; border:1.5px solid #ecece6; border-radius:9px; background:#fff; color:#2a2d24; }
-.cardMore:hover { background:#f6f6f2; }
+.cardPageBtn { flex-shrink:0; display:flex; align-items:center; justify-content:center; width:26px; height:26px; margin-left:-3px; border:1.7px solid #dcdcd4; border-radius:8px; background:#fff; color:#8a9583; transition:width .3s ease, height .3s ease, border-radius .3s ease, background-color .2s, border-color .2s, color .2s; }
+.cardPageBtn:hover { border-color:#7d9cbd; background:#f3f7fb; color:#2f5d8a; }
+/* Has something written on its page */
+.cardPageBtn[data-has=true] { border-color:#bcd0e4; background:#eef4fa; color:#2f5d8a; }
+.card[data-open=true] .cardPageBtn { width:40px; height:40px; border-radius:12px; }
 .cardBody { display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s cubic-bezier(.25,.1,.25,1); }
 .card[data-open=true] .cardBody { grid-template-rows:1fr; }
 .cardBody > div { min-height:0; overflow:hidden; opacity:0; transform:translateY(-10px); transition:opacity .2s ease, transform .3s ease; }
@@ -208,5 +208,5 @@
 .mobile .card { padding:12px; }
 .mobile .cardTitle { font-size:14.5px; }
 .mobile .stepInput { font-size:15px; }
-@media (hover: none) { .stepRemove { display:flex; } .cardPage.hoverOnly { display:inline-flex; } }
+@media (hover: none) { .stepRemove { display:flex; } }
 @media (prefers-reduced-motion: reduce) { .bar > span::after { animation:none; } }

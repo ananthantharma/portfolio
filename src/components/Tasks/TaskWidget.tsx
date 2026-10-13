@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {CalendarClock, Check, CircleCheck, FileText, Flag, Hourglass, MoreHorizontal, Plus, X} from 'lucide-react';
+import {CalendarClock, Check, CircleCheck, FileText, Flag, Hourglass, Plus, X} from 'lucide-react';
 import React, {useEffect, useState} from 'react';
 
 import {api} from './api';
@@ -119,6 +119,16 @@ export default function TaskWidget({
             type="button">
             <Check size={open ? 18 : 14} strokeWidth={3} />
           </button>
+          {/* The task's page (notes) — same size as the tick box so it's easy to hit */}
+          <button
+            aria-label={`Open the page for ${task.title}`}
+            className={styles.cardPageBtn}
+            data-has={!!task.hasPage}
+            onClick={onOpen}
+            title={task.hasPage ? 'Open its page' : 'Open page & details'}
+            type="button">
+            <FileText size={open ? 18 : 14} strokeWidth={2} />
+          </button>
           {open ? (
             <textarea
               aria-label="Task name"
@@ -145,17 +155,11 @@ export default function TaskWidget({
             </span>
           )}
         </div>
-        {open ? (
-          <button aria-label="Open the task's page" className={styles.cardMore} onClick={onOpen} title="Open page & details" type="button">
-            <MoreHorizontal size={18} />
-          </button>
-        ) : (
-          total > 0 && (
-            <span className={styles.cardProgress}>
-              <Bar pct={pct} />
-              {pct}%
-            </span>
-          )
+        {!open && total > 0 && (
+          <span className={styles.cardProgress}>
+            <Bar pct={pct} />
+            {pct}%
+          </span>
         )}
       </div>
 
@@ -178,14 +182,6 @@ export default function TaskWidget({
             <span className={styles.rowTools}>
               <GlowToggles size={12} task={task} />
             </span>
-            <button
-              aria-label="Open the task's page"
-              className={`${styles.cardPage} ${task.hasPage ? '' : styles.hoverOnly}`}
-              onClick={onOpen}
-              title={task.hasPage ? 'Open its page' : 'Open page & details'}
-              type="button">
-              <FileText size={12} />
-            </button>
           </span>
         </div>
       )}

@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 import {CodeHighlightNode,CodeNode} from '@lexical/code';
 import {$generateHtmlFromNodes, $generateNodesFromDOM} from '@lexical/html';
-import {AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
+import {$createLinkNode, AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {TRANSFORMERS} from '@lexical/markdown';
 import {AutoLinkPlugin, createLinkMatcherWithRegExp} from '@lexical/react/LexicalAutoLinkPlugin';
@@ -70,21 +70,32 @@ function LinkPastePlugin() {
         const data = clipboardEvent.clipboardData;
         if (!data) return false;
 
-        // Only intercept plain-text pastes (no HTML or files in clipboard)
-        const html = data.getData('text/html');
-        if (html) return false; // Let the default HTML paste handle it
-
+        // Only a paste that is exactly one web address
         const text = data.getData('text/plain').trim();
-        if (!text) return false;
+        if (!text || !/^(https?:\/\/|www\.)[^\s]+$/i.test(text)) return false;
+        // A copied link that already carries its own title (rich HTML with <a>) pastes as-is
+        const html = data.getData('text/html');
+        if (html && /<a[\s>]/i.test(html)) return false;
 
-        // Check if the entire pasted text is a single URL
-        const fullUrlRegex = /^(https?:\/\/|www\.)[^\s]+$/i;
-        if (!fullUrlRegex.test(text)) return false;
-
-        // It's a bare URL — insert as a link node
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) return false;
         event.preventDefault();
         const url = text.startsWith('http') ? text : `https://${text}`;
-        editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+
+        // Text selected: turn it into a link. Nothing selected: insert the address as a link.
+        if (!selection.isCollapsed()) {
+          editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
+          return true;
+        }
+        editor.update(() => {
+          const sel = $getSelection();
+          if (!$isRangeSelection(sel)) return;
+          const link = $createLinkNode(url);
+          link.append($createTextNode(text));
+          sel.insertNodes([link]);
+          // Keep typing after the link, not inside it
+          link.selectNext();
+        });
         return true;
       },
       COMMAND_PRIORITY_LOW,
