@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, X} from 'lucide-react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, Undo2, X} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
@@ -175,6 +175,11 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
   const [quickTitle, setQuickTitle] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
+  // Tasks ticked off in this visit (newest last), so an accidental tick can be taken back
+  const [undoStack, setUndoStack] = useState<{task: Task; nextId: string | null}[]>([]);
+  // The undo bar shows for a while after each tick; the footer keeps an Undo link after that
+  const [undoBar, setUndoBar] = useState(false);
+  const undoBarTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // AI capture: null = closed; an object (possibly empty) = open, seeded with what was pasted
   const [capture, setCapture] = useState<CaptureSeed | null>(null);
   const [assigning, setAssigning] = useState(false);
@@ -289,7 +294,48 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
       const result = await saveTaskChanges(task, {isCompleted: complete, status: complete ? 'done' : 'todo'});
       if (result.warning) setActionError(result.warning);
       setNotice(complete ? 'Task completed' : 'Task reopened');
+      if (complete) {
+        setUndoStack(stack => [...stack.filter(entry => entry.task._id !== task._id).slice(-9), {task, nextId: result.created?._id || null}]);
+        setUndoBar(true);
+        if (undoBarTimer.current) clearTimeout(undoBarTimer.current);
+        undoBarTimer.current = setTimeout(() => setUndoBar(false), 12000);
+      } else {
+        setUndoStack(stack => stack.filter(entry => entry.task._id !== task._id));
+      }
     });
+  const lastDone = undoStack[undoStack.length - 1];
+  // Puts the most recently ticked task back the way it was (and drops the repeat a recurring task created)
+  const undoLastDone = () => {
+    if (!lastDone || busy.includes(lastDone.task._id)) return;
+    setUndoStack(stack => stack.slice(0, -1));
+    setUndoBar(false);
+    void execute(lastDone.task._id, async () => {
+      try {
+        await api.update(lastDone.task._id, {isCompleted: false, status: statusOf(lastDone.task)});
+      } catch (cause) {
+        setUndoStack(stack => [...stack, lastDone]);
+        throw cause;
+      }
+      if (lastDone.nextId) await api.remove(lastDone.nextId).catch(() => undefined);
+      setNotice(`“${lastDone.task.title}” is back`);
+    });
+  };
+  useEffect(() => () => {
+    if (undoBarTimer.current) clearTimeout(undoBarTimer.current);
+  }, []);
+  // Ctrl+Z / Cmd+Z while the undo bar is showing (and you're not typing somewhere)
+  useEffect(() => {
+    if (!undoBar) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.key.toLowerCase() !== 'z') return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+      event.preventDefault();
+      undoLastDone();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   const kindOf = (id: string) => vendorOptions?.find(v => v._id === id)?.kind || 'vendor';
   // Projects, then vendors, then your own groups, each A–Z; tasks keep the list's order inside a group; the rest last
@@ -724,8 +770,29 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
             <Plus size={24} />
           </button>
         )}
+        {undoBar && lastDone && (
+          <div className={styles.undoBar} role="status">
+            <Check size={14} />
+            <span>
+              Completed <strong>{lastDone.task.title}</strong>
+            </span>
+            <button className={styles.undoButton} onClick={undoLastDone} type="button">
+              <Undo2 size={14} />
+              Undo
+            </button>
+            <button aria-label="Hide" className={styles.undoClose} onClick={() => setUndoBar(false)} type="button">
+              <X size={13} />
+            </button>
+          </div>
+        )}
         <footer className={styles.footer}>
           <span role="status">{notice || `${visible.length} ${visible.length === 1 ? 'task' : 'tasks'} in this view`}</span>
+          {!undoBar && lastDone && (
+            <button className={styles.footerUndo} onClick={undoLastDone} title={`Bring back “${lastDone.task.title}”`} type="button">
+              <Undo2 size={12} />
+              Undo last completed
+            </button>
+          )}
           {onAdvanced && <button onClick={onAdvanced}>Board & tools</button>}
         </footer>
       </div>

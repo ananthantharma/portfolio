@@ -5,11 +5,13 @@ import {nextOccurrence, statusOf, Task, vendorIdOf} from './types';
 export async function saveTaskChanges(task: Task, patch: Record<string, unknown>) {
   const saved = await api.update(task._id, patch);
   let warning: string | null = null;
+  // The next occurrence of a repeating task, so undoing the completion can take it back out
+  let created: Task | null = null;
   if (statusOf(task) !== 'done' && statusOf(saved) === 'done') {
     const next = nextOccurrence(saved);
     if (next) {
       try {
-        await api.create({
+        created = await api.create({
           title: saved.title, priority: saved.priority, dueDate: next, category: saved.category,
           notes: saved.notes, tags: saved.tags, recurrence: saved.recurrence, estimatedTime: saved.estimatedTime,
           sourcePageId: typeof saved.sourcePageId === 'object' ? saved.sourcePageId?._id : saved.sourcePageId,
@@ -26,5 +28,5 @@ export async function saveTaskChanges(task: Task, patch: Record<string, unknown>
       }
     }
   }
-  return {task: saved, warning};
+  return {task: saved, warning, created};
 }
