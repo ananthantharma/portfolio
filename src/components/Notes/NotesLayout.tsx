@@ -1,4 +1,4 @@
-/* eslint-disable simple-import-sort/imports */
+/* eslint-disable simple-import-sort/imports, react-memo/require-memo */
 'use client';
 
 import axios from 'axios';
@@ -58,43 +58,61 @@ import {DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/v
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
-import StandaloneRewriteModal from '../StandaloneRewriteModal';
 import CategoryList from './CategoryList';
-import ContactListModal from './ContactListModal';
-import FlaggedItemsModal from './FlaggedItemsModal';
-import AssessmentModal from './AssessmentModal';
-import ImageExtractionModal from './ImageExtractionModal';
-import NoteEditor from './NoteEditor';
 // import SearchModal from './SearchModal'; // Replaced by CommandPalette
 import SectionPageList from './SectionPageList';
 import SectionDashboard from './SectionDashboard';
-import ProjectPage from './Vendor/ProjectPage';
-import ExecutiveModal from './ExecutiveModal';
-import ToDoListModal from './ToDoListModal';
-import MovePageModal from './MovePageModal';
-import GoogleCalendarModal from './GoogleCalendarModal';
 import {BadgeSettingsProvider} from './BadgeSettingsContext';
-import {BadgeSettingsModal} from './BadgeSettingsModal';
-import CommandPalette from './CommandPalette';
-import BookmarkListModal from './BookmarkListModal';
-import PromptLibraryModal from '../PromptLibrary/PromptLibraryModal';
-import AudioRecorderModal from './AudioRecorderModal';
-import GoogleDriveModal from './GoogleDriveModal';
-import CameraModal from './CameraModal';
-import AssignWorkWindow from './AssignWorkWindow';
-import TasksWindow from '../Tasks/TasksWindow';
 
-import UnifiedAIChatModal from './UnifiedAIChatModal';
-import LogicStyleRefiner from './LogicStyleRefiner';
-import ContractRedlineAnalyzer from './ContractRedlineAnalyzer';
-import Humanizer from './Humanizer';
-import TruthTeller from './TruthTeller';
 import ToolRail from './ToolRail';
+
+// The note editor (Lexical) and vendor/project pages are big; they load in their own chunks
+const PanelLoading = () => (
+  <div className="flex h-full items-center justify-center">
+    <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
+  </div>
+);
+const loadNoteEditor = () => import('./NoteEditor');
+const NoteEditor = dynamic(loadNoteEditor, {ssr: false, loading: PanelLoading});
+const ProjectPage = dynamic(() => import('./Vendor/ProjectPage'), {ssr: false, loading: PanelLoading});
+
+// Tool windows download the first time they're opened (keeps /notes quick to load)
+const StandaloneRewriteModal = dynamic(() => import('../StandaloneRewriteModal'), {ssr: false});
+const ContactListModal = dynamic(() => import('./ContactListModal'), {ssr: false});
+const FlaggedItemsModal = dynamic(() => import('./FlaggedItemsModal'), {ssr: false});
+const AssessmentModal = dynamic(() => import('./AssessmentModal'), {ssr: false});
+const ImageExtractionModal = dynamic(() => import('./ImageExtractionModal'), {ssr: false});
+const ExecutiveModal = dynamic(() => import('./ExecutiveModal'), {ssr: false});
+const ToDoListModal = dynamic(() => import('./ToDoListModal'), {ssr: false});
+const MovePageModal = dynamic(() => import('./MovePageModal'), {ssr: false});
+const GoogleCalendarModal = dynamic(() => import('./GoogleCalendarModal'), {ssr: false});
+const BadgeSettingsModal = dynamic(() => import('./BadgeSettingsModal').then(m => m.BadgeSettingsModal), {ssr: false});
+const CommandPalette = dynamic(() => import('./CommandPalette'), {ssr: false});
+const BookmarkListModal = dynamic(() => import('./BookmarkListModal'), {ssr: false});
+const PromptLibraryModal = dynamic(() => import('../PromptLibrary/PromptLibraryModal'), {ssr: false});
+const AudioRecorderModal = dynamic(() => import('./AudioRecorderModal'), {ssr: false});
+const GoogleDriveModal = dynamic(() => import('./GoogleDriveModal'), {ssr: false});
+const CameraModal = dynamic(() => import('./CameraModal'), {ssr: false});
+const AssignWorkWindow = dynamic(() => import('./AssignWorkWindow'), {ssr: false});
+const TasksWindow = dynamic(() => import('../Tasks/TasksWindow'), {ssr: false});
+const UnifiedAIChatModal = dynamic(() => import('./UnifiedAIChatModal'), {ssr: false});
+const LogicStyleRefiner = dynamic(() => import('./LogicStyleRefiner'), {ssr: false});
+const ContractRedlineAnalyzer = dynamic(() => import('./ContractRedlineAnalyzer'), {ssr: false});
+const Humanizer = dynamic(() => import('./Humanizer'), {ssr: false});
+const TruthTeller = dynamic(() => import('./TruthTeller'), {ssr: false});
 
 const LegacyTasksApp = dynamic(() => import('../Tasks/TasksApp'), {
   ssr: false,
   loading: () => <div className="p-8 text-sm text-slate-500">Loading your tasks…</div>,
 });
+
+
+/** True from the first time `open` is true (lets a lazily loaded window stay mounted afterwards). */
+function useOpenedOnce(open: boolean) {
+  const [opened, setOpened] = useState(open);
+  if (open && !opened) setOpened(true);
+  return opened || open;
+}
 
 // Sections panel width limits (px)
 const SECTION_MIN = 200;
@@ -109,6 +127,9 @@ const NotesLayout: React.FC = React.memo(() => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  // The note open in the editor, always complete (the section lists only carry titles and details)
+  const [openPage, setOpenPage] = useState<INotePage | null>(null);
+  const [openPageError, setOpenPageError] = useState<string | null>(null);
   const [targetTabId, setTargetTabId] = useState<string | undefined>(undefined);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
@@ -373,7 +394,7 @@ const NotesLayout: React.FC = React.memo(() => {
     }
     setLoadingPages(true);
     try {
-      const response = await axios.get(`/api/notes/pages?sectionId=${sectionId}`);
+      const response = await axios.get(`/api/notes/pages?sectionId=${sectionId}&summary=1`);
       const data = response.data.data;
       pagesCache.current[sectionId] = data;
       pagesBelongToSection.current = sectionId;
@@ -394,7 +415,7 @@ const NotesLayout: React.FC = React.memo(() => {
     }
     setLoadingCategoryPages(true);
     try {
-      const response = await axios.get(`/api/notes/pages?categoryId=${categoryId}`);
+      const response = await axios.get(`/api/notes/pages?categoryId=${categoryId}&summary=1`);
       const data = response.data.data;
       categoryPagesCache.current[categoryId] = data;
       categoryPagesBelongToCategory.current = categoryId;
@@ -843,6 +864,7 @@ const NotesLayout: React.FC = React.memo(() => {
   const applyPageUpdate = useCallback((updated: INotePage) => {
     setPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
     setCategoryPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
+    setOpenPage(prev => (prev && prev._id === updated._id ? updated : prev));
   }, []);
 
   const handleRenamePage = useCallback(
@@ -1028,6 +1050,36 @@ const NotesLayout: React.FC = React.memo(() => {
 
   const selectedPage =
     pages.find(p => p._id === selectedPageId) || categoryPages.find(p => p._id === selectedPageId) || null;
+
+  // Load the full note when one is opened (a list entry that's already complete is used as-is)
+  const selectedIsFull = !!selectedPage && !(selectedPage as INotePage & {summary?: boolean}).summary;
+  useEffect(() => {
+    if (!selectedPageId) {
+      setOpenPage(null);
+      return;
+    }
+    setOpenPageError(null);
+    if (selectedIsFull && selectedPage) {
+      setOpenPage(selectedPage);
+      return;
+    }
+    let cancelled = false;
+    setOpenPage(prev => (prev && prev._id === selectedPageId ? prev : null));
+    axios
+      .get('/api/notes/pages/' + encodeURIComponent(selectedPageId))
+      .then(response => {
+        if (!cancelled && response.data?.data) setOpenPage(response.data.data);
+      })
+      .catch(() => {
+        if (!cancelled) setOpenPageError('This note could not be loaded. Check your connection and try again.');
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Only when the selection changes (or its list entry becomes complete); edits arrive via applyPageUpdate
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPageId, selectedIsFull]);
+  const editorPage = openPage && openPage._id === selectedPageId ? openPage : null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
   // Vendor and project notebooks turn each section into a vendor or project page
@@ -1347,6 +1399,30 @@ const NotesLayout: React.FC = React.memo(() => {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [workspaceView, selectedSectionId, selectedCategoryId, handleAddPage, handleAddCategoryPage]);
+
+  // Fetch the editor in the background once the page has settled
+  useEffect(() => {
+    const warm = () => void loadNoteEditor();
+    const w = window as Window & {requestIdleCallback?: (cb: () => void) => number};
+    if (w.requestIdleCallback) w.requestIdleCallback(warm);
+    else setTimeout(warm, 1500);
+  }, []);
+
+  // Lazily loaded windows: mounted from their first opening
+  const toDoMounted = useOpenedOnce(isToDoListOpen || isDirectTaskCreateOpen);
+  const contactsMounted = useOpenedOnce(isContactListOpen);
+  const bookmarksMounted = useOpenedOnce(isBookmarksOpen);
+  const rewriteMounted = useOpenedOnce(isRewriteOpen);
+  const imageExtractMounted = useOpenedOnce(isImageExtractOpen);
+  const assessmentMounted = useOpenedOnce(isAssessmentOpen);
+  const aiChatMounted = useOpenedOnce(isAIChatOpen);
+  const keyTasksMounted = useOpenedOnce(isKeyTasksOpen);
+  const importantMounted = useOpenedOnce(isImportantOpen);
+  const searchMounted = useOpenedOnce(isSearchOpen);
+  const executiveMounted = useOpenedOnce(isExecutiveModalOpen);
+  const calendarMounted = useOpenedOnce(isCalendarOpen);
+  const driveMounted = useOpenedOnce(isDriveOpen);
+  const settingsMounted = useOpenedOnce(isSettingsOpen);
 
   return (
     <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
@@ -1699,14 +1775,20 @@ const NotesLayout: React.FC = React.memo(() => {
               {/* Page open: Editor */}
               {selectedPageId ? (
                 <div className="h-full overflow-hidden">
-                  <NoteEditor
-                    initialTabId={targetTabId}
-                    key={selectedPageId}
-                    onSave={handleSavePageContent}
-                    page={selectedPage || null}
-                    project={noteProject}
-                    projectKind={notebookKind || undefined}
-                  />
+                  {editorPage ? (
+                    <NoteEditor
+                      initialTabId={targetTabId}
+                      key={selectedPageId}
+                      onSave={handleSavePageContent}
+                      page={editorPage}
+                      project={noteProject}
+                      projectKind={notebookKind || undefined}
+                    />
+                  ) : openPageError ? (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-sm text-slate-500">{openPageError}</div>
+                  ) : (
+                    <PanelLoading />
+                  )}
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
               selectedSectionId && notebookKind && currentSection && currentCategory ? (
@@ -1930,6 +2012,7 @@ const NotesLayout: React.FC = React.memo(() => {
           ))}
 
         {/* ── Modals ── */}
+        {toDoMounted && (
         <ToDoListModal
           isDirectCreateOpen={isDirectTaskCreateOpen}
           isOpen={isToDoListOpen}
@@ -1937,20 +2020,24 @@ const NotesLayout: React.FC = React.memo(() => {
           onCloseDirectCreate={() => setIsDirectTaskCreateOpen(false)}
           onNavigate={task => (task ? handleJumpToTask(task) : undefined)}
         />
-        <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />
-        <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />
+        )}
+        {contactsMounted && <ContactListModal isOpen={isContactListOpen} onClose={handleCloseContactList} />}
+        {bookmarksMounted && <BookmarkListModal isOpen={isBookmarksOpen} onClose={() => setIsBookmarksOpen(false)} />}
         {isAdmin && isCameraOpen && <CameraModal onClose={() => setIsCameraOpen(false)} />}
         {isAssignWorkOpen && <AssignWorkWindow onClose={() => setIsAssignWorkOpen(false)} />}
         {isPromptLibraryOpen && <PromptLibraryModal onClose={() => setIsPromptLibraryOpen(false)} />}
-        <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />
-        <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />
-        <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />
+        {rewriteMounted && <StandaloneRewriteModal isOpen={isRewriteOpen} onClose={handleCloseRewrite} />}
+        {imageExtractMounted && <ImageExtractionModal isOpen={isImageExtractOpen} onClose={handleCloseImageExtract} />}
+        {assessmentMounted && <AssessmentModal isOpen={isAssessmentOpen} onClose={handleCloseAssessment} />}
+        {aiChatMounted && (
         <UnifiedAIChatModal
           geminiApiKey={geminiApiKey}
           isOpen={isAIChatOpen}
           onClose={handleCloseAIChat}
           openaiApiKey={openaiApiKey}
         />
+        )}
+        {keyTasksMounted && (
         <FlaggedItemsModal
           fetchItems={fetchFlaggedTasks}
           icon="flag"
@@ -1959,6 +2046,8 @@ const NotesLayout: React.FC = React.memo(() => {
           onSelectTask={handleJumpToTask}
           title="Key Tasks"
         />
+        )}
+        {importantMounted && (
         <FlaggedItemsModal
           fetchItems={fetchImportantTasks}
           icon="important"
@@ -1967,8 +2056,10 @@ const NotesLayout: React.FC = React.memo(() => {
           onSelectTask={handleJumpToTask}
           title="Important Items"
         />
+        )}
+        {searchMounted && (
         <CommandPalette
-          currentPageContent={selectedPage?.tabs?.[0]?.content || ''}
+          currentPageContent={editorPage?.tabs?.[0]?.content || ''}
           currentPageTitle={selectedPage?.title || ''}
           fetchItems={fetchSearchResults}
           isOpen={isSearchOpen}
@@ -1976,15 +2067,16 @@ const NotesLayout: React.FC = React.memo(() => {
           onCreatePage={selectedSectionId || selectedCategoryId ? handleCreatePageFromPalette : undefined}
           onSelectTask={handleJumpToTask}
         />
-        <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />
-        <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />
-        <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />
+        )}
+        {executiveMounted && <ExecutiveModal isOpen={isExecutiveModalOpen} onClose={() => setIsExecutiveModalOpen(false)} />}
+        {calendarMounted && <GoogleCalendarModal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} />}
+        {driveMounted && <GoogleDriveModal isOpen={isDriveOpen} onClose={() => setIsDriveOpen(false)} />}
         <AudioRecorderModal
           isOpen={isAudioRecorderOpen}
           onClose={() => setIsAudioRecorderOpen(false)}
           onOpen={() => setIsAudioRecorderOpen(true)}
         />
-        <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+        {settingsMounted && <BadgeSettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />}
         {isRefinerOpen && <LogicStyleRefiner onClose={handleCloseRefiner} />}
         {isRedlineOpen && <ContractRedlineAnalyzer onClose={handleCloseRedline} />}
         {isHumanizerOpen && <Humanizer onClose={handleCloseHumanizer} />}

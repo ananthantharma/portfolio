@@ -332,10 +332,10 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
     if (activeTabIndex !== -1 && tabsRef.current[activeTabIndex]) {
       const activeElement = tabsRef.current[activeTabIndex];
       if (activeElement) {
-        setIndicatorStyle({
-          left: activeElement.offsetLeft,
-          width: activeElement.offsetWidth,
-        });
+        const left = activeElement.offsetLeft;
+        const width = activeElement.offsetWidth;
+        // Typing updates the tabs list; only re-render when the underline actually moves
+        setIndicatorStyle(prev => (prev.left === left && prev.width === width ? prev : {left, width}));
       }
     }
   }, [activeTabId, tabs]);

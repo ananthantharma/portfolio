@@ -45,7 +45,7 @@ import {INoteSection} from '@/models/NoteSection';
 
 import {useBadgeSettings} from './BadgeSettingsContext';
 import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
+import {getNoteIcon, IconPicker} from './IconPicker';
 import {SortableItem} from './SortableItem';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -188,7 +188,7 @@ const PageRow = React.memo<PageRowProps>(
     dndId,
     hideGroupAction = false,
   }) => {
-    const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
+    const PageIcon = getNoteIcon(page.icon, 'FileText');
     const isInactive = !!page.isInactive;
 
     const tint = page.color && page.color !== '#000000' ? page.color : undefined;
@@ -724,7 +724,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           </button>
           <div className="w-5 h-px bg-slate-200/70 my-0.5" />
           {orderedSections.map(sec => {
-            const SectionIcon = ICON_options[sec.icon as keyof typeof ICON_options] || ICON_options.Folder;
+            const SectionIcon = getNoteIcon(sec.icon, 'Folder');
             const isSelected = selectedSectionId === sec._id;
             return (
               <button
@@ -1151,7 +1151,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                   {filteredSections.map(section => {
                     const sid = section._id as string;
                     const isSelectedSec = selectedSectionId === sid;
-                    const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+                    const SectionIcon = getNoteIcon(section.icon, 'Folder');
                     // ── Section edit form ──────────────────────────────────────
                     if (editingSecId === sid) {
                       return (
@@ -1214,7 +1214,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             {isSelectedSec && !isOpen && rootPages.length > 1 ? (
                               <span className="grid h-9 w-9 flex-shrink-0 grid-cols-2 gap-0.5">
                                 {rootPages.slice(0, 4).map(p => {
-                                  const MiniIcon = ICON_options[p.icon as keyof typeof ICON_options] || ICON_options.FileText;
+                                  const MiniIcon = getNoteIcon(p.icon, 'FileText');
                                   return (
                                     <span className="flex items-center justify-center rounded-full bg-zinc-300 text-white" key={p._id as string}>
                                       <MiniIcon className="h-2.5 w-2.5" />

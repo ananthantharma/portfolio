@@ -30,7 +30,7 @@ import {INotePage} from '@/models/NotePage';
 
 import {useBadgeSettings} from './BadgeSettingsContext';
 import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
+import {getNoteIcon, IconPicker} from './IconPicker';
 import {SortableItem} from './SortableItem';
 
 interface PageListProps {
@@ -89,7 +89,7 @@ const PageItem = React.memo<PageItemProps>(
     isChild,
     sortable = true,
   }) => {
-    const PageIcon = ICON_options[page.icon as keyof typeof ICON_options] || ICON_options.FileText;
+    const PageIcon = getNoteIcon(page.icon, 'FileText');
     const {getBadgeStyle} = useBadgeSettings();
     const isInactive = !!page.isInactive;
 

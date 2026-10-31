@@ -12,6 +12,40 @@ import NoteSection from '@/models/NoteSection'; // Ensure registration
 import ToDo from '@/models/ToDo';
 import {authOptions} from '@/lib/auth';
 
+const BLOCK_TAGS = /<\/?(p|div|br|li|ul|ol|h\d|tr|td|th|table|blockquote)\b[^>]*>/gi;
+
+/** Plain words from a note's HTML: no tags, no embedded pictures. */
+function plainText(html: string) {
+  return html
+    .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(BLOCK_TAGS, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * A list entry without the note bodies. `text` keeps the words (for previews and vendor search);
+ * `summary: true` tells the app to load the full note before opening it in the editor.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function summarizePage(page: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tabs: any[] = Array.isArray(page.tabs) ? page.tabs : [];
+  const ordered = [...tabs].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const text = (ordered.map(t => plainText(t.content || '')).join(' ').trim() || plainText(page.content || '')).slice(0, 20000);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const {content: _legacy, ...rest} = page;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return {...rest, tabs: tabs.map(({content: _c, ...tab}) => tab), text, summary: true};
+}
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
@@ -32,6 +66,8 @@ export async function GET(request: Request) {
   const search = searchParams.get('search');
   const searchPageTitlesOnly = searchParams.get('searchPageTitlesOnly') === 'true';
   const searchSectionNamesOnly = searchParams.get('searchSectionNamesOnly') === 'true';
+  // summary=1: lists only need titles and details, not each note's full HTML (pasted pictures make it huge)
+  const summary = searchParams.get('summary') === '1';
 
   try {
     const query: Record<string, unknown> = {userEmail};
@@ -149,10 +185,10 @@ export async function GET(request: Request) {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pagesWithCount = pages.map((p: any) => ({
-      ...p.toObject(),
-      todoCount: pageToDoCounts[p._id.toString()] || 0,
-    }));
+    const pagesWithCount = pages.map((p: any) => {
+      const page = {...p.toObject(), todoCount: pageToDoCounts[p._id.toString()] || 0};
+      return summary ? summarizePage(page) : page;
+    });
 
     return NextResponse.json({success: true, data: pagesWithCount});
   } catch (error) {

@@ -1,3 +1,4 @@
+/* eslint-disable react-memo/require-memo */
 import {
   Activity,
   AlertCircle,
@@ -134,7 +135,6 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import * as IconoirIcons from 'iconoir-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 
@@ -275,20 +275,73 @@ const LucideIcons = {
   ZoomOut,
 };
 
-// Filter and Prefix Iconoir exports
-const PrefixedIconoirIcons = Object.fromEntries(
-  Object.entries(IconoirIcons)
-    .filter(
-      ([key, val]) =>
-        /^[A-Z]/.test(key) && key !== 'IconoirProvider' && key !== 'IconoirContext' && typeof val === 'function',
-    )
-    .map(([key, val]) => [`Iconoir_${key}`, val]),
-);
+type IconComp = React.ComponentType<{className?: string; style?: React.CSSProperties}>;
 
-export const ICON_options = {
-  ...LucideIcons,
-  ...PrefixedIconoirIcons,
-};
+/**
+ * The Iconoir set is ~1,700 icons, so it is only downloaded when it's needed: when the picker
+ * opens, or when a page/section uses one of its icons (stored as "Iconoir_<Name>").
+ */
+let iconoirMap: Record<string, IconComp> | null = null;
+let iconoirPromise: Promise<Record<string, IconComp>> | null = null;
+const iconoirListeners = new Set<() => void>();
+
+function loadIconoir() {
+  if (!iconoirPromise) {
+    iconoirPromise = import('iconoir-react').then(mod => {
+      iconoirMap = Object.fromEntries(
+        Object.entries(mod)
+          .filter(([key, val]) => /^[A-Z]/.test(key) && key !== 'IconoirProvider' && key !== 'IconoirContext' && (typeof val === 'function' || typeof val === 'object'))
+          .map(([key, val]) => [`Iconoir_${key}`, val as IconComp]),
+      );
+      iconoirListeners.forEach(listener => listener());
+      return iconoirMap;
+    });
+  }
+  return iconoirPromise;
+}
+
+function useIconoirMap(needed: boolean) {
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!needed || iconoirMap) return;
+    const listener = () => rerender(n => n + 1);
+    iconoirListeners.add(listener);
+    void loadIconoir();
+    return () => {
+      iconoirListeners.delete(listener);
+    };
+  }, [needed]);
+  return iconoirMap;
+}
+
+// One stable stand-in component per Iconoir icon name (shows the fallback until the set has loaded)
+// (a plain object: `Map` here is the Lucide icon of that name)
+const lazyIcons: Record<string, IconComp> = {};
+function lazyIconoir(name: string, Fallback: IconComp): IconComp {
+  const key = `${name}|${Fallback.displayName || ''}`;
+  const cached = lazyIcons[key];
+  if (cached) return cached;
+  const Icon: IconComp = props => {
+    const map = useIconoirMap(true);
+    const Real = map?.[name];
+    return Real ? <Real {...props} /> : <Fallback {...props} />;
+  };
+  Icon.displayName = `Lazy${name}`;
+  lazyIcons[key] = Icon;
+  return Icon;
+}
+
+/** The icon component for a stored icon name (Lucide right away, Iconoir once loaded). */
+export function getNoteIcon(name: string | undefined | null, fallback: keyof typeof LucideIcons = 'FileText'): IconComp {
+  const Fallback = LucideIcons[fallback] as IconComp;
+  if (!name) return Fallback;
+  if (name in LucideIcons) return LucideIcons[name as keyof typeof LucideIcons] as IconComp;
+  if (name.startsWith('Iconoir_')) return lazyIconoir(name, Fallback);
+  return Fallback;
+}
+
+/** The always-available (Lucide) icons. */
+export const ICON_options = LucideIcons;
 
 interface IconPickerProps {
   onSelectIcon: (iconName: string, image?: string | null) => void;
@@ -313,14 +366,17 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
   const [brandDomain, setBrandDomain] = useState(selectedImage || '');
   const [previewError, setPreviewError] = useState(false);
 
+  // Iconoir joins the list once the picker opens
+  const iconoir = useIconoirMap(isOpen);
+  const allIcons = useMemo<Record<string, IconComp>>(() => ({...(LucideIcons as Record<string, IconComp>), ...(iconoir || {})}), [iconoir]);
   const filteredIcons = useMemo(() => {
-    const all = Object.keys(ICON_options).filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const all = Object.keys(allIcons).filter(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
     // Optimization: Limit to 200 items if search is short to improve render perf
     if (searchTerm.length < 2) return all.slice(0, 200);
     return all;
-  }, [searchTerm]);
+  }, [searchTerm, allIcons]);
 
-  const SelectedIconComponent = ICON_options[selectedIcon as keyof typeof ICON_options] || Folder;
+  const SelectedIconComponent = getNoteIcon(selectedIcon, 'Folder');
 
   // Handle click outside to close
   useEffect(() => {
@@ -439,7 +495,7 @@ export const IconPicker: React.FC<IconPickerProps> = React.memo(({onSelectIcon, 
                 />
                 <div className="custom-scrollbar grid max-h-48 grid-cols-5 gap-2 overflow-y-auto">
                   {filteredIcons.map(iconName => {
-                    const IconComponent = ICON_options[iconName as keyof typeof ICON_options];
+                    const IconComponent = allIcons[iconName];
                     return (
                       <button
                         className={`flex items-center justify-center rounded-lg p-2 transition-all hover:bg-gray-100 ${

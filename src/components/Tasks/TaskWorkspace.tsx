@@ -2,6 +2,7 @@
 'use client';
 
 import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, X} from 'lucide-react';
+import dynamic from 'next/dynamic';
 import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
 import AssignWorkWindow from '../Notes/AssignWorkWindow';
@@ -11,12 +12,14 @@ import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
 import {AssigneePill, CopySubjectButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
-import TaskPageWindow from './TaskPage';
 import {useTaskCollection} from './TaskProvider';
 import TaskWidget from './TaskWidget';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from './WorkspaceNavigation';
+
+// A task's page uses the full editor, so it loads when one is first opened
+const TaskPageWindow = dynamic(() => import('./TaskPage'), {ssr: false});
 
 export type NoteContext = {id: string; title: string} | null;
 type Filter = 'open' | 'today' | 'note' | 'done' | 'archive';

@@ -15,7 +15,7 @@ import {INoteSection} from '@/models/NoteSection';
 
 import {useBadgeSettings} from './BadgeSettingsContext';
 import {ColorPicker} from './ColorPicker';
-import {ICON_options, IconPicker} from './IconPicker';
+import {getNoteIcon, IconPicker} from './IconPicker';
 import {SortableItem} from './SortableItem';
 
 interface SectionListProps {
@@ -42,7 +42,7 @@ const SectionItem = React.memo<{
   isCollapsed: boolean;
   badgeStats?: {todo: {count: number; minDays: number | null}; important: number; flagged: number};
 }>(({section, isSelected, onSelect, onEdit, onDelete, isCollapsed, badgeStats}) => {
-  const SectionIcon = ICON_options[section.icon as keyof typeof ICON_options] || ICON_options.Folder;
+  const SectionIcon = getNoteIcon(section.icon, 'Folder');
   const {getBadgeStyle} = useBadgeSettings(); // Use hook
 
   const style = useMemo(

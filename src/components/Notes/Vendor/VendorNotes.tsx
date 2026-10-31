@@ -77,6 +77,9 @@ interface Props {
 export function noteSnippet(page: INotePage, max = 160) {
   const tabs = [...(page.tabs || [])].sort((a, b) => a.order - b.order);
   const html = tabs.map(t => t.content || '').join(' ') || page.content || '';
+  // List entries carry plain text instead of the note's HTML
+  const listText = (page as INotePage & {text?: string}).text;
+  if (!html.trim() && listText) return listText.slice(0, max);
   return html
     .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     // Block-level tags separate words; inline tags (<b>, <span>) must not add spaces

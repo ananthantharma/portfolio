@@ -26,8 +26,9 @@ import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
 // Lexical Nodes & Commands
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {TableCellNode, TableNode, TableRowNode} from '@lexical/table';
-import {$createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, COMMAND_PRIORITY_LOW, PASTE_COMMAND} from 'lexical';
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import {$createParagraphNode, $createTextNode, $getRoot, $getSelection, $isElementNode, $isRangeSelection, BLUR_COMMAND, COMMAND_PRIORITY_LOW, PASTE_COMMAND} from 'lexical';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import {flushSync} from 'react-dom';
 
 import {DrawingNode} from './DrawingNode';
 import EditorToolbar from './editor/EditorToolbar';
@@ -112,10 +113,36 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
   const [editor] = useLexicalComposerContext();
   const lastUpdateValue = useRef('');
   const isInitializing = useRef(true);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  // Turning the whole note into HTML (pictures included) is the costly part of typing, so it runs once
+  // typing pauses, and straight away whenever the editor loses focus, closes or the tab is left.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // `sync`: commit the change to the page right away (on blur, so a click that follows sees it)
+  const flush = useCallback(
+    (sync = false) => {
+      if (timer.current) {
+        clearTimeout(timer.current);
+        timer.current = null;
+      }
+      // editor.read also applies keystrokes Lexical hasn't committed yet
+      const html = editor.read(() => $generateHtmlFromNodes(editor, null));
+      if (html === lastUpdateValue.current) return;
+      lastUpdateValue.current = html;
+      const report = () => onChangeRef.current(html, null, 'user', editor);
+      if (sync) flushSync(report);
+      else report();
+    },
+    [editor],
+  );
 
   useEffect(() => {
     if (value !== lastUpdateValue.current || isInitializing.current) {
       isInitializing.current = false;
+      // A new value replaces any edit still waiting to be reported
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
       editor.update(() => {
         const parser = new DOMParser();
         const dom = parser.parseFromString(value, 'text/html');
@@ -127,22 +154,46 @@ function ValueSyncPlugin({value, onChange}: {value: string; onChange: any}) {
     }
   }, [editor, value]);
 
+  useEffect(() => {
+    const offBlur = editor.registerCommand(
+      BLUR_COMMAND,
+      () => {
+        flush(true);
+        return false;
+      },
+      COMMAND_PRIORITY_LOW,
+    );
+    const onLeave = () => flush();
+    // Pressing anything outside the editor (Save, a tab, a menu…) commits the text before that click runs
+    const onPointerDown = (e: PointerEvent) => {
+      const root = editor.getRootElement();
+      if (root && e.target instanceof Node && !root.contains(e.target)) flush(true);
+    };
+    window.addEventListener('beforeunload', onLeave);
+    window.addEventListener('pagehide', onLeave);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => {
+      offBlur();
+      window.removeEventListener('beforeunload', onLeave);
+      window.removeEventListener('pagehide', onLeave);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      if (timer.current) flush();
+    };
+  }, [editor, flush]);
+
   return (
     <OnChangePlugin
       ignoreSelectionChange
       onChange={(editorState, latestEditor, tags) => {
-        editorState.read(() => {
-          const html = $generateHtmlFromNodes(latestEditor, null);
-          // Loading a value re-serialises it slightly differently; that isn't an edit
-          if (tags.has(VALUE_SYNC_TAG)) {
-            lastUpdateValue.current = html;
-            return;
-          }
-          if (html !== lastUpdateValue.current) {
-            lastUpdateValue.current = html;
-            onChange(html, null, 'user', latestEditor);
-          }
-        });
+        // Loading a value re-serialises it slightly differently; that isn't an edit
+        if (tags.has(VALUE_SYNC_TAG)) {
+          editorState.read(() => {
+            lastUpdateValue.current = $generateHtmlFromNodes(latestEditor, null);
+          });
+          return;
+        }
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => flush(), 250);
       }}
     />
   );
