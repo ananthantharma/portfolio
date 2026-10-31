@@ -254,6 +254,7 @@ function BookmarkRow({
   onTagClick,
 }: RowProps) {
   const isFile = bookmark.kind === 'file';
+  const [textCopied, setTextCopied] = useState(false);
   const href = bookmark.url.startsWith('http') ? bookmark.url : `https://${bookmark.url}`;
   const tags = bookmark.tags ?? [];
   const when = relativeTime(addedAt(bookmark));
@@ -351,31 +352,26 @@ function BookmarkRow({
   );
 
   const toolClass = 'rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700';
-  const open = () => (isFile ? onDownload(bookmark) : window.open(href, '_blank', 'noopener,noreferrer'));
+  // The bookmark's own words (not the website fallback) can be copied in one click
+  const copyText = bookmark.description?.trim() && bookmark.description.trim().toLowerCase() !== bookmark.title.trim().toLowerCase() ? bookmark.description.trim() : bookmark.notes?.trim() || '';
+  const copyDetail = () =>
+    navigator.clipboard
+      .writeText(copyText)
+      .then(() => {
+        setTextCopied(true);
+        setTimeout(() => setTextCopied(false), 1500);
+      })
+      .catch(() => undefined);
 
+  // Only the arrow (or download) button opens the bookmark, so the text can be selected and copied
   return (
     <li className="border-b border-gray-100 last:border-b-0">
-      <div
-        className="group relative flex cursor-pointer flex-col gap-3 py-4 transition-colors sm:flex-row sm:items-center sm:gap-5"
-        onClick={e => {
-          if ((e.target as HTMLElement).closest('button, a, input')) return;
-          open();
-        }}>
+      <div className="group relative flex flex-col gap-3 py-4 transition-colors sm:flex-row sm:items-center sm:gap-5">
         <div className="flex min-w-0 flex-1 items-center gap-3.5">
           {tile}
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              {isFile ? (
-                <h3 className="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-gray-700 sm:text-[15px]">{bookmark.title}</h3>
-              ) : (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate text-sm font-semibold text-gray-900 transition-colors hover:text-blue-600 sm:text-[15px]">
-                  {bookmark.title}
-                </a>
-              )}
+              <h3 className="min-w-0 break-words text-sm font-semibold text-gray-900 sm:text-[15px]">{bookmark.title}</h3>
               {isPinned && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
                   <StarIcon className="h-2.5 w-2.5" />
@@ -396,7 +392,20 @@ function BookmarkRow({
                 </button>
               ))}
             </div>
-            {detail && <p className="line-clamp-1 text-xs text-gray-500 sm:text-[13px]">{detail}</p>}
+            {detail && (
+              <div className="flex items-start gap-1">
+                <p className="min-w-0 select-text whitespace-pre-line break-words text-xs text-gray-500 sm:text-[13px]">{detail}</p>
+                {copyText && (
+                  <button
+                    aria-label="Copy this text"
+                    className={`-my-0.5 flex-shrink-0 rounded-md p-1 transition-colors ${textCopied ? 'text-green-500' : 'text-gray-300 hover:bg-gray-100 hover:text-gray-700'}`}
+                    onClick={copyDetail}
+                    title={textCopied ? 'Copied' : 'Copy this text'}>
+                    {textCopied ? <CheckIcon className="h-3.5 w-3.5" /> : <ClipboardDocumentIcon className="h-3.5 w-3.5" />}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
