@@ -164,3 +164,13 @@ button.projectPill:hover {
 .assignee { display:inline-flex; align-items:center; gap:4px; max-width:110px; padding:1px 7px 1px 1px; border-radius:999px; background:#e3f4f1; border:1px solid #bfe3dc; color:#145c52; font-size:10.5px; font-weight:650; line-height:18px; flex-shrink:0; }
 .assigneeAvatar { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#1f8a7a; color:#fff; font-size:8.5px; font-weight:700; letter-spacing:.02em; flex-shrink:0; }
 .assigneeName { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.personPill {
+  color: #1d6f63;
+  background: #e3f4f1;
+  border-color: #c4e5de;
+}
+button.personPill:hover {
+  background: #d3ece7;
+  border-color: #addbd1;
+}

@@ -39,7 +39,7 @@ interface Props {
   onJumpActivity: (item: ActivityItem) => void;
 }
 
-function Card({
+export function Card({
   title,
   icon: Icon,
   count,

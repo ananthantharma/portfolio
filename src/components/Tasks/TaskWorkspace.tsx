@@ -1,7 +1,7 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, Undo2, X} from 'lucide-react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, Undo2, UserRound, X} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
@@ -190,6 +190,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const vendorOptions = useVendorOptions();
   const taskGroups = useTaskGroups();
+  const staff = useStaffList();
   const openVendor = useContext(OpenVendorContext);
   // A new task started from a group header lands in that group
   const [newDefaults, setNewDefaults] = useState<{key: string; fields: Partial<Task>}>({key: '', fields: {}});
@@ -339,7 +340,8 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
 
   const kindOf = (id: string) => vendorOptions?.find(v => v._id === id)?.kind || 'vendor';
   // Projects, then vendors, then your own groups, each A–Z; tasks keep the list's order inside a group; the rest last
-  type GroupKind = 'project' | 'vendor' | 'mine' | 'none' | 'person';
+  // 'person' = a Follow up heading (who you assigned work to); 'people' = tasks linked to someone's page
+  type GroupKind = 'project' | 'vendor' | 'people' | 'mine' | 'none' | 'person';
   type TaskGroupView = {key: string; id: string; kind: GroupKind; name: string; notebookId?: string; assignee?: Task['assignedTo']; tasks: Task[]};
   const groups = useMemo(() => {
     const map = new Map<string, TaskGroupView>();
@@ -365,7 +367,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
         map.set(
           key,
           vendorId
-            ? {key, id: vendorId, kind: kindOf(vendorId) === 'project' ? 'project' : 'vendor', name: known?.name || 'Linked', notebookId: known?.categoryId, tasks: []}
+            ? {key, id: vendorId, kind: kindOf(vendorId) === 'project' ? 'project' : kindOf(vendorId) === 'person' ? 'people' : 'vendor', name: known?.name || 'Linked', notebookId: known?.categoryId, tasks: []}
             : groupId
               ? {key, id: groupId, kind: 'mine', name: mine.get(groupId)!, tasks: []}
               : {key, id: '', kind: 'none', name: 'No group', tasks: []},
@@ -373,7 +375,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
       }
       map.get(key)!.tasks.push(task);
     });
-    const rank: Record<GroupKind, number> = {person: 0, project: 0, vendor: 1, mine: 2, none: 3};
+    const rank: Record<GroupKind, number> = {person: 0, project: 0, vendor: 1, people: 2, mine: 3, none: 4};
     return [...map.values()].sort((a, b) => rank[a.kind] - rank[b.kind] || a.name.localeCompare(b.name));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, vendorOptions, taskGroups, filter, query, bucket]);
@@ -454,12 +456,17 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
       </form>
     );
 
-  const KIND_LABEL: Record<GroupKind, string> = {project: 'Project', vendor: 'Vendor', mine: 'My group', none: '', person: 'Assigned to'};
+  const KIND_LABEL: Record<GroupKind, string> = {project: 'Project', vendor: 'Vendor', people: 'Person', mine: 'My group', none: '', person: 'Assigned to'};
+  // A Follow up heading's person, when they have a page in a People notebook
+  const pageOf = (group: TaskGroupView) =>
+    group.kind === 'person' ? (staff || []).find(p => p.sectionId && (p._id === group.assignee?.staffId || p._id === group.id)) : undefined;
+  const isLinkGroup = (kind: GroupKind) => kind === 'project' || kind === 'vendor' || kind === 'people';
   const renderGroups = () => (
     <>
       {groups.map(group => {
         const collapsed = collapsedGroups.includes(group.key);
-        const Icon = group.kind === 'none' ? Inbox : group.kind === 'project' ? FolderKanban : group.kind === 'vendor' ? Building2 : Tag;
+        const Icon = group.kind === 'none' ? Inbox : group.kind === 'project' ? FolderKanban : group.kind === 'vendor' ? Building2 : group.kind === 'people' ? UserRound : Tag;
+        const personPage = pageOf(group);
         const initials = group.name
           .split(/\s+/)
           .filter(Boolean)
@@ -501,15 +508,20 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
                       </button>
                     </>
                   )}
-                  {(group.kind === 'project' || group.kind === 'vendor') && openVendor && (
+                  {isLinkGroup(group.kind) && openVendor && (
                     <button className={styles.groupOpen} onClick={() => openVendor(group.id, group.notebookId)} title={`Open the ${group.name} page`}>
+                      Open
+                    </button>
+                  )}
+                  {personPage?.sectionId && openVendor && (
+                    <button className={styles.groupOpen} onClick={() => openVendor(personPage.sectionId!, personPage.categoryId || undefined)} title={`Open ${group.name}’s page`}>
                       Open
                     </button>
                   )}
                 </span>
               )}
             </div>
-            {!collapsed && group.tasks.map(task => renderRow(task, group.kind === 'project' || group.kind === 'vendor', group.kind === 'person'))}
+            {!collapsed && group.tasks.map(task => renderRow(task, isLinkGroup(group.kind), group.kind === 'person'))}
             {!collapsed && !group.tasks.length && <p className={styles.groupEmpty}>No open tasks. Use + or “+ Group” on any task.</p>}
           </div>
         );

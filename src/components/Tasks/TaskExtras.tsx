@@ -3,7 +3,7 @@
 
 // Shared bits for every task card: neon glow toggles, the vendor pill, and the vendor picker.
 
-import {Building2, Check, Copy, Droplet, Flame, FolderKanban, Leaf, Plus, Tag, X} from 'lucide-react';
+import {Building2, Check, Copy, Droplet, Flame, FolderKanban, Leaf, Plus, Tag, UserRound, X} from 'lucide-react';
 import React, {useContext, useEffect, useState} from 'react';
 import {createPortal} from 'react-dom';
 
@@ -131,9 +131,10 @@ export function VendorPill({task, className}: {task: Task; className?: string}) 
   const options = useVendorOptions();
   const vendor = vendorOf(task);
   if (!vendor) return null;
-  const isProject = options?.find(o => o._id === vendor._id)?.kind === 'project';
-  const Icon = isProject ? FolderKanban : Building2;
-  const classes = `${styles.vendorPill} ${isProject ? styles.projectPill : ''} ${className || ''}`;
+  const kind = options?.find(o => o._id === vendor._id)?.kind || 'vendor';
+  const isProject = kind === 'project';
+  const Icon = linkIcon(kind);
+  const classes = `${styles.vendorPill} ${isProject ? styles.projectPill : kind === 'person' ? styles.personPill : ''} ${className || ''}`;
   const content = (
     <>
       <Icon size={11} />
@@ -154,7 +155,7 @@ export function VendorPill({task, className}: {task: Task; className?: string}) 
         e.stopPropagation();
         openVendor(vendor._id, vendor.categoryId);
       }}
-      title={`Open the ${vendor.name} ${isProject ? 'project' : 'vendor'} page`}
+      title={`Open the ${vendor.name} ${kind === 'person' ? 'person' : kind} page`}
       type="button">
       {content}
     </button>
@@ -163,8 +164,11 @@ export function VendorPill({task, className}: {task: Task; className?: string}) 
 
 export interface VendorOption extends TaskVendor {
   notebook: string;
-  kind: 'vendor' | 'project';
+  kind: 'vendor' | 'project' | 'person';
 }
+
+/** Icon for what a task is linked to: a project, a vendor, or a person. */
+export const linkIcon = (kind?: string) => (kind === 'project' ? FolderKanban : kind === 'person' ? UserRound : Building2);
 
 let vendorCache: Promise<VendorOption[]> | null = null;
 
@@ -259,6 +263,9 @@ export interface StaffMember {
   name: string;
   email?: string;
   role?: string;
+  // Their page in a People notebook, if they have one
+  sectionId?: string | null;
+  categoryId?: string | null;
 }
 
 // Your staff list (people you assign work to), shared by everything on the page
@@ -277,7 +284,7 @@ export function useStaffList() {
     staffListeners.add(setStaff);
     if (!staffLoad) {
       staffLoad = groupRequest<StaffMember[]>('/api/staff')
-        .then(list => setStaffState(list.map(({_id, name, email, role}) => ({_id, name, email, role}))))
+        .then(list => setStaffState(list.map(({_id, name, email, role, sectionId, categoryId}) => ({_id, name, email, role, sectionId, categoryId}))))
         .catch(() => {
           staffLoad = null;
           setStaffState([]);
@@ -288,6 +295,24 @@ export function useStaffList() {
     };
   }, []);
   return staff;
+}
+
+/** Loads the list again (after people are added to or renamed in a People notebook). */
+export function reloadStaffList() {
+  staffLoad = groupRequest<StaffMember[]>('/api/staff')
+    .then(list => setStaffState(list.map(({_id, name, email, role, sectionId, categoryId}) => ({_id, name, email, role, sectionId, categoryId}))))
+    .catch(() => {
+      staffLoad = null;
+    });
+  return staffLoad;
+}
+
+/** Whether a task is assigned to this person (by their entry, or by name for older tasks without one). */
+export function isAssignedTo(task: Pick<Task, 'assignedTo'>, person: Pick<StaffMember, '_id' | 'name'>) {
+  const a = task.assignedTo;
+  if (!a?.name) return false;
+  if (a.staffId) return String(a.staffId) === person._id;
+  return a.name.trim().toLowerCase() === person.name.trim().toLowerCase();
 }
 
 export const staffApi = {
@@ -405,7 +430,8 @@ export function LinkVendorButton({task}: {task: Task}) {
   const matches = (vendors || []).filter(v => !q || v.name.toLowerCase().includes(q));
   const groups: [string, VendorOption[]][] = [
     ['Projects', matches.filter(v => v.kind === 'project')],
-    ['Vendors', matches.filter(v => v.kind !== 'project')],
+    ['Vendors', matches.filter(v => v.kind === 'vendor')],
+    ['People', matches.filter(v => v.kind === 'person')],
   ];
 
   const groupMatches = (taskGroups || []).filter(g => !q || g.name.toLowerCase().includes(q));
@@ -512,7 +538,7 @@ export function LinkVendorButton({task}: {task: Task}) {
                   <React.Fragment key={label}>
                     <div className={styles.linkGroup}>{label}</div>
                     {list.map(v => {
-                      const Icon = v.kind === 'project' ? FolderKanban : Building2;
+                      const Icon = linkIcon(v.kind);
                       return (
                         <button disabled={saving} key={v._id} onClick={() => pick(v)} type="button">
                           <Icon size={13} /> <span>{v.name}</span>

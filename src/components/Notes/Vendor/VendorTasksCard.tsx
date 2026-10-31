@@ -6,20 +6,30 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {api} from '../../Tasks/api';
 import {saveTaskChanges} from '../../Tasks/taskActions';
-import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles} from '../../Tasks/TaskExtras';
+import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles, isAssignedTo, VendorPill} from '../../Tasks/TaskExtras';
 import {useTaskCollection} from '../../Tasks/TaskProvider';
 import {TaskEditor} from '../../Tasks/TaskWorkspace';
-import {daysUntil, formatDue, glowOf, smartCompare, statusOf, Task, TaskVendor, vendorIdOf} from '../../Tasks/types';
+import {daysUntil, formatDue, glowOf, smartCompare, statusOf, Task, TaskAssignee, TaskVendor, vendorIdOf} from '../../Tasks/types';
 import styles from './VendorPage.module.css';
-
-const COLLAPSED_KEY = 'VENDOR_CARD_COLLAPSED_tasks';
 
 interface Props {
   vendor: TaskVendor;
+  /**
+   * People pages: list the tasks assigned to this person instead of the ones linked to the page.
+   * "Assign a task" then assigns an existing task to them, and unlinking clears "Assigned to".
+   */
+  assignee?: TaskAssignee & {staffId: string};
+  title?: string;
 }
 
 /** Tasks linked to this vendor: add new ones here, link existing ones, and edit them in place. */
-export default function VendorTasksCard({vendor}: Props) {
+export default function VendorTasksCard({vendor, assignee, title = 'Tasks'}: Props) {
+  const COLLAPSED_KEY = assignee ? 'VENDOR_CARD_COLLAPSED_assigned' : 'VENDOR_CARD_COLLAPSED_tasks';
+  const cardId = assignee ? 'person-assigned-tasks' : 'vendor-tasks';
+  const first = assignee ? assignee.name.trim().split(/\s+/)[0] : vendor.name;
+  const belongs = (t: Task) => (assignee ? isAssignedTo(t, {_id: assignee.staffId, name: assignee.name}) : vendorIdOf(t) === vendor._id);
+  const assignedTo = assignee ? {staffId: assignee.staffId, name: assignee.name, email: assignee.email || ''} : null;
+  const tie = assignedTo ? {assignedTo} : {vendorSectionId: vendor._id};
   const {tasks, loading, busy, run} = useTaskCollection();
   const [showDone, setShowDone] = useState(false);
   const [quickTitle, setQuickTitle] = useState('');
@@ -58,7 +68,8 @@ export default function VendorTasksCard({vendor}: Props) {
   };
 
   const live = useMemo(() => tasks.filter(t => !t.isTemplate && !t.isArchived), [tasks]);
-  const linked = useMemo(() => live.filter(t => vendorIdOf(t) === vendor._id), [live, vendor._id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const linked = useMemo(() => live.filter(belongs), [live, vendor._id, assignee?.staffId, assignee?.name]);
   const openTasks = useMemo(() => linked.filter(t => statusOf(t) !== 'done').sort(smartCompare), [linked]);
   const doneTasks = useMemo(() => linked.filter(t => statusOf(t) === 'done').sort(smartCompare), [linked]);
   const shown = showDone ? doneTasks : openTasks;
@@ -66,11 +77,12 @@ export default function VendorTasksCard({vendor}: Props) {
   const linkable = useMemo(() => {
     const q = query.trim().toLowerCase();
     return live
-      .filter(t => vendorIdOf(t) !== vendor._id && statusOf(t) !== 'done')
+      .filter(t => !belongs(t) && statusOf(t) !== 'done')
       .filter(t => !q || `${t.title} ${t.category || ''} ${(t.tags || []).join(' ')}`.toLowerCase().includes(q))
       .sort(smartCompare)
       .slice(0, 60);
-  }, [live, query, vendor._id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, query, vendor._id, assignee?.staffId]);
 
   const execute = async (key: string, action: () => Promise<unknown>) => {
     setError('');
@@ -86,7 +98,7 @@ export default function VendorTasksCard({vendor}: Props) {
     const title = quickTitle.trim();
     if (!title || busy.includes(`vendor-quick-${vendor._id}`)) return;
     void execute(`vendor-quick-${vendor._id}`, async () => {
-      await api.create({title, priority: 'None', status: 'todo', isCompleted: false, vendorSectionId: vendor._id});
+      await api.create({title, priority: 'None', status: 'todo', isCompleted: false, ...tie});
       setQuickTitle('');
       setShowDone(false);
     });
@@ -102,29 +114,29 @@ export default function VendorTasksCard({vendor}: Props) {
   const link = (task: Task) => {
     setPickerOpen(false);
     setQuery('');
-    void execute(task._id, () => api.update(task._id, {vendorSectionId: vendor._id}));
+    void execute(task._id, () => api.update(task._id, tie));
   };
 
   const unlink = (task: Task) => {
     if (openId === task._id) setOpenId(null);
-    void execute(task._id, () => api.update(task._id, {vendorSectionId: null}));
+    void execute(task._id, () => api.update(task._id, assignee ? {assignedTo: null} : {vendorSectionId: null}));
   };
 
   const editingTask = openId && openId !== 'new' ? linked.find(t => t._id === openId) : undefined;
 
   return (
-    <section aria-label="Tasks" className={`${styles.card} ${styles.wide}`} data-collapsed={collapsed} id="vendor-tasks">
+    <section aria-label={title} className={`${styles.card} ${styles.wide}`} data-collapsed={collapsed} id={cardId}>
       <div className={styles.cardHead} style={collapsed ? {marginBottom: 0} : undefined}>
         <h2>
           <button
-            aria-controls="vendor-tasks-body"
+            aria-controls={`${cardId}-body`}
             aria-expanded={!collapsed}
             className={styles.collapseToggle}
             onClick={toggleCollapsed}
             title={collapsed ? 'Expand tasks' : 'Minimize tasks'}>
             <ChevronDown size={15} className={styles.collapseChevron} />
             <ListTodo size={17} />
-            Tasks
+            {title}
             {openTasks.length > 0 && <small>{openTasks.length} open</small>}
           </button>
         </h2>
@@ -140,7 +152,7 @@ export default function VendorTasksCard({vendor}: Props) {
             </div>
             <div className={styles.menu} ref={pickerRef}>
               <button aria-expanded={pickerOpen} className={styles.btn} onClick={() => setPickerOpen(v => !v)}>
-                <Link2 size={14} /> Link a task
+                <Link2 size={14} /> {assignee ? 'Assign a task' : 'Link a task'}
               </button>
               {pickerOpen && (
                 <div className={styles.picker}>
@@ -159,7 +171,12 @@ export default function VendorTasksCard({vendor}: Props) {
                           <span style={{minWidth: 0}}>
                             {t.title}
                             <small>
-                              {[t.dueDate && formatDue(t.dueDate), typeof t.vendorSectionId === 'object' && t.vendorSectionId?.name && `Now at ${t.vendorSectionId.name}`]
+                              {[
+                                t.dueDate && formatDue(t.dueDate),
+                                assignee
+                                  ? t.assignedTo?.name && `Now with ${t.assignedTo.name}`
+                                  : typeof t.vendorSectionId === 'object' && t.vendorSectionId?.name && `Now at ${t.vendorSectionId.name}`,
+                              ]
                                 .filter(Boolean)
                                 .join(' · ') || 'No due date'}
                             </small>
@@ -168,7 +185,11 @@ export default function VendorTasksCard({vendor}: Props) {
                       ))
                     ) : (
                       <p className={styles.muted} style={{padding: 8}}>
-                        {query ? 'No open tasks match that search.' : 'Every open task is already linked here.'}
+                        {query
+                          ? 'No open tasks match that search.'
+                          : assignee
+                          ? `Every open task is already assigned to ${first}.`
+                          : 'Every open task is already linked here.'}
                       </p>
                     )}
                   </div>
@@ -183,12 +204,12 @@ export default function VendorTasksCard({vendor}: Props) {
       </div>
 
       {!collapsed && (
-        <div id="vendor-tasks-body">
+        <div id={`${cardId}-body`}>
           {openId === 'new' && (
             <div className={styles.taskEditorWrap}>
               <TaskEditor
-                defaults={{vendorSectionId: vendor}}
-                draftKey={`vendor-new-${vendor._id}`}
+                defaults={assignedTo ? {assignedTo} : {vendorSectionId: vendor}}
+                draftKey={`${assignee ? 'assigned' : 'vendor'}-new-${vendor._id}`}
                 onClose={() => setOpenId(null)}
               />
             </div>
@@ -197,9 +218,9 @@ export default function VendorTasksCard({vendor}: Props) {
           <form className={styles.taskQuickAdd} onSubmit={quickAdd}>
             <Plus size={15} />
             <input
-              aria-label={`Quick add a task for ${vendor.name}`}
+              aria-label={assignee ? `Quick add a task assigned to ${assignee.name}` : `Quick add a task for ${vendor.name}`}
               onChange={e => setQuickTitle(e.target.value)}
-              placeholder={`Add a task for ${vendor.name}, press Enter`}
+              placeholder={assignee ? `Give ${first} a task, press Enter` : `Add a task for ${vendor.name}, press Enter`}
               value={quickTitle}
             />
           </form>
@@ -208,7 +229,11 @@ export default function VendorTasksCard({vendor}: Props) {
             <div className={styles.empty}>Loading tasks…</div>
           ) : !shown.length ? (
             <div className={styles.empty}>
-              {showDone
+              {assignee
+                ? showDone
+                  ? `Work ${first} has finished will show up here.`
+                  : `Nothing assigned to ${first} right now. Add a task above, or assign one you already have.`
+                : showDone
                 ? `Completed ${vendor.name} tasks will show up here.`
                 : `No open tasks for ${vendor.name}. Add one above, or link one you already have.`}
             </div>
@@ -240,14 +265,14 @@ export default function VendorTasksCard({vendor}: Props) {
                           ) : null}
                         </span>
                       </button>
-                      <AssigneePill assignee={task.assignedTo} />
+                      {assignee ? <VendorPill task={task} /> : <AssigneePill assignee={task.assignedTo} />}
                       <CopySubjectButton subject={task.emailSubject} />
                       <GlowToggles task={task} />
                       <button
-                        aria-label={`Unlink ${task.title} from ${vendor.name}`}
+                        aria-label={assignee ? `Unassign ${task.title} from ${assignee.name}` : `Unlink ${task.title} from ${vendor.name}`}
                         className={styles.iconBtn}
                         onClick={() => unlink(task)}
-                        title={`Unlink from ${vendor.name} (keeps the task)`}>
+                        title={assignee ? `No longer assigned to ${first} (keeps the task)` : `Unlink from ${vendor.name} (keeps the task)`}>
                         <Unlink size={14} />
                       </button>
                     </div>
@@ -263,7 +288,7 @@ export default function VendorTasksCard({vendor}: Props) {
           )}
           {!showDone && linked.length === 0 && live.some(t => statusOf(t) !== 'done') && (
             <p className={styles.hint}>
-              <Search size={13} /> Tip: use Link a task to bring in a task you’ve already created.
+              <Search size={13} /> Tip: use {assignee ? 'Assign a task' : 'Link a task'} to bring in a task you’ve already created.
             </p>
           )}
           {error && <p className={styles.error}>{error}</p>}

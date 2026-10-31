@@ -1,14 +1,14 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo, react/jsx-sort-props */
 'use client';
 
-import {ArrowLeft, Building2, CalendarClock, Check, Flag, FolderKanban, Layers, ListChecks, Loader2, Maximize2, Minimize2, PanelRightClose, PanelRightOpen, Tag, X} from 'lucide-react';
+import {ArrowLeft, CalendarClock, Check, Flag, Layers, ListChecks, Loader2, Maximize2, Minimize2, PanelRightClose, PanelRightOpen, Tag, X} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 
 import RichTextEditor from '../Notes/RichTextEditor';
 import {api} from './api';
 import {saveTaskChanges} from './taskActions';
-import {AssigneePill, useTaskGroups, useVendorOptions} from './TaskExtras';
+import {AssigneePill, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
 import styles from './TaskWorkspace.module.css';
@@ -161,7 +161,7 @@ export function TaskPageView({taskId, note, onClose, backLabel, actions}: {taskI
   const vId = vendorIdOf(task);
   const vendor = vId ? vendors?.find(v => v._id === vId) : undefined;
   const linkName = vId ? vendor?.name || vendorOf(task)?.name : task.taskGroupId ? groups?.find(g => g._id === task.taskGroupId)?.name : undefined;
-  const LinkIcon = vId ? (vendor?.kind === 'project' ? FolderKanban : Building2) : Tag;
+  const LinkIcon = vId ? linkIcon(vendor?.kind) : Tag;
   const chip = 'inline-flex items-center gap-1 rounded-full border px-2.5 py-[3px] text-[12px] font-medium transition hover:border-slate-300';
   const openDetails = () => {
     setShowDetails(true);

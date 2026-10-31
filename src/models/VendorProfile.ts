@@ -17,6 +17,11 @@ export const VENDOR_DOC_TYPES = [
   'Requirements',
   'Architecture',
   'Commercial',
+  // People
+  'Resume',
+  'Review',
+  'Feedback',
+  'Certificate',
   'Other',
 ] as const;
 
@@ -93,6 +98,30 @@ export interface IProjectAttention {
   resolvedAt?: Date | null;
 }
 
+// People pages: who someone is and how you keep in touch
+export interface IPersonInfo {
+  title: string; // job title / role
+  company: string; // organization or team
+  relationship: string; // e.g. Direct report, Manager, Peer, Client
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  manager: string;
+  birthday?: Date | null;
+  photo: string; // small JPEG data URL headshot
+  remember: string; // family, interests, preferences
+  checkInDays: number; // how often you want to talk (0 = no reminder)
+  lastContactedAt?: Date | null;
+}
+
+export interface ITalkingPoint {
+  _id?: mongoose.Types.ObjectId;
+  text: string;
+  done: boolean;
+  createdAt?: Date;
+}
+
 // Hand-written for now; `source` leaves room for an AI-generated brief later
 export interface IProjectBrief {
   text: string;
@@ -123,6 +152,8 @@ export interface IVendorProfile extends Document {
   brief: IProjectBrief;
   decisions: IProjectDecision[];
   attention: IProjectAttention[];
+  person: IPersonInfo;
+  talkingPoints: ITalkingPoint[];
   lastVisitedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -211,6 +242,28 @@ const VendorProfileSchema = new Schema<IVendorProfile>(
         createdAt: {type: Date, default: Date.now},
         updatedAt: {type: Date, default: Date.now},
         resolvedAt: {type: Date, default: null},
+      },
+    ],
+    person: {
+      title: {type: String, default: '', maxlength: 120},
+      company: {type: String, default: '', maxlength: 120},
+      relationship: {type: String, default: '', maxlength: 40},
+      email: {type: String, default: '', maxlength: 200},
+      phone: {type: String, default: '', maxlength: 60},
+      location: {type: String, default: '', maxlength: 120},
+      linkedin: {type: String, default: ''},
+      manager: {type: String, default: '', maxlength: 120},
+      birthday: {type: Date, default: null},
+      photo: {type: String, default: ''},
+      remember: {type: String, default: '', maxlength: 3000},
+      checkInDays: {type: Number, default: 0},
+      lastContactedAt: {type: Date, default: null},
+    },
+    talkingPoints: [
+      {
+        text: {type: String, required: true, maxlength: 300},
+        done: {type: Boolean, default: false},
+        createdAt: {type: Date, default: Date.now},
       },
     ],
     lastVisitedAt: {type: Date, default: null},

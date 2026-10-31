@@ -3,7 +3,7 @@ import {NextResponse} from 'next/server';
 import {getServerSession} from 'next-auth';
 
 import dbConnect from '@/lib/dbConnect';
-import {DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
+import {DEFAULT_PEOPLE_NOTE_CLASSES, DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
 import NoteCategory from '@/models/NoteCategory';
 import {authOptions} from '@/lib/auth';
 
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const count = await NoteCategory.countDocuments({userEmail: session.user.email});
-    const kind = body.kind === 'vendor' || body.kind === 'project' ? body.kind : 'standard';
+    const kind = ['vendor', 'project', 'people'].includes(body.kind) ? body.kind : 'standard';
     const category = await NoteCategory.create({
       ...body,
       kind,
@@ -104,6 +104,8 @@ export async function POST(request: Request) {
         kind !== 'standard' && !Array.isArray(body.noteClasses)
           ? kind === 'project'
             ? DEFAULT_PROJECT_NOTE_CLASSES
+            : kind === 'people'
+            ? DEFAULT_PEOPLE_NOTE_CLASSES
             : DEFAULT_VENDOR_NOTE_CLASSES
           : body.noteClasses,
       userEmail: session.user.email,

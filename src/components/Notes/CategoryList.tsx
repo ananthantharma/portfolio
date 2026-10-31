@@ -67,7 +67,7 @@ interface CategoryListProps {
     color?: string,
     icon?: string,
     image?: string | null,
-    kind?: 'standard' | 'vendor' | 'project',
+    kind?: 'standard' | 'vendor' | 'project' | 'people',
   ) => Promise<void>;
   onRenameCategory: (id: string, name: string, color?: string, icon?: string, image?: string | null) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
@@ -238,7 +238,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
     dbSize,
   }) => {
     const [isAdding, setIsAdding] = useState(false);
-    const [newKind, setNewKind] = useState<'standard' | 'vendor' | 'project'>('standard');
+    const [newKind, setNewKind] = useState<'standard' | 'vendor' | 'project' | 'people'>('standard');
 
     const {data: session} = useSession();
     const userName = useMemo(() => {
@@ -465,6 +465,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       ['standard', 'Regular notebook', 'Sections hold pages.'],
                       ['vendor', 'Vendor notebook', 'Each section is a vendor: org chart, contacts, tasks, links, agreements, notes.'],
                       ['project', 'Project notebook', 'Each section is a project: contacts, tasks, links, agreements, meeting notes.'],
+                      ['people', 'People notebook', 'Each section is a person: details, tasks you assign them, talking points, 1:1 notes.'],
                     ] as const
                   ).map(([value, label, hint]) => (
                     <label className="flex cursor-pointer items-start gap-2 rounded-md p-1 hover:bg-white" key={value}>

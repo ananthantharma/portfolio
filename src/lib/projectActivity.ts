@@ -10,13 +10,13 @@ export interface ActivityEntry {
   refId?: string | null;
 }
 
-/** 'project' or 'vendor' when the section belongs to a project or vendor notebook owned by the user. */
-export async function profileKind(userEmail: string, sectionId: unknown): Promise<'project' | 'vendor' | null> {
+/** 'project', 'vendor' or 'people' when the section belongs to such a notebook owned by the user. */
+export async function profileKind(userEmail: string, sectionId: unknown): Promise<'project' | 'vendor' | 'people' | null> {
   if (!sectionId) return null;
   const section = await NoteSection.findOne({_id: sectionId, userEmail}).select('categoryId').lean();
   if (!section) return null;
   const notebook = await NoteCategory.findOne({_id: section.categoryId, userEmail}).select('kind').lean();
-  return notebook?.kind === 'project' || notebook?.kind === 'vendor' ? notebook.kind : null;
+  return notebook?.kind === 'project' || notebook?.kind === 'vendor' || notebook?.kind === 'people' ? notebook.kind : null;
 }
 
 /**

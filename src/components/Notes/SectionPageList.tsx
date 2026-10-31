@@ -65,6 +65,8 @@ export interface SectionPageListProps {
   sectionBadgeCounts?: Record<string, BadgeStat>;
   // Open tasks linked to each section (vendor / project sections)
   sectionTaskCounts?: Record<string, number>;
+  // What a section is in this notebook ("vendor", "person"…) and its plural
+  sectionNoun?: {one: string; many: string};
 
   // Pages (always for selectedSectionId)
   pages: INotePage[];
@@ -362,6 +364,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     loadingSections,
     sectionBadgeCounts,
     sectionTaskCounts,
+    sectionNoun = {one: 'section', many: 'sections'},
     pages,
     selectedPageId,
     onSelectPage,
@@ -900,7 +903,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               <MagnifyingGlassIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
               <input
                 className="flex-1 text-[11px] bg-transparent outline-none text-slate-600 placeholder-slate-400/70 min-w-0"
-                placeholder="Search sections…"
+                placeholder={`Search ${sectionNoun.many}…`}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -1095,7 +1098,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
           {/* Sections label */}
           <div className="mb-1 mt-1 flex items-center justify-between px-1.5">
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">Sections</p>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">{sectionNoun.many}</p>
             <button
               aria-pressed={sortSectionsAlpha}
               className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-semibold transition-colors ${
@@ -1250,7 +1253,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                     {todoCount} to-do{todoCount === 1 ? '' : 's'}
                                   </span>
                                 ) : (
-                                  <span className="text-zinc-400">Open section</span>
+                                  <span className="text-zinc-400">Open {sectionNoun.one}</span>
                                 )}
                                 {openTasks > 0 && (
                                   <span

@@ -13,6 +13,18 @@ export const PROJECT_DOC_TYPES = [
   'Commercial',
   'Other',
 ] as const;
+export const PEOPLE_DOC_TYPES = ['Resume', 'Review', 'Feedback', 'Certificate', 'Agreement', 'Other'] as const;
+export const RELATIONSHIPS = ['Direct report', 'Manager', 'Peer', 'Stakeholder', 'Client', 'Vendor contact', 'Mentor', 'Friend', 'Family', 'Other'] as const;
+// How often you want to talk to someone (days; 0 = no reminder)
+export const CHECK_IN_OPTIONS: [number, string][] = [
+  [0, 'No reminder'],
+  [7, 'Every week'],
+  [14, 'Every 2 weeks'],
+  [30, 'Every month'],
+  [90, 'Every quarter'],
+  [180, 'Every 6 months'],
+  [365, 'Every year'],
+];
 export const PROJECT_HEALTH = ['On Track', 'At Risk', 'Critical', 'Complete'] as const;
 export const PROJECT_PHASES = ['Initiation', 'Planning', 'Design', 'Execution', 'Testing', 'Deployment', 'Closure'] as const;
 export const DECISION_STATUSES = ['Active', 'Superseded', 'Reversed'] as const;
@@ -21,8 +33,8 @@ export const ATTENTION_SEVERITIES = ['Low', 'Medium', 'High', 'Critical'] as con
 export const ATTENTION_STATUSES = ['Open', 'Monitoring', 'Resolved'] as const;
 
 export type VendorStatus = (typeof VENDOR_STATUSES)[number] | (typeof PROJECT_STATUSES)[number];
-export type ProfileKind = 'vendor' | 'project';
-export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number] | (typeof PROJECT_DOC_TYPES)[number];
+export type ProfileKind = 'vendor' | 'project' | 'people';
+export type VendorDocType = (typeof VENDOR_DOC_TYPES)[number] | (typeof PROJECT_DOC_TYPES)[number] | (typeof PEOPLE_DOC_TYPES)[number];
 export type ProjectHealth = (typeof PROJECT_HEALTH)[number];
 export type DecisionStatus = (typeof DECISION_STATUSES)[number];
 export type AttentionType = (typeof ATTENTION_TYPES)[number];
@@ -98,6 +110,29 @@ export interface AttentionItem {
   resolvedAt?: string | null;
 }
 
+export interface PersonInfo {
+  title: string;
+  company: string;
+  relationship: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  manager: string;
+  birthday?: string | null;
+  photo: string;
+  remember: string;
+  checkInDays: number;
+  lastContactedAt?: string | null;
+}
+
+export interface TalkingPoint {
+  _id?: string;
+  text: string;
+  done: boolean;
+  createdAt?: string;
+}
+
 export interface ProjectBrief {
   text: string;
   source: 'manual' | 'ai';
@@ -167,6 +202,9 @@ export interface VendorProfile {
   brief?: ProjectBrief;
   decisions?: ProjectDecision[];
   attention?: AttentionItem[];
+  // People fields
+  person?: PersonInfo;
+  talkingPoints?: TalkingPoint[];
   updatedAt?: string;
 }
 
@@ -186,6 +224,8 @@ export type VendorPatch = Partial<{
   owner: string;
   currentFocus: string;
   brief: {text: string};
+  person: Partial<PersonInfo>;
+  talkingPoints: TalkingPoint[];
 }>;
 
 export interface UploadedFile {

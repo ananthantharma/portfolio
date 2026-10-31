@@ -21,3 +21,13 @@ export const DEFAULT_PROJECT_NOTE_CLASSES = [
   {name: 'Contract', color: '#5f5e5a'},
   {name: 'Important', color: '#c62828'},
 ];
+
+// People notebooks: conversations and what you learn about someone
+export const DEFAULT_PEOPLE_NOTE_CLASSES = [
+  {name: '1:1', color: '#46674d'},
+  {name: 'Feedback', color: '#3f6f9f'},
+  {name: 'Career', color: '#6a4fa3'},
+  {name: 'Personal', color: '#9a3e5c'},
+  {name: 'Meetings', color: '#8a6a14'},
+  {name: 'Important', color: '#c62828'},
+];

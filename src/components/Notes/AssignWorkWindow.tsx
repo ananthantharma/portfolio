@@ -95,15 +95,22 @@ function StaffManager({staff, onPicked}: {staff: StaffMember[] | null; onPicked:
                 <span className="font-semibold text-slate-700">{person.name}</span>
                 {(person.role || person.email) && <span className="ml-1.5 text-slate-400">{[person.role, person.email].filter(Boolean).join(' · ')}</span>}
               </span>
-              <button
-                aria-label={`Remove ${person.name}`}
-                className="rounded-md p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
-                disabled={busy === person._id}
-                onClick={() => void remove(person)}
-                title="Remove from list"
-                type="button">
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              {person.sectionId ? (
+                // People with a page in a People notebook stay in the list while their page exists
+                <span className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-teal-700" title="Has a person page in your People notebook">
+                  Person page
+                </span>
+              ) : (
+                <button
+                  aria-label={`Remove ${person.name}`}
+                  className="rounded-md p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+                  disabled={busy === person._id}
+                  onClick={() => void remove(person)}
+                  title="Remove from list"
+                  type="button">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
             </li>
           ))}
         </ul>

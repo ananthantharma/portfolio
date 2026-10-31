@@ -3,6 +3,7 @@ import {NextResponse} from 'next/server';
 
 import {ActivityEntry, logActivity, profileKind} from '@/lib/projectActivity';
 import {authorizeSection, isHttpUrl, keepId, loadProfile, toDateOrNull} from '@/lib/vendorProfileServer';
+import Staff from '@/models/Staff';
 import VendorFile from '@/models/VendorFile';
 import VendorProfile, {IVendorProfile, PROJECT_HEALTH, VENDOR_DOC_TYPES, VENDOR_STATUSES} from '@/models/VendorProfile';
 
@@ -20,6 +21,30 @@ function referencedFileIds(profile: Pick<IVendorProfile, 'orgChart' | 'documents
   ]
     .filter(Boolean)
     .map(id => String(id));
+}
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PERSON_TEXT: Record<string, number> = {title: 120, company: 120, relationship: 40, phone: 60, location: 120, manager: 120, remember: 3000};
+
+/** Applies the person fields that are present in the request (people pages). */
+function applyPerson(profile: IVendorProfile, input: Record<string, unknown>) {
+  const next: Record<string, unknown> = {...(profile.toObject().person || {})};
+  for (const [field, max] of Object.entries(PERSON_TEXT)) {
+    if (typeof input[field] === 'string') next[field] = (input[field] as string).trim().slice(0, max);
+  }
+  if (typeof input.email === 'string') {
+    const email = input.email.trim().slice(0, 200);
+    next.email = !email || EMAIL.test(email) ? email : next.email || '';
+  }
+  if (typeof input.linkedin === 'string') next.linkedin = isHttpUrl(input.linkedin) ? input.linkedin : '';
+  if ('birthday' in input) next.birthday = toDateOrNull(input.birthday);
+  if ('lastContactedAt' in input) next.lastContactedAt = toDateOrNull(input.lastContactedAt);
+  if (typeof input.photo === 'string') {
+    // Small JPEG headshots only (made in the browser at 256px)
+    next.photo = /^data:image\/(jpeg|png|webp);base64,/.test(input.photo) && input.photo.length <= 300000 ? input.photo : '';
+  }
+  if ('checkInDays' in input) next.checkInDays = Math.max(0, Math.min(365, Math.round(Number(input.checkInDays) || 0)));
+  profile.set('person', next);
 }
 
 const shortDate = (d?: Date | null) =>
@@ -46,6 +71,9 @@ export async function PUT(req: Request, {params}: RouteParams) {
     const profile = existing || new VendorProfile({userEmail, sectionId: params.sectionId});
     const before = referencedFileIds(profile);
     const prev = {
+      email: profile.person?.email || '',
+      title: profile.person?.title || '',
+      contacted: profile.person?.lastContactedAt || null,
       status: profile.status,
       health: profile.health,
       phase: profile.phase,
@@ -66,6 +94,22 @@ export async function PUT(req: Request, {params}: RouteParams) {
     if (typeof body.currentFocus === 'string') profile.currentFocus = body.currentFocus.trim().slice(0, 240);
     if (body.brief && typeof body.brief.text === 'string') {
       profile.brief = {text: body.brief.text.trim().slice(0, 3000), source: 'manual', updatedAt: new Date()};
+    }
+
+    if (body.person && typeof body.person === 'object') applyPerson(profile, body.person);
+    if (Array.isArray(body.talkingPoints)) {
+      profile.set(
+        'talkingPoints',
+        body.talkingPoints
+          .filter((point: {text?: unknown}) => typeof point?.text === 'string' && point.text.trim())
+          .slice(0, 100)
+          .map((point: {_id?: string; text: string; done?: boolean; createdAt?: string}) => ({
+            ...keepId(point._id),
+            text: point.text.trim().slice(0, 300),
+            done: !!point.done,
+            createdAt: toDateOrNull(point.createdAt) || new Date(),
+          })),
+      );
     }
 
     if (body.orgChart && typeof body.orgChart === 'object') {
@@ -142,7 +186,10 @@ export async function PUT(req: Request, {params}: RouteParams) {
     const kind = await profileKind(userEmail, params.sectionId);
     if (kind) {
       const entries: ActivityEntry[] = [];
-      const noun = kind === 'project' ? 'Project' : 'Vendor';
+      const noun = kind === 'project' ? 'Project' : kind === 'people' ? 'Person' : 'Vendor';
+      const contacted = profile.person?.lastContactedAt || null;
+      if (kind === 'people' && contacted && String(contacted) !== String(prev.contacted || ''))
+        entries.push({type: 'project', action: 'contact', label: 'Conversation logged', title: shortDate(contacted)});
       if (prev.status !== profile.status)
         entries.push({type: 'project', action: 'status', label: `${noun} status changed`, title: `${prev.status} → ${profile.status}`});
       if (prev.health !== profile.health)
@@ -160,6 +207,14 @@ export async function PUT(req: Request, {params}: RouteParams) {
         if (!now.has(id)) entries.push({type: 'document', action: 'removed', label: 'Document removed', title, refId: id});
       });
       await logActivity(userEmail, params.sectionId, entries, {knownProject: true});
+    }
+
+    // People: the person's email and role follow them into "Assigned to"
+    if (kind === 'people' && (prev.email !== (profile.person?.email || '') || prev.title !== (profile.person?.title || ''))) {
+      await Staff.updateOne(
+        {userEmail, sectionId: params.sectionId},
+        {$set: {email: profile.person?.email || '', role: (profile.person?.title || '').slice(0, 120)}},
+      ).catch(error => console.error('Person: staff sync failed:', error));
     }
 
     return NextResponse.json({success: true, data: await loadProfile(userEmail, params.sectionId)});

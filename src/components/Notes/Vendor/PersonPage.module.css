@@ -1,0 +1,282 @@
+/* People pages: builds on VendorPage.module.css (palette variables come from .page) */
+
+.personTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.avatar {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 23px;
+  font-weight: 650;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--line);
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatarHint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 40, 32, 0.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.avatar:hover .avatarHint,
+.avatar:focus-visible .avatarHint {
+  opacity: 1;
+}
+.avatarRemove {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: var(--muted);
+  box-shadow: 0 0 0 1px var(--line);
+  opacity: 0;
+}
+.avatarWrap:hover .avatarRemove,
+.avatarRemove:focus-visible {
+  opacity: 1;
+}
+.identity {
+  min-width: 0;
+  flex: 1;
+}
+.personLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.quickLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.quickLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}
+a.quickLink:hover,
+button.quickLink:hover {
+  background: var(--soft);
+}
+.flag {
+  border-color: transparent;
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+
+/* Details card */
+.details {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 3px 10px;
+  align-items: center;
+  font-size: 12.5px;
+}
+.details > span {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+/* Next conversation */
+.pointAdd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 6px;
+  padding: 6px 10px;
+  border: 1px dashed #cfd9c4;
+  border-radius: 8px;
+  background: #f6f8f1;
+  color: #7c9071;
+}
+.pointAdd input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  padding: 2px 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0;
+}
+.points {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+.point {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 5px 6px;
+  border-radius: 7px;
+}
+.point:hover {
+  background: var(--soft);
+}
+.point > span {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.point[data-done] > span {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+.pointRemove {
+  padding: 3px;
+  border-radius: 5px;
+  color: var(--faint);
+  opacity: 0;
+}
+.point:hover .pointRemove,
+.pointRemove:focus-visible {
+  opacity: 1;
+}
+.pointRemove:hover {
+  color: var(--danger-ink);
+}
+
+/* Keep in touch */
+.touchStatus {
+  margin: 2px 0 10px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.touchStatus[data-due] {
+  color: var(--warn-ink);
+  font-weight: 600;
+}
+.touchActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.cadence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--faint);
+  font-size: 11.5px;
+}
+.cadence select {
+  padding: 4px 8px !important;
+  font-size: 12px;
+}
+
+/* People notebook home: add the people you already assign work to */
+.importPanel {
+  margin: 0 0 22px;
+  padding: 14px 16px;
+  border: 1px solid #e4e8de;
+  border-radius: 12px;
+  background: #fbfcf8;
+  font-size: 13px;
+}
+.importPanel h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.importPanel p {
+  margin: 0 0 10px;
+  color: #7d8576;
+  font-size: 12.5px;
+}
+.importList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.importItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #e0e5d9;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.importItem:has(input:checked) {
+  border-color: #9fb693;
+  background: #eef4e7;
+}
+.importActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.importActions button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.importActions button:first-child {
+  background: #46674d;
+  color: #fff;
+}
+.importActions button:first-child:disabled {
+  opacity: 0.5;
+}
+.importActions button + button {
+  color: #5c7854;
+}
+
+@media (max-width: 640px) {
+  .personTop {
+    align-items: flex-start;
+  }
+  .avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 19px;
+  }
+}

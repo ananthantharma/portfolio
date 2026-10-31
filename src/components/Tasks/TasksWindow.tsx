@@ -3,13 +3,11 @@
 
 import {
   Archive,
-  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
   Columns3,
   FileText,
-  FolderKanban,
   Inbox,
   Layers,
   List,
@@ -32,7 +30,7 @@ import AssignWorkWindow from '../Notes/AssignWorkWindow';
 import {api} from './api';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
-import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, useTaskGroups, useVendorOptions} from './TaskExtras';
+import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import {TaskPageView} from './TaskPage';
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
@@ -184,8 +182,8 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
       const id = key.slice(2);
       const opt = vendors?.find(v => v._id === id);
       const fromTask = live.find(t => vendorIdOf(t) === id);
-      const isProject = opt?.kind === 'project';
-      return {label: opt?.name || (fromTask && vendorOf(fromTask)?.name) || 'Linked', kind: isProject ? 'project' : 'vendor', Icon: isProject ? FolderKanban : Building2};
+      const kind = opt?.kind || 'vendor';
+      return {label: opt?.name || (fromTask && vendorOf(fromTask)?.name) || 'Linked', kind, Icon: linkIcon(kind)};
     }
     if (key.startsWith('g:')) return {label: groupName.get(key.slice(2)) || 'Group', kind: 'mine', Icon: Tag};
     return {label: 'No group', kind: 'none', Icon: Inbox};

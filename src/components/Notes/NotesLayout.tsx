@@ -7,7 +7,7 @@ import styles from './Workspace.module.css';
 import TaskWorkspace from '../Tasks/TaskWorkspace';
 import {TaskProvider, useTaskCollection} from '../Tasks/TaskProvider';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from '../Tasks/WorkspaceNavigation';
-import {refreshVendorOptions} from '../Tasks/TaskExtras';
+import {isAssignedTo, refreshVendorOptions, reloadStaffList, useStaffList} from '../Tasks/TaskExtras';
 import {statusOf, vendorIdOf} from '../Tasks/types';
 import {
   ChevronDownIcon,
@@ -54,7 +54,7 @@ import {signOut, useSession} from 'next-auth/react';
 import React, {useCallback, useEffect, useState, useMemo, useRef} from 'react';
 
 import {INoteCategory, INoteClass} from '@/models/NoteCategory';
-import {DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
+import {DEFAULT_PEOPLE_NOTE_CLASSES, DEFAULT_PROJECT_NOTE_CLASSES, DEFAULT_VENDOR_NOTE_CLASSES} from '@/lib/vendor-constants';
 import {INotePage} from '@/models/NotePage';
 import {INoteSection} from '@/models/NoteSection';
 
@@ -75,6 +75,8 @@ const PanelLoading = () => (
 const loadNoteEditor = () => import('./NoteEditor');
 const NoteEditor = dynamic(loadNoteEditor, {ssr: false, loading: PanelLoading});
 const ProjectPage = dynamic(() => import('./Vendor/ProjectPage'), {ssr: false, loading: PanelLoading});
+const PersonPage = dynamic(() => import('./Vendor/PersonPage'), {ssr: false, loading: PanelLoading});
+const PeopleImport = dynamic(() => import('./Vendor/PeopleImport'), {ssr: false});
 
 // Tool windows download the first time they're opened (keeps /notes quick to load)
 const StandaloneRewriteModal = dynamic(() => import('../StandaloneRewriteModal'), {ssr: false});
@@ -653,7 +655,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Category Operations
   const handleAddCategory = useCallback(
-    async (name: string, color?: string, icon?: string, image?: string | null, kind?: 'standard' | 'vendor' | 'project') => {
+    async (name: string, color?: string, icon?: string, image?: string | null, kind?: 'standard' | 'vendor' | 'project' | 'people') => {
     try {
       const response = await axios.post('/api/notes/categories', {name, color, icon, image, kind});
       setCategories(prev => [...prev, response.data.data]);
@@ -666,7 +668,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Notebook-level settings (vendor note classifications and sort order)
   const handleUpdateCategory = useCallback(
-    async (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string; kind?: 'standard' | 'vendor' | 'project'}) => {
+    async (id: string, updates: {noteClasses?: INoteClass[]; noteSort?: string; kind?: 'standard' | 'vendor' | 'project' | 'people'}) => {
       // Sort changes feel instant; classifications wait for the server so new ones get ids
       if (updates.noteSort) {
         setCategories(prev => prev.map(cat => (cat._id === id ? ({...cat, noteSort: updates.noteSort} as INoteCategory) : cat)));
@@ -1124,51 +1126,66 @@ const NotesLayout: React.FC = React.memo(() => {
   const editorPage = openPage && openPage._id === selectedPageId ? openPage : null;
   const currentCategory = categories.find(c => c._id === selectedCategoryId);
   const currentSection = sections.find(s => s._id === selectedSectionId);
-  // Vendor and project notebooks turn each section into a vendor or project page
-  const notebookKind = currentCategory?.kind === 'vendor' || currentCategory?.kind === 'project' ? currentCategory.kind : null;
-  const sectionNoun = notebookKind || 'section';
+  // Vendor, project and people notebooks turn each section into a vendor, project or person page
+  const notebookKind =
+    currentCategory?.kind === 'vendor' || currentCategory?.kind === 'project' || currentCategory?.kind === 'people' ? currentCategory.kind : null;
+  const sectionNoun = notebookKind === 'people' ? 'person' : notebookKind || 'section';
+  // Project-style note actions (decisions, attention) only apply to vendors and projects
+  const projectNotebookKind = notebookKind === 'vendor' || notebookKind === 'project' ? notebookKind : null;
 
-  const handleAddVendor = useCallback(() => {
-    const name = window.prompt(notebookKind === 'project' ? 'Project name' : 'Vendor name');
-    if (name?.trim()) handleAddSection(name.trim().slice(0, 60));
+  const handleAddVendor = useCallback(async () => {
+    const name = window.prompt(notebookKind === 'project' ? 'Project name' : notebookKind === 'people' ? 'Person’s name' : 'Vendor name');
+    if (!name?.trim()) return;
+    await handleAddSection(name.trim().slice(0, 60));
+    // Makes them selectable in "Assigned to" straight away
+    if (notebookKind === 'people') void reloadStaffList();
   }, [handleAddSection, notebookKind]);
 
-  // Open tasks linked to each section, for the sidebar badges and the overview banners
+  // People pages: who has one, so tasks assigned to them count towards their page
+  const staffList = useStaffList();
+  // Open tasks linked to each section (and, for people, assigned to them), for the sidebar badges and overview banners
   const sectionTaskCounts = useMemo(() => {
     const counts: Record<string, number> = {};
+    const people = (staffList || []).filter(person => person.sectionId);
     workspaceTasks.forEach(task => {
+      if (task.isArchived || task.isTemplate || statusOf(task) === 'done') return;
       const id = vendorIdOf(task);
-      if (!id || task.isArchived || task.isTemplate || statusOf(task) === 'done') return;
-      counts[id] = (counts[id] || 0) + 1;
+      if (id) counts[id] = (counts[id] || 0) + 1;
+      const assignee = task.assignedTo?.name ? people.find(person => isAssignedTo(task, person)) : undefined;
+      if (assignee?.sectionId && assignee.sectionId !== id) counts[assignee.sectionId] = (counts[assignee.sectionId] || 0) + 1;
     });
     return counts;
-  }, [workspaceTasks]);
+  }, [workspaceTasks, staffList]);
 
   // Notes opened from a project or vendor page get the "Create from note" actions
   const noteProject = useMemo(
     () =>
-      notebookKind && currentSection && pages.some(p => p._id === selectedPageId)
+      projectNotebookKind && currentSection && pages.some(p => p._id === selectedPageId)
         ? {_id: String(currentSection._id), name: currentSection.name, categoryId: String(currentSection.categoryId)}
         : null,
-    [notebookKind, currentSection, pages, selectedPageId],
+    [projectNotebookKind, currentSection, pages, selectedPageId],
   );
 
   const changeNotebookKind = useCallback(
-    (next: 'standard' | 'vendor' | 'project') => {
+    (next: 'standard' | 'vendor' | 'project' | 'people') => {
       if (!currentCategory || next === (currentCategory.kind || 'standard')) return;
       const message =
         next === 'vendor'
           ? `Make "${currentCategory.name}" a vendor notebook? Each section becomes a vendor page with an org chart, contacts, tasks, links, agreements, and classified notes. Your existing pages stay as they are.`
           : next === 'project'
           ? `Make "${currentCategory.name}" a project notebook? Each section becomes a project page with project contacts, tasks, links, agreements, and notes. Your existing pages stay as they are.`
-          : `Make "${currentCategory.name}" a regular notebook? Vendor and project details are kept and come back if you switch again.`;
+          : next === 'people'
+          ? `Make "${currentCategory.name}" a People notebook? Each section becomes a person page with their details, the tasks you've assigned them, talking points, and notes. Each person also appears under "Assigned to" on tasks. Your existing pages stay as they are.`
+          : `Make "${currentCategory.name}" a regular notebook? Vendor, project and people details are kept and come back if you switch again.`;
       if (!confirm(message)) return;
       handleUpdateCategory(currentCategory._id as string, {
         kind: next,
         ...(next !== 'standard' && !currentCategory.noteClasses?.length
-          ? {noteClasses: next === 'project' ? DEFAULT_PROJECT_NOTE_CLASSES : DEFAULT_VENDOR_NOTE_CLASSES}
+          ? {noteClasses: next === 'project' ? DEFAULT_PROJECT_NOTE_CLASSES : next === 'people' ? DEFAULT_PEOPLE_NOTE_CLASSES : DEFAULT_VENDOR_NOTE_CLASSES}
           : {}),
-      }).catch(() => alert('Could not change the notebook type. Try again.'));
+      })
+        .then(() => void reloadStaffList())
+        .catch(() => alert('Could not change the notebook type. Try again.'));
     },
     [currentCategory, handleUpdateCategory],
   );
@@ -1588,7 +1605,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 <>
                   <ChevronRightIcon className={styles.crumbRoot} />
                   {selectedPage ? (
-                    <button className={styles.crumbBack} onClick={() => setSelectedPageId(null)} title={notebookKind ? `Back to ${notebookKind} page` : 'Back to section'}>
+                    <button className={styles.crumbBack} onClick={() => setSelectedPageId(null)} title={notebookKind ? `Back to ${sectionNoun} page` : 'Back to section'}>
                       <ChevronLeftIcon />
                       <span>{currentSection.name}</span>
                     </button>
@@ -1791,6 +1808,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   pageBadgeCounts={badgeCounts.pages}
                   pages={pages}
                   sectionBadgeCounts={badgeCounts.sections}
+                  sectionNoun={{one: sectionNoun, many: sectionNoun === 'person' ? 'people' : `${sectionNoun}s`}}
                   sectionTaskCounts={sectionTaskCounts}
                   sections={sections}
                   selectedCategoryId={selectedCategoryId}
@@ -1826,7 +1844,7 @@ const NotesLayout: React.FC = React.memo(() => {
                       onSave={handleSavePageContent}
                       page={editorPage}
                       project={noteProject}
-                      projectKind={notebookKind || undefined}
+                      projectKind={projectNotebookKind || undefined}
                     />
                   ) : openPageError ? (
                     <div className="flex h-full items-center justify-center px-6 text-center text-sm text-slate-500">{openPageError}</div>
@@ -1835,10 +1853,23 @@ const NotesLayout: React.FC = React.memo(() => {
                   )}
                 </div>
               ) : /* Section selected, no page: File-explorer dashboard */
-              selectedSectionId && notebookKind && currentSection && currentCategory ? (
+              selectedSectionId && notebookKind === 'people' && currentSection && currentCategory ? (
+                <PersonPage
+                  key={String(currentSection._id)}
+                  loadingPages={loadingPages}
+                  notebook={currentCategory}
+                  onAddPage={handleAddVendorNote}
+                  onOpenPage={handleOpenPageFromDashboard}
+                  onReorderPages={handleReorderPages}
+                  onUpdateNotebook={handleUpdateCategory}
+                  onUpdatePage={handleUpdatePage}
+                  pages={pages}
+                  section={currentSection}
+                />
+              ) : selectedSectionId && projectNotebookKind && currentSection && currentCategory ? (
                 <ProjectPage
                   key={String(currentSection._id)}
-                  kind={notebookKind}
+                  kind={projectNotebookKind}
                   loadingPages={loadingPages}
                   notebook={currentCategory}
                   onAddPage={handleAddVendorNote}
@@ -1864,20 +1895,21 @@ const NotesLayout: React.FC = React.memo(() => {
               selectedCategoryId ? (
                 <div className={styles.home}>
                   <div className={styles.eyebrow}>
-                    {notebookKind === 'vendor' ? 'Vendor notebook' : notebookKind === 'project' ? 'Project notebook' : 'Notebook'}
+                    {notebookKind === 'vendor' ? 'Vendor notebook' : notebookKind === 'project' ? 'Project notebook' : notebookKind === 'people' ? 'People notebook' : 'Notebook'}
                   </div>
                   <h1>{currentCategory?.name}</h1>
                   <p className={styles.intro}>
-                    {`${sections.length} ${sectionNoun}${sections.length === 1 ? '' : 's'} · ${categoryPages.length} pages`}
+                    {`${sections.length} ${sectionNoun === 'person' ? (sections.length === 1 ? 'person' : 'people') : `${sectionNoun}${sections.length === 1 ? '' : 's'}`} · ${categoryPages.length} pages`}
                   </p>
                   <label className={styles.notebookKindToggle}>
                     Notebook type
                     <select
-                      onChange={e => changeNotebookKind(e.target.value as 'standard' | 'vendor' | 'project')}
+                      onChange={e => changeNotebookKind(e.target.value as 'standard' | 'vendor' | 'project' | 'people')}
                       value={currentCategory?.kind || 'standard'}>
                       <option value="standard">Regular</option>
                       <option value="vendor">Vendors</option>
                       <option value="project">Projects</option>
+                      <option value="people">People</option>
                     </select>
                   </label>
                   <div className={styles.quickActions}>
@@ -1892,12 +1924,16 @@ const NotesLayout: React.FC = React.memo(() => {
                       <span className={styles.actionIcon}>
                         <PlusCircleIcon />
                       </span>
-                      <strong>{notebookKind === 'vendor' ? 'New vendor' : notebookKind === 'project' ? 'New project' : 'New section'}</strong>
+                      <strong>
+                        {notebookKind === 'vendor' ? 'New vendor' : notebookKind === 'project' ? 'New project' : notebookKind === 'people' ? 'New person' : 'New section'}
+                      </strong>
                       <span>
                         {notebookKind === 'vendor'
                           ? 'Org chart, contacts, tasks, links, agreements, and notes in one place.'
                           : notebookKind === 'project'
                           ? 'Contacts, tasks, links, agreements, and meeting notes in one place.'
+                          : notebookKind === 'people'
+                          ? 'Details, tasks you assign them, talking points, and 1:1 notes.'
                           : 'Keep related pages together.'}
                       </span>
                     </button>
@@ -1923,8 +1959,19 @@ const NotesLayout: React.FC = React.memo(() => {
                     <p className={styles.intro}>No pages yet. Create one above or explore a section below.</p>
                   )}
                   <div className={styles.sectionHeading} style={{marginTop: 30}}>
-                    <h2>{notebookKind === 'vendor' ? 'Vendors' : notebookKind === 'project' ? 'Projects' : 'Sections'}</h2>
+                    <h2>{notebookKind === 'vendor' ? 'Vendors' : notebookKind === 'project' ? 'Projects' : notebookKind === 'people' ? 'People' : 'Sections'}</h2>
                   </div>
+                  {notebookKind === 'people' && currentCategory && !loadingSections && (
+                    <PeopleImport
+                      categoryId={String(currentCategory._id)}
+                      existingNames={sections.map(section => section.name)}
+                      onAdded={added => {
+                        setSections(prev => [...prev, ...added]);
+                        delete sectionsCache.current[String(currentCategory._id)];
+                        refreshVendorOptions();
+                      }}
+                    />
+                  )}
                   {loadingSections ? (
                     <p className={styles.intro}>Loading sections…</p>
                   ) : (
@@ -1939,7 +1986,18 @@ const NotesLayout: React.FC = React.memo(() => {
                                 {openTasks} open task{openTasks === 1 ? '' : 's'}
                               </em>
                             )}
-                            <BookOpenIcon />
+                            {notebookKind === 'people' ? (
+                              <i aria-hidden className={styles.personInitials}>
+                                {section.name
+                                  .split(/\s+/)
+                                  .filter(Boolean)
+                                  .slice(0, 2)
+                                  .map(part => part[0]?.toUpperCase())
+                                  .join('')}
+                              </i>
+                            ) : (
+                              <BookOpenIcon />
+                            )}
                             <strong>{section.name}</strong>
                             <span>
                               Open {sectionNoun} <ChevronRightIcon />
