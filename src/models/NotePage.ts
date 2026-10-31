@@ -124,6 +124,9 @@ const NotePageSchema: Schema = new Schema(
     noteClasses: [{type: String}],
     noteDate: {type: Date, default: null},
     relatedDocumentId: {type: String, default: null},
+    // Plain-text copy of the tabs for section lists, and the updatedAt it was made from (kept by /api/notes/pages)
+    searchText: {type: String, select: false},
+    searchTextAt: {type: Date, select: false},
   },
   {
     timestamps: true,

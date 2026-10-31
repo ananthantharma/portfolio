@@ -69,7 +69,7 @@ export default function OrgDashboard({categories, stats, onNavigate}: OrgDashboa
   useEffect(() => {
     // Fetch recent pages
     axios
-      .get('/api/notes/pages?search=')
+      .get('/api/notes/pages?search=&summary=titles')
       .then(res => {
         if (res.data.success) {
           const sorted = [...res.data.data].sort(

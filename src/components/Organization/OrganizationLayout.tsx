@@ -269,7 +269,7 @@ export default function OrganizationLayout() {
       const response = await axios.get(
         `/api/notes/pages?search=${encodeURIComponent(
           query,
-        )}&searchPageTitlesOnly=${searchPageTitlesOnly}&searchSectionNamesOnly=${searchSectionNamesOnly}&_t=${Date.now()}`,
+        )}&searchPageTitlesOnly=${searchPageTitlesOnly}&searchSectionNamesOnly=${searchSectionNamesOnly}&summary=titles&_t=${Date.now()}`,
       );
       return response.data.data;
     },
@@ -277,12 +277,12 @@ export default function OrganizationLayout() {
   );
 
   const fetchFlaggedTasks = useCallback(async () => {
-    const response = await axios.get('/api/notes/pages?isFlagged=true');
+    const response = await axios.get('/api/notes/pages?isFlagged=true&summary=titles');
     return response.data.data;
   }, []);
 
   const fetchImportantTasks = useCallback(async () => {
-    const response = await axios.get('/api/notes/pages?isImportant=true');
+    const response = await axios.get('/api/notes/pages?isImportant=true&summary=titles');
     return response.data.data;
   }, []);
 

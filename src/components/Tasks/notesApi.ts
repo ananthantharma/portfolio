@@ -41,7 +41,7 @@ const TASKS_NOTEBOOK_NAME = 'Tasks';
 
 export const notesApi = {
   searchByTitle: (query: string) =>
-    request<NotePage[]>(`/api/notes/pages?search=${encodeURIComponent(query)}&searchPageTitlesOnly=true`),
+    request<NotePage[]>(`/api/notes/pages?search=${encodeURIComponent(query)}&searchPageTitlesOnly=true&summary=titles`),
 
   getPage: (id: string) => request<NotePage>(`/api/notes/pages/${id}`),
 

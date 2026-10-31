@@ -210,6 +210,7 @@ const PageRow = React.memo<PageRowProps>(
             ? 'text-zinc-400 hover:bg-zinc-50'
             : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
         }`}
+        data-page-id={page._id as string}
         onClick={() => onSelect(page._id as string)}>
         {/* Avatar */}
         {page.image ? (

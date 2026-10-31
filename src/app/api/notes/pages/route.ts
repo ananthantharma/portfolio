@@ -30,20 +30,50 @@ function plainText(html: string) {
     .trim();
 }
 
+/** A note's words, all tabs in order (falls back to the legacy single-body field). */
+function pageText(page: any) {
+  const tabs: any[] = Array.isArray(page.tabs) ? page.tabs : [];
+  const ordered = [...tabs].sort((a, b) => (a.order || 0) - (b.order || 0));
+  return (ordered.map(t => plainText(t.content || '')).join(' ').trim() || plainText(page.content || '')).slice(0, 20000);
+}
+
 /**
  * A list entry without the note bodies. `text` keeps the words (for previews and vendor search);
  * `summary: true` tells the app to load the full note before opening it in the editor.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function summarizePage(page: any) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tabs: any[] = Array.isArray(page.tabs) ? page.tabs : [];
-  const ordered = [...tabs].sort((a, b) => (a.order || 0) - (b.order || 0));
-  const text = (ordered.map(t => plainText(t.content || '')).join(' ').trim() || plainText(page.content || '')).slice(0, 20000);
+function summarizePage(page: any, text?: string) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const {content: _legacy, ...rest} = page;
+  const {content: _legacy, searchText: _s, searchTextAt: _a, ...rest} = page;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return {...rest, tabs: tabs.map(({content: _c, ...tab}) => tab), text, summary: true};
+  const tabs = (Array.isArray(page.tabs) ? page.tabs : []).map(({content: _c, ...tab}: any) => tab);
+  return text === undefined ? {...rest, tabs, summary: true} : {...rest, tabs, text, summary: true};
+}
+
+// List queries leave the note bodies in the database (pasted pictures make them megabytes each)
+const LIST_FIELDS = '-content -tabs.content';
+const LIST_FIELDS_WITH_TEXT = LIST_FIELDS + ' +searchText +searchTextAt';
+const stamp = (value: any) => (value ? new Date(value).getTime() : 0);
+
+/**
+ * Words for each listed page without loading its body: each page keeps a copy of its words
+ * (`searchText`) stamped with the `updatedAt` it was made from. Pages edited since, or never
+ * copied, are read in full once and their copy refreshed.
+ */
+async function attachText(pages: any[]) {
+  const stale = pages.filter(p => typeof p.searchText !== 'string' || stamp(p.searchTextAt) !== stamp(p.updatedAt));
+  const fresh = new Map<string, string>();
+  if (stale.length) {
+    const full = await NotePage.find({_id: {$in: stale.map(p => p._id)}}).select('tabs content updatedAt').lean();
+    await Promise.allSettled(
+      full.map((page: any) => {
+        const text = pageText(page);
+        fresh.set(String(page._id), text);
+        // Straight to the collection so saving the copy doesn't count as an edit (updatedAt stays put)
+        return NotePage.collection.updateOne({_id: page._id}, {$set: {searchText: text, searchTextAt: page.updatedAt || null}});
+      }),
+    );
+  }
+  return pages.map(p => summarizePage(p, fresh.get(String(p._id)) ?? p.searchText ?? ''));
 }
 
 export async function GET(request: Request) {
@@ -66,8 +96,11 @@ export async function GET(request: Request) {
   const search = searchParams.get('search');
   const searchPageTitlesOnly = searchParams.get('searchPageTitlesOnly') === 'true';
   const searchSectionNamesOnly = searchParams.get('searchSectionNamesOnly') === 'true';
-  // summary=1: lists only need titles and details, not each note's full HTML (pasted pictures make it huge)
-  const summary = searchParams.get('summary') === '1';
+  // summary=1: lists only need titles, details and the words, not each note's full HTML (pasted pictures make it huge)
+  // summary=titles: titles and details only (search results, flagged lists)
+  const summaryParam = searchParams.get('summary');
+  const summary = summaryParam === '1' || summaryParam === 'titles';
+  const withText = summaryParam === '1';
 
   try {
     const query: Record<string, unknown> = {userEmail};
@@ -79,11 +112,21 @@ export async function GET(request: Request) {
         let results: any[] = [];
 
         if (searchPageTitlesOnly) {
-          const pages = await NotePage.find({title: searchRegex, userEmail}).sort({order: 1}).populate({
-            path: 'sectionId',
-            select: 'categoryId name',
-          });
-          results = [...results, ...pages.map(p => ({...p.toObject(), type: 'page'}))];
+          const titleQuery = () =>
+            NotePage.find({title: searchRegex, userEmail}).sort({order: 1}).populate({
+              path: 'sectionId',
+              select: 'categoryId name',
+            });
+          let pages: any[] | null = null;
+          if (summary) {
+            try {
+              pages = (await titleQuery().select(LIST_FIELDS)).map(p => summarizePage(p.toObject()));
+            } catch (projectionError) {
+              console.error('Pages: title search projection failed, loading whole pages:', projectionError);
+            }
+          }
+          if (!pages) pages = (await titleQuery()).map(p => (summary ? summarizePage(p.toObject()) : p.toObject()));
+          results = [...results, ...pages.map(p => ({...p, type: 'page'}))];
         }
 
         if (searchSectionNamesOnly) {
@@ -155,16 +198,31 @@ export async function GET(request: Request) {
       query.sectionId = null;
     }
 
-    const pages = await NotePage.find(query)
-      .sort({order: 1})
-      .populate({
-        path: 'sectionId',
-        select: 'categoryId name', // Populate categoryId to allow full navigation
-      })
-      .populate({
-        path: 'categoryId',
-        select: 'name', // For category-level pages
-      });
+    const listQuery = () =>
+      NotePage.find(query)
+        .sort({order: 1})
+        .populate({
+          path: 'sectionId',
+          select: 'categoryId name', // Populate categoryId to allow full navigation
+        })
+        .populate({
+          path: 'categoryId',
+          select: 'name', // For category-level pages
+        });
+
+    let pages: any[] | null = null;
+    let bodiesLoaded = false;
+    if (summary) {
+      try {
+        pages = (await listQuery().select(withText ? LIST_FIELDS_WITH_TEXT : LIST_FIELDS)).map(p => p.toObject());
+      } catch (projectionError) {
+        console.error('Pages: list projection failed, loading whole pages:', projectionError);
+      }
+    }
+    if (!pages) {
+      pages = (await listQuery()).map(p => p.toObject());
+      bodiesLoaded = true;
+    }
 
     // Aggregate active To-Do counts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -184,11 +242,25 @@ export async function GET(request: Request) {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pagesWithCount = pages.map((p: any) => {
-      const page = {...p.toObject(), todoCount: pageToDoCounts[p._id.toString()] || 0};
-      return summary ? summarizePage(page) : page;
-    });
+    const counted = pages.map(p => ({...p, todoCount: pageToDoCounts[p._id.toString()] || 0}));
+    let pagesWithCount: any[] = counted;
+    if (summary && withText) {
+      let attached: any[] | null = bodiesLoaded ? counted.map(p => summarizePage(p, pageText(p))) : null;
+      if (!attached) {
+        try {
+          attached = await attachText(counted);
+        } catch (textError) {
+          console.error('Pages: stored text unavailable, reading whole pages:', textError);
+        }
+      }
+      if (!attached) {
+        const full = new Map((await listQuery()).map(p => [String(p._id), pageText(p.toObject())]));
+        attached = counted.map(p => summarizePage(p, full.get(String(p._id)) ?? ''));
+      }
+      pagesWithCount = attached;
+    } else if (summary) {
+      pagesWithCount = counted.map(p => summarizePage(p));
+    }
 
     return NextResponse.json({success: true, data: pagesWithCount});
   } catch (error) {

@@ -130,6 +130,27 @@ const NotesLayout: React.FC = React.memo(() => {
   // The note open in the editor, always complete (the section lists only carry titles and details)
   const [openPage, setOpenPage] = useState<INotePage | null>(null);
   const [openPageError, setOpenPageError] = useState<string | null>(null);
+  // Notes loaded in the last minute (opened, saved or pointed at), so going back to one is instant.
+  // Short-lived so a note edited on another device isn't opened from an old copy.
+  const fullPageCache = useRef(new Map<string, {at: number; page: Promise<INotePage>}>());
+  const loadFullPage = useCallback((id: string) => {
+    const cache = fullPageCache.current;
+    const cached = cache.get(id);
+    if (cached && Date.now() - cached.at < 60000) return cached.page;
+    const page = axios.get('/api/notes/pages/' + encodeURIComponent(id)).then(response => {
+      if (!response.data?.data) throw new Error('Note unavailable');
+      return response.data.data as INotePage;
+    });
+    const entry = {at: Date.now(), page};
+    page.catch(() => {
+      if (cache.get(id) === entry) cache.delete(id);
+    });
+    cache.delete(id);
+    cache.set(id, entry);
+    // Keep only the most recent few (notes with pictures can be large)
+    while (cache.size > 12) cache.delete(cache.keys().next().value as string);
+    return page;
+  }, []);
   const [targetTabId, setTargetTabId] = useState<string | undefined>(undefined);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingPages, setLoadingPages] = useState(false);
@@ -489,7 +510,8 @@ const NotesLayout: React.FC = React.memo(() => {
         console.error('Error fetching DB stats:', error);
       }
     };
-    fetchDbStats();
+    // Only a footer figure, so it waits until the notes themselves have loaded
+    const dbStatsTimer = setTimeout(fetchDbStats, 4000);
 
     const fetchBadgeStats = async () => {
       try {
@@ -504,17 +526,23 @@ const NotesLayout: React.FC = React.memo(() => {
     };
     fetchBadgeStats();
     // Poll for badges
-    const interval = setInterval(fetchBadgeStats, 120000); // 120s poll
-    return () => clearInterval(interval);
+    // 120s poll, skipped while the tab is in the background
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchBadgeStats();
+    }, 120000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(dbStatsTimer);
+    };
   }, []);
 
   const fetchFlaggedTasks = useCallback(async () => {
-    const response = await axios.get('/api/notes/pages?isFlagged=true');
+    const response = await axios.get('/api/notes/pages?isFlagged=true&summary=titles');
     return response.data.data;
   }, []);
 
   const fetchImportantTasks = useCallback(async () => {
-    const response = await axios.get('/api/notes/pages?isImportant=true');
+    const response = await axios.get('/api/notes/pages?isImportant=true&summary=titles');
     return response.data.data;
   }, []);
 
@@ -523,7 +551,7 @@ const NotesLayout: React.FC = React.memo(() => {
       const response = await axios.get(
         `/api/notes/pages?search=${encodeURIComponent(
           query,
-        )}&searchPageTitlesOnly=${searchPageTitlesOnly}&searchSectionNamesOnly=${searchSectionNamesOnly}&_t=${Date.now()}`,
+        )}&searchPageTitlesOnly=${searchPageTitlesOnly}&searchSectionNamesOnly=${searchSectionNamesOnly}&summary=titles&_t=${Date.now()}`,
       );
       return response.data.data;
     },
@@ -584,16 +612,14 @@ const NotesLayout: React.FC = React.memo(() => {
   const openWorkspaceNote = useCallback(
     async (pageId: string) => {
       try {
-        const response = await axios.get('/api/notes/pages/' + encodeURIComponent(pageId));
-        if (!response.data?.success || !response.data.data) throw new Error('Note unavailable');
-        await handleJumpToTask(response.data.data);
+        await handleJumpToTask(await loadFullPage(pageId));
         changeView('notes');
         setMobileNavigation(false);
       } catch {
         alert('This note could not be opened. Please try again.');
       }
     },
-    [handleJumpToTask, changeView],
+    [handleJumpToTask, changeView, loadFullPage],
   );
 
   // A task's vendor pill opens that vendor's page
@@ -615,10 +641,7 @@ const NotesLayout: React.FC = React.memo(() => {
     if (!pageId) return;
     (async () => {
       try {
-        const response = await axios.get(`/api/notes/pages/${pageId}`);
-        if (response.data?.success && response.data.data) {
-          await handleJumpToTask(response.data.data);
-        }
+        await handleJumpToTask(await loadFullPage(pageId));
       } catch (error) {
         console.error('Error opening linked note page:', error);
       } finally {
@@ -865,6 +888,8 @@ const NotesLayout: React.FC = React.memo(() => {
     setPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
     setCategoryPages(prev => prev.map(page => (page._id === updated._id ? updated : page)));
     setOpenPage(prev => (prev && prev._id === updated._id ? updated : prev));
+    // Saves come back as the whole note, so they keep the cache current
+    fullPageCache.current.set(updated._id as string, {at: Date.now(), page: Promise.resolve(updated)});
   }, []);
 
   const handleRenamePage = useCallback(
@@ -883,6 +908,7 @@ const NotesLayout: React.FC = React.memo(() => {
     async (id: string) => {
       try {
         await axios.delete(`/api/notes/pages/${id}`);
+        fullPageCache.current.delete(id);
         setPages(prev => prev.filter(page => page._id !== id));
         setCategoryPages(prev => prev.filter(page => page._id !== id));
         if (selectedPageId === id) setSelectedPageId(null);
@@ -919,6 +945,7 @@ const NotesLayout: React.FC = React.memo(() => {
           sectionId: dest.sectionId,
           categoryId: dest.sectionId ? null : dest.categoryId,
         });
+        fullPageCache.current.delete(pageId);
 
         const movedToCurrentSection = !!dest.sectionId && dest.sectionId === selectedSectionId;
         const movedToCurrentCategoryRoot = !dest.sectionId && dest.categoryId === selectedCategoryId;
@@ -1051,6 +1078,22 @@ const NotesLayout: React.FC = React.memo(() => {
   const selectedPage =
     pages.find(p => p._id === selectedPageId) || categoryPages.find(p => p._id === selectedPageId) || null;
 
+  // Pointing at a page in the list starts loading it, so it's usually there by the click
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleListHover = useCallback(
+    (event: React.PointerEvent) => {
+      const id = (event.target as HTMLElement).closest<HTMLElement>('[data-page-id]')?.dataset.pageId;
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+      if (!id || id === selectedPageId) return;
+      // A short pause first, so sweeping the pointer down the list doesn't load every note
+      hoverTimer.current = setTimeout(() => void loadFullPage(id).catch(() => undefined), 120);
+    },
+    [loadFullPage, selectedPageId],
+  );
+  const handleListLeave = useCallback(() => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+  }, []);
+
   // Load the full note when one is opened (a list entry that's already complete is used as-is)
   const selectedIsFull = !!selectedPage && !(selectedPage as INotePage & {summary?: boolean}).summary;
   useEffect(() => {
@@ -1065,10 +1108,9 @@ const NotesLayout: React.FC = React.memo(() => {
     }
     let cancelled = false;
     setOpenPage(prev => (prev && prev._id === selectedPageId ? prev : null));
-    axios
-      .get('/api/notes/pages/' + encodeURIComponent(selectedPageId))
-      .then(response => {
-        if (!cancelled && response.data?.data) setOpenPage(response.data.data);
+    loadFullPage(selectedPageId)
+      .then(page => {
+        if (!cancelled) setOpenPage(page);
       })
       .catch(() => {
         if (!cancelled) setOpenPageError('This note could not be loaded. Check your connection and try again.');
@@ -1690,6 +1732,8 @@ const NotesLayout: React.FC = React.memo(() => {
               <aside
                 className={styles.pageSidebar}
                 data-collapsed={isSectionCollapsed}
+                onPointerLeave={handleListLeave}
+                onPointerOver={handleListHover}
                 style={sectionWidth ? ({'--section-w': `${sectionWidth}px`} as React.CSSProperties) : undefined}>
                 <div className={styles.mobileNotebooks}>
                   {' '}
