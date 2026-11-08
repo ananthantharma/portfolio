@@ -35,6 +35,7 @@ import {api} from './api';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
 import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
+import TaskChecklist from './TaskChecklist';
 import {TaskPageView} from './TaskPage';
 import TaskQuickMenu, {CATEGORY_COLORS} from './TaskQuickMenu';
 import {useTaskCollection} from './TaskProvider';
@@ -139,6 +140,7 @@ const COLLAPSED_KEY = 'TASKS_COLLAPSED_V1';
 const SORT_KEY = 'TASKS_SORT';
 const RAIL_GROUPS_KEY = 'TASKS_RAIL_GROUPS_OPEN';
 const TAB_VIEW_KEY = 'TASKS_TAB_VIEW';
+const EXPANDED_KEY = 'TASKS_EXPANDED';
 const isOpenTask = (t: Task) => !t.isArchived && statusOf(t) !== 'done';
 
 function read<T>(key: string, fallback: T): T {
@@ -196,6 +198,8 @@ export default function TasksWindow({
   const [sort, setSortState] = useState<SortKey>('smart');
   const [menu, setMenu] = useState<{task: Task; x: number; y: number} | null>(null);
   const [dragTask, setDragTask] = useState<string | null>(null);
+  // Tasks whose checklist is showing (remembered)
+  const [expanded, setExpanded] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const quickRef = useRef<HTMLInputElement>(null);
@@ -207,6 +211,7 @@ export default function TasksWindow({
     setCollapsed(read<string[]>(COLLAPSED_KEY, []));
     setSortState(read<SortKey>(SORT_KEY, 'smart'));
     setGroupsOpen(read(RAIL_GROUPS_KEY, true));
+    setExpanded(read<string[]>(EXPANDED_KEY, []));
     // The pop-out always opens on All tasks as a board; the Tasks tab comes back to where you left it
     if (embedded) {
       const saved = read<{scope?: Scope; mode?: Mode; boardBy?: BoardBy}>(TAB_VIEW_KEY, {});
@@ -241,6 +246,15 @@ export default function TasksWindow({
       write(COLLAPSED_KEY, next);
       return next;
     });
+  const saveExpanded = (next: string[]) => {
+    // Keep the most recent few hundred so the remembered list doesn't grow forever
+    const trimmed = next.slice(-300);
+    write(EXPANDED_KEY, trimmed);
+    return trimmed;
+  };
+  const toggleExpanded = (id: string) => setExpanded(e => saveExpanded(e.includes(id) ? e.filter(x => x !== id) : [...e, id]));
+  const setManyExpanded = (ids: string[], open: boolean) =>
+    setExpanded(e => saveExpanded(open ? [...e.filter(x => !ids.includes(x)), ...ids] : e.filter(x => !ids.includes(x))));
   const setManyCollapsed = (keys: string[], collapse: boolean) =>
     setCollapsed(c => {
       const next = collapse ? [...new Set([...c, ...keys])] : c.filter(x => !keys.includes(x));
@@ -374,7 +388,10 @@ export default function TasksWindow({
     return [...lanes.values()].sort((a, b) => order(a) - order(b) || (by === 'category' || by === 'status' ? 0 : a.label.localeCompare(b.label)));
   };
 
-  const sections = useMemo(() => lanesFor(groupBy, visible, false), [groupBy, visible, allGroupKeys]); // eslint-disable-line react-hooks/exhaustive-deps
+  // List view: your own tasks on the left, tasks linked to a vendor, project or person on the right
+  const split = scope.kind !== 'group';
+  const mineSections = useMemo(() => lanesFor(groupBy, split ? visible.filter(t => !vendorIdOf(t)) : visible, false), [groupBy, visible, allGroupKeys, split]); // eslint-disable-line react-hooks/exhaustive-deps
+  const linkedSections = useMemo(() => (split ? lanesFor(groupBy, visible.filter(t => !!vendorIdOf(t)), false) : []), [groupBy, visible, allGroupKeys, split]); // eslint-disable-line react-hooks/exhaustive-deps
   const boardLanes = useMemo(() => {
     // Status columns need done tasks too; the other boards show what the current view shows
     const list = boardBy === 'status' && !isDoneScope ? live.filter(t => !t.isArchived && matchesQuery(t) && (scope.kind === 'bucket' ? bucketOf(t) === scope.key : scope.kind === 'group' ? groupKeyOf(t) === scope.key : true)) : visible;
@@ -578,67 +595,92 @@ export default function TasksWindow({
       </span>
     ) : null;
 
-  /** One clean line per task: checkbox · title · aligned columns · tools on hover. */
+  /**
+   * A task in the list: chevron (checklist) · tick · title · due on the first line; category, link,
+   * assignee and progress underneath. Only the chevron opens the checklist; the row opens the task.
+   */
   const row = (t: Task) => {
     const done = statusOf(t) === 'done';
     const isSel = selected === t._id;
+    const isOpen = expanded.includes(t._id);
     const {done: sd, total: st} = subtaskProgress(t);
     const showLink = groupBy !== 'project' && scope.kind !== 'group';
     const showCategory = groupBy !== 'category' && scope.kind !== 'bucket';
     return (
-      <div
-        className={`group flex h-11 cursor-pointer items-center gap-3 border-b border-slate-100 px-3 transition last:border-b-0 ${isSel ? 'bg-[#f1f6ec]' : 'hover:bg-slate-50'} ${dragTask === t._id ? 'opacity-40' : ''}`}
-        draggable={canDropOnSections}
-        key={t._id}
-        onClick={() => setSelected(t._id)}
-        onContextMenu={e => openMenu(t, e)}
-        onDragEnd={() => setDragTask(null)}
-        onDragStart={e => {
-          e.dataTransfer.setData('text/task-id', t._id);
-          e.dataTransfer.effectAllowed = 'move';
-          setDragTask(t._id);
-        }}
-        style={glowStyle(t)}>
-        <button
-          aria-label={done ? `Reopen ${t.title}` : `Complete ${t.title}`}
-          className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition ${done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500'}`}
-          disabled={busy.includes(t._id)}
-          onClick={e => {
-            e.stopPropagation();
-            toggle(t);
+      <React.Fragment key={t._id}>
+        <div
+          className={`group cursor-pointer border-b border-slate-100 px-2.5 py-2 transition ${isOpen ? '' : 'last:border-b-0'} ${isSel ? 'bg-[#f1f6ec]' : 'hover:bg-slate-50'} ${dragTask === t._id ? 'opacity-40' : ''}`}
+          draggable={canDropOnSections}
+          onClick={() => setSelected(t._id)}
+          onContextMenu={e => openMenu(t, e)}
+          onDragEnd={() => setDragTask(null)}
+          onDragStart={e => {
+            e.dataTransfer.setData('text/task-id', t._id);
+            e.dataTransfer.effectAllowed = 'move';
+            setDragTask(t._id);
           }}
-          type="button">
-          <Check className="h-3 w-3" strokeWidth={3} />
-        </button>
-        {priorityDot(t)}
-        <span className={`min-w-0 flex-1 truncate text-[13.5px] ${done ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-800'}`} title={t.title}>
-          {t.title}
-          {t.hasPage && <FileText className="ml-1.5 inline-block h-3.5 w-3.5 align-[-2px] text-slate-400" aria-label="Has a page" />}
-          {drafts[t._id] && <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle" title="Unsaved edits" />}
-        </span>
-        {statusOf(t) === 'in-progress' && <span className="shrink-0 rounded-full bg-amber-50 px-2 text-[11px] font-semibold leading-5 text-amber-700">In progress</span>}
-        {t.recurrence?.freq && t.recurrence.freq !== 'none' && <Repeat className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
-        {showCategory && <span className="hidden w-[88px] shrink-0 xl:block">{categoryChip(t)}</span>}
-        {showLink && <span className="hidden w-40 shrink-0 lg:block">{linkChip(t)}</span>}
-        <span className="hidden w-28 shrink-0 md:block">{groupBy !== 'person' && avatar(t)}</span>
-        <span className="hidden w-12 shrink-0 text-right md:block">
-          {st > 0 && (
-            <span className={`inline-flex items-center gap-1 text-[12px] tabular-nums ${sd === st ? 'text-emerald-600' : 'text-slate-400'}`}>
-              <ListChecks className="h-3.5 w-3.5" />
-              {sd}/{st}
+          style={glowStyle(t)}>
+          <div className="flex items-center gap-2">
+            <button
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? 'Hide' : 'Show'} the checklist for ${t.title}`}
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition hover:bg-slate-200/70 ${isOpen ? 'text-slate-700' : st ? 'text-slate-500' : 'text-slate-300'}`}
+              onClick={e => {
+                e.stopPropagation();
+                toggleExpanded(t._id);
+              }}
+              title={isOpen ? 'Hide checklist' : st ? `Show checklist (${sd}/${st})` : 'Add a checklist'}
+              type="button">
+              <ChevronDown className={`h-4 w-4 transition ${isOpen ? '' : '-rotate-90'}`} />
+            </button>
+            <button
+              aria-label={done ? `Reopen ${t.title}` : `Complete ${t.title}`}
+              className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition ${done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500'}`}
+              disabled={busy.includes(t._id)}
+              onClick={e => {
+                e.stopPropagation();
+                toggle(t);
+              }}
+              type="button">
+              <Check className="h-3 w-3" strokeWidth={3} />
+            </button>
+            {priorityDot(t)}
+            <span className={`min-w-0 flex-1 truncate text-[13.5px] ${done ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-800'}`} title={t.title}>
+              {t.title}
+              {t.hasPage && <FileText className="ml-1.5 inline-block h-3.5 w-3.5 align-[-2px] text-slate-400" aria-label="Has a page" />}
+              {drafts[t._id] && <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle" title="Unsaved edits" />}
             </span>
-          )}
-        </span>
-        <span className="w-24 shrink-0 text-right">{done && t.completedAt ? <span className="text-[12px] text-slate-400">{new Date(t.completedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span> : dueText(t)}</span>
-        <span className="flex w-[110px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition group-hover:opacity-100" onClick={e => e.stopPropagation()}>
-          {!showLink && !vendorIdOf(t) && <LinkVendorButton task={t} />}
-          <CopySubjectButton size={13} subject={t.emailSubject} />
-          <GlowToggles size={12} task={t} />
-        </span>
-        <span className="shrink-0" onClick={e => e.stopPropagation()}>
-          {menuButton(t)}
-        </span>
-      </div>
+            <span className="hidden shrink-0 items-center gap-0.5 group-hover:flex" onClick={e => e.stopPropagation()}>
+              <CopySubjectButton size={13} subject={t.emailSubject} />
+              <GlowToggles size={12} task={t} />
+            </span>
+            <span className="shrink-0 text-right">
+              {done && t.completedAt ? <span className="text-[12px] text-slate-400">{new Date(t.completedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span> : dueText(t)}
+            </span>
+            <span className="shrink-0" onClick={e => e.stopPropagation()}>
+              {menuButton(t)}
+            </span>
+          </div>
+          <div className="mt-1 flex min-h-[20px] flex-wrap items-center gap-x-3 gap-y-1 pl-[60px]" onClick={e => e.stopPropagation()}>
+            {statusOf(t) === 'in-progress' && <span className="rounded-full bg-amber-50 px-2 text-[11px] font-semibold leading-5 text-amber-700">In progress</span>}
+            {showCategory && categoryChip(t)}
+            {showLink ? <span className="max-w-[220px]">{linkChip(t, true)}</span> : !vendorIdOf(t) && <span className="opacity-0 transition group-hover:opacity-100"><LinkVendorButton task={t} /></span>}
+            {groupBy !== 'person' && avatar(t)}
+            {st > 0 && (
+              <button
+                className={`inline-flex items-center gap-1 rounded px-1 text-[11.5px] tabular-nums hover:bg-slate-200/60 ${sd === st ? 'text-emerald-600' : 'text-slate-400'}`}
+                onClick={() => toggleExpanded(t._id)}
+                title={isOpen ? 'Hide checklist' : 'Show checklist'}
+                type="button">
+                <ListChecks className="h-3.5 w-3.5" />
+                {sd}/{st}
+              </button>
+            )}
+            {t.recurrence?.freq && t.recurrence.freq !== 'none' && <Repeat className="h-3.5 w-3.5 text-slate-400" />}
+          </div>
+        </div>
+        {isOpen && <TaskChecklist task={t} />}
+      </React.Fragment>
     );
   };
 
@@ -699,7 +741,10 @@ export default function TasksWindow({
   const frame = embedded ? 'h-full w-full' : maximized ? 'h-[96vh] w-[97vw]' : 'h-[92vh] w-[96vw] md:h-[80vh] md:w-[80vw]';
   // List sections you can drop a task on to re-file it
   const canDropOnSections = groupBy === 'category' || groupBy === 'project' || groupBy === 'priority';
-  const sectionKey = (key: string) => `${scopeId(scope)}|${groupBy}|${key}`;
+  const sectionKey = (side: string, key: string) => `${scopeId(scope)}|${groupBy}|${side}|${key}`;
+  const allSectionKeys = split
+    ? [...mineSections.map(sec => sectionKey('mine', sec.key)), ...linkedSections.map(sec => sectionKey('linked', sec.key))]
+    : mineSections.map(sec => sectionKey('all', sec.key));
   const laneKey = (key: string) => `board|${boardBy}|${key}`;
   const select = 'rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-2.5 pr-7 text-[12px] font-semibold text-slate-600 outline-none focus:border-[#9fbf8c]';
 
@@ -956,50 +1001,78 @@ export default function TasksWindow({
                 <p className="mt-1 max-w-xs text-[12.5px] text-slate-500">{emptyText}</p>
               </div>
             ) : (
-              <div className="mx-auto max-w-[1180px] space-y-5">
-                {sections.length > 1 && (
-                  <div className="-mb-2 flex justify-end gap-3 text-[11.5px] font-semibold text-slate-400">
-                    <button className="hover:text-slate-700" onClick={() => setManyCollapsed(sections.map(sec => sectionKey(sec.key)), true)} type="button">
-                      Collapse all
-                    </button>
-                    <button className="hover:text-slate-700" onClick={() => setManyCollapsed(sections.map(sec => sectionKey(sec.key)), false)} type="button">
-                      Expand all
-                    </button>
-                  </div>
-                )}
-                {sections.map(sec => {
-                  const k = sectionKey(sec.key);
-                  const isCollapsed = collapsed.includes(k);
-                  const dropProps = canDropOnSections
-                    ? {
-                        onDragLeave: (e: React.DragEvent) => {
-                          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(d => (d === sec.key ? null : d));
-                        },
-                        onDragOver: (e: React.DragEvent) => {
-                          if (!e.dataTransfer.types.includes('text/task-id')) return;
-                          e.preventDefault();
-                          setDragOver(sec.key);
-                        },
-                        onDrop: (e: React.DragEvent) => {
-                          e.preventDefault();
-                          setDragOver(null);
-                          setDragTask(null);
-                          const t = tasks.find(x => x._id === e.dataTransfer.getData('text/task-id'));
-                          if (t) dropOn(sec, t, groupBy);
-                        },
-                      }
-                    : {};
-                  return (
-                    <section className={`rounded-2xl transition ${dragOver === sec.key ? 'bg-[#f1f6ec] ring-2 ring-[#cfe0c2]' : ''}`} key={sec.key} {...dropProps}>
-                      {sec.label && (
-                        <div className="sticky top-0 z-10 bg-white pb-1.5">
-                          {banner(sec, {collapsible: true, isCollapsed, onToggle: () => toggleCollapsed(k)})}
+              <div className="space-y-4">
+                <div className="flex flex-wrap justify-end gap-x-4 gap-y-1 text-[11.5px] font-semibold text-slate-400">
+                  <span className="mr-auto font-normal">Groups:</span>
+                  <button className="hover:text-slate-700" onClick={() => setManyCollapsed(allSectionKeys, true)} type="button">
+                    Collapse all
+                  </button>
+                  <button className="hover:text-slate-700" onClick={() => setManyCollapsed(allSectionKeys, false)} type="button">
+                    Expand all
+                  </button>
+                  <span className="text-slate-200">|</span>
+                  <span className="font-normal">Checklists:</span>
+                  <button className="hover:text-slate-700" onClick={() => setManyExpanded(visible.map(t => t._id), true)} type="button">
+                    Open all
+                  </button>
+                  <button className="hover:text-slate-700" onClick={() => setManyExpanded(visible.map(t => t._id), false)} type="button">
+                    Close all
+                  </button>
+                </div>
+                <div className={split ? 'grid items-start gap-6 xl:grid-cols-2' : 'mx-auto max-w-[1180px]'}>
+                  {(split
+                    ? [
+                        {side: 'mine', title: 'My tasks', Icon: Inbox, sections: mineSections, empty: 'Nothing of your own in this view.'},
+                        {side: 'linked', title: 'Vendors, projects & people', Icon: Layers, sections: linkedSections, empty: 'Tasks linked to a vendor, project or person show up here. Use “Link to…” on any task.'},
+                      ]
+                    : [{side: 'all', title: '', Icon: Inbox, sections: mineSections, empty: emptyText}]
+                  ).map(column => (
+                    <div className="min-w-0 space-y-4" key={column.side}>
+                      {column.title && (
+                        <div className="flex items-center gap-2 border-b border-slate-200 pb-1.5">
+                          <column.Icon className="h-4 w-4 text-slate-400" />
+                          <h4 className="text-[12px] font-bold uppercase tracking-[0.1em] text-slate-500">{column.title}</h4>
+                          <span className="text-[11.5px] font-semibold text-slate-400">{column.sections.reduce((n, sec) => n + sec.tasks.length, 0)}</span>
                         </div>
                       )}
-                      {!isCollapsed && <div className="overflow-hidden rounded-xl border border-slate-100">{sec.tasks.map(row)}</div>}
-                    </section>
-                  );
-                })}
+                      {!column.sections.length && <p className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-[12.5px] text-slate-400">{column.empty}</p>}
+                      {column.sections.map(sec => {
+                        const k = sectionKey(column.side, sec.key);
+                        const dropKey = `${column.side}:${sec.key}`;
+                        const isCollapsed = collapsed.includes(k);
+                        const dropProps = canDropOnSections
+                          ? {
+                              onDragLeave: (e: React.DragEvent) => {
+                                if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(d => (d === dropKey ? null : d));
+                              },
+                              onDragOver: (e: React.DragEvent) => {
+                                if (!e.dataTransfer.types.includes('text/task-id')) return;
+                                e.preventDefault();
+                                setDragOver(dropKey);
+                              },
+                              onDrop: (e: React.DragEvent) => {
+                                e.preventDefault();
+                                setDragOver(null);
+                                setDragTask(null);
+                                const t = tasks.find(x => x._id === e.dataTransfer.getData('text/task-id'));
+                                if (t) dropOn(sec, t, groupBy);
+                              },
+                            }
+                          : {};
+                        return (
+                          <section className={`rounded-2xl transition ${dragOver === dropKey ? 'bg-[#f1f6ec] ring-2 ring-[#cfe0c2]' : ''}`} key={sec.key} {...dropProps}>
+                            {sec.label && (
+                              <div className="sticky top-0 z-10 bg-white pb-1.5">
+                                {banner(sec, {collapsible: true, isCollapsed, onToggle: () => toggleCollapsed(k)})}
+                              </div>
+                            )}
+                            {!isCollapsed && <div className="overflow-hidden rounded-xl border border-slate-100">{sec.tasks.map(row)}</div>}
+                          </section>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
                 {scope.kind === 'smart' && scope.key === 'done' && !olderDone.loaded && olderDone.hidden > 0 && (
                   <div className="flex justify-center">
                     <button className="rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-semibold text-slate-600 hover:bg-slate-50" disabled={busy.includes('older-done')} onClick={() => void execute('older-done', loadOlderDone)} type="button">
