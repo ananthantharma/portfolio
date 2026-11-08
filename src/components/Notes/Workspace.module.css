@@ -250,6 +250,7 @@
 .quickTool[data-tone='stone'] { --qt-bg: #eee9e4; --qt-hover: #e3dcd4; --qt-line: #ddd4ca; --qt-ink: #5c5046; }
 .quickTool[data-tone='sand'] { --qt-bg: #f1ecdf; --qt-hover: #e7dfcb; --qt-line: #e0d6bd; --qt-ink: #5f5538; }
 .quickTool[data-tone='sage'] { --qt-bg: #e6ece4; --qt-hover: #d9e2d6; --qt-line: #cfdacb; --qt-ink: #475a4c; }
+.quickTool[data-tone='lilac'] { --qt-bg: #ebe9f6; --qt-hover: #dfdcf1; --qt-line: #d6d2ec; --qt-ink: #4f4878; }
 /* Narrower screens: icons only (names show on hover) */
 @media (max-width: 1350px) {
   .quickTool {

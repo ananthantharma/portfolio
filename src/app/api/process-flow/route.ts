@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     } else {
       const flows = await ProcessFlow.find(
         {userId: session.user?.email},
-        {name: 1, lastUpdated: 1, _id: 1},
+        {name: 1, lastUpdated: 1, _id: 1, kind: 1, preview: 1},
       ).sort({lastUpdated: -1});
 
       return NextResponse.json({flows});
@@ -41,24 +41,30 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({error: 'Unauthorized'}, {status: 401});
 
-  const {id, name, data} = await req.json();
+  const {id, name, data, kind, preview} = await req.json();
 
   await dbConnect();
   try {
     let flow;
     if (id) {
-      flow = await ProcessFlow.findOneAndUpdate(
-        {_id: id, userId: session.user?.email},
-        {name, data, lastUpdated: new Date()},
-        {new: true},
-      );
+      // Only the fields that were sent change (a rename doesn't resend the board)
+      const update: Record<string, unknown> = {lastUpdated: new Date()};
+      if (typeof name === 'string' && name.trim()) update.name = name.trim().slice(0, 200);
+      if (data !== undefined) update.data = data;
+      if (kind === 'whiteboard' || kind === 'mindmap') update.kind = kind;
+      if (preview !== undefined) update.preview = preview;
+      flow = await ProcessFlow.findOneAndUpdate({_id: id, userId: session.user?.email}, update, {new: true}).select({_id: 1, name: 1, lastUpdated: 1, kind: 1});
+      if (!flow) return NextResponse.json({error: 'Flow not found'}, {status: 404});
     } else {
       flow = await ProcessFlow.create({
         userId: session.user?.email,
-        name: name || 'Untitled Flow',
-        data,
+        name: (typeof name === 'string' && name.trim()) || 'Untitled Flow',
+        data: data || {},
+        kind: kind === 'mindmap' ? 'mindmap' : 'whiteboard',
+        preview: preview ?? null,
         lastUpdated: new Date(),
       });
+      flow = {_id: flow._id, name: flow.name, lastUpdated: flow.lastUpdated, kind: flow.kind};
     }
 
     return NextResponse.json({success: true, flow});

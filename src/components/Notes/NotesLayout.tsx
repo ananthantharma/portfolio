@@ -32,6 +32,7 @@ import {
   UserGroupIcon,
   BookmarkIcon,
   ChatBubbleBottomCenterTextIcon,
+  ShareIcon,
   ExclamationCircleIcon,
   FlagIcon,
   BellAlertIcon,
@@ -1383,6 +1384,7 @@ const NotesLayout: React.FC = React.memo(() => {
       {label: 'Contacts', Icon: UserGroupIcon, action: handleOpenContactList},
       {label: 'Bookmarks', Icon: BookmarkIcon, action: () => setIsBookmarksOpen(true)},
       {label: 'Prompt library', Icon: ChatBubbleBottomCenterTextIcon, action: () => setIsPromptLibraryOpen(true)},
+      {label: 'Process flows', Icon: ShareIcon, action: () => window.open('/process-flow', '_blank', 'noopener')},
       {label: 'Important notes', Icon: ExclamationCircleIcon, action: handleOpenImportant},
       {label: 'Flagged notes', Icon: FlagIcon, action: handleOpenKeyTasks},
       {label: 'Note reminders', Icon: BellAlertIcon, action: handleOpenToDoList},
@@ -1654,6 +1656,7 @@ const NotesLayout: React.FC = React.memo(() => {
                 {[
                   {label: 'Google Drive', tone: 'slate', Icon: CloudIcon, action: () => setIsDriveOpen(true)},
                   {label: 'Prompt Library', tone: 'stone', Icon: ChatBubbleBottomCenterTextIcon, action: () => setIsPromptLibraryOpen(true)},
+                  {label: 'Process flow', tone: 'lilac', Icon: ShareIcon, action: () => window.open('/process-flow', '_blank', 'noopener')},
                   {label: 'Bookmarks', tone: 'sand', Icon: BookmarkIcon, action: () => setIsBookmarksOpen(true)},
                   {label: 'Contacts', tone: 'sage', Icon: UserGroupIcon, action: handleOpenContactList},
                 ].map(({label, tone, Icon, action}) => (

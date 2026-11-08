@@ -1,10 +1,10 @@
 export const dynamic = 'force-dynamic';
 
-import React from 'react';
+import React, {Suspense} from 'react';
 import {getServerSession} from 'next-auth';
 import {authOptions} from '@/lib/auth';
 import AccessDenied from '@/components/AccessDenied';
-import ProcessFlowBuilder from '@/components/ProcessFlow/ProcessFlowBuilder';
+import FlowStudio from '@/components/FlowStudio/FlowStudio';
 
 export default async function ProcessFlowPage() {
   const session = await getServerSession(authOptions);
@@ -15,5 +15,9 @@ export default async function ProcessFlowPage() {
     );
   }
 
-  return <ProcessFlowBuilder />;
+  return (
+    <Suspense fallback={null}>
+      <FlowStudio />
+    </Suspense>
+  );
 }
