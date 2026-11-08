@@ -141,6 +141,8 @@ const SORT_KEY = 'TASKS_SORT';
 const RAIL_GROUPS_KEY = 'TASKS_RAIL_GROUPS_OPEN';
 const TAB_VIEW_KEY = 'TASKS_TAB_VIEW';
 const EXPANDED_KEY = 'TASKS_EXPANDED';
+const CATEGORY_TAB_KEY = 'TASKS_CATEGORY_TAB';
+type CategoryTab = TaskBucket | 'all';
 const isOpenTask = (t: Task) => !t.isArchived && statusOf(t) !== 'done';
 
 function read<T>(key: string, fallback: T): T {
@@ -200,6 +202,8 @@ export default function TasksWindow({
   const [dragTask, setDragTask] = useState<string | null>(null);
   // Tasks whose checklist is showing (remembered)
   const [expanded, setExpanded] = useState<string[]>([]);
+  // Category tabs across the top (Work by default); every view and group shows only that category
+  const [catTab, setCatTabState] = useState<CategoryTab>('work');
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const quickRef = useRef<HTMLInputElement>(null);
@@ -212,10 +216,12 @@ export default function TasksWindow({
     setSortState(read<SortKey>(SORT_KEY, 'smart'));
     setGroupsOpen(read(RAIL_GROUPS_KEY, true));
     setExpanded(read<string[]>(EXPANDED_KEY, []));
+    setCatTabState(read<CategoryTab>(CATEGORY_TAB_KEY, 'work'));
     // The pop-out always opens on All tasks as a board; the Tasks tab comes back to where you left it
     if (embedded) {
       const saved = read<{scope?: Scope; mode?: Mode; boardBy?: BoardBy}>(TAB_VIEW_KEY, {});
-      if (saved.scope) setScopeState(saved.scope);
+      // Categories moved from the rail to the tabs
+      if (saved.scope && saved.scope.kind !== 'bucket') setScopeState(saved.scope);
       setModeState(saved.mode || 'list');
       if (saved.boardBy) setBoardByState(saved.boardBy);
     }
@@ -236,6 +242,12 @@ export default function TasksWindow({
     setBoardByState(b);
     rememberView({boardBy: b});
   };
+  const setCatTab = (next: CategoryTab) => {
+    setCatTabState(next);
+    setSelected(null);
+    write(CATEGORY_TAB_KEY, next);
+  };
+  const inTab = (t: Task) => catTab === 'all' || bucketOf(t) === catTab;
   const setSort = (next: SortKey) => {
     setSortState(next);
     write(SORT_KEY, next);
@@ -304,15 +316,17 @@ export default function TasksWindow({
     const bump = (k: string) => (c[k] = (c[k] || 0) + 1);
     live.forEach(t => {
       if (!isOpenTask(t)) return;
+      bump(`bucket:${bucketOf(t)}`);
+      bump('bucket:all');
+      if (!inTab(t)) return;
       bump('smart:open');
       if (t.dueDate && (daysUntil(t.dueDate) ?? 1) <= 0) bump('smart:today');
       if (t.assignedTo?.name) bump('smart:waiting');
-      bump(`bucket:${bucketOf(t)}`);
       bump(`group:${groupKeyOf(t)}`);
     });
     return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, groupName]);
+  }, [live, groupName, catTab]);
 
   const allGroupKeys = useMemo(() => {
     const keys = new Set<string>();
@@ -330,13 +344,13 @@ export default function TasksWindow({
   };
 
   const visible = useMemo(() => {
-    const list = live.filter(t => inScope(t, scope) && matchesQuery(t));
+    const list = live.filter(t => inTab(t) && inScope(t, scope) && matchesQuery(t));
     // Completed and Archive read best newest-first unless you choose another order
     if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'done') return list.sort((a, b) => completedTime(b) - completedTime(a));
     if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'archive') return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     return list.sort(COMPARE[sort]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, scope, query, groupName, sort]);
+  }, [live, scope, query, groupName, sort, catTab]);
 
   const isDoneScope = scope.kind === 'smart' && (scope.key === 'done' || scope.key === 'archive');
   const defaultGroupBy: GroupBy = isDoneScope ? 'none' : scope.kind === 'group' ? 'category' : scope.kind === 'smart' && scope.key === 'waiting' ? 'person' : 'project';
@@ -394,8 +408,8 @@ export default function TasksWindow({
   const linkedSections = useMemo(() => (split ? lanesFor(groupBy, visible.filter(t => !!vendorIdOf(t)), false) : []), [groupBy, visible, allGroupKeys, split]); // eslint-disable-line react-hooks/exhaustive-deps
   const boardLanes = useMemo(() => {
     // Status columns need done tasks too; the other boards show what the current view shows
-    const list = boardBy === 'status' && !isDoneScope ? live.filter(t => !t.isArchived && matchesQuery(t) && (scope.kind === 'bucket' ? bucketOf(t) === scope.key : scope.kind === 'group' ? groupKeyOf(t) === scope.key : true)) : visible;
-    return lanesFor(boardBy, list, true).filter(l => !(boardBy === 'category' && scope.kind === 'bucket' && l.key !== scope.key) && !(boardBy === 'project' && scope.kind === 'group' && l.key !== scope.key));
+    const list = boardBy === 'status' && !isDoneScope ? live.filter(t => !t.isArchived && inTab(t) && matchesQuery(t) && (scope.kind === 'bucket' ? bucketOf(t) === scope.key : scope.kind === 'group' ? groupKeyOf(t) === scope.key : true)) : visible;
+    return lanesFor(boardBy, list, true).filter(l => !(boardBy === 'category' && catTab !== 'all' && l.key !== catTab) && !(boardBy === 'category' && scope.kind === 'bucket' && l.key !== scope.key) && !(boardBy === 'project' && scope.kind === 'group' && l.key !== scope.key));
   }, [boardBy, visible, live, scope, query, allGroupKeys]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── actions ── */
@@ -445,8 +459,9 @@ export default function TasksWindow({
   /** What a new task starts with in the current view. */
   const scopeDefaults = (): Partial<Task> => {
     if (scope.kind === 'bucket') return {bucket: scope.key};
-    if (scope.kind === 'group') return scope.key.startsWith('v:') ? {vendorSectionId: scope.key.slice(2)} : {taskGroupId: scope.key.slice(2)};
-    return {bucket: 'work'};
+    const bucket = catTab === 'all' ? 'work' : catTab;
+    if (scope.kind === 'group') return scope.key.startsWith('v:') ? {vendorSectionId: scope.key.slice(2), bucket} : {taskGroupId: scope.key.slice(2), bucket};
+    return {bucket};
   };
   const addQuick = () => {
     const text = quick.trim();
@@ -605,7 +620,7 @@ export default function TasksWindow({
     const isOpen = expanded.includes(t._id);
     const {done: sd, total: st} = subtaskProgress(t);
     const showLink = groupBy !== 'project' && scope.kind !== 'group';
-    const showCategory = groupBy !== 'category' && scope.kind !== 'bucket';
+    const showCategory = catTab === 'all' && groupBy !== 'category' && scope.kind !== 'bucket';
     return (
       <React.Fragment key={t._id}>
         <div
@@ -765,12 +780,6 @@ export default function TasksWindow({
             <div className="space-y-0.5">
               {SMART.map(s => railItem({kind: 'smart', key: s.key}, s.label, <s.Icon className={`h-4 w-4 ${s.key === 'open' ? 'text-[#46674d]' : s.key === 'today' ? 'text-amber-500' : s.key === 'waiting' ? 'text-[#1f8a7a]' : s.key === 'done' ? 'text-emerald-500' : 'text-slate-400'}`} />, s.key === 'open' || s.key === 'today' || s.key === 'waiting' ? counts[`smart:${s.key}`] : undefined))}
             </div>
-            <div>
-              <p className="mb-1 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400">Categories</p>
-              <div className="space-y-0.5">
-                {TASK_BUCKETS.map(b => railItem({kind: 'bucket', key: b.key}, b.label, <span className="h-2.5 w-2.5 rounded-full" style={{background: TONES[b.key].accent}} />, counts[`bucket:${b.key}`]))}
-              </div>
-            </div>
             {allGroupKeys.length > 0 && (
               <div>
                 <button
@@ -886,9 +895,33 @@ export default function TasksWindow({
             )}
           </header>
 
+          {/* Category tabs: Work by default, then Personal ST / LT, Career, and All */}
+          <div aria-label="Task categories" className="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-slate-200 px-5" role="tablist">
+            {[...TASK_BUCKETS.map(b => ({key: b.key as CategoryTab, label: b.short})), {key: 'all' as CategoryTab, label: 'All'}].map(t => {
+              const active = catTab === t.key;
+              const color = t.key === 'all' ? '#64748b' : TONES[t.key].accent;
+              return (
+                <button
+                  aria-selected={active}
+                  className={`-mb-px flex shrink-0 items-center gap-2 border-b-2 px-3 pb-2 pt-2.5 text-[13px] transition ${active ? 'font-semibold text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+                  key={t.key}
+                  onClick={() => setCatTab(t.key)}
+                  role="tab"
+                  style={active ? {borderColor: color} : undefined}
+                  type="button">
+                  {t.key !== 'all' && <span className="h-2 w-2 rounded-full" style={{background: color}} />}
+                  {t.label}
+                  {!!counts[`bucket:${t.key}`] && (
+                    <span className={`rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${active ? 'bg-slate-100 text-slate-700' : 'text-slate-400'}`}>{counts[`bucket:${t.key}`]}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Phones/tablets: views as chips since the rail is hidden */}
           <div className="flex gap-1.5 overflow-x-auto border-b border-slate-100 px-4 py-2 md:hidden">
-            {[...SMART.map(s => ({s: {kind: 'smart', key: s.key} as Scope, label: s.label})), ...TASK_BUCKETS.map(b => ({s: {kind: 'bucket', key: b.key} as Scope, label: b.short}))].map(({s, label}) => (
+            {SMART.map(s => ({s: {kind: 'smart', key: s.key} as Scope, label: s.label})).map(({s, label}) => (
               <button className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-semibold ${scopeId(scope) === scopeId(s) ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`} key={scopeId(s)} onClick={() => setScope(s)} type="button">
                 {label}
               </button>
