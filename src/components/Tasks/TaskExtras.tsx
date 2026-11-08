@@ -400,7 +400,8 @@ export function VendorSelect({
 }
 
 /** Dashed "+ Group" pill on unlinked tasks: put it under a project, a vendor, or one of your own groups. */
-export function LinkVendorButton({task}: {task: Task}) {
+/** Opens the picker for what a task belongs to. `children`/`className` replace the default "+ Group" pill. */
+export function LinkVendorButton({task, children, className}: {task: Task; children?: React.ReactNode; className?: string}) {
   const vendors = useVendorOptions();
   const taskGroups = useTaskGroups();
   const [error, setError] = useState<string | null>(null);
@@ -437,6 +438,7 @@ export function LinkVendorButton({task}: {task: Task}) {
   const groupMatches = (taskGroups || []).filter(g => !q || g.name.toLowerCase().includes(q));
   const exactGroup = (taskGroups || []).some(g => g.name.toLowerCase() === q);
   const currentGroup = (taskGroups || []).find(g => g._id === task.taskGroupId);
+  const currentLink = vendorOf(task);
 
   const save = async (patch: Record<string, unknown>) => {
     setSaving(true);
@@ -471,7 +473,7 @@ export function LinkVendorButton({task}: {task: Task}) {
   return (
     <>
       <button
-        className={styles.linkPill}
+        className={className ?? styles.linkPill}
         onClick={e => {
           e.stopPropagation();
           const r = buttonRef.current?.getBoundingClientRect();
@@ -479,9 +481,9 @@ export function LinkVendorButton({task}: {task: Task}) {
           setOpen(v => !v);
         }}
         ref={buttonRef}
-        title="Put this task under a project, a vendor, or your own group"
+        title={currentLink ? `Linked to ${currentLink.name}. Click to change.` : 'Put this task under a project, a vendor, a person, or your own group'}
         type="button">
-        + Group
+        {children ?? '+ Group'}
       </button>
       {open &&
         pos &&
@@ -494,7 +496,7 @@ export function LinkVendorButton({task}: {task: Task}) {
               onKeyDown={e => {
                 if (e.key === 'Enter' && q && !exactGroup && !saving) void createGroup();
               }}
-              placeholder="Find a project, vendor or group"
+              placeholder="Find a project, vendor, person or group"
               value={query}
             />
             {error && (
@@ -506,6 +508,11 @@ export function LinkVendorButton({task}: {task: Task}) {
               {q && !exactGroup && (
                 <button className={styles.linkCreate} disabled={saving} onClick={() => void createGroup()} type="button">
                   <Plus size={13} /> <span>Create group “{query.trim()}”</span>
+                </button>
+              )}
+              {currentLink && !q && (
+                <button disabled={saving} onClick={() => void save({vendorSectionId: null})} type="button">
+                  <X size={13} /> <span>Unlink from {currentLink.name}</span>
                 </button>
               )}
               {currentGroup && !q && (

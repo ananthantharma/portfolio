@@ -1469,6 +1469,7 @@ const NotesLayout: React.FC = React.memo(() => {
 
   // Lazily loaded windows: mounted from their first opening
   const toDoMounted = useOpenedOnce(isToDoListOpen || isDirectTaskCreateOpen);
+  const tasksTabMounted = useOpenedOnce(workspaceView === 'tasks');
   const contactsMounted = useOpenedOnce(isContactListOpen);
   const bookmarksMounted = useOpenedOnce(isBookmarksOpen);
   const rewriteMounted = useOpenedOnce(isRewriteOpen);
@@ -1733,7 +1734,7 @@ const NotesLayout: React.FC = React.memo(() => {
             {tasksVisited && (
               <OpenWorkspaceNoteContext.Provider value={openWorkspaceNote}>
                 <>
-                  {advancedTasks ? <div className={styles.advancedTasks}><button className={styles.backToTasks} onClick={() => setAdvancedTasks(false)}>← Back to tasks</button><LegacyTasksApp embedded isActive={workspaceView === 'tasks'} onOpenNotes={() => changeView('notes')} /></div> : <TaskWorkspace note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onAdvanced={() => setAdvancedTasks(true)} />}
+                  {advancedTasks ? <div className={styles.advancedTasks}><button className={styles.backToTasks} onClick={() => setAdvancedTasks(false)}>← Back to tasks</button><LegacyTasksApp embedded isActive={workspaceView === 'tasks'} onOpenNotes={() => changeView('notes')} /></div> : tasksTabMounted && <TasksWindow embedded isActive={workspaceView === 'tasks' && !isTasksWindowOpen} note={selectedPageId ? {id: selectedPageId, title: selectedPage?.title || 'Current note'} : null} onAdvanced={() => setAdvancedTasks(true)} />}
                 </>
               </OpenWorkspaceNoteContext.Provider>
             )}

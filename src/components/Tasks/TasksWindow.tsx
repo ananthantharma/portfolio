@@ -14,13 +14,17 @@ import {
   ListChecks,
   Maximize2,
   Minimize2,
+  MoreHorizontal,
   Plus,
   Repeat,
   Search,
   Send,
+  SlidersHorizontal,
   Sparkles,
+  Sun,
   Tag,
   UserRound,
+  Wrench,
   X,
 } from 'lucide-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
@@ -32,6 +36,7 @@ import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
 import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import {TaskPageView} from './TaskPage';
+import TaskQuickMenu, {CATEGORY_COLORS} from './TaskQuickMenu';
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
 import styles from './TaskWorkspace.module.css';
@@ -43,6 +48,7 @@ import {
   dueGroupOf,
   formatDue,
   parseQuickAdd,
+  PRIORITY_META,
   smartCompare,
   Status,
   statusOf,
@@ -54,16 +60,19 @@ import {
   vendorOf,
 } from './types';
 
-type SmartKey = 'open' | 'done' | 'archive';
+type SmartKey = 'open' | 'today' | 'waiting' | 'done' | 'archive';
 type Scope = {kind: 'smart'; key: SmartKey} | {kind: 'bucket'; key: TaskBucket} | {kind: 'group'; key: string};
 type GroupBy = 'none' | 'project' | 'category' | 'person' | 'priority' | 'due';
 type BoardBy = 'category' | 'project' | 'status';
 type Mode = 'list' | 'board';
+type SortKey = 'smart' | 'due' | 'priority' | 'newest' | 'oldest' | 'updated' | 'title';
 type Tone = {bg: string; line: string; accent: string; ink: string};
 type Lane = {key: string; label: string; kind: string; tone: Tone; Icon: typeof Tag; tasks: Task[]};
 
 const SMART: {key: SmartKey; label: string; Icon: typeof Inbox}[] = [
   {key: 'open', label: 'All tasks', Icon: Inbox},
+  {key: 'today', label: 'Today & overdue', Icon: Sun},
+  {key: 'waiting', label: 'Waiting on others', Icon: UserRound},
   {key: 'done', label: 'Completed', Icon: CheckCircle2},
   {key: 'archive', label: 'Archive', Icon: Archive},
 ];
@@ -75,6 +84,25 @@ const GROUP_BY: {key: GroupBy; label: string}[] = [
   {key: 'due', label: 'Due date'},
   {key: 'none', label: 'No grouping'},
 ];
+const SORTS: {key: SortKey; label: string}[] = [
+  {key: 'smart', label: 'Smart (due, then priority)'},
+  {key: 'due', label: 'Due date'},
+  {key: 'priority', label: 'Priority'},
+  {key: 'newest', label: 'Newest first'},
+  {key: 'oldest', label: 'Oldest first'},
+  {key: 'updated', label: 'Recently changed'},
+  {key: 'title', label: 'Title A–Z'},
+];
+const time = (v?: string | null) => (v ? new Date(v).getTime() : 0);
+const COMPARE: Record<SortKey, (a: Task, b: Task) => number> = {
+  smart: smartCompare,
+  due: (a, b) => (a.dueDate ? (b.dueDate ? time(a.dueDate) - time(b.dueDate) : -1) : b.dueDate ? 1 : smartCompare(a, b)),
+  priority: (a, b) => PRIORITY_META[b.priority].weight - PRIORITY_META[a.priority].weight || smartCompare(a, b),
+  newest: (a, b) => time(b.createdAt) - time(a.createdAt),
+  oldest: (a, b) => time(a.createdAt) - time(b.createdAt),
+  updated: (a, b) => time(b.updatedAt) - time(a.updatedAt),
+  title: (a, b) => a.title.localeCompare(b.title, undefined, {sensitivity: 'base', numeric: true}),
+};
 const BOARD_BY: {key: BoardBy; label: string}[] = [
   {key: 'category', label: 'Categories'},
   {key: 'project', label: 'Projects & groups'},
@@ -106,6 +134,11 @@ const STATUS_COLS: {key: Status; label: string}[] = [
 ];
 
 const scopeId = (s: Scope) => `${s.kind}:${s.key}`;
+// Remembered between visits
+const COLLAPSED_KEY = 'TASKS_COLLAPSED_V1';
+const SORT_KEY = 'TASKS_SORT';
+const RAIL_GROUPS_KEY = 'TASKS_RAIL_GROUPS_OPEN';
+const TAB_VIEW_KEY = 'TASKS_TAB_VIEW';
 const isOpenTask = (t: Task) => !t.isArchived && statusOf(t) !== 'done';
 
 function read<T>(key: string, fallback: T): T {
@@ -124,8 +157,26 @@ function write(key: string, value: unknown) {
   }
 }
 
-/** Tasks as a pop-out window over /notes: all tasks by default, list or board, and the full editor. */
-export default function TasksWindow({note, onClose}: {note?: NoteContext; onClose: () => void}) {
+/**
+ * Tasks as a pop-out window over /notes (or, `embedded`, as the Tasks tab itself): smart views,
+ * categories and projects in a rail, list or board, sorting, quick changes, and the full editor.
+ */
+export default function TasksWindow({
+  note,
+  onClose,
+  embedded = false,
+  isActive = true,
+  onAdvanced,
+}: {
+  note?: NoteContext;
+  onClose?: () => void;
+  // Fills its container instead of floating over the page, and remembers the last view
+  embedded?: boolean;
+  // Embedded: keyboard shortcuts only while the Tasks tab is showing
+  isActive?: boolean;
+  onAdvanced?: () => void;
+}) {
+  const close = onClose || (() => undefined);
   const {tasks, loading, busy, run, drafts, olderDone, loadOlderDone} = useTaskCollection();
   const vendors = useVendorOptions();
   const myGroups = useTaskGroups();
@@ -142,26 +193,60 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
   const [collapsed, setCollapsed] = useState<string[]>([]);
   const [groupsOpen, setGroupsOpen] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
+  const [sort, setSortState] = useState<SortKey>('smart');
+  const [menu, setMenu] = useState<{task: Task; x: number; y: number} | null>(null);
+  const [dragTask, setDragTask] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const quickRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Always opens on All tasks as a board of projects & groups; switches last only while it's open
     setGroupOverride(read('TASKS_WINDOW_GROUPBY_V2', {}));
     setMaximized(read('TASKS_WINDOW_MAX', false));
-  }, []);
+    setCollapsed(read<string[]>(COLLAPSED_KEY, []));
+    setSortState(read<SortKey>(SORT_KEY, 'smart'));
+    setGroupsOpen(read(RAIL_GROUPS_KEY, true));
+    // The pop-out always opens on All tasks as a board; the Tasks tab comes back to where you left it
+    if (embedded) {
+      const saved = read<{scope?: Scope; mode?: Mode; boardBy?: BoardBy}>(TAB_VIEW_KEY, {});
+      if (saved.scope) setScopeState(saved.scope);
+      setModeState(saved.mode || 'list');
+      if (saved.boardBy) setBoardByState(saved.boardBy);
+    }
+  }, [embedded]);
+  const rememberView = (changes: {scope?: Scope; mode?: Mode; boardBy?: BoardBy}) => {
+    if (embedded) write(TAB_VIEW_KEY, {...read(TAB_VIEW_KEY, {}), ...changes});
+  };
   const setScope = (s: Scope) => {
     setScopeState(s);
     setSelected(null);
+    rememberView({scope: s});
   };
   const setMode = (m: Mode) => {
     setModeState(m);
+    rememberView({mode: m});
   };
   const setBoardBy = (b: BoardBy) => {
     setBoardByState(b);
+    rememberView({boardBy: b});
   };
+  const setSort = (next: SortKey) => {
+    setSortState(next);
+    write(SORT_KEY, next);
+  };
+  const toggleCollapsed = (key: string) =>
+    setCollapsed(c => {
+      const next = c.includes(key) ? c.filter(x => x !== key) : [...c, key];
+      write(COLLAPSED_KEY, next);
+      return next;
+    });
+  const setManyCollapsed = (keys: string[], collapse: boolean) =>
+    setCollapsed(c => {
+      const next = collapse ? [...new Set([...c, ...keys])] : c.filter(x => !keys.includes(x));
+      write(COLLAPSED_KEY, next);
+      return next;
+    });
 
   useEffect(() => {
     if (!notice) return;
@@ -193,6 +278,8 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
     if (s.kind === 'smart' && s.key === 'done') return !t.isArchived && statusOf(t) === 'done';
     if (s.kind === 'smart' && s.key === 'archive') return !!t.isArchived;
     if (!isOpenTask(t)) return false;
+    if (s.kind === 'smart' && s.key === 'today') return t.dueDate ? (daysUntil(t.dueDate) ?? 1) <= 0 : false;
+    if (s.kind === 'smart' && s.key === 'waiting') return !!t.assignedTo?.name;
     if (s.kind === 'bucket') return bucketOf(t) === s.key;
     if (s.kind === 'group') return groupKeyOf(t) === s.key;
     return true;
@@ -204,6 +291,8 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
     live.forEach(t => {
       if (!isOpenTask(t)) return;
       bump('smart:open');
+      if (t.dueDate && (daysUntil(t.dueDate) ?? 1) <= 0) bump('smart:today');
+      if (t.assignedTo?.name) bump('smart:waiting');
       bump(`bucket:${bucketOf(t)}`);
       bump(`group:${groupKeyOf(t)}`);
     });
@@ -228,14 +317,15 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
 
   const visible = useMemo(() => {
     const list = live.filter(t => inScope(t, scope) && matchesQuery(t));
-    if (scope.kind === 'smart' && scope.key === 'done') return list.sort((a, b) => completedTime(b) - completedTime(a));
-    if (scope.kind === 'smart' && scope.key === 'archive') return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    return list.sort(smartCompare);
+    // Completed and Archive read best newest-first unless you choose another order
+    if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'done') return list.sort((a, b) => completedTime(b) - completedTime(a));
+    if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'archive') return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    return list.sort(COMPARE[sort]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, scope, query, groupName]);
+  }, [live, scope, query, groupName, sort]);
 
-  const isDoneScope = scope.kind === 'smart' && scope.key !== 'open';
-  const defaultGroupBy: GroupBy = isDoneScope ? 'none' : scope.kind === 'group' ? 'category' : 'project';
+  const isDoneScope = scope.kind === 'smart' && (scope.key === 'done' || scope.key === 'archive');
+  const defaultGroupBy: GroupBy = isDoneScope ? 'none' : scope.kind === 'group' ? 'category' : scope.kind === 'smart' && scope.key === 'waiting' ? 'person' : 'project';
   const groupBy = groupOverride[scopeId(scope)] || defaultGroupBy;
   const setGroupBy = (g: GroupBy) => {
     const next = {...groupOverride, [scopeId(scope)]: g};
@@ -309,10 +399,18 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
     });
   const toggle = (task: Task) => setStatus(task, statusOf(task) === 'done' ? 'todo' : 'done');
 
-  /** Dropping a card on a board column re-files it there. */
-  const dropOn = (lane: Lane, task: Task) => {
-    if (boardBy === 'status') return setStatus(task, lane.key as Status);
-    if (boardBy === 'category') {
+  /** Dropping a task on a column or list section re-files it there. */
+  const dropOn = (lane: Lane, task: Task, by: GroupBy | BoardBy = boardBy) => {
+    if (by === 'status') return setStatus(task, lane.key as Status);
+    if (by === 'priority') {
+      if (task.priority === lane.key) return;
+      return void execute(task._id, async () => {
+        await api.update(task._id, {priority: lane.key});
+        setNotice(`Priority: ${lane.label}`);
+      });
+    }
+    if (by !== 'category' && by !== 'project') return;
+    if (by === 'category') {
       if (bucketOf(task) === lane.key) return;
       return void execute(task._id, async () => {
         await api.update(task._id, {bucket: lane.key});
@@ -356,13 +454,14 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
 
   // Keyboard: Esc closes the panel, then the window; / searches; N adds
   useEffect(() => {
+    if (!isActive) return;
     const onKey = (e: KeyboardEvent) => {
       const typing = /input|textarea|select/i.test((e.target as HTMLElement)?.tagName || '') || (e.target as HTMLElement)?.isContentEditable;
-      if (capture || assigning) return;
+      if (capture || assigning || menu) return;
       if (e.key === 'Escape') {
         if (typing) (e.target as HTMLElement).blur();
         else if (selected) setSelected(null);
-        else onClose();
+        else if (!embedded) close();
       } else if (!typing && e.key === '/') {
         e.preventDefault();
         searchRef.current?.focus();
@@ -373,7 +472,8 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, capture, assigning, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, capture, assigning, menu, isActive, embedded, onClose]);
 
   const selectedTask = selected && selected !== 'new' ? tasks.find(t => t._id === selected) : undefined;
   const title = scope.kind === 'smart' ? SMART.find(s => s.key === scope.key)!.label : scope.kind === 'bucket' ? TASK_BUCKETS.find(b => b.key === scope.key)!.label : groupMeta(scope.key).label;
@@ -413,6 +513,55 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
       </span>
     </div>
   );
+  const openMenu = (task: Task, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenu({task, x: e.clientX, y: e.clientY});
+  };
+  const menuButton = (t: Task) => (
+    <button
+      aria-label={`More for ${t.title}`}
+      className="rounded-md p-1 text-slate-400 hover:bg-slate-200/70 hover:text-slate-700"
+      onClick={e => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.stopPropagation();
+        setMenu({task: t, x: r.right - 264, y: r.bottom + 4});
+      }}
+      title="Category, priority, due date, assign, archive…"
+      type="button">
+      <MoreHorizontal className="h-4 w-4" />
+    </button>
+  );
+  /** What the task belongs to (project, vendor, person or group); click to change it. */
+  const linkChip = (t: Task, compact = false) => {
+    const key = groupKeyOf(t);
+    const m = key === 'none' ? null : groupMeta(key);
+    return (
+      <LinkVendorButton
+        className={`flex max-w-full items-center gap-1 truncate rounded-full border px-2 py-[2px] text-[11.5px] font-medium transition ${m ? 'hover:brightness-95' : 'border-dashed border-slate-300 text-slate-400 opacity-0 hover:border-slate-400 hover:text-slate-600 group-hover:opacity-100'}`}
+        task={t}>
+        {m ? (
+          <span className="flex min-w-0 items-center gap-1" style={{color: TONES[m.kind].ink}}>
+            <m.Icon className="h-3 w-3 shrink-0" style={{color: TONES[m.kind].accent}} />
+            <span className="truncate">{m.label}</span>
+          </span>
+        ) : (
+          <>
+            <Plus className="h-3 w-3" /> {compact ? 'Link' : 'Link to…'}
+          </>
+        )}
+      </LinkVendorButton>
+    );
+  };
+  const categoryChip = (t: Task) => {
+    const b = TASK_BUCKETS.find(x => x.key === bucketOf(t))!;
+    return (
+      <span className="inline-flex items-center gap-1 text-[11.5px] text-slate-500" title={`Category: ${b.label}`}>
+        <span className="h-2 w-2 rounded-full" style={{background: CATEGORY_COLORS[b.key]}} />
+        {b.short}
+      </span>
+    );
+  };
 
   const dueText = (t: Task) => {
     if (!t.dueDate || statusOf(t) === 'done') return null;
@@ -434,12 +583,21 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
     const done = statusOf(t) === 'done';
     const isSel = selected === t._id;
     const {done: sd, total: st} = subtaskProgress(t);
-    const link = groupBy !== 'project' && scope.kind !== 'group' && groupKeyOf(t) !== 'none' ? groupMeta(groupKeyOf(t)) : null;
+    const showLink = groupBy !== 'project' && scope.kind !== 'group';
+    const showCategory = groupBy !== 'category' && scope.kind !== 'bucket';
     return (
       <div
-        className={`group flex h-11 cursor-pointer items-center gap-3 border-b border-slate-100 px-3 transition last:border-b-0 ${isSel ? 'bg-[#f1f6ec]' : 'hover:bg-slate-50'}`}
+        className={`group flex h-11 cursor-pointer items-center gap-3 border-b border-slate-100 px-3 transition last:border-b-0 ${isSel ? 'bg-[#f1f6ec]' : 'hover:bg-slate-50'} ${dragTask === t._id ? 'opacity-40' : ''}`}
+        draggable={canDropOnSections}
         key={t._id}
         onClick={() => setSelected(t._id)}
+        onContextMenu={e => openMenu(t, e)}
+        onDragEnd={() => setDragTask(null)}
+        onDragStart={e => {
+          e.dataTransfer.setData('text/task-id', t._id);
+          e.dataTransfer.effectAllowed = 'move';
+          setDragTask(t._id);
+        }}
         style={glowStyle(t)}>
         <button
           aria-label={done ? `Reopen ${t.title}` : `Complete ${t.title}`}
@@ -460,12 +618,8 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
         </span>
         {statusOf(t) === 'in-progress' && <span className="shrink-0 rounded-full bg-amber-50 px-2 text-[11px] font-semibold leading-5 text-amber-700">In progress</span>}
         {t.recurrence?.freq && t.recurrence.freq !== 'none' && <Repeat className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
-        {link && (
-          <span className="hidden w-36 shrink-0 items-center gap-1 truncate text-[12px] lg:flex" style={{color: TONES[link.kind].accent}}>
-            <link.Icon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{link.label}</span>
-          </span>
-        )}
+        {showCategory && <span className="hidden w-[88px] shrink-0 xl:block">{categoryChip(t)}</span>}
+        {showLink && <span className="hidden w-40 shrink-0 lg:block">{linkChip(t)}</span>}
         <span className="hidden w-28 shrink-0 md:block">{groupBy !== 'person' && avatar(t)}</span>
         <span className="hidden w-12 shrink-0 text-right md:block">
           {st > 0 && (
@@ -476,10 +630,13 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
           )}
         </span>
         <span className="w-24 shrink-0 text-right">{done && t.completedAt ? <span className="text-[12px] text-slate-400">{new Date(t.completedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span> : dueText(t)}</span>
-        <span className="flex w-[104px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition group-hover:opacity-100" onClick={e => e.stopPropagation()}>
-          {!vendorIdOf(t) && <LinkVendorButton task={t} />}
+        <span className="flex w-[110px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition group-hover:opacity-100" onClick={e => e.stopPropagation()}>
+          {!showLink && !vendorIdOf(t) && <LinkVendorButton task={t} />}
           <CopySubjectButton size={13} subject={t.emailSubject} />
           <GlowToggles size={12} task={t} />
+        </span>
+        <span className="shrink-0" onClick={e => e.stopPropagation()}>
+          {menuButton(t)}
         </span>
       </div>
     );
@@ -494,6 +651,7 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
         draggable
         key={t._id}
         onClick={() => setSelected(t._id)}
+        onContextMenu={e => openMenu(t, e)}
         onDragStart={e => {
           e.dataTransfer.setData('text/task-id', t._id);
           e.dataTransfer.effectAllowed = 'move';
@@ -505,6 +663,9 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
             {t.title}
             {t.hasPage && <FileText className="ml-1 inline-block h-3 w-3 align-[-1px] text-slate-400" aria-label="Has a page" />}
           </p>
+          <span className="-mr-1 -mt-0.5 opacity-0 transition group-hover:opacity-100" onClick={e => e.stopPropagation()}>
+            {menuButton(t)}
+          </span>
         </div>
         {(link || t.assignedTo?.name || st > 0 || t.dueDate || statusOf(t) === 'in-progress') && (
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -532,15 +693,23 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
   const emptyText = query.trim()
     ? 'Nothing matches that search.'
     : scope.kind === 'smart'
-      ? {open: 'No open tasks. Add one above.', done: 'Tasks you complete show up here.', archive: 'Archived tasks show up here.'}[scope.key]
+      ? {open: 'No open tasks. Add one above.', today: 'Nothing due today or overdue.', waiting: 'Tasks you assign to someone show up here, so you can follow up.', done: 'Tasks you complete show up here.', archive: 'Archived tasks show up here.'}[scope.key]
       : 'No open tasks here yet. Add one above.';
 
-  const frame = maximized ? 'h-[96vh] w-[97vw]' : 'h-[92vh] w-[96vw] md:h-[80vh] md:w-[80vw]';
+  const frame = embedded ? 'h-full w-full' : maximized ? 'h-[96vh] w-[97vw]' : 'h-[92vh] w-[96vw] md:h-[80vh] md:w-[80vw]';
+  // List sections you can drop a task on to re-file it
+  const canDropOnSections = groupBy === 'category' || groupBy === 'project' || groupBy === 'priority';
+  const sectionKey = (key: string) => `${scopeId(scope)}|${groupBy}|${key}`;
+  const laneKey = (key: string) => `board|${boardBy}|${key}`;
   const select = 'rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-2.5 pr-7 text-[12px] font-semibold text-slate-600 outline-none focus:border-[#9fbf8c]';
 
-  return createPortal(
-    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/35 backdrop-blur-[3px]" onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div aria-label="Tasks" aria-modal className={`relative flex overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] transition-[width,height] duration-200 ${frame}`} role="dialog" style={{fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'}}>
+  const body = (
+      <div
+        aria-label="Tasks"
+        aria-modal={embedded ? undefined : true}
+        className={`relative flex overflow-hidden bg-white text-slate-800 ${embedded ? '' : 'rounded-2xl border border-slate-200 shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] transition-[width,height] duration-200'} ${frame}`}
+        role={embedded ? 'region' : 'dialog'}
+        style={{fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'}}>
         {/* Rail */}
         <aside className="hidden w-[232px] shrink-0 flex-col border-r border-slate-200 bg-[#f6f7f2] md:flex">
           <div className="px-4 pb-3 pt-4">
@@ -549,7 +718,7 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
           </div>
           <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 pb-4">
             <div className="space-y-0.5">
-              {SMART.map(s => railItem({kind: 'smart', key: s.key}, s.label, <s.Icon className={`h-4 w-4 ${s.key === 'open' ? 'text-[#46674d]' : s.key === 'done' ? 'text-emerald-500' : 'text-slate-400'}`} />, s.key === 'open' ? counts['smart:open'] : undefined))}
+              {SMART.map(s => railItem({kind: 'smart', key: s.key}, s.label, <s.Icon className={`h-4 w-4 ${s.key === 'open' ? 'text-[#46674d]' : s.key === 'today' ? 'text-amber-500' : s.key === 'waiting' ? 'text-[#1f8a7a]' : s.key === 'done' ? 'text-emerald-500' : 'text-slate-400'}`} />, s.key === 'open' || s.key === 'today' || s.key === 'waiting' ? counts[`smart:${s.key}`] : undefined))}
             </div>
             <div>
               <p className="mb-1 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400">Categories</p>
@@ -559,7 +728,15 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
             </div>
             {allGroupKeys.length > 0 && (
               <div>
-                <button className="mb-1 flex w-full items-center gap-1 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400 hover:text-slate-600" onClick={() => setGroupsOpen(v => !v)} type="button">
+                <button
+                  className="mb-1 flex w-full items-center gap-1 px-2.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-slate-400 hover:text-slate-600"
+                  onClick={() =>
+                    setGroupsOpen(v => {
+                      write(RAIL_GROUPS_KEY, !v);
+                      return !v;
+                    })
+                  }
+                  type="button">
                   Projects & groups
                   <ChevronDown className={`ml-auto h-3 w-3 transition ${groupsOpen ? '' : '-rotate-90'}`} />
                 </button>
@@ -575,7 +752,13 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
             )}
           </nav>
           <div className="border-t border-slate-200 px-4 py-3 text-[11px] leading-relaxed text-slate-400">
-            <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">N</kbd> new task · <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">/</kbd> search · <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">Esc</kbd> close
+            <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">N</kbd> new task · <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">/</kbd> search · right-click a task for quick changes
+            {!embedded && (
+              <>
+                {' '}
+                · <kbd className="rounded border border-slate-300 bg-white px-1 font-sans text-[10px]">Esc</kbd> close
+              </>
+            )}
           </div>
         </aside>
 
@@ -603,6 +786,16 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
                 </button>
               ))}
             </div>
+            <label className="relative flex items-center" title="Sort">
+              <SlidersHorizontal className="pointer-events-none absolute left-2 h-3.5 w-3.5 text-slate-400" />
+              <select aria-label="Sort tasks" className={`${select} pl-7`} onChange={e => setSort(e.target.value as SortKey)} value={sort}>
+                {SORTS.map(o => (
+                  <option key={o.key} value={o.key}>
+                    Sort: {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             {mode === 'list' ? (
               <select className={select} onChange={e => setGroupBy(e.target.value as GroupBy)} title="Group by" value={groupBy}>
                 {GROUP_BY.map(g => (
@@ -630,12 +823,22 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
             <button className="flex items-center gap-1.5 rounded-lg bg-[#46674d] px-3 py-2 text-[12.5px] font-semibold text-white hover:bg-[#385840]" onClick={() => setSelected('new')} type="button">
               <Plus className="h-4 w-4" /> New task
             </button>
-            <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setMaximized(v => (write('TASKS_WINDOW_MAX', !v), !v))} title={maximized ? 'Restore size' : 'Fill the screen'} type="button">
-              {maximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </button>
-            <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={onClose} title="Close (Esc)" type="button">
-              <X className="h-4 w-4" />
-            </button>
+            {embedded ? (
+              onAdvanced && (
+                <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={onAdvanced} title="More tools: calendar, insights, templates" type="button">
+                  <Wrench className="h-4 w-4" />
+                </button>
+              )
+            ) : (
+              <>
+                <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={() => setMaximized(v => (write('TASKS_WINDOW_MAX', !v), !v))} title={maximized ? 'Restore size' : 'Fill the screen'} type="button">
+                  {maximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+                <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={close} title="Close (Esc)" type="button">
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </header>
 
           {/* Phones/tablets: views as chips since the rail is hidden */}
@@ -696,9 +899,11 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
               </div>
             ) : mode === 'board' ? (
               <div className="flex h-full min-h-[320px] gap-3">
-                {boardLanes.map(lane => (
+                {boardLanes.map(lane => {
+                  const laneCollapsed = collapsed.includes(laneKey(lane.key));
+                  return (
                   <div
-                    className={`flex min-w-[250px] flex-1 basis-0 flex-col rounded-2xl border p-2 transition ${dragOver === lane.key ? 'border-[#9fbf8c] bg-[#f1f6ec]' : 'border-slate-200 bg-slate-50/70'}`}
+                    className={`flex flex-col rounded-2xl border p-2 transition ${laneCollapsed ? 'w-12 shrink-0' : 'min-w-[250px] flex-1 basis-0'} ${dragOver === lane.key ? 'border-[#9fbf8c] bg-[#f1f6ec]' : 'border-slate-200 bg-slate-50/70'}`}
                     key={lane.key}
                     onDragLeave={e => {
                       if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(d => (d === lane.key ? null : d));
@@ -714,13 +919,33 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
                       const t = tasks.find(x => x._id === e.dataTransfer.getData('text/task-id'));
                       if (t) dropOn(lane, t);
                     }}>
-                    {banner(lane, {})}
-                    <div className="mt-2 min-h-[60px] flex-1 space-y-2 overflow-y-auto px-0.5 pb-1">
-                      {lane.tasks.map(card)}
-                      {!lane.tasks.length && <p className="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-[12px] text-slate-400">Drop tasks here</p>}
-                    </div>
+                    {laneCollapsed ? (
+                      <button
+                        aria-label={`Expand ${lane.label}`}
+                        className="flex h-full flex-col items-center gap-2 rounded-xl py-2"
+                        onClick={() => toggleCollapsed(laneKey(lane.key))}
+                        style={{background: lane.tone.bg}}
+                        title={`Expand ${lane.label}`}
+                        type="button">
+                        <span className="rounded-full bg-white/80 px-1.5 text-[11px] font-bold" style={{color: lane.tone.ink}}>
+                          {lane.tasks.length}
+                        </span>
+                        <span className="text-[12.5px] font-bold [writing-mode:vertical-rl]" style={{color: lane.tone.ink}}>
+                          {lane.label}
+                        </span>
+                      </button>
+                    ) : (
+                      <>
+                        {banner(lane, {collapsible: true, isCollapsed: false, onToggle: () => toggleCollapsed(laneKey(lane.key))})}
+                        <div className="mt-2 min-h-[60px] flex-1 space-y-2 overflow-y-auto px-0.5 pb-1">
+                          {lane.tasks.map(card)}
+                          {!lane.tasks.length && <p className="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-[12px] text-slate-400">Drop tasks here</p>}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : !visible.length ? (
               <div className="flex h-full min-h-[260px] flex-col items-center justify-center text-center">
@@ -732,14 +957,43 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
               </div>
             ) : (
               <div className="mx-auto max-w-[1180px] space-y-5">
+                {sections.length > 1 && (
+                  <div className="-mb-2 flex justify-end gap-3 text-[11.5px] font-semibold text-slate-400">
+                    <button className="hover:text-slate-700" onClick={() => setManyCollapsed(sections.map(sec => sectionKey(sec.key)), true)} type="button">
+                      Collapse all
+                    </button>
+                    <button className="hover:text-slate-700" onClick={() => setManyCollapsed(sections.map(sec => sectionKey(sec.key)), false)} type="button">
+                      Expand all
+                    </button>
+                  </div>
+                )}
                 {sections.map(sec => {
-                  const k = `${scopeId(scope)}|${sec.key}`;
+                  const k = sectionKey(sec.key);
                   const isCollapsed = collapsed.includes(k);
+                  const dropProps = canDropOnSections
+                    ? {
+                        onDragLeave: (e: React.DragEvent) => {
+                          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(d => (d === sec.key ? null : d));
+                        },
+                        onDragOver: (e: React.DragEvent) => {
+                          if (!e.dataTransfer.types.includes('text/task-id')) return;
+                          e.preventDefault();
+                          setDragOver(sec.key);
+                        },
+                        onDrop: (e: React.DragEvent) => {
+                          e.preventDefault();
+                          setDragOver(null);
+                          setDragTask(null);
+                          const t = tasks.find(x => x._id === e.dataTransfer.getData('text/task-id'));
+                          if (t) dropOn(sec, t, groupBy);
+                        },
+                      }
+                    : {};
                   return (
-                    <section key={sec.key}>
+                    <section className={`rounded-2xl transition ${dragOver === sec.key ? 'bg-[#f1f6ec] ring-2 ring-[#cfe0c2]' : ''}`} key={sec.key} {...dropProps}>
                       {sec.label && (
                         <div className="sticky top-0 z-10 bg-white pb-1.5">
-                          {banner(sec, {collapsible: true, isCollapsed, onToggle: () => setCollapsed(c => (c.includes(k) ? c.filter(x => x !== k) : [...c, k]))})}
+                          {banner(sec, {collapsible: true, isCollapsed, onToggle: () => toggleCollapsed(k)})}
                         </div>
                       )}
                       {!isCollapsed && <div className="overflow-hidden rounded-xl border border-slate-100">{sec.tasks.map(row)}</div>}
@@ -776,6 +1030,10 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
 
         {notice && <div className="pointer-events-none absolute bottom-5 left-1/2 z-30 -translate-x-1/2 rounded-full bg-slate-900 px-3.5 py-1.5 text-[12.5px] font-medium text-white shadow-lg">{notice}</div>}
       </div>
+  );
+  const extras = (
+    <>
+      {menu && <TaskQuickMenu at={{x: menu.x, y: menu.y}} onClose={() => setMenu(null)} onNotice={setNotice} task={tasks.find(t => t._id === menu.task._id) || menu.task} />}
 
       {assigning && <AssignWorkWindow onClose={() => setAssigning(false)} />}
       {capture && (
@@ -790,6 +1048,21 @@ export default function TasksWindow({note, onClose}: {note?: NoteContext; onClos
           seed={capture}
         />
       )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="h-full w-full">
+        {body}
+        {extras}
+      </div>
+    );
+  }
+  return createPortal(
+    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-slate-900/35 backdrop-blur-[3px]" onMouseDown={e => e.target === e.currentTarget && close()}>
+      {body}
+      {extras}
     </div>,
     document.body,
   );
