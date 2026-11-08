@@ -36,11 +36,10 @@ import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
 import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import TaskChecklist from './TaskChecklist';
-import {TaskPageView} from './TaskPage';
+import {NewTaskWindow, TaskPageView} from './TaskPage';
 import TaskQuickMenu, {CATEGORY_COLORS} from './TaskQuickMenu';
 import {useTaskCollection} from './TaskProvider';
-import {NoteContext, TaskEditor} from './TaskWorkspace';
-import styles from './TaskWorkspace.module.css';
+import {NoteContext} from './TaskWorkspace';
 import {
   bucketOf,
   completedTime,
@@ -190,6 +189,8 @@ export default function TasksWindow({
   const [boardBy, setBoardByState] = useState<BoardBy>('project');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  // New task: its own window with a blank page beside the details
+  const [creating, setCreating] = useState(false);
   const [quick, setQuick] = useState('');
   const [capture, setCapture] = useState<CaptureSeed | null>(null);
   const [assigning, setAssigning] = useState(false);
@@ -489,7 +490,7 @@ export default function TasksWindow({
     if (!isActive) return;
     const onKey = (e: KeyboardEvent) => {
       const typing = /input|textarea|select/i.test((e.target as HTMLElement)?.tagName || '') || (e.target as HTMLElement)?.isContentEditable;
-      if (capture || assigning || menu) return;
+      if (capture || assigning || menu || creating) return;
       if (e.key === 'Escape') {
         if (typing) (e.target as HTMLElement).blur();
         else if (selected) setSelected(null);
@@ -505,9 +506,9 @@ export default function TasksWindow({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, capture, assigning, menu, isActive, embedded, onClose]);
+  }, [selected, capture, assigning, menu, creating, isActive, embedded, onClose]);
 
-  const selectedTask = selected && selected !== 'new' ? tasks.find(t => t._id === selected) : undefined;
+  const selectedTask = selected ? tasks.find(t => t._id === selected) : undefined;
   const title = scope.kind === 'smart' ? SMART.find(s => s.key === scope.key)!.label : scope.kind === 'bucket' ? TASK_BUCKETS.find(b => b.key === scope.key)!.label : groupMeta(scope.key).label;
   const shownCount = mode === 'board' ? boardLanes.reduce((n, l) => n + l.tasks.length, 0) : visible.length;
 
@@ -874,7 +875,7 @@ export default function TasksWindow({
             <button className="rounded-lg bg-[#e3f4f1] p-2 text-[#1f8a7a] hover:bg-[#cdebe5]" onClick={() => setAssigning(true)} title="Assign work to someone" type="button">
               <Send className="h-4 w-4" />
             </button>
-            <button className="flex items-center gap-1.5 rounded-lg bg-[#46674d] px-3 py-2 text-[12.5px] font-semibold text-white hover:bg-[#385840]" onClick={() => setSelected('new')} type="button">
+            <button className="flex items-center gap-1.5 rounded-lg bg-[#46674d] px-3 py-2 text-[12.5px] font-semibold text-white hover:bg-[#385840]" onClick={() => setCreating(true)} title="New task with its own page" type="button">
               <Plus className="h-4 w-4" /> New task
             </button>
             {embedded ? (
@@ -1125,15 +1126,6 @@ export default function TasksWindow({
           </section>
         )}
 
-        {/* New task */}
-        {selected === 'new' && (
-          <section className="absolute inset-y-0 right-0 z-20 w-full max-w-[440px] overflow-y-auto border-l border-slate-200 bg-[#fffefa] shadow-[-12px_0_30px_-18px_rgba(15,23,42,0.35)] lg:static lg:shadow-none">
-            <div className={`${styles.workspace} ${styles.compact}`} style={{display: 'block', height: 'auto'}}>
-              <TaskEditor defaults={scopeDefaults()} draftKey={`window-new-${scopeId(scope)}`} key={`new-${scopeId(scope)}`} note={note} onClose={() => setSelected(null)} />
-            </div>
-          </section>
-        )}
-
         {notice && <div className="pointer-events-none absolute bottom-5 left-1/2 z-30 -translate-x-1/2 rounded-full bg-slate-900 px-3.5 py-1.5 text-[12.5px] font-medium text-white shadow-lg">{notice}</div>}
       </div>
   );
@@ -1142,6 +1134,16 @@ export default function TasksWindow({
       {menu && <TaskQuickMenu at={{x: menu.x, y: menu.y}} onClose={() => setMenu(null)} onNotice={setNotice} task={tasks.find(t => t._id === menu.task._id) || menu.task} />}
 
       {assigning && <AssignWorkWindow onClose={() => setAssigning(false)} />}
+      {creating && (
+        <NewTaskWindow
+          defaults={scopeDefaults()}
+          draftKey={`window-new-${scopeId(scope)}`}
+          key={`new-${scopeId(scope)}`}
+          note={note}
+          onClose={() => setCreating(false)}
+          onCreated={task => setNotice(`Created “${task.title}”`)}
+        />
+      )}
       {capture && (
         <CaptureModal
           defaults={scopeDefaults()}

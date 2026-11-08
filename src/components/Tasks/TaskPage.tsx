@@ -12,7 +12,7 @@ import {AssigneePill, linkIcon, useTaskGroups, useVendorOptions} from './TaskExt
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
 import styles from './TaskWorkspace.module.css';
-import {bucketOf, daysUntil, formatDue, statusOf, subtaskProgress, TASK_BUCKETS, vendorIdOf, vendorOf} from './types';
+import {bucketOf, daysUntil, formatDue, statusOf, subtaskProgress, Task, TASK_BUCKETS, vendorIdOf, vendorOf} from './types';
 
 type SaveState = 'loading' | 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -322,6 +322,172 @@ export default function TaskPageWindow({taskId, note, onClose}: {taskId: string;
           onClose={onClose}
           taskId={taskId}
         />
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+// What's been written on a new task's page, kept (like the form's draft) until the task is created or discarded
+const pageDrafts = new Map<string, string>();
+
+/**
+ * A new task in its own window: a blank page on the left, the task's details on the right.
+ * Nothing is saved until "Create task"; then the task is created and the page saved with it.
+ * Closing keeps both drafts for next time; Discard clears them.
+ */
+export function NewTaskWindow({note, defaults, draftKey, onClose, onCreated}: {note?: NoteContext; defaults?: Partial<Task>; draftKey: string; onClose: () => void; onCreated?: (task: Task) => void}) {
+  const {tasks, drafts, setDraft} = useTaskCollection();
+  const [initial] = useState(() => pageDrafts.get(draftKey) || '');
+  const page = useRef(initial);
+  const [filled, setFilled] = useState(() => hasContent(initial));
+  const [created, setCreated] = useState<Task | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [maximized, setMaximized] = useState(false);
+  // Phones show one side at a time
+  const [phoneSide, setPhoneSide] = useState<'details' | 'page'>('details');
+  useEffect(() => setMaximized(read('TASK_PAGE_MAX', false)), []);
+
+  const formDraft = drafts[draftKey];
+  const dirty = filled || !!(formDraft && Object.keys(formDraft).length);
+  const liveTask = created ? tasks.find(t => t._id === created._id) || created : null;
+
+  const onChange = (html: string) => {
+    page.current = html;
+    const has = hasContent(html);
+    if (has) pageDrafts.set(draftKey, html);
+    else pageDrafts.delete(draftKey);
+    setFilled(has);
+  };
+
+  const finish = (task: Task) => {
+    pageDrafts.delete(draftKey);
+    onCreated?.(task);
+    onClose();
+  };
+
+  /** Save the page onto the task that was just created. */
+  const savePage = async (task: Task) => {
+    const html = page.current;
+    if (!hasContent(html)) return finish(task);
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/todos/${task._id}/page`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({content: html})});
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) throw new Error(json?.error || 'Not saved');
+      finish(task);
+    } catch (e) {
+      setSaving(false);
+      setError(e instanceof Error ? e.message : 'Not saved');
+    }
+  };
+
+  const tryClose = () => {
+    if (created && !window.confirm('The task was created, but its page has not saved yet. Close and lose what you wrote on the page?')) return;
+    onClose();
+  };
+  const discard = () => {
+    if (dirty && !window.confirm('Discard this new task and its page?')) return;
+    setDraft(draftKey, null);
+    pageDrafts.delete(draftKey);
+    onClose();
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const typing = !!el && (/input|textarea|select/i.test(el.tagName) || el.isContentEditable);
+      if (e.key === 'Escape' && !typing) tryClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+  // A refresh would lose the page, so ask first
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (filled) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [filled]);
+
+  const side = (s: 'details' | 'page', label: string) => (
+    <button className={`rounded-md px-2.5 py-1 text-[12px] font-semibold ${phoneSide === s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`} onClick={() => setPhoneSide(s)} type="button">
+      {label}
+    </button>
+  );
+
+  return createPortal(
+    <div className="fixed inset-0 z-[225] flex items-center justify-center bg-slate-900/35 backdrop-blur-[3px]" onMouseDown={e => e.target === e.currentTarget && tryClose()}>
+      <div aria-label="New task" aria-modal className={`relative flex h-[100dvh] w-full flex-col overflow-hidden border-slate-200 bg-white shadow-[0_30px_80px_-20px_rgba(15,23,42,0.45)] transition-[width,height] duration-200 sm:rounded-2xl sm:border ${maximized ? 'sm:h-[96vh] sm:w-[97vw]' : 'sm:h-[92vh] sm:w-[96vw] md:h-[86vh] md:w-[82vw]'}`} role="dialog">
+        <header className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 sm:px-5 sm:py-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-[16px] font-semibold tracking-tight text-slate-900 sm:text-[18px]">{liveTask?.title || formDraft?.title?.trim() || 'New task'}</h2>
+            <p className="hidden text-[12px] text-slate-400 sm:block">Fill in the details and write on its page. Nothing is saved until you create the task.</p>
+          </div>
+          <div className="flex rounded-lg bg-slate-100 p-0.5 md:hidden">
+            {side('details', 'Details')}
+            {side('page', 'Page')}
+          </div>
+          {!created && (
+            <button className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-700" onClick={discard} title="Clear the details and the page" type="button">
+              Discard
+            </button>
+          )}
+          <button className="hidden rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 sm:block" onClick={() => setMaximized(v => (write('TASK_PAGE_MAX', !v), !v))} title={maximized ? 'Restore size' : 'Fill the screen'} type="button">
+            {maximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+          <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={tryClose} title="Close (Esc). Your draft is kept." type="button">
+            <X className="h-4 w-4" />
+          </button>
+        </header>
+        {created && (
+          <div className="border-b border-amber-200 bg-amber-50 px-3 py-2 text-[12.5px] text-amber-800 sm:px-5" role="alert">
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Task created. Saving its page…
+              </span>
+            ) : (
+              <>
+                Task created, but its page did not save{error ? `: ${error}` : '.'}
+                <button className="ml-2 font-semibold underline" onClick={() => void savePage(created)} type="button">
+                  Try again
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="relative flex min-h-0 flex-1">
+          <div className={`relative min-w-0 flex-1 ${phoneSide === 'page' ? 'block' : 'hidden'} md:block`}>
+            <div className="absolute inset-0">
+              <RichTextEditor onChange={onChange} placeholder="This task's page. Notes, emails, decisions, anything. Press “/” for headings, lists, tables…" title={formDraft?.title || 'New task'} value={initial} />
+            </div>
+          </div>
+          <aside className={`w-full shrink-0 overflow-y-auto border-slate-200 bg-[#fffefa] md:w-[380px] md:border-l ${phoneSide === 'details' ? 'block' : 'hidden'} md:block`}>
+            <div className={`${styles.workspace} ${styles.compact}`} style={{display: 'block', height: 'auto'}}>
+              {liveTask ? (
+                <TaskEditor key={liveTask._id} note={note} onClose={tryClose} task={liveTask} />
+              ) : (
+                <TaskEditor
+                  defaults={{...defaults, ...(filled ? {hasPage: true} : {})}}
+                  draftKey={draftKey}
+                  note={note}
+                  onClose={tryClose}
+                  onCreated={task => {
+                    setCreated(task);
+                    void savePage(task);
+                  }}
+                />
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
     </div>,
     document.body,

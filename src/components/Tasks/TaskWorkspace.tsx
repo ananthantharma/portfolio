@@ -24,7 +24,7 @@ const TaskPageWindow = dynamic(() => import('./TaskPage'), {ssr: false});
 export type NoteContext = {id: string; title: string} | null;
 type Filter = 'open' | 'today' | 'note' | 'done' | 'archive';
 
-export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Task; note?: NoteContext; onClose: () => void; draftKey?: string; defaults?: Partial<Task>}) {
+export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}: {task?: Task; note?: NoteContext; onClose: () => void; draftKey?: string; defaults?: Partial<Task>; onCreated?: (task: Task) => void}) {
   const {drafts, setDraft, busy, run} = useTaskCollection();
   // New tasks started from a vendor page keep their own draft so they don't mix with the sidebar's
   const key = task?._id || draftKey || 'new';
@@ -58,10 +58,12 @@ export function TaskEditor({task, note, onClose, draftKey, defaults}: {task?: Ta
       await run(key, async () => {
         const payload = {...(task ? {} : defaults), ...draft, ...(draft.tags ? {tags: draft.tags.map(tag => tag.trim()).filter(Boolean)} : {}), title, ...(draft.sourcePageId !== undefined ? {sourcePageId: linkedId || null} : {}), ...(draft.vendorSectionId !== undefined || (!task && defaults?.vendorSectionId) ? {vendorSectionId: vendorIdOf(value)} : {})};
         if (task) {const result = await saveTaskChanges(task, payload); if (result.warning) setError(result.warning);}
-        else await api.create({priority: 'None', status: 'todo', isCompleted: false, ...payload});
+        const created = task ? null : await api.create({priority: 'None', status: 'todo', isCompleted: false, ...payload});
         setDraft(key, null);
         setSaved(true);
-        if (!task) onClose();
+        // A caller that saves more with the task (its page) closes the form itself
+        if (created && onCreated) onCreated(created);
+        else if (!task) onClose();
       });
     } catch (cause) {setError(cause instanceof Error ? cause.message : 'Could not save. Your changes are still here.');}
   };
