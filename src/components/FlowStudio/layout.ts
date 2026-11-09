@@ -92,7 +92,7 @@ export function mindInfo(nodes: Node[], layout: MindLayout): MindInfo {
       walk(k, d + 1, kc, ks, hide || collapsed);
     });
   };
-  walk(rootId, 0, '#2b2d33', layout === 'down' ? 'd' : 'r', false);
+  walk(rootId, 0, (byId.get(rootId)?.data as FD)?.color || '#2b2d33', layout === 'down' ? 'd' : 'r', false);
   return {rootId, depth, color, count, kids, side, hidden, parent};
 }
 

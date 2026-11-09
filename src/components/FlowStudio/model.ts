@@ -92,6 +92,9 @@ export const PALETTE: Record<string, {name: string; fill: string; stroke: string
   teal: {name: 'Teal', fill: '#c4efea', stroke: '#74ccc2', ink: '#0c4c46'},
   gray: {name: 'Gray', fill: '#e8eaee', stroke: '#bcc3cc', ink: '#2e343c'},
   dark: {name: 'Dark', fill: '#232838', stroke: '#232838', ink: '#ffffff'},
+  opgDark: {name: 'OPG Dark Green', fill: '#0C2721', stroke: '#0C2721', ink: '#ffffff'},
+  opgGreen: {name: 'OPG Green', fill: '#66CC00', stroke: '#4f9e00', ink: '#0C2721'},
+  opgLight: {name: 'OPG Light Green', fill: '#C7E995', stroke: '#66CC00', ink: '#0C2721'},
 };
 export const PALETTE_KEYS = Object.keys(PALETTE);
 
@@ -102,11 +105,75 @@ export const STICKY_COLORS: Record<string, string> = {
   green: '#d3f5c9',
   purple: '#e2d9ff',
   orange: '#ffdcb5',
+  opg: '#C7E995',
 };
 
-export const LINE_COLORS = ['#3a4250', '#7b68ee', '#3b82f6', '#16a37a', '#e5484d', '#f08c2e', '#d946ef', '#94a3b8'];
+export const LINE_COLORS = ['#3a4250', '#0C2721', '#66CC00', '#7b68ee', '#3b82f6', '#16a37a', '#e5484d', '#f08c2e', '#d946ef', '#94a3b8'];
 export const BRANCH_COLORS = ['#7b68ee', '#40b37c', '#e5484d', '#f08c2e', '#2b2d33', '#3b82f6', '#d946ef', '#0ea5a4'];
-export const PEN_COLORS = ['#232838', '#7b68ee', '#3b82f6', '#16a37a', '#e5484d', '#f08c2e'];
+export const PEN_COLORS = ['#232838', '#0C2721', '#66CC00', '#7b68ee', '#3b82f6', '#16a37a', '#e5484d', '#f08c2e'];
+/** OPG brand colours. */
+export const OPG = {dark: '#0C2721', green: '#66CC00', light: '#C7E995', mid: '#3F8F1E'};
+export const OPG_BRANCHES = [OPG.dark, OPG.green, OPG.mid, '#8CC63F'];
+
+/**
+ * Recolours nodes and edges in the OPG theme. Only the given ids change when a list is passed.
+ * Start/end shapes go dark green, decisions and cards OPG green, other boxes, stickies and sections light green,
+ * connectors dark green, and mind map branches take turns through the greens.
+ */
+export function opgTheme(nodes: Node[], edges: Edge[], only?: Set<string>): {nodes: Node[]; edges: Edge[]} {
+  const hit = (id: string) => !only || only.has(id);
+  const kids: Record<string, Node[]> = {};
+  let rootId = '';
+  for (const n of nodes) {
+    if (n.type !== 'mind') continue;
+    const p = (n.data as FD).parent;
+    if (p) (kids[p] = kids[p] || []).push(n);
+    else rootId = n.id;
+  }
+  const branchColor: Record<string, string> = {};
+  (kids[rootId] || [])
+    .sort((a, b) => ((a.data as FD).order ?? 0) - ((b.data as FD).order ?? 0))
+    .forEach((n, i) => (branchColor[n.id] = OPG_BRANCHES[i % OPG_BRANCHES.length]));
+
+  const next = nodes.map(n => {
+    if (!hit(n.id)) return n;
+    const d = n.data as FD;
+    let patch: Partial<FD> = {};
+    switch (n.type) {
+      case 'shape': {
+        const s = d.shape || 'rounded';
+        const fill = s === 'ellipse' || s === 'pill' ? 'opgDark' : s === 'diamond' ? 'opgGreen' : 'opgLight';
+        patch = {fill, border: fill === 'opgLight' ? d.border && d.border !== 'none' ? d.border : 'solid' : d.border};
+        break;
+      }
+      case 'sticky':
+        patch = {fill: 'opg'};
+        break;
+      case 'card':
+        patch = {fill: 'opgGreen'};
+        break;
+      case 'frame':
+        patch = {fill: 'opgLight'};
+        break;
+      case 'draw':
+        patch = {stroke: OPG.dark};
+        break;
+      case 'mind':
+        patch = n.id === rootId ? {fill: 'opgDark', color: OPG.dark} : branchColor[n.id] ? {color: branchColor[n.id]} : {color: undefined};
+        break;
+      default:
+        return n;
+    }
+    return {...n, data: {...d, ...patch}};
+  });
+  const nextEdges = edges.map(e => {
+    if (only && !only.has(e.id) && !(only.has(e.source) && only.has(e.target))) return e;
+    if (e.type === 'mind') return e;
+    return {...e, data: {...e.data, color: OPG.dark}};
+  });
+  return {nodes: next, edges: nextEdges};
+}
+
 export const BADGES = ['⭐', '🚩', '⚠️', '✅', '🔴', '⏱️', '💲', '📌', '❗', '🔒', '💡', '🎯'];
 
 export const SHAPES: {kind: ShapeKind; name: string}[] = [

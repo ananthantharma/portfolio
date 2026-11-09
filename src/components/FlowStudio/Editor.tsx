@@ -98,6 +98,9 @@ import {
   LINE_COLORS,
   makePreview,
   mindNode,
+  OPG,
+  OPG_BRANCHES,
+  opgTheme,
   PALETTE,
   PALETTE_KEYS,
   PEN_COLORS,
@@ -426,6 +429,21 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
     setEdges(es => es.map(e => (e.selected ? {...e, ...extra, data: {...e.data, ...patch}} : e)));
     const {label: _l, ...rest} = patch;
     if (Object.keys(rest).length) setSettings({edge: {...settingsRef.current.edge, ...rest}});
+  };
+  /** OPG theme: recolours the selection, or the whole board when nothing is selected. */
+  const applyOpg = () => {
+    if (readOnly) return;
+    const ns = rf.getNodes();
+    const es = rf.getEdges();
+    if (!ns.length) return setToast('Add something first, then apply the OPG theme');
+    const picked = [...ns.filter(n => n.selected).map(n => n.id), ...es.filter(e => e.selected).map(e => e.id)];
+    snapshot();
+    const out = opgTheme(ns, es, picked.length ? new Set(picked) : undefined);
+    setNodes(out.nodes);
+    if (!isMind) setEdges(out.edges);
+    if (!picked.length) setSettings({edge: {...settingsRef.current.edge, color: OPG.dark}});
+    setLayoutNonce(n => n + 1);
+    setToast(picked.length ? 'OPG theme applied to the selection' : 'OPG theme applied to the board');
   };
 
   // ── Creating things ──────────────────────────────────────────────────────
@@ -1304,6 +1322,16 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
             </button>
           </div>
           <div className="fs-header-right">
+            {!readOnly && (
+              <button className="fs-btn fs-btn-opg" onClick={applyOpg} title="Apply the OPG colours to the selection, or the whole board if nothing is selected" type="button">
+                <span className="fs-opg-dots">
+                  <i style={{background: OPG.dark}} />
+                  <i style={{background: OPG.green}} />
+                  <i style={{background: OPG.light}} />
+                </span>
+                <span className="fs-hide-sm">OPG theme</span>
+              </button>
+            )}
             <button className="fs-btn fs-btn-ai" onClick={() => setPanel('ai')} title="Describe it and let AI build it" type="button">
               <Sparkles /> <span className="fs-hide-sm">Build with AI</span>
             </button>
@@ -1876,10 +1904,10 @@ function SelectionToolbar({
             {pop === 'fill' &&
               (isMind ? (
                 <div className="fs-swatch-row">
-                  {BRANCH_COLORS.map(c => (
+                  {[...BRANCH_COLORS, ...OPG_BRANCHES.filter(c => !BRANCH_COLORS.includes(c))].map(c => (
                     <button aria-label={c} className={`fs-swatch ${d.color === c ? 'on' : ''}`} key={c} onClick={() => onUpdate({color: c})} style={{background: c}} type="button" />
                   ))}
-                  <button className="fs-swatch fs-swatch-none" onClick={() => onUpdate({color: undefined})} title="Use the branch colour" type="button">
+                  <button className="fs-swatch fs-swatch-none" onClick={() => onUpdate({color: undefined, fill: undefined})} title="Use the branch colour" type="button">
                     <X />
                   </button>
                 </div>

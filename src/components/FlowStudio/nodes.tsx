@@ -405,10 +405,11 @@ export function MindNode({id, data, selected}: NodeProps) {
   const side = mind?.side[id] || 'r';
   const Icon = d.icon ? ICONS[d.icon] : null;
   const outward = layout === 'down' ? 'b' : side === 'l' ? 'l' : 'r';
+  const fill = d.fill ? PALETTE[d.fill] : undefined;
   return (
     <div
-      className={`fs-mind fs-mind-d${Math.min(depth, 2)} ${selected ? 'is-selected' : ''} ${dropTarget === id ? 'is-drop' : ''}`}
-      style={{['--branch' as string]: color}}>
+      className={`fs-mind fs-mind-d${Math.min(depth, 2)} ${fill ? 'has-fill' : ''} ${selected ? 'is-selected' : ''} ${dropTarget === id ? 'is-drop' : ''}`}
+      style={{['--branch' as string]: color, ...(fill ? {background: fill.fill, color: fill.ink, borderColor: fill.stroke} : {})}}>
       {SIDES.map(([sid, pos]) => (
         <Handle className={`fs-handle-hidden fs-mind-h-${sid} ${count && sid === outward ? 'has-count' : ''}`} id={sid} isConnectable={false} key={sid} position={pos} type="source" />
       ))}

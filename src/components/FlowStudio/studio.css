@@ -405,6 +405,7 @@
   gap: 18px;
 }
 .fs-card-board {
+  position: relative;
   border-radius: 16px;
   border: 1px solid var(--fs-line);
   background: #fff;
@@ -415,6 +416,13 @@
   border-color: #dcd6fb;
   box-shadow: var(--fs-shadow);
   transform: translateY(-2px);
+}
+.fs-card-board:hover,
+.fs-card-board:focus-within {
+  z-index: 2;
+}
+.fs-card-board.is-menu-open {
+  z-index: 30;
 }
 .fs-card-board.is-skeleton {
   height: 228px;
@@ -2222,4 +2230,30 @@
 .fs-edgebar .fs-swatch-row {
   flex-wrap: nowrap;
   gap: 5px;
+}
+
+/* Mind map ideas with a solid fill (OPG theme root) */
+.fs-mind.has-fill {
+  border-width: 1px;
+}
+.fs-mind.has-fill .fs-mind-icon {
+  color: currentColor;
+}
+
+/* OPG theme button */
+.fs-btn-opg {
+  gap: 7px;
+}
+.fs-opg-dots {
+  display: inline-flex;
+}
+.fs-opg-dots i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  margin-left: -4px;
+}
+.fs-opg-dots i:first-child {
+  margin-left: 0;
 }

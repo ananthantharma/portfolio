@@ -259,7 +259,7 @@ function Gallery({onOpen}: {onOpen: (id: string) => void}) {
         ) : shown.length ? (
           <div className="fs-grid">
             {shown.map(f => (
-              <article className="fs-card-board" key={f._id}>
+              <article className={`fs-card-board ${menu === f._id ? 'is-menu-open' : ''}`} key={f._id}>
                 <button className="fs-card-preview" onClick={() => onOpen(f._id)} type="button">
                   <PreviewSvg preview={f.preview} />
                   {!f.preview && <span className="fs-card-open">Open to see it</span>}
