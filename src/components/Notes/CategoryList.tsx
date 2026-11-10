@@ -133,7 +133,7 @@ const CategoryItem = React.memo<{
           />
         ) : null}
         <div
-          className={`h-6 w-6 rounded-md flex items-center justify-center text-[9px] font-bold ${
+          className={`h-6 w-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
             category.image ? 'hidden' : ''
           }`}
           style={{backgroundColor: monoBg, color: monoFg}}>
@@ -195,7 +195,7 @@ const CategoryItem = React.memo<{
               <StarIcon className="h-3 w-3" />
             </button>
             <button
-              className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-indigo-600 transition-colors"
+              className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-[#365238] transition-colors"
               onClick={e => {
                 e.stopPropagation();
                 onEdit(category);
@@ -395,7 +395,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               <button
                 className={`rounded-md p-1 transition-all duration-150 ${
                   sortAlpha
-                    ? 'text-indigo-500 bg-indigo-50'
+                    ? 'text-[#55734c] bg-[#eef3e8]'
                     : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
                 }`}
                 onClick={() => setSortAlpha(v => !v)}
@@ -435,7 +435,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 <div className="mb-3">
                   <input
                     autoFocus
-                    className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
+                    className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-[#7d9b70] text-gray-900"
                     onChange={e => setNewCategoryName(e.target.value)}
                     onKeyDown={e => {
                       if (e.key === 'Enter') handleAdd();
@@ -490,7 +490,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                     Cancel
                   </button>
                   <button
-                    className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 shadow-sm"
+                    className="rounded-lg bg-[#405b43] px-3 py-1 text-xs font-medium text-white hover:bg-[#2e4731] shadow-sm"
                     onClick={handleAdd}>
                     Add
                   </button>
@@ -502,7 +502,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
               {/* Pinned notebooks */}
               {pinnedCategories.length > 0 && (
                 <>
-                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">
+                  <p className="px-1.5 pb-0.5 pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400/60">
                     Pinned
                   </p>
                   <ul className="space-y-0.5 mb-2">
@@ -510,12 +510,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       if (editingId === category._id) {
                         return (
                           <div
-                            className="rounded-xl border border-indigo-100 bg-white p-3 shadow-md ring-1 ring-indigo-50 relative z-20"
+                            className="rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-md ring-1 ring-[#e0e7d9] relative z-20"
                             key={category._id as string}>
                             <div className="mb-3">
                               <input
                                 autoFocus
-                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
+                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-[#7d9b70] text-gray-900"
                                 onChange={e => setEditName(e.target.value)}
                                 onKeyDown={e => {
                                   if (e.key === 'Enter') handleRename();
@@ -568,7 +568,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       );
                     })}
                   </ul>
-                  <p className="px-1.5 pb-0.5 pt-1 text-[9px] font-bold uppercase tracking-widest text-slate-400/60">
+                  <p className="px-1.5 pb-0.5 pt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400/60">
                     All
                   </p>
                 </>
@@ -584,12 +584,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                       if (editingId === category._id) {
                         return (
                           <div
-                            className="rounded-xl border border-indigo-100 bg-white p-3 shadow-md ring-1 ring-indigo-50 relative z-20"
+                            className="rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-md ring-1 ring-[#e0e7d9] relative z-20"
                             key={category._id as string}>
                             <div className="mb-3">
                               <input
                                 autoFocus
-                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-indigo-500 text-gray-900"
+                                className="w-full border-b border-black/[0.06] px-1 py-1 text-[13px] font-medium outline-none focus:border-[#7d9b70] text-gray-900"
                                 onChange={e => setEditName(e.target.value)}
                                 onKeyDown={e => {
                                   if (e.key === 'Enter') handleRename();
@@ -677,7 +677,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(
                 />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-[9px] font-bold">{userInitial}</span>
+                  <span className="text-white text-[10px] font-bold">{userInitial}</span>
                 </div>
               )}
               <span className="text-[11px] font-medium text-slate-600 truncate flex-1">{userName}</span>

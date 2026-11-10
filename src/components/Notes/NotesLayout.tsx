@@ -462,6 +462,9 @@ const NotesLayout: React.FC = React.memo(() => {
       fetchSections(selectedCategoryId);
       fetchCategoryPages(selectedCategoryId);
     } else {
+      // The emptied lists belong to no notebook, so they must not be saved as one's cached contents
+      sectionsBelongToCategory.current = null;
+      categoryPagesBelongToCategory.current = null;
       setSections([]);
       setCategoryPages([]);
     }
@@ -498,6 +501,8 @@ const NotesLayout: React.FC = React.memo(() => {
     if (selectedSectionId) {
       fetchPages(selectedSectionId);
     } else {
+      // Otherwise reopening the same section would cache (and show) this empty list as its pages
+      pagesBelongToSection.current = null;
       setPages([]);
     }
   }, [selectedSectionId, fetchPages]);
@@ -1603,7 +1608,19 @@ const NotesLayout: React.FC = React.memo(() => {
                 Workspace
               </button>
               <ChevronRightIcon className={styles.crumbRoot} />
-              <strong className={styles.crumbRoot}>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
+              {workspaceView === 'notes' && currentCategory && (currentSection || selectedPage) ? (
+                <button
+                  className={`${styles.crumbRoot} ${styles.crumbLink}`}
+                  onClick={() => {
+                    setSelectedSectionId(null);
+                    setSelectedPageId(null);
+                  }}
+                  title={`Back to ${currentCategory.name}`}>
+                  {currentCategory.name}
+                </button>
+              ) : (
+                <strong className={styles.crumbRoot}>{workspaceView === 'tasks' ? 'Tasks' : currentCategory?.name || 'My notes'}</strong>
+              )}
               {currentSection && workspaceView === 'notes' && (
                 <>
                   <ChevronRightIcon className={styles.crumbRoot} />
@@ -1648,7 +1665,8 @@ const NotesLayout: React.FC = React.memo(() => {
               <button
                 aria-label={isFocusMode ? 'Exit focus mode' : 'Enter focus mode'}
                 className={styles.iconButton}
-                onClick={toggleFocusMode}>
+                onClick={toggleFocusMode}
+                title={isFocusMode ? 'Exit focus mode (Ctrl+\\)' : 'Focus mode: hide the side panels (Ctrl+\\)'}>
                 {isFocusMode ? <ArrowsPointingInIcon /> : <ArrowsPointingOutIcon />}
               </button>
               {/* Quick tools, each in its own neutral tint */}
@@ -1716,17 +1734,24 @@ const NotesLayout: React.FC = React.memo(() => {
               <ClipboardDocumentListIcon />
               Tasks
             </button>
-            <button
-              className={styles.showTaskSidebar}
-              onClick={() => {
-                const isVisible = !isTaskSidebarCollapsed && workspaceView === 'notes' && !isFocusMode;
-                changeView('notes');
-                setIsFocusMode(false);
-                if (isVisible || isTaskSidebarCollapsed) toggleTaskSidebar();
-              }}>
-              {!isTaskSidebarCollapsed && workspaceView === 'notes' && !isFocusMode ? 'Hide task sidebar' : 'Show task sidebar'}
-            </button>
             <span>Room to think. Space to do.</span>
+            {(() => {
+              const shown = !isTaskSidebarCollapsed && workspaceView === 'notes' && !isFocusMode;
+              return (
+                <button
+                  aria-pressed={shown}
+                  className={styles.showTaskSidebar}
+                  onClick={() => {
+                    changeView('notes');
+                    setIsFocusMode(false);
+                    if (shown || isTaskSidebarCollapsed) toggleTaskSidebar();
+                  }}
+                  title={shown ? 'Hide the task panel' : 'Show your tasks beside your notes'}>
+                  <ClipboardDocumentListIcon />
+                  {shown ? 'Hide task panel' : 'Show task panel'}
+                </button>
+              );
+            })()}
           </div>
           <div
             aria-labelledby="tasks-tab"

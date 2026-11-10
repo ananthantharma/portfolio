@@ -144,7 +144,7 @@ const PageCard = React.memo<PageCardProps>(
                 {page.title || 'Untitled'}
               </button>
               {isPinned && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
                   <MapPinIcon className="h-2.5 w-2.5" /> Pinned
                 </span>
               )}
@@ -172,13 +172,13 @@ const PageCard = React.memo<PageCardProps>(
                   }}
                   placeholder="Add a description..."
                   rows={2}
-                  className="w-full text-[12px] text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 resize-none focus:outline-none focus:border-indigo-400 min-h-[52px] leading-relaxed"
+                  className="w-full text-[12px] text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 resize-none focus:outline-none focus:border-[#7d9b70] min-h-[52px] leading-relaxed"
                 />
               ) : (
                 <p
                   onClick={() => onStartEditing(page)}
                   className={`text-[12px] leading-relaxed cursor-text transition-colors ${
-                    description ? 'text-slate-500 hover:text-slate-700' : 'text-slate-300 italic hover:text-slate-400'
+                    description ? 'text-slate-500 hover:text-slate-700' : 'text-slate-400 italic hover:text-slate-500'
                   }`}>
                   {description || 'Add a description...'}
                 </p>
@@ -199,12 +199,12 @@ const PageCard = React.memo<PageCardProps>(
                 <span className="hidden sm:inline text-slate-200 text-[11px]">·</span>
               )}
               {page.createdAt && (
-                <span className="hidden sm:inline text-[11px] text-slate-300">Created {formatDate(page.createdAt)}</span>
+                <span className="hidden sm:inline text-[11px] text-slate-400">Created {formatDate(page.createdAt)}</span>
               )}
               {page.updatedAt && (
                 <>
                   <span className="text-slate-200 text-[11px]">·</span>
-                  <span className="text-[11px] text-slate-300">Modified {formatTimeAgo(page.updatedAt)}</span>
+                  <span className="text-[11px] text-slate-400">Modified {formatTimeAgo(page.updatedAt)}</span>
                 </>
               )}
             </div>
@@ -223,7 +223,7 @@ const PageCard = React.memo<PageCardProps>(
               className={`p-1.5 rounded-lg transition-colors ${
                 isStarred
                   ? 'text-amber-400 hover:text-amber-500 hover:bg-amber-50'
-                  : 'text-slate-200 hover:text-amber-400 hover:bg-amber-50'
+                  : 'text-slate-300 hover:text-amber-400 hover:bg-amber-50'
               }`}>
               {isStarred ? <StarSolid className="h-3.5 w-3.5" /> : <StarIcon className="h-3.5 w-3.5" />}
             </button>
@@ -233,13 +233,13 @@ const PageCard = React.memo<PageCardProps>(
               className={`p-1.5 rounded-lg transition-colors ${
                 isPinned
                   ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50'
-                  : 'text-slate-200 hover:text-indigo-500 hover:bg-indigo-50'
+                  : 'text-slate-300 hover:text-[#55734c] hover:bg-[#eef3e8]'
               }`}>
               <MapPinIcon className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onOpenPage(pid)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#1A1A1A] hover:bg-slate-800 text-white text-[11px] font-semibold transition-all ml-1 shadow-sm"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#405b43] hover:bg-[#2e4731] text-white text-[11px] font-semibold transition-all ml-1 shadow-sm"
               title="Open page">
               <span className="hidden sm:inline">Open</span> <ArrowRightIcon className="h-3 w-3" />
             </button>
@@ -249,7 +249,7 @@ const PageCard = React.memo<PageCardProps>(
         {/* ── Tab list (expanded) ── */}
         {isExpanded && tabs.length > 0 && (
           <div className="border-t border-slate-100/80 px-4 pb-3 pt-1">
-            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-300 px-2 py-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 px-2 py-1.5">
               Tabs · {tabs.length}
             </p>
             <div className="flex flex-col gap-0.5">
@@ -276,7 +276,7 @@ const PageCard = React.memo<PageCardProps>(
                     {tab.isImportant && (
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
                     )}
-                    <span className="text-[11px] text-slate-400 group-hover/tab:text-indigo-500 transition-colors flex-shrink-0 font-medium">
+                    <span className="text-[11px] text-slate-400 group-hover/tab:text-[#55734c] transition-colors flex-shrink-0 font-medium">
                       Open →
                     </span>
                   </div>
@@ -403,7 +403,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
       <div className="h-full overflow-y-auto custom-scrollbar px-4 py-6 sm:px-6 sm:py-8">
         {/* ── Header ── */}
         <div className="mb-8">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2">
             {currentCategory?.name?.toUpperCase()} · SECTION
           </p>
           <div className="flex items-start justify-between gap-4">
@@ -419,7 +419,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
             </div>
             <button
               onClick={() => onAddPage('New Page')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1A1A1A] hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg flex-shrink-0">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#405b43] hover:bg-[#2e4731] text-white text-[12px] font-semibold transition-all shadow-lg flex-shrink-0">
               <DocumentPlusIcon className="h-3.5 w-3.5" /> New page
             </button>
           </div>
@@ -436,7 +436,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
             <p className="text-[13px] text-slate-400 font-medium">No pages yet. Create your first one.</p>
             <button
               onClick={() => onAddPage('New Page')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1A1A1A] hover:bg-slate-800 text-white text-[12px] font-semibold transition-all shadow-lg">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#405b43] hover:bg-[#2e4731] text-white text-[12px] font-semibold transition-all shadow-lg">
               <DocumentPlusIcon className="h-3.5 w-3.5" /> Create page
             </button>
           </div>
@@ -447,7 +447,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
               <div className="flex flex-col gap-2 mb-2">
                 <div className="flex items-center gap-1.5">
                   <MapPinIcon className="h-3 w-3 text-amber-500" />
-                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-amber-500">Pinned</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-500">Pinned</p>
                 </div>
                 {pinnedPages.map(renderCard)}
               </div>
@@ -458,7 +458,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
               <div className="flex flex-col gap-2 mb-2">
                 <div className="flex items-center gap-1.5">
                   <StarSolid className="h-3 w-3 text-amber-400" />
-                  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-amber-400">Starred</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-400">Starred</p>
                 </div>
                 {starredUnpinnedPages.map(renderCard)}
               </div>
@@ -468,7 +468,7 @@ const SectionDashboard = React.memo<SectionDashboardProps>(
             {hasPinnedOrStarred && regularPages.length > 0 && (
               <div className="flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-slate-100" />
-                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-300">All Pages</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">All Pages</p>
                 <div className="flex-1 h-px bg-slate-100" />
               </div>
             )}

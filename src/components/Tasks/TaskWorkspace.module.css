@@ -172,6 +172,10 @@
 .cardMeta { display:flex; align-items:center; flex-wrap:wrap; gap:4px 12px; margin-top:8px; padding:0 4px; font-size:11px; font-weight:500; color:#80867a; }
 .cardMeta > span { display:inline-flex; align-items:center; gap:4px; }
 .cardMeta > span > svg { flex-shrink:0; }
+/* Late and due-today dates stand out; in-progress reads as a state, not a date */
+.cardMeta > span[data-tone=overdue] { color:#be123c; font-weight:650; }
+.cardMeta > span[data-tone=today] { color:#b45309; font-weight:650; }
+.cardMeta > span[data-tone=progress] { color:#2f6f8f; }
 .metaRight { margin-left:auto; gap:2px !important; }
 .cardPageBtn { flex-shrink:0; display:flex; align-items:center; justify-content:center; width:26px; height:26px; margin-left:-3px; border:1.7px solid #dcdcd4; border-radius:8px; background:#fff; color:#8a9583; transition:width .3s ease, height .3s ease, border-radius .3s ease, background-color .2s, border-color .2s, color .2s; }
 .cardPageBtn:hover { border-color:#7d9cbd; background:#f3f7fb; color:#2f5d8a; }

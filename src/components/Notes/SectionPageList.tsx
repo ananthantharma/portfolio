@@ -231,7 +231,7 @@ const PageRow = React.memo<PageRowProps>(
         ) : (
           <span
             className={`flex ${avatarSize} flex-shrink-0 items-center justify-center rounded-full text-white transition-colors ${
-              darkMode ? (isSelected ? 'bg-indigo-500' : 'bg-white/10') : tint && !isInactive ? '' : isInactive ? 'bg-zinc-300' : isSelected ? 'bg-zinc-900' : 'bg-zinc-800'
+              darkMode ? (isSelected ? 'bg-indigo-500' : 'bg-white/10') : tint && !isInactive ? '' : isInactive ? 'bg-zinc-300' : isSelected ? 'bg-[#405b43]' : 'bg-[#aab5a0]'
             }`}
             style={!darkMode && tint && !isInactive ? {background: tint} : undefined}>
             <PageIcon className={isChild ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
@@ -769,7 +769,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               </div>
               <input
                 autoFocus
-                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-[#7d9b70] focus:outline-none text-gray-900"
                 onChange={e => setEditPageTitle(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleRenamePage();
@@ -783,7 +783,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
                   <XMarkIcon className="h-4 w-4" />
                 </button>
-                <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                <button className="text-[#55734c] hover:text-green-600" onClick={handleRenamePage}>
                   <CheckIcon className="h-4 w-4" />
                 </button>
               </div>
@@ -824,7 +824,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
                           <input
                             autoFocus
-                            className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-indigo-500 focus:outline-none text-gray-900"
+                            className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] focus:border-[#7d9b70] focus:outline-none text-gray-900"
                             onChange={e => setEditPageTitle(e.target.value)}
                             onKeyDown={e => {
                               if (e.key === 'Enter') handleRenamePage();
@@ -838,7 +838,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
                               <XMarkIcon className="h-4 w-4" />
                             </button>
-                            <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                            <button className="text-[#55734c] hover:text-green-600" onClick={handleRenamePage}>
                               <CheckIcon className="h-4 w-4" />
                             </button>
                           </div>
@@ -890,7 +890,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <ChevronLeftIcon className="h-3.5 w-3.5" />
               </button>
               <button
-                className="rounded-md p-1 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 transition-all"
+                className="rounded-md p-1 text-[#55734c] hover:bg-[#eef3e8] hover:text-[#365238] transition-all"
                 onClick={() => setIsAddingSection(true)}
                 title="New Section">
                 <PlusIcon className="h-3.5 w-3.5" />
@@ -899,10 +899,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           </div>
           {/* Search input */}
           <div className="px-2 pb-2.5">
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-black/[0.03] border border-black/[0.05]">
-              <MagnifyingGlassIcon className="h-3 w-3 text-slate-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-black/[0.06] bg-white px-2.5 py-1.5 transition-colors focus-within:border-[#7d9b70] focus-within:ring-2 focus-within:ring-[#e0e7d9]">
+              <MagnifyingGlassIcon className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
               <input
-                className="flex-1 text-[11px] bg-transparent outline-none text-slate-600 placeholder-slate-400/70 min-w-0"
+                aria-label={`Search ${sectionNoun.many}`}
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[12px] text-slate-700 placeholder-slate-400 outline-none focus:ring-0"
                 placeholder={`Search ${sectionNoun.many}…`}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -936,7 +937,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               {availableParents.map(p => (
                 <li key={p._id as string}>
                   <button
-                    className="w-full text-left rounded-lg px-2.5 py-1.5 text-[12px] text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                    className="w-full text-left rounded-lg px-2.5 py-1.5 text-[12px] text-slate-700 hover:bg-[#eef3e8] hover:text-[#365238]"
                     onClick={() => handleSetParent(parentPickerFor, p._id as string)}>
                     {p.title || 'Untitled'}
                   </button>
@@ -965,23 +966,23 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
               <div
                 className={`mb-2 rounded-xl p-1 transition-all duration-150 ${
                   isOver
-                    ? 'bg-indigo-50 ring-2 ring-inset ring-indigo-300'
+                    ? 'bg-[#eef3e8] ring-2 ring-inset ring-[#b9c9ad]'
                     : 'bg-black/[0.015] ring-1 ring-inset ring-black/[0.04]'
                 }`}>
                 <div className="flex items-center justify-between px-1.5 py-1">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <InboxIcon className="h-3 w-3 flex-shrink-0 text-indigo-400" />
+                    <InboxIcon className="h-3 w-3 flex-shrink-0 text-[#55734c]" />
                     <span className="truncate text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">
                       Pages
                     </span>
                     {categoryPages.length > 0 && (
-                      <span className="flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-slate-400">
+                      <span className="flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-400">
                         {categoryPages.length}
                       </span>
                     )}
                   </div>
                   <button
-                    className="rounded-md p-0.5 text-slate-300 transition-all hover:bg-indigo-50 hover:text-indigo-500"
+                    className="rounded-md p-0.5 text-slate-300 transition-all hover:bg-[#eef3e8] hover:text-[#55734c]"
                     onClick={() => setIsAddingCatPage(true)}
                     title="New page (no section)">
                     <PlusIcon className="h-3 w-3" />
@@ -990,10 +991,10 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                 {/* Add page directly to the notebook */}
                 {isAddingCatPage && (
-                  <div className="mx-1 mb-1.5 rounded-lg border border-indigo-100 bg-white p-2 shadow-sm">
+                  <div className="mx-1 mb-1.5 rounded-lg border border-[#dfe5d7] bg-white p-2 shadow-sm">
                     <input
                       autoFocus
-                      className="mb-1.5 w-full rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-800 outline-none transition-all placeholder-slate-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                      className="mb-1.5 w-full rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-800 outline-none transition-all placeholder-slate-300 focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9]"
                       onChange={e => setNewCatPageTitle(e.target.value)}
                       onKeyDown={e => {
                         if (e.key === 'Enter') handleAddCatPage();
@@ -1010,7 +1011,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         Cancel
                       </button>
                       <button
-                        className="rounded-md bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                        className="rounded-md bg-[#405b43] px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-[#2e4731]"
                         onClick={handleAddCatPage}>
                         Add
                       </button>
@@ -1041,7 +1042,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                 </div>
                                 <input
                                   autoFocus
-                                  className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] text-gray-900 focus:border-indigo-500 focus:outline-none"
+                                  className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] text-gray-900 focus:border-[#7d9b70] focus:outline-none"
                                   onChange={e => setEditPageTitle(e.target.value)}
                                   onKeyDown={e => {
                                     if (e.key === 'Enter') handleRenamePage();
@@ -1055,7 +1056,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
                                     <XMarkIcon className="h-4 w-4" />
                                   </button>
-                                  <button className="text-indigo-500 hover:text-green-600" onClick={handleRenamePage}>
+                                  <button className="text-[#55734c] hover:text-green-600" onClick={handleRenamePage}>
                                     <CheckIcon className="h-4 w-4" />
                                   </button>
                                 </div>
@@ -1102,7 +1103,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             <button
               aria-pressed={sortSectionsAlpha}
               className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-semibold transition-colors ${
-                sortSectionsAlpha ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
+                sortSectionsAlpha ? 'bg-[#eef3e8] text-[#365238]' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
               }`}
               onClick={toggleSectionSort}
               title={sortSectionsAlpha ? 'Sorted A–Z. Click to use your own order.' : 'Sort sections A–Z'}>
@@ -1113,11 +1114,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
           {/* Add-section inline form */}
           {isAddingSection && (
-            <div className="mb-2 rounded-xl border border-indigo-100 bg-white p-3 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-100/50 z-20 relative">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-400 mb-2">New Section</p>
+            <div className="mb-2 rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-xl shadow-black/5 ring-1 ring-[#dfe5d7]/50 z-20 relative">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#55734c] mb-2">New Section</p>
               <input
                 autoFocus
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 placeholder-slate-300 text-slate-800 mb-3 transition-all"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] placeholder-slate-300 text-slate-800 mb-3 transition-all"
                 onChange={e => setNewSecName(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleAddSection();
@@ -1135,7 +1136,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                 <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingSection(false)}>
                   Cancel
                 </button>
-                <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors" onClick={handleAddSection}>
+                <button className="rounded-lg bg-[#405b43] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2e4731] shadow-sm transition-colors" onClick={handleAddSection}>
                   Add Section
                 </button>
               </div>
@@ -1160,11 +1161,11 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                     if (editingSecId === sid) {
                       return (
                         <li key={sid}>
-                          <div className="rounded-xl border border-indigo-100 bg-white p-3 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-50 z-20 relative">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 mb-2">Rename Section</p>
+                          <div className="rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-xl shadow-black/5 ring-1 ring-[#e0e7d9] z-20 relative">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">Rename Section</p>
                             <input
                               autoFocus
-                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-slate-800 mb-3 transition-all"
+                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] text-slate-800 mb-3 transition-all"
                               onChange={e => setEditSecName(e.target.value)}
                               onKeyDown={e => {
                                 if (e.key === 'Enter') handleRenameSection();
@@ -1182,7 +1183,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                               <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setEditingSecId(null)}>
                                 Cancel
                               </button>
-                              <button className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-indigo-700 shadow-sm transition-colors" onClick={handleRenameSection}>
+                              <button className="rounded-lg bg-[#405b43] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2e4731] shadow-sm transition-colors" onClick={handleRenameSection}>
                                 Save
                               </button>
                             </div>
@@ -1201,7 +1202,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                         <div
                           className={`overflow-hidden rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 ${
                             isDropTarget
-                              ? 'border-indigo-300 bg-indigo-50 ring-2 ring-indigo-200'
+                              ? 'border-[#9fb592] bg-[#eef3e8] ring-2 ring-[#b9c9ad]'
                               : isOpen
                               ? 'border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_28px_-18px_rgba(0,0,0,0.35)]'
                               : 'border-zinc-200/80 bg-zinc-100/70 hover:border-zinc-300/80 hover:bg-zinc-100'
@@ -1229,7 +1230,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                             ) : (
                               <span
                                 className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white transition-colors duration-200 ${
-                                  section.image ? 'bg-white ring-1 ring-zinc-200' : tint ? '' : isOpen ? 'bg-zinc-900' : 'bg-zinc-400'
+                                  section.image ? 'bg-white ring-1 ring-zinc-200' : tint ? '' : isOpen ? 'bg-[#405b43]' : 'bg-[#aab5a0]'
                                 }`}
                                 style={!section.image && tint ? {background: tint} : undefined}>
                                 {section.image ? (
@@ -1329,15 +1330,15 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
 
                             {/* Add-page inline form */}
                             {isAddingPage && (
-                              <div className="mb-1.5 rounded-xl border border-indigo-100 bg-white p-2.5 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-50">
-                                <p className="text-[9px] font-bold uppercase tracking-wider text-indigo-400 mb-2">New Page</p>
+                              <div className="mb-1.5 rounded-xl border border-[#dfe5d7] bg-white p-2.5 shadow-lg shadow-black/5 ring-1 ring-[#e0e7d9]">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">New Page</p>
                                 <div className="flex items-center gap-2 mb-2">
                                   <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
                                   <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
                                 </div>
                                 <input
                                   autoFocus
-                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:outline-none text-slate-800 mb-2 transition-all"
+                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] focus:outline-none text-slate-800 mb-2 transition-all"
                                   onChange={e => setNewPageTitle(e.target.value)}
                                   onKeyDown={e => {
                                     if (e.key === 'Enter') handleAddPage();
@@ -1350,7 +1351,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
                                   <button className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingPage(false)}>
                                     Cancel
                                   </button>
-                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm" onClick={handleAddPage}>
+                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-[#405b43] text-white hover:bg-[#2e4731] transition-colors shadow-sm" onClick={handleAddPage}>
                                     Add Page
                                   </button>
                                 </div>

@@ -2281,7 +2281,7 @@ const NoteEditor: React.FC<NoteEditorProps> = React.memo(({onSave, page, initial
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-hidden px-0 py-0 sm:px-5 sm:py-3 relative">
+      <div className="relative flex-1 overflow-hidden">
         <RichTextEditor
           title={page?.title}
           onChange={handleContentChange}

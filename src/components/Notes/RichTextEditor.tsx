@@ -220,13 +220,28 @@ function StatsPlugin() {
     read();
     return editor.registerUpdateListener(read);
   }, [editor]);
+  // Narrow panes (side panels open) get just the word count, so the pill doesn't sit on the text
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const root = editor.getRootElement();
+    if (!root || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(entries => setCompact(entries[0].contentRect.width < 560));
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [editor]);
   return (
-    <div className="pointer-events-none absolute bottom-3 right-6 z-[50] hidden select-none sm:flex items-center gap-3 rounded-full border border-black/[0.04] bg-white/80 px-3.5 py-1 text-[10.5px] font-medium text-slate-400 shadow-sm backdrop-blur">
-      <span><b className="font-semibold text-slate-600">{stats.words.toLocaleString()}</b> words</span>
-      <span className="h-3 w-px bg-slate-200" />
-      <span><b className="font-semibold text-slate-600">{stats.chars.toLocaleString()}</b> characters</span>
-      <span className="h-3 w-px bg-slate-200" />
-      <span><b className="font-semibold text-slate-600">{Math.max(1, Math.ceil(stats.words / 220))}</b> min read</span>
+    <div
+      className="pointer-events-none absolute bottom-2.5 right-5 z-[50] hidden select-none items-center gap-2.5 rounded-full border border-black/[0.05] bg-white/85 px-3 py-1 text-[11px] font-medium text-slate-500 shadow-sm backdrop-blur sm:flex"
+      title={`${stats.words.toLocaleString()} words · ${stats.chars.toLocaleString()} characters`}>
+      <span><b className="font-semibold text-slate-700">{stats.words.toLocaleString()}</b> words</span>
+      {!compact && (
+        <>
+          <span className="h-3 w-px bg-slate-200" />
+          <span><b className="font-semibold text-slate-700">{stats.chars.toLocaleString()}</b> characters</span>
+          <span className="h-3 w-px bg-slate-200" />
+          <span><b className="font-semibold text-slate-700">{Math.max(1, Math.ceil(stats.words / 220))}</b> min read</span>
+        </>
+      )}
     </div>
   );
 }
@@ -382,7 +397,7 @@ const RichTextEditor = React.memo(
         <LexicalComposer initialConfig={editorConfig}>
           <div className="relative flex h-full flex-col">
             {/* Sticky toolbar */}
-            <div className="sticky top-0 z-[100] w-full border-b border-slate-200/70 bg-white px-1.5 py-1 sm:bg-white/90 sm:px-3 sm:py-1.5 sm:backdrop-blur-md md:px-5">
+            <div className="sticky top-0 z-[100] w-full border-b border-slate-200/70 bg-white px-1.5 py-1 sm:bg-white/90 sm:px-3 sm:py-1 sm:backdrop-blur-md">
               <EditorToolbar getHtml={getHtml} onTogglePageView={togglePageView} pageView={pageView} title={title} />
               {/* Phones: hint that the single-row toolbar scrolls sideways */}
               <span className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white sm:hidden" />
@@ -394,7 +409,7 @@ const RichTextEditor = React.memo(
                   ErrorBoundary={LexicalErrorBoundary}
                   contentEditable={
                     <ContentEditable
-                      className={`lex-content w-full font-sans text-[17px] leading-[1.8] text-slate-800 outline-none ${pageView ? 'min-h-[1056px] px-5 py-6 sm:px-[72px] sm:py-[72px]' : 'min-h-full px-4 pb-32 pt-5 sm:px-8 sm:pt-10 md:px-16'}`}
+                      className={`lex-content w-full font-sans text-[17px] leading-[1.8] text-slate-800 outline-none ${pageView ? 'min-h-[1056px] px-5 py-6 sm:px-[72px] sm:py-[72px]' : 'min-h-full px-4 pb-32 pt-5 sm:px-[clamp(1.25rem,7%,4rem)] sm:pt-[clamp(1.25rem,5%,2.5rem)]'}`}
                       onBlur={onBlur}
                     />
                   }

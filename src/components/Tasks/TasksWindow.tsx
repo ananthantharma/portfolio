@@ -1036,16 +1036,16 @@ export default function TasksWindow({
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex flex-wrap justify-end gap-x-4 gap-y-1 text-[11.5px] font-semibold text-slate-400">
-                  <span className="mr-auto font-normal">Groups:</span>
+                <div className="flex flex-wrap items-center justify-end gap-x-3.5 gap-y-1 text-[12px] font-semibold text-slate-500">
+                  <span className="font-normal text-slate-400">Groups:</span>
                   <button className="hover:text-slate-700" onClick={() => setManyCollapsed(allSectionKeys, true)} type="button">
                     Collapse all
                   </button>
                   <button className="hover:text-slate-700" onClick={() => setManyCollapsed(allSectionKeys, false)} type="button">
                     Expand all
                   </button>
-                  <span className="text-slate-200">|</span>
-                  <span className="font-normal">Checklists:</span>
+                  <span aria-hidden className="h-3.5 w-px bg-slate-200" />
+                  <span className="font-normal text-slate-400">Checklists:</span>
                   <button className="hover:text-slate-700" onClick={() => setManyExpanded(visible.map(t => t._id), true)} type="button">
                     Open all
                   </button>

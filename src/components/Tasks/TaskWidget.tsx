@@ -12,16 +12,15 @@ import {daysUntil, glowOf, statusOf, Subtask, Task, vendorIdOf} from './types';
 
 const PRIORITY_COLOR: Record<Task['priority'], string> = {High: '#e11d48', Medium: '#f59e0b', Low: '#0ea5e9', None: '#a3a89a'};
 
-function statusLabel(task: Task) {
-  const status = statusOf(task);
-  if (status === 'done') return 'Done';
-  if (status === 'in-progress') return 'In progress';
+/** When it's due, with a tone so late and due-today tasks stand out. Null when done or undated. */
+function dueInfo(task: Task): {label: string; tone: 'overdue' | 'today' | ''} | null {
+  if (statusOf(task) === 'done') return null;
   const d = daysUntil(task.dueDate);
-  if (d === null) return 'To do';
-  if (d < 0) return `Overdue ${-d}d`;
-  if (d === 0) return 'Due today';
-  if (d === 1) return 'Due tomorrow';
-  return `Due ${new Date(task.dueDate!).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`;
+  if (d === null) return null;
+  if (d < 0) return {label: `Overdue ${-d}d`, tone: 'overdue'};
+  if (d === 0) return {label: 'Due today', tone: 'today'};
+  if (d === 1) return {label: 'Due tomorrow', tone: ''};
+  return {label: `Due ${new Date(task.dueDate!).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}`, tone: ''};
 }
 
 function Bar({pct}: {pct: number}) {
@@ -65,6 +64,8 @@ export default function TaskWidget({
   useEffect(() => setItems(task.subtasks || []), [task.subtasks]);
 
   const done = statusOf(task) === 'done';
+  const inProgress = statusOf(task) === 'in-progress';
+  const due = dueInfo(task);
   const total = items.length;
   const finished = items.filter(i => i.isCompleted).length;
   const pct = total ? Math.round((finished / total) * 100) : 0;
@@ -171,10 +172,28 @@ export default function TaskWidget({
               {task.priority}
             </span>
           )}
-          <span>
-            {task.dueDate && !done ? <CalendarClock size={13} /> : <Hourglass size={13} />}
-            {completedLabel || statusLabel(task)}
-          </span>
+          {done ? (
+            <span>
+              <CircleCheck size={13} />
+              {completedLabel || 'Done'}
+            </span>
+          ) : (
+            <>
+              {due && (
+                <span data-tone={due.tone || undefined}>
+                  <CalendarClock size={13} />
+                  {due.label}
+                </span>
+              )}
+              {inProgress && (
+                <span data-tone="progress">
+                  <Hourglass size={13} />
+                  In progress
+                </span>
+              )}
+              {!due && !inProgress && task.priority === 'None' && <span>To do</span>}
+            </>
+          )}
           <span className={styles.metaRight}>
             {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
             {!underPerson && <AssigneePill assignee={task.assignedTo} />}

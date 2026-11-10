@@ -56,10 +56,10 @@
 }
 .workspaceLabel {
   padding: 0 12px 13px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 1.9px;
-  color: #898d83;
+  color: #747969;
 }
 .navigation {
   display: flex;
@@ -74,7 +74,7 @@
   gap: 10px;
   padding: 11px 12px;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 13.5px;
   color: #646a61;
   text-align: left;
 }
@@ -93,7 +93,7 @@
 .navigation span,
 .navigation kbd {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 11px;
   color: #6f7b68;
 }
 .notebooks {
@@ -114,7 +114,7 @@
   align-items: center;
   gap: 9px;
   padding: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: #74796e;
   text-align: left;
   width: 100%;
@@ -130,8 +130,8 @@
 .sidebarFooter small {
   display: block;
   margin-top: 3px;
-  font-size: 9px;
-  color: #93978d;
+  font-size: 10.5px;
+  color: #747969;
 }
 .avatar {
   display: flex;
@@ -151,27 +151,73 @@
   flex-direction: column;
 }
 .header {
-  height: 72px;
+  height: 64px;
   flex-shrink: 0;
-  padding: 0 28px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid #e9e8e1;
   background: #fbfaf7;
+  /* Buttons adapt to the header's own width (it changes as side panels open and close) */
+  container: workspace-header / inline-size;
 }
 .breadcrumb {
+  flex: 1 1 0;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  color: #8a8c82;
+  gap: 8px;
+  font-size: 13px;
+  color: #7c7f74;
+  overflow: hidden;
+  /* room for focus rings inside the clipped row */
+  padding: 4px 3px;
+  margin: -4px -3px;
+}
+.breadcrumb > * {
+  flex-shrink: 0;
+}
+/* The last crumb gives way first; earlier ones only shrink once it is fully squeezed */
+.breadcrumb > strong,
+.breadcrumb > span,
+.breadcrumb > .crumbBack {
+  flex-shrink: 1;
+  min-width: 2.5em;
+}
+.breadcrumb > :last-child {
+  flex-shrink: 8;
+  color: #3d4439;
+  font-weight: 600;
+}
+.breadcrumb button {
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.breadcrumb button:hover {
+  color: #365238;
 }
 .breadcrumb strong {
   color: #50574b;
   font-weight: 550;
+}
+.breadcrumb .crumbBack span {
+  min-width: 0;
+}
+/* The notebook name in the trail is a way back to its overview */
+.breadcrumb > .crumbLink {
+  flex-shrink: 1;
+  min-width: 2.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #50574b;
+  font-weight: 550;
+}
+.breadcrumb > .crumbLink:hover,
+.breadcrumb .crumbBack:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .breadcrumb span,
 .breadcrumb strong {
@@ -195,7 +241,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   flex-shrink: 0;
 }
 .primaryButton {
@@ -203,13 +249,19 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 10px 15px;
-  border-radius: 7px;
+  height: 36px;
+  padding: 0 15px;
+  border-radius: 8px;
   background: #405b43;
   color: white;
-  font-size: 12px;
-  font-weight: 550;
-  transition: background 0.15s;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px #1f2e2126;
+  transition: background 0.15s, transform 0.1s;
+}
+.primaryButton:active {
+  transform: translateY(1px);
 }
 .primaryButton:hover {
   background: #2e4731;
@@ -227,9 +279,12 @@
 .quickTool {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 9px 12px;
-  border-radius: 7px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
   border: 1px solid var(--qt-line);
   background: var(--qt-bg);
   color: var(--qt-ink);
@@ -251,12 +306,21 @@
 .quickTool[data-tone='sand'] { --qt-bg: #f1ecdf; --qt-hover: #e7dfcb; --qt-line: #e0d6bd; --qt-ink: #5f5538; }
 .quickTool[data-tone='sage'] { --qt-bg: #e6ece4; --qt-hover: #d9e2d6; --qt-line: #cfdacb; --qt-ink: #475a4c; }
 .quickTool[data-tone='lilac'] { --qt-bg: #ebe9f6; --qt-hover: #dfdcf1; --qt-line: #d6d2ec; --qt-ink: #4f4878; }
-/* Narrower screens: icons only (names show on hover) */
-@media (max-width: 1350px) {
+/* When the header is short on room: icons only (names show on hover) */
+@container workspace-header (max-width: 1080px) {
   .quickTool {
-    padding: 9px;
+    padding: 0;
   }
   .quickTool span {
+    display: none;
+  }
+  .quickTools {
+    gap: 5px;
+  }
+}
+/* Very tight (both side panels open on a small screen): the tool rail on the left covers these */
+@container workspace-header (max-width: 560px) {
+  .quickTools {
     display: none;
   }
 }
@@ -266,8 +330,18 @@
   }
 }
 .iconButton {
-  padding: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   color: #777e70;
+  transition: background 0.15s, color 0.15s;
+}
+.iconButton:hover {
+  background: #eceee6;
+  color: #365238;
 }
 .iconButton svg {
   height: 17px;
@@ -311,7 +385,7 @@
   width: 100%;
   text-align: left;
   padding: 9px 12px;
-  font-size: 12px;
+  font-size: 13px;
   border-radius: 5px;
 }
 .tools button:hover {
@@ -320,8 +394,8 @@
 .viewTabs {
   display: flex;
   align-items: center;
-  gap: 25px;
-  height: 49px;
+  gap: 22px;
+  height: 46px;
   flex-shrink: 0;
   border-bottom: 1px solid #e7e7df;
   padding: 0 28px;
@@ -332,8 +406,12 @@
   align-items: center;
   height: 100%;
   border-bottom: 2px solid transparent;
-  color: #8b8e83;
-  font-size: 12px;
+  color: #7c8075;
+  font-size: 13px;
+  transition: color 0.15s;
+}
+.viewTabs button[role='tab']:hover {
+  color: #405b43;
 }
 .viewTabs button[aria-selected='true'] {
   color: #405b43;
@@ -346,8 +424,16 @@
 }
 .viewTabs > span {
   margin-left: auto;
-  font-size: 10px;
+  font-size: 11px;
   color: #989c90;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+/* Keeps the panel toggle on the right when the tagline is hidden */
+.viewTabs > span + .showTaskSidebar {
+  flex-shrink: 0;
 }
 .notesPanel {
   display: flex;
@@ -396,9 +482,9 @@
 }
 .eyebrow {
   text-transform: uppercase;
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: 1.7px;
-  color: #919587;
+  color: #747969;
   font-weight: 600;
 }
 .home h1 {
@@ -413,8 +499,8 @@
   color: #78936c;
 }
 .intro {
-  font-size: 13px;
-  color: #8a8e81;
+  font-size: 14px;
+  color: #767a6d;
 }
 .quickActions {
   display: grid;
@@ -460,12 +546,12 @@
   height: 18px;
 }
 .quickActions strong {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 .quickActions button > span:not(.actionIcon) {
-  font-size: 11px;
-  color: #8a8d7f;
+  font-size: 12.5px;
+  color: #747969;
   margin-top: 6px;
 }
 .quickActions button > svg {
@@ -484,13 +570,13 @@
   margin-bottom: 15px;
 }
 .sectionHeading h2 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #49513f;
 }
 .sectionHeading span {
-  font-size: 10px;
-  color: #93988a;
+  font-size: 11.5px;
+  color: #747969;
 }
 .recentList {
   margin-bottom: 34px;
@@ -518,7 +604,7 @@
 }
 .recentList strong {
   display: block;
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -526,13 +612,13 @@
 }
 .recentList small {
   display: block;
-  font-size: 10px;
+  font-size: 11.5px;
   margin-top: 5px;
-  color: #989c8e;
+  color: #747969;
 }
 .recentList time {
-  font-size: 10px;
-  color: #a0a494;
+  font-size: 11.5px;
+  color: #747969;
 }
 .recentList button > svg:last-child {
   width: 12px;
@@ -562,7 +648,7 @@
 }
 .notebookGrid strong {
   display: block;
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 550;
 }
 .notebookGrid span {
@@ -570,8 +656,8 @@
   align-items: center;
   gap: 7px;
   margin-top: 9px;
-  font-size: 10px;
-  color: #a0a58f;
+  font-size: 11.5px;
+  color: #747969;
 }
 .notebookGrid span svg {
   margin: 0;
@@ -607,9 +693,9 @@
 .empty p {
   margin: 8px auto 17px;
   max-width: 290px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
-  color: #939988;
+  color: #747969;
 }
 @media (min-width: 1500px) {
   .home {
@@ -784,7 +870,9 @@
 .advancedTasks { display:flex; flex-direction:column; min-height:0; height:100%; }
 .advancedTasks > div { flex:1; min-height:0; }
 .backToTasks { padding:10px 20px; text-align:left; color:#52734a; background:#f2f5eb; font-size:12px; }
-.viewTabs .showTaskSidebar { font-size:10px; color:#899780; margin-left:auto; }
+.viewTabs .showTaskSidebar { height:30px; padding:0 11px; margin-left:0; border:1px solid #dfe3d6; border-radius:8px; border-bottom-width:1px; border-bottom-color:#dfe3d6; background:#fffefa; font-size:12px; font-weight:550; color:#56644d; white-space:nowrap; transition:background .15s, border-color .15s; }
+.viewTabs .showTaskSidebar:hover { background:#f1f4eb; border-color:#b9c4ae; }
+.viewTabs .showTaskSidebar[aria-pressed='true'] { background:#e6ece0; border-color:#cfdacb; color:#365238; }
 /* Minimizable notebook (left) and task (right) sidebars */
 .brandRow { display:flex; align-items:flex-start; justify-content:space-between; }
 .collapseButton { padding:6px; margin-top:2px; border-radius:6px; color:#7d8576; }
@@ -805,12 +893,12 @@
 }
 /* The Tools dropdown is for phones; wider screens use the ToolRail pill */
 @media(min-width:901px) { .tools { display:none; } }
-.notebookKindToggle { display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:#6f7b68; }
-.notebookKindToggle select { padding:4px 8px; border:1px solid #e0e1d8; border-radius:999px; background:#fffefa; font-size:11px; color:#365238; cursor:pointer; }
+.notebookKindToggle { display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:#6f7b68; }
+.notebookKindToggle select { padding:4px 8px; border:1px solid #e0e1d8; border-radius:999px; background:#fffefa; font-size:12px; color:#365238; cursor:pointer; }
 .notebookKindToggle select:hover { border-color:#b9c4ae; background:#f2f5eb; }
 /* Overview card banner: vendor/project has open linked tasks */
 .notebookGrid button { position:relative; overflow:hidden; }
-.taskBanner { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:5px; padding:4px 10px; background:#e2efd9; color:#2f5a2c; font-size:10px; font-style:normal; font-weight:650; letter-spacing:.2px; }
+.taskBanner { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:5px; padding:4px 10px; background:#e2efd9; color:#2f5a2c; font-size:11px; font-style:normal; font-weight:650; letter-spacing:.2px; }
 .notebookGrid .taskBanner svg { width:12px; height:12px; margin:0; color:inherit; }
 .notebookGrid button:has(.taskBanner) { padding-top:34px; }
 
