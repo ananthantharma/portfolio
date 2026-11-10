@@ -19,6 +19,7 @@ import {
   ReactFlowProvider,
   SelectionMode,
   useEdgesState,
+  useNodesInitialized,
   useNodesState,
   useReactFlow,
   useViewport,
@@ -36,7 +37,9 @@ import {
   AlignVerticalDistributeCenter,
   ArrowDownToLine,
   ArrowLeft,
+  ArrowLeftRight,
   ArrowUpToLine,
+  Blend,
   Bold,
   Check,
   ChevronLeft,
@@ -48,8 +51,10 @@ import {
   Download,
   Frame,
   GitBranch,
+  Group,
   Hand,
   Image as ImageIcon,
+  Italic,
   Keyboard,
   Link2,
   ListTree,
@@ -58,6 +63,8 @@ import {
   Maximize,
   Minus,
   MousePointer2,
+  Paintbrush,
+  Palette,
   PanelRight,
   PenLine,
   Play,
@@ -71,6 +78,7 @@ import {
   StickyNote,
   Trash2,
   Type,
+  Underline,
   Undo2,
   Unlock,
   Upload,
@@ -81,10 +89,14 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {AiBuilder, AiResult} from './ai';
 import {layeredLayout, layoutMind, mindInfo} from './layout';
 import {
+  applyTheme,
   BADGES,
   BoardData,
   BoardKind,
+  BoardTheme,
   BRANCH_COLORS,
+  CANVASES,
+  canvasOf,
   CARD_STATUS,
   cardNode,
   cleanEdges,
@@ -94,30 +106,43 @@ import {
   flowEdge,
   frameNode,
   framesFirst,
+  GRADIENT_KEYS,
+  GRADIENTS,
   isBoardData,
+  isHex,
   LINE_COLORS,
   makePreview,
   mindNode,
   OPG,
   OPG_BRANCHES,
   opgTheme,
+  paint,
   PALETTE,
   PALETTE_KEYS,
   PEN_COLORS,
   Settings,
+  SHAPE_PATHS,
+  SHAPE_SIZE,
   ShapeKind,
   shapeNode,
   SHAPES,
   Side,
+  STAMPS,
   STICKY_COLORS,
   stickyNode,
+  stickyPaint,
   textNode,
+  THEMES,
   toBoard,
   uid,
 } from './model';
-import {edgeTypes, ICON_KEYS, ICONS, nodeTypes, smoothPath, Studio, StudioCtx} from './nodes';
+import {edgeTypes, FONT_CSS, ICON_KEYS, ICONS, nodeTypes, smoothPath, Studio, StudioCtx} from './nodes';
 
-type Tool = 'select' | 'hand' | 'shape' | 'sticky' | 'text' | 'card' | 'frame' | 'pen';
+type Tool = 'select' | 'hand' | 'shape' | 'sticky' | 'text' | 'card' | 'frame' | 'pen' | 'stamp';
+type Menu = {x: number; y: number; flow: {x: number; y: number}; on: 'node' | 'pane' | 'edge'; edgeId?: string};
+/** What "copy style" carries from one item to another. */
+const STYLE_KEYS = ['fill', 'look', 'ink', 'border', 'textSize', 'font', 'bold', 'italic', 'underline', 'shadow', 'opacity', 'align'] as const;
+const TEXT_INKS = ['#1f2430', '#ffffff', '#e5484d', '#f97316', '#16a34a', '#3b82f6', '#7b68ee'];
 type Snap = {nodes: Node[]; edges: Edge[]};
 type SaveState = 'saved' | 'saving' | 'unsaved' | 'error';
 
@@ -213,11 +238,14 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
   const [stickyColor, setStickyColor] = useState('yellow');
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
   const [penWidth, setPenWidth] = useState(3);
-  const [flyout, setFlyout] = useState<null | 'shape' | 'pen' | 'sticky'>(null);
+  const [flyout, setFlyout] = useState<null | 'shape' | 'pen' | 'sticky' | 'stamp'>(null);
+  const [stamp, setStamp] = useState(STAMPS[0]);
+  const [menu, setMenu] = useState<Menu | null>(null);
+  const [styleClip, setStyleClip] = useState<Partial<FD> | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
   const [save, setSave] = useState<SaveState>('saved');
-  const [panel, setPanel] = useState<null | 'search' | 'keys' | 'ai' | 'export'>(null);
+  const [panel, setPanel] = useState<null | 'search' | 'keys' | 'ai' | 'export' | 'style'>(null);
   const [inspector, setInspector] = useState(true);
   const [presenting, setPresenting] = useState<number | null>(null);
   const [helper, setHelper] = useState<{x?: number; y?: number}>({});
@@ -368,7 +396,17 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
       });
   }, [mind, settings.layout]);
 
-  // First view: restore where you left off, else fit the board
+  // First view: restore where you left off, else fit the board (as soon as its items have been measured)
+  const measured = useNodesInitialized();
+  // (an empty board has nothing to fit, and must not jump when its first item is added)
+  const fitted = useRef(initial.nodes.length === 0);
+  useEffect(() => {
+    if (initial.viewport || fitted.current || !measured) return;
+    fitted.current = true;
+    void rf.fitView({padding: 0.2, maxZoom: 1.1});
+    const t = setTimeout(() => void rf.fitView({padding: 0.2, maxZoom: 1.1, duration: 250}), 320);
+    return () => clearTimeout(t);
+  }, [measured]);
   useEffect(() => {
     if (initial.viewport) return;
     const t1 = setTimeout(() => rf.fitView({padding: 0.2, maxZoom: 1.1}), 80);
@@ -445,15 +483,98 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
     setLayoutNonce(n => n + 1);
     setToast(picked.length ? 'OPG theme applied to the selection' : 'OPG theme applied to the board');
   };
+  /** A colour theme: recolours the selection, or the whole board (and its background) when nothing is selected. */
+  const applyBoardTheme = (t: BoardTheme) => {
+    if (readOnly) return;
+    const ns = rf.getNodes();
+    const es = rf.getEdges();
+    const picked = [...ns.filter(n => n.selected).map(n => n.id), ...es.filter(e => e.selected).map(e => e.id)];
+    snapshot();
+    const out = applyTheme(t, ns, es, picked.length ? new Set(picked) : undefined);
+    setNodes(out.nodes);
+    if (!isMind) setEdges(out.edges);
+    if (!picked.length) setSettings({edge: {...settingsRef.current.edge, color: t.edge}, ...(t.canvas ? {canvas: t.canvas} : {})});
+    setLayoutNonce(n => n + 1);
+    setToast(picked.length ? `${t.name} applied to the selection` : `${t.name} applied to the board`);
+  };
+  /** One style change for every selected item, or everything on the board when nothing is selected. */
+  const styleAll = (patch: Partial<FD>, types?: string[]) => {
+    if (readOnly) return;
+    const some = rf.getNodes().some(n => n.selected);
+    snapshot();
+    setNodes(ns => ns.map(n => ((!some || n.selected) && (!types || types.includes(n.type || '')) ? {...n, data: {...n.data, ...patch}} : n)));
+    setLayoutNonce(n => n + 1);
+  };
+  const edgesAll = (patch: ED) => {
+    if (readOnly) return;
+    snapshot();
+    setEdges(es => es.map(e => ({...e, data: {...e.data, ...patch}})));
+    setSettings({edge: {...settingsRef.current.edge, ...patch}});
+  };
+  const copyStyle = () => {
+    const n = rf.getNodes().find(x => x.selected);
+    if (!n) return;
+    const d = n.data as FD;
+    const clip: Partial<FD> = {};
+    STYLE_KEYS.forEach(k => ((clip as Record<string, unknown>)[k] = d[k]));
+    // Sticky notes name their colours differently, so carry the actual colour
+    if (n.type === 'sticky') clip.fill = stickyPaint(d).bg;
+    setStyleClip(clip);
+    setToast('Style copied. Select other items and paste it (Ctrl+Alt+V)');
+  };
+  const pasteStyle = () => {
+    if (!styleClip || readOnly) return;
+    snapshot();
+    setNodes(ns =>
+      ns.map(n => {
+        if (!n.selected) return n;
+        const patch: Partial<FD> = {...styleClip};
+        if (n.type === 'sticky' && patch.fill && !isHex(patch.fill) && !STICKY_COLORS[patch.fill]) patch.fill = paint({fill: patch.fill, look: patch.look}).flat;
+        if (n.type === 'mind' || n.type === 'draw' || n.type === 'image') {
+          delete patch.fill;
+          delete patch.look;
+        }
+        return {...n, data: {...n.data, ...patch}};
+      }),
+    );
+    setLayoutNonce(n => n + 1);
+  };
+  /** Wraps the selected items in a new section so they move together. */
+  const groupSelection = () => {
+    if (isMind || readOnly) return;
+    const sel = rf.getNodes().filter(n => n.selected && n.type !== 'frame' && !n.parentId);
+    if (!sel.length) return setToast('Select the items to group first');
+    const b = rf.getNodesBounds(sel);
+    const pad = 28;
+    const top = 54;
+    const f = frameNode(Math.round(b.x - pad), Math.round(b.y - top), 'Group', 'gray', Math.round(b.width + pad * 2), Math.round(b.height + top + pad));
+    const ids = new Set(sel.map(n => n.id));
+    snapshot();
+    setNodes(ns =>
+      framesFirst([
+        {...f, selected: true},
+        ...ns.map(n => (ids.has(n.id) ? {...n, selected: false, parentId: f.id, position: {x: n.position.x - f.position.x, y: n.position.y - f.position.y}} : n.selected ? {...n, selected: false} : n)),
+      ]),
+    );
+    setToast('Grouped. Drag the section to move everything; delete the section to ungroup');
+  };
+  const reverseEdges = () => {
+    snapshot();
+    setEdges(es => es.map(e => (e.selected ? {...e, source: e.target, target: e.source, sourceHandle: e.targetHandle, targetHandle: e.sourceHandle} : e)));
+  };
 
   // ── Creating things ──────────────────────────────────────────────────────
   const createAt = (t: Tool, p: {x: number; y: number}, shape: ShapeKind = shapeKind) => {
     let n: Node | null = null;
     const snapV = (v: number) => (settings.snap ? Math.round(v / 20) * 20 : Math.round(v));
     if (t === 'shape') {
-      const dims: Partial<Record<ShapeKind, [number, number]>> = {diamond: [200, 120], ellipse: [140, 140], triangle: [150, 130], pill: [190, 56], cylinder: [150, 120], hexagon: [200, 90]};
-      const [w, h] = dims[shape] || [200, 72];
-      n = shapeNode(snapV(p.x - w / 2), snapV(p.y - h / 2), '', {shape, fill: shape === 'diamond' ? 'purple' : shape === 'pill' ? 'dark' : shape === 'cylinder' ? 'teal' : 'blue'}, w, h);
+      const [w, h] = SHAPE_SIZE[shape] || [200, 72];
+      const fills: Partial<Record<ShapeKind, string>> = {diamond: 'purple', pill: 'dark', cylinder: 'teal', star: 'yellow', heart: 'pink', cloud: 'sky', octagon: 'red', callout: 'white', chevron: 'indigo', arrow: 'orange', shield: 'green'};
+      n = shapeNode(snapV(p.x - w / 2), snapV(p.y - h / 2), '', {shape, fill: fills[shape] || 'blue', ...(shape === 'callout' ? {border: 'solid' as const} : {})}, w, h);
+    } else if (t === 'stamp') {
+      // Stickers keep the tool, so you can drop several in a row
+      addNodes([{...textNode(snapV(p.x - 30), snapV(p.y - 32), stamp, '2xl'), width: 66}]);
+      return;
     } else if (t === 'sticky') n = stickyNode(snapV(p.x - 90), snapV(p.y - 85), '', stickyColor);
     else if (t === 'text') n = textNode(snapV(p.x - 10), snapV(p.y - 20), '');
     else if (t === 'card') n = cardNode(snapV(p.x - 125), snapV(p.y - 50), '');
@@ -739,7 +860,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
     const el = wrapRef.current?.querySelector('.react-flow__viewport') as HTMLElement | null;
     if (!el) return;
     const opts = {
-      backgroundColor: '#ffffff',
+      backgroundColor: settings.canvas && settings.canvas !== 'light' ? canvasOf(settings.canvas).bg : '#ffffff',
       width: W,
       height: H,
       pixelRatio: Math.max(1, Math.min(2, 7000 / Math.max(W, H))),
@@ -849,6 +970,9 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
       if (mod && k === 's') return e.preventDefault(), void persist();
       if (mod && k === 'f') return e.preventDefault(), setPanel('search');
       if (mod && k === 'd') return e.preventDefault(), duplicate();
+      if (mod && k === 'g') return e.preventDefault(), groupSelection();
+      if (mod && e.altKey && k === 'c') return e.preventDefault(), copyStyle();
+      if (mod && e.altKey && k === 'v') return e.preventDefault(), pasteStyle();
       if (mod && k === 'a') {
         e.preventDefault();
         return setNodes(ns => ns.map(n => (n.hidden || n.selected ? n : {...n, selected: true})));
@@ -861,6 +985,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
         setTool('select');
         setFlyout(null);
         setPanel(null);
+        setMenu(null);
         setNodes(ns => ns.map(n => (n.selected ? {...n, selected: false} : n)));
         setEdges(es => es.map(x => (x.selected ? {...x, selected: false} : x)));
         return;
@@ -914,6 +1039,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
       }
 
       if (one && (k === 'enter' || k === 'f2') && TEXT_TYPES.has(one.type || '')) return e.preventDefault(), startEdit(one.id);
+      if (sel.length && (k === ']' || k === '[')) return e.preventDefault(), reorder(k === ']');
       if (sel.length && k.startsWith('arrow')) {
         e.preventDefault();
         const step = e.shiftKey ? 20 : 2;
@@ -1282,7 +1408,31 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
       setEdges(es => es.map(x => (x.id === id ? {...x, data: {...x.data, label}} : x)));
     },
     readOnly: readOnly || presenting !== null,
+    dark: !!canvasOf(settings.canvas).dark,
+    mindLine: settings.mindLine || 'curve',
   };
+  const canvas = canvasOf(settings.canvas);
+
+  // Right-click menus
+  const openMenu = (e: React.MouseEvent | MouseEvent, on: Menu['on'], edgeId?: string) => {
+    e.preventDefault();
+    if (presenting !== null) return;
+    const r = wrapRef.current?.getBoundingClientRect();
+    const x = e.clientX - (r?.left || 0);
+    const y = e.clientY - (r?.top || 0);
+    setFlyout(null);
+    setMenu({x: Math.min(x, (r?.width || 800) - 230), y: Math.min(y, (r?.height || 600) - 330), flow: rf.screenToFlowPosition({x: e.clientX, y: e.clientY}), on, edgeId});
+  };
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    window.addEventListener('pointerdown', close);
+    window.addEventListener('wheel', close, {passive: true});
+    return () => {
+      window.removeEventListener('pointerdown', close);
+      window.removeEventListener('wheel', close);
+    };
+  }, [menu]);
 
   const saveLabel = {saved: 'Saved', saving: 'Saving…', unsaved: 'Unsaved', error: 'Not saved, retrying on next change'}[save];
   const placing = tool !== 'select' && tool !== 'hand' && tool !== 'pen';
@@ -1331,6 +1481,26 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                 </span>
                 <span className="fs-hide-sm">OPG theme</span>
               </button>
+            )}
+            {!readOnly && (
+              <div className="fs-pop-anchor">
+                <button className={`fs-btn ${panel === 'style' ? 'is-on' : ''}`} onClick={() => setPanel(p => (p === 'style' ? null : 'style'))} title="Backgrounds, colour themes, looks and fonts" type="button">
+                  <Palette /> <span className="fs-hide-sm">Style</span>
+                </button>
+                {panel === 'style' && (
+                  <StylePanel
+                    isMind={isMind}
+                    onClose={() => setPanel(null)}
+                    onEdges={edgesAll}
+                    onOpg={applyOpg}
+                    onSettings={setSettings}
+                    onStyle={styleAll}
+                    onTheme={applyBoardTheme}
+                    scoped={selectedNodes.length > 0}
+                    settings={settings}
+                  />
+                )}
+              </div>
             )}
             <button className="fs-btn fs-btn-ai" onClick={() => setPanel('ai')} title="Describe it and let AI build it" type="button">
               <Sparkles /> <span className="fs-hide-sm">Build with AI</span>
@@ -1384,7 +1554,16 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
         </header>
 
         <div className="fs-main">
-          <div className={`fs-canvas tool-${tool} ${readOnly ? 'is-readonly' : ''}`} ref={wrapRef}>
+          <div
+            className={`fs-canvas tool-${tool} ${readOnly ? 'is-readonly' : ''} ${canvas.dark ? 'is-dark' : ''} mind-${settings.mindStyle || 'card'}`}
+            onDoubleClick={e => {
+              // Double-click an empty spot: a new box, ready to type in
+              if (isMind || readOnly || presenting !== null || tool !== 'select') return;
+              if (!(e.target as HTMLElement).classList?.contains('react-flow__pane')) return;
+              createAt('shape', rf.screenToFlowPosition({x: e.clientX, y: e.clientY}), 'rounded');
+            }}
+            ref={wrapRef}
+            style={{background: canvas.bg}}>
             <ReactFlow
               nodes={nodes}
               edges={isMind ? mindEdges : edges}
@@ -1400,9 +1579,22 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
               connectionRadius={28}
               onNodeDoubleClick={(_, n) => TEXT_TYPES.has(n.type || '') && startEdit(n.id)}
               onEdgeDoubleClick={(_, e) => !readOnly && setEditingEdgeId(e.id)}
+              style={{['--xy-background-color' as string]: canvas.bg}}
+              onNodeContextMenu={(e, n) => {
+                if (!n.selected) selectOnly(n.id);
+                openMenu(e, 'node');
+              }}
+              onSelectionContextMenu={e => openMenu(e, 'node')}
+              onEdgeContextMenu={(e, edge) => {
+                if (isMind) return e.preventDefault();
+                setNodes(ns => ns.map(n => (n.selected ? {...n, selected: false} : n)));
+                setEdges(es => es.map(x => (x.selected === (x.id === edge.id) ? x : {...x, selected: x.id === edge.id})));
+                openMenu(e, 'edge', edge.id);
+              }}
+              onPaneContextMenu={e => openMenu(e, 'pane')}
               onPaneClick={e => {
                 setFlyout(null);
-                if (panel === 'export') setPanel(null);
+                if (panel === 'export' || panel === 'style') setPanel(null);
                 if (placing && !readOnly) createAt(tool, rf.screenToFlowPosition({x: e.clientX, y: e.clientY}));
               }}
               onNodeDragStart={() => snapshot()}
@@ -1436,7 +1628,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
               defaultViewport={initial.viewport}
               proOptions={{hideAttribution: true}}>
               {settings.grid !== 'none' && (
-                <Background variant={settings.grid === 'dots' ? BackgroundVariant.Dots : BackgroundVariant.Lines} gap={settings.grid === 'dots' ? 22 : 40} size={settings.grid === 'dots' ? 1.7 : 1} color={settings.grid === 'dots' ? '#c8cdd6' : '#eceef3'} />
+                <Background variant={settings.grid === 'dots' ? BackgroundVariant.Dots : BackgroundVariant.Lines} gap={settings.grid === 'dots' ? 22 : 40} size={settings.grid === 'dots' ? 1.7 : 1} color={settings.grid === 'dots' ? canvas.dot : canvas.line} />
               )}
               {settings.minimap && presenting === null && (
                 <MiniMap
@@ -1444,8 +1636,8 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                   zoomable
                   className="fs-minimap"
                   nodeBorderRadius={6}
-                  nodeColor={n => (n.type === 'sticky' ? STICKY_COLORS[(n.data as FD).fill || 'yellow'] : n.type === 'mind' ? '#e4e7ec' : n.type === 'draw' ? 'transparent' : PALETTE[(n.data as FD).fill || 'blue']?.fill || '#c9e3ff')}
-                  maskColor="rgba(240,242,246,0.7)"
+                  nodeColor={n => (n.type === 'sticky' ? stickyPaint(n.data as FD).bg : n.type === 'mind' ? '#e4e7ec' : n.type === 'draw' ? 'transparent' : paint(n.data as FD, n.type === 'frame' ? 'gray' : 'blue').flat)}
+                  maskColor={canvas.dark ? 'rgba(15,20,36,0.6)' : 'rgba(240,242,246,0.7)'}
                 />
               )}
               <HelperLines x={helper.x} y={helper.y} />
@@ -1458,6 +1650,9 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                   onAlign={align}
                   onReorder={reorder}
                   onDuplicate={duplicate}
+                  onCopyStyle={copyStyle}
+                  onPasteStyle={styleClip ? pasteStyle : undefined}
+                  onGroup={groupSelection}
                   onDelete={() => void rf.deleteElements({nodes: rf.getNodes().filter(n => n.selected)})}
                   onLock={locked => updateSelected({locked}, {draggable: !locked})}
                   onAddChild={() => one && addMindChild(one.id)}
@@ -1551,6 +1746,26 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                       )}
                     </div>
                     <ToolBtn active={tool === 'text'} drag={{tool: 'text'}} icon={<Type />} label="Text (T)" onClick={() => setTool('text')} />
+                    <div className="fs-tool-wrap">
+                      <ToolBtn
+                        active={tool === 'stamp'}
+                        icon={tool === 'stamp' ? <span className="fs-emoji">{stamp}</span> : <Smile />}
+                        label="Stickers and reactions"
+                        onClick={() => {
+                          setTool('stamp');
+                          setFlyout(f => (f === 'stamp' ? null : 'stamp'));
+                        }}
+                      />
+                      {flyout === 'stamp' && (
+                        <div className="fs-flyout fs-icon-grid fs-stamp-grid">
+                          {STAMPS.map(x => (
+                            <button className={stamp === x ? 'on' : ''} key={x} onClick={() => (setStamp(x), setTool('stamp'), setFlyout(null))} type="button">
+                              <span className="fs-emoji">{x}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <ToolBtn active={tool === 'card'} drag={{tool: 'card'}} icon={<CardGlyph />} label="Card: owner, status, due date (C)" onClick={() => setTool('card')} />
                     <ToolBtn active={tool === 'frame'} drag={{tool: 'frame'}} icon={<Frame />} label="Section / swimlane (F)" onClick={() => setTool('frame')} />
                     <div className="fs-tool-wrap">
@@ -1587,7 +1802,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                 <ToolBtn icon={<Sparkles />} label="Build with AI" onClick={() => setPanel('ai')} className="fs-tool-ai" />
               </nav>
             )}
-            {placing && <div className="fs-hint">Click on the board to place it · Esc to cancel</div>}
+            {placing && <div className="fs-hint">{tool === 'stamp' ? 'Click to place stickers · Esc when done' : 'Click on the board to place it · Esc to cancel'}</div>}
             {tool === 'pen' && <div className="fs-hint">Draw on the board · V to stop drawing</div>}
             {readOnly && presenting === null && <div className="fs-hint">View only. Unlock to edit</div>}
 
@@ -1597,8 +1812,144 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                 edges={selectedEdges}
                 onUpdate={updateEdges}
                 onLabel={() => setEditingEdgeId(selectedEdges[0].id)}
+                onReverse={reverseEdges}
                 onDelete={() => void rf.deleteElements({edges: selectedEdges})}
               />
+            )}
+
+            {/* Empty board: a nudge on how to begin */}
+            {!isMind && nodes.length === 0 && presenting === null && !readOnly && tool === 'select' && panel !== 'ai' && (
+              <div className="fs-empty-board">
+                <b>A fresh board</b>
+                <span>Double-click anywhere to add a box, pick a tool on the left, or start with one of these.</span>
+                <div>
+                  <button className="fs-btn" onClick={() => createAt('shape', centerOfView(), 'rounded')} type="button">
+                    <Square /> Box
+                  </button>
+                  <button className="fs-btn" onClick={() => createAt('sticky', centerOfView())} type="button">
+                    <StickyNote /> Sticky note
+                  </button>
+                  <button className="fs-btn fs-btn-ai" onClick={() => setPanel('ai')} type="button">
+                    <Sparkles /> Build with AI
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {menu && (
+              <div className="fs-menu fs-ctx" onContextMenu={e => e.preventDefault()} onPointerDown={e => e.stopPropagation()} style={{left: menu.x, top: menu.y}}>
+                {menu.on === 'pane' && (
+                  <>
+                    {!isMind && !readOnly && (
+                      <>
+                        <button onClick={() => (createAt('shape', menu.flow, 'rounded'), setMenu(null))} type="button">
+                          <Square /> Add a box here
+                        </button>
+                        <button onClick={() => (createAt('sticky', menu.flow), setMenu(null))} type="button">
+                          <StickyNote /> Add a sticky note here
+                        </button>
+                        <button onClick={() => (createAt('text', menu.flow), setMenu(null))} type="button">
+                          <Type /> Add text here
+                        </button>
+                        <button onClick={() => (createAt('frame', menu.flow), setMenu(null))} type="button">
+                          <Frame /> Add a section here
+                        </button>
+                        <hr />
+                      </>
+                    )}
+                    <button onClick={() => (setNodes(ns => ns.map(n => (n.hidden || n.selected ? n : {...n, selected: true}))), setMenu(null))} type="button">
+                      <MousePointer2 /> Select everything <kbd>Ctrl+A</kbd>
+                    </button>
+                    <button onClick={() => (rf.fitView({padding: 0.15, duration: 300}), setMenu(null))} type="button">
+                      <Maximize /> Fit to screen <kbd>Shift+1</kbd>
+                    </button>
+                    {!readOnly && (
+                      <button onClick={() => (setPanel('style'), setMenu(null))} type="button">
+                        <Palette /> Board style…
+                      </button>
+                    )}
+                  </>
+                )}
+                {menu.on === 'node' && (
+                  <>
+                    {one && TEXT_TYPES.has(one.type || '') && !readOnly && (
+                      <button onClick={() => (startEdit(one.id), setMenu(null))} type="button">
+                        <Type /> Edit text <kbd>Enter</kbd>
+                      </button>
+                    )}
+                    {isMind && one && !readOnly && (
+                      <>
+                        <button onClick={() => (addMindChild(one.id), setMenu(null))} type="button">
+                          <Plus /> Add a branch <kbd>Tab</kbd>
+                        </button>
+                        {one.id !== mind?.rootId && (
+                          <button onClick={() => (toggleCollapse(one.id), setMenu(null))} type="button">
+                            <ListTree /> {(one.data as FD).collapsed ? 'Expand' : 'Collapse'}
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {!readOnly && (
+                      <>
+                        {!isMind && (
+                          <button onClick={() => (duplicate(), setMenu(null))} type="button">
+                            <CopyPlus /> Duplicate <kbd>Ctrl+D</kbd>
+                          </button>
+                        )}
+                        <button onClick={() => (copyStyle(), setMenu(null))} type="button">
+                          <Paintbrush /> Copy style <kbd>Ctrl+Alt+C</kbd>
+                        </button>
+                        {styleClip && (
+                          <button onClick={() => (pasteStyle(), setMenu(null))} type="button">
+                            <Paintbrush /> Paste style <kbd>Ctrl+Alt+V</kbd>
+                          </button>
+                        )}
+                        {!isMind && (
+                          <>
+                            <hr />
+                            <button onClick={() => (reorder(true), setMenu(null))} type="button">
+                              <ArrowUpToLine /> Bring to front <kbd>]</kbd>
+                            </button>
+                            <button onClick={() => (reorder(false), setMenu(null))} type="button">
+                              <ArrowDownToLine /> Send to back <kbd>[</kbd>
+                            </button>
+                            <button onClick={() => (groupSelection(), setMenu(null))} type="button">
+                              <Group /> Group in a section <kbd>Ctrl+G</kbd>
+                            </button>
+                            <button
+                              onClick={() => {
+                                const locked = selectedNodes.every(n => (n.data as FD).locked);
+                                updateSelected({locked: !locked}, {draggable: locked});
+                                setMenu(null);
+                              }}
+                              type="button">
+                              {selectedNodes.every(n => (n.data as FD).locked) ? <Unlock /> : <Lock />} {selectedNodes.every(n => (n.data as FD).locked) ? 'Unlock position' : 'Lock position'}
+                            </button>
+                          </>
+                        )}
+                        <hr />
+                        <button className="danger" onClick={() => (void rf.deleteElements({nodes: rf.getNodes().filter(n => n.selected)}), setMenu(null))} type="button">
+                          <Trash2 /> Delete <kbd>Del</kbd>
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+                {menu.on === 'edge' && !readOnly && (
+                  <>
+                    <button onClick={() => (menu.edgeId && setEditingEdgeId(menu.edgeId), setMenu(null))} type="button">
+                      <Type /> Add or edit the label
+                    </button>
+                    <button onClick={() => (reverseEdges(), setMenu(null))} type="button">
+                      <ArrowLeftRight /> Reverse direction
+                    </button>
+                    <hr />
+                    <button className="danger" onClick={() => (void rf.deleteElements({edges: rf.getEdges().filter(x => x.selected)}), setMenu(null))} type="button">
+                      <Trash2 /> Delete <kbd>Del</kbd>
+                    </button>
+                  </>
+                )}
+              </div>
             )}
 
             {/* Zoom */}
@@ -1670,7 +2021,6 @@ function ToolBtn({icon, label, onClick, active, drag, className}: {icon: React.R
       draggable={!!drag}
       onClick={onClick}
       onDragStart={drag ? e => e.dataTransfer.setData('application/x-flowstudio', JSON.stringify(drag)) : undefined}
-      title={label}
       type="button">
       {icon}
     </button>
@@ -1688,7 +2038,7 @@ function CardGlyph() {
 }
 
 export function ShapeGlyph({kind}: {kind: ShapeKind}) {
-  const p: Record<ShapeKind, React.ReactNode> = {
+  const p: Partial<Record<ShapeKind, React.ReactNode>> = {
     rect: <rect height="14" rx="1.5" width="20" x="2" y="5" />,
     rounded: <rect height="14" rx="4" width="20" x="2" y="5" />,
     pill: <rect height="12" rx="6" width="20" x="2" y="6" />,
@@ -1707,8 +2057,200 @@ export function ShapeGlyph({kind}: {kind: ShapeKind}) {
   };
   return (
     <svg fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
-      {p[kind]}
+      {p[kind] || <path d={SHAPE_PATHS[kind]} transform="translate(2 3.5) scale(0.2 0.17)" vectorEffect="non-scaling-stroke" />}
     </svg>
+  );
+}
+
+/** A colour well that opens the system colour picker; reports once, when a colour is chosen. */
+function ColorInput({value, onPick, title}: {value?: string; onPick: (hex: string) => void; title: string}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const pick = useRef(onPick);
+  pick.current = onPick;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // The native "change" fires when the picker closes, so one pick is one undo step
+    const done = () => pick.current(el.value);
+    el.addEventListener('change', done);
+    return () => el.removeEventListener('change', done);
+  }, []);
+  return (
+    <label className={`fs-swatch fs-swatch-custom ${isHex(value) ? 'on' : ''}`} style={isHex(value) ? {background: value} : undefined} title={title}>
+      <input aria-label={title} defaultValue={isHex(value) ? value : '#7b68ee'} ref={ref} type="color" />
+    </label>
+  );
+}
+
+/** Board-wide look: background, colour themes, shape look, font, connector and mind map line styles. */
+function StylePanel({
+  isMind,
+  settings,
+  scoped,
+  onSettings,
+  onTheme,
+  onOpg,
+  onStyle,
+  onEdges,
+  onClose,
+}: {
+  isMind: boolean;
+  settings: Settings;
+  scoped: boolean;
+  onSettings: (p: Partial<Settings>) => void;
+  onTheme: (t: BoardTheme) => void;
+  onOpg: () => void;
+  onStyle: (patch: Partial<FD>, types?: string[]) => void;
+  onEdges: (patch: ED) => void;
+  onClose: () => void;
+}) {
+  const target = scoped ? 'the selection' : 'the whole board';
+  return (
+    <div className="fs-style-panel">
+      <header>
+        <b>Style</b>
+        <span>{scoped ? 'Changes apply to what you have selected' : 'Changes apply to the whole board'}</span>
+        <button aria-label="Close" className="fs-icon-btn" onClick={onClose} type="button">
+          <X />
+        </button>
+      </header>
+      <h5>Background</h5>
+      <div className="fs-canvas-row">
+        {Object.entries(CANVASES).map(([k, c]) => (
+          <button className={(settings.canvas || 'light') === k ? 'on' : ''} key={k} onClick={() => onSettings({canvas: k})} title={c.name} type="button">
+            <i style={{background: c.bg, backgroundImage: `radial-gradient(${c.dot} 1.2px, transparent 1.2px)`}} />
+            <span>{c.name}</span>
+          </button>
+        ))}
+      </div>
+      <div className="fs-style-row">
+        <span>Pattern</span>
+        <div className="fs-seg">
+          {(['dots', 'lines', 'none'] as const).map(g => (
+            <button className={settings.grid === g ? 'on' : ''} key={g} onClick={() => onSettings({grid: g})} type="button">
+              {{dots: 'Dots', lines: 'Grid', none: 'Plain'}[g]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <h5>Colour theme</h5>
+      <div className="fs-theme-grid">
+        {THEMES.map(t => (
+          <button key={t.key} onClick={() => onTheme(t)} title={`Recolour ${target} in ${t.name}`} type="button">
+            <span className="fs-theme-dots">
+              {t.dots.map((c, i) => (
+                <i key={i} style={{background: c}} />
+              ))}
+            </span>
+            {t.name}
+          </button>
+        ))}
+        <button onClick={onOpg} title={`Recolour ${target} in the OPG greens`} type="button">
+          <span className="fs-theme-dots">
+            {[OPG.dark, OPG.green, OPG.light, '#3F8F1E'].map(c => (
+              <i key={c} style={{background: c}} />
+            ))}
+          </span>
+          OPG
+        </button>
+      </div>
+      {!isMind && (
+        <>
+          <h5>Shapes</h5>
+          <div className="fs-style-row">
+            <span>Look</span>
+            <div className="fs-seg">
+              {(['soft', 'solid', 'outline'] as const).map(l => (
+                <button key={l} onClick={() => onStyle({look: l}, ['shape'])} title={{soft: 'Soft tint', solid: 'Full colour', outline: 'Outline only'}[l]} type="button">
+                  {{soft: 'Soft', solid: 'Solid', outline: 'Outline'}[l]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="fs-style-row">
+            <span>Shadow</span>
+            <div className="fs-seg">
+              <button onClick={() => onStyle({shadow: true}, ['shape', 'card', 'image'])} type="button">
+                Lifted
+              </button>
+              <button onClick={() => onStyle({shadow: false}, ['shape', 'card', 'image'])} type="button">
+                Flat
+              </button>
+            </div>
+          </div>
+          <div className="fs-style-row">
+            <span>Connectors</span>
+            <div className="fs-seg">
+              {(
+                [
+                  ['smooth', 'Elbow'],
+                  ['bezier', 'Curved'],
+                  ['straight', 'Straight'],
+                ] as const
+              ).map(([k, l]) => (
+                <button className={(settings.edge.path || 'smooth') === k ? 'on' : ''} key={k} onClick={() => onEdges({path: k})} type="button">
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      {isMind && (
+        <>
+          <h5>Mind map</h5>
+          <div className="fs-style-row">
+            <span>Ideas</span>
+            <div className="fs-seg">
+              {(
+                [
+                  ['card', 'Cards'],
+                  ['pill', 'Pills'],
+                  ['line', 'Underlined'],
+                ] as const
+              ).map(([k, l]) => (
+                <button className={(settings.mindStyle || 'card') === k ? 'on' : ''} key={k} onClick={() => onSettings({mindStyle: k})} type="button">
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="fs-style-row">
+            <span>Branches</span>
+            <div className="fs-seg">
+              {(
+                [
+                  ['curve', 'Curved'],
+                  ['elbow', 'Elbow'],
+                  ['straight', 'Straight'],
+                ] as const
+              ).map(([k, l]) => (
+                <button className={(settings.mindLine || 'curve') === k ? 'on' : ''} key={k} onClick={() => onSettings({mindLine: k})} type="button">
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+      <div className="fs-style-row">
+        <span>Font</span>
+        <div className="fs-seg">
+          {(
+            [
+              ['sans', 'Clean'],
+              ['serif', 'Serif'],
+              ['mono', 'Mono'],
+              ['hand', 'Handwritten'],
+            ] as const
+          ).map(([k, l]) => (
+            <button key={k} onClick={() => onStyle({font: k})} style={{fontFamily: FONT_CSS[k]}} type="button">
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1751,7 +2293,7 @@ function ZoomBar({minimap, onMinimap}: {minimap: boolean; onMinimap: () => void}
   );
 }
 
-type Pop = null | 'fill' | 'shape' | 'icon' | 'badge' | 'align' | 'link' | 'size';
+type Pop = null | 'fill' | 'shape' | 'icon' | 'badge' | 'align' | 'link' | 'size' | 'fx';
 function SelectionToolbar({
   nodes,
   isMind,
@@ -1760,6 +2302,9 @@ function SelectionToolbar({
   onAlign,
   onReorder,
   onDuplicate,
+  onCopyStyle,
+  onPasteStyle,
+  onGroup,
   onDelete,
   onLock,
   onAddChild,
@@ -1774,6 +2319,9 @@ function SelectionToolbar({
   onAlign: (how: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom' | 'dist-h' | 'dist-v') => void;
   onReorder: (front: boolean) => void;
   onDuplicate: () => void;
+  onCopyStyle: () => void;
+  onPasteStyle?: () => void;
+  onGroup: () => void;
   onDelete: () => void;
   onLock: (locked: boolean) => void;
   onAddChild: () => void;
@@ -1789,14 +2337,29 @@ function SelectionToolbar({
   const d = nodes[0].data as FD;
   const locked = nodes.every(n => (n.data as FD).locked);
   const fills = only('sticky') ? Object.keys(STICKY_COLORS) : only('draw') ? PEN_COLORS : PALETTE_KEYS;
-  const swatch = (k: string) => (only('sticky') ? STICKY_COLORS[k] : only('draw') ? k : PALETTE[k].fill);
+  const look = only('shape') ? d.look || 'soft' : 'soft';
+  const swatch = (k: string) => (only('sticky') ? STICKY_COLORS[k] : only('draw') ? k : paint({fill: k, look}).flat);
   const hasText = [...types].every(t => ['shape', 'sticky', 'text', 'card'].includes(t || ''));
+  // What the colour button shows for the first selected item
+  const dot = only('draw') ? d.stroke || '#232838' : only('sticky') ? stickyPaint(d).bg : only('text') ? d.ink || '#1f2430' : paint(d, only('frame') ? 'gray' : only('card') ? 'purple' : 'blue').bg;
+  const canGradient = only('shape') || only('frame');
+  const custom = only('draw') ? d.stroke : d.fill;
   const toggle = (p: Pop) => setPop(cur => (cur === p ? null : p));
   const single = nodes.length === 1 ? nodes[0] : null;
   const canQuick = single && !isMind && ['shape', 'sticky', 'card'].includes(single.type || '');
+  // Keep the toolbar on screen: near an edge it lines up with that side of the selection instead of its middle
+  const rf = useReactFlow();
+  useViewport();
+  const bounds = rf.getNodesBounds(nodes);
+  const mid = rf.flowToScreenPosition({x: bounds.x + bounds.width / 2, y: bounds.y}).x;
+  const wrap = typeof document !== 'undefined' ? document.querySelector('.fs-canvas')?.getBoundingClientRect() : null;
+  const half = isMind ? 170 : 280;
+  const side = !wrap ? 'center' : mid - half < wrap.left + 62 ? 'start' : mid + half > wrap.right - 10 ? 'end' : 'center';
+  // Low on the screen, pop-ups open upwards so they are never cut off
+  const popUp = !!wrap && rf.flowToScreenPosition({x: 0, y: bounds.y}).y - wrap.top > wrap.height * 0.56;
   return (
     <>
-      <NodeToolbar className="fs-toolbar nodrag" isVisible nodeId={ids} offset={16} position={Position.Top}>
+      <NodeToolbar align={side} className={`fs-toolbar nodrag fs-toolbar-${side}`} isVisible nodeId={ids} offset={16} position={Position.Top}>
         {isMind ? (
           <>
             <ToolbarBtn label="Branch colour" onClick={() => toggle('fill')}>
@@ -1807,6 +2370,9 @@ function SelectionToolbar({
             </ToolbarBtn>
             <ToolbarBtn label="Sticker" onClick={() => toggle('badge')}>
               <span className="fs-emoji">{d.badge || '★'}</span>
+            </ToolbarBtn>
+            <ToolbarBtn label="Font and emphasis" onClick={() => toggle('size')}>
+              <Type />
             </ToolbarBtn>
             <span className="fs-tb-sep" />
             {single && (
@@ -1822,9 +2388,9 @@ function SelectionToolbar({
           </>
         ) : (
           <>
-            {!only('text') && !only('image') && (
-              <ToolbarBtn label="Colour" onClick={() => toggle('fill')}>
-                <span className="fs-dot" style={{background: only('draw') ? d.stroke || '#232838' : swatch(String(d.fill || (only('sticky') ? 'yellow' : only('frame') ? 'gray' : 'blue')))}} />
+            {!only('image') && (
+              <ToolbarBtn label={only('text') ? 'Text colour' : 'Colour and look'} onClick={() => toggle('fill')}>
+                <span className="fs-dot" style={{background: dot}} />
               </ToolbarBtn>
             )}
             {only('shape') && (
@@ -1834,8 +2400,8 @@ function SelectionToolbar({
             )}
             {hasText && (
               <>
-                <ToolbarBtn label="Text size" onClick={() => toggle('size')}>
-                  <span className="fs-tb-text">{{sm: 'S', md: 'M', lg: 'L', xl: 'XL'}[d.textSize || (only('sticky') || only('text') ? 'lg' : 'md')]}</span>
+                <ToolbarBtn label="Text size and font" onClick={() => toggle('size')}>
+                  <span className="fs-tb-text">{{sm: 'S', md: 'M', lg: 'L', xl: 'XL', '2xl': 'XXL'}[d.textSize || (only('sticky') || only('text') ? 'lg' : 'md')]}</span>
                 </ToolbarBtn>
                 <ToolbarBtn active={!!d.bold} label="Bold" onClick={() => onUpdate({bold: !d.bold})}>
                   <Bold />
@@ -1844,11 +2410,6 @@ function SelectionToolbar({
                   {d.align === 'left' ? <AlignStartVertical /> : d.align === 'right' ? <AlignEndVertical /> : <AlignCenterVertical />}
                 </ToolbarBtn>
               </>
-            )}
-            {only('shape') && (
-              <ToolbarBtn label={`Outline: ${d.border || 'none'}`} onClick={() => onUpdate({border: d.border === 'solid' ? 'dashed' : d.border === 'dashed' ? 'none' : 'solid'})}>
-                <span className={`fs-border-glyph b-${d.border || 'none'}`} />
-              </ToolbarBtn>
             )}
             {only('sticky') && (
               <ToolbarBtn label="Tilt" onClick={() => onUpdate({rotate: d.rotate === -4 ? 0 : d.rotate === 0 || !d.rotate ? 3 : -4})}>
@@ -1867,6 +2428,11 @@ function SelectionToolbar({
                 </ToolbarBtn>
               </>
             )}
+            {!only('frame') && (
+              <ToolbarBtn active={!!d.shadow || (!!d.opacity && d.opacity < 1)} label="Shadow, see-through, front and back" onClick={() => toggle('fx')}>
+                <Blend />
+              </ToolbarBtn>
+            )}
             {single && (
               <ToolbarBtn active={!!d.link} label="Link" onClick={() => toggle('link')}>
                 <Link2 />
@@ -1878,12 +2444,21 @@ function SelectionToolbar({
               </ToolbarBtn>
             )}
             <span className="fs-tb-sep" />
-            <ToolbarBtn label="Bring to front" onClick={() => onReorder(true)}>
-              <ArrowUpToLine />
+            <ToolbarBtn label="Copy style (Ctrl+Alt+C)" onClick={onCopyStyle}>
+              <Paintbrush />
             </ToolbarBtn>
-            <ToolbarBtn label="Send to back" onClick={() => onReorder(false)}>
-              <ArrowDownToLine />
-            </ToolbarBtn>
+            {onPasteStyle && (
+              <ToolbarBtn label="Paste style (Ctrl+Alt+V)" onClick={onPasteStyle}>
+                <span className="fs-paste-style">
+                  <Paintbrush />
+                </span>
+              </ToolbarBtn>
+            )}
+            {nodes.length > 1 && !nodes.some(n => n.type === 'frame' || n.parentId) && (
+              <ToolbarBtn label="Group in a section (Ctrl+G)" onClick={onGroup}>
+                <Group />
+              </ToolbarBtn>
+            )}
             <ToolbarBtn active={locked} label={locked ? 'Unlock position' : 'Lock position'} onClick={() => onLock(!locked)}>
               {locked ? <Lock /> : <Unlock />}
             </ToolbarBtn>
@@ -1900,30 +2475,107 @@ function SelectionToolbar({
         </ToolbarBtn>
 
         {pop && (
-          <div className="fs-tb-pop">
+          <div className={`fs-tb-pop ${popUp ? 'fs-tb-pop-up' : ''}`}>
             {pop === 'fill' &&
               (isMind ? (
-                <div className="fs-swatch-row">
-                  {[...BRANCH_COLORS, ...OPG_BRANCHES.filter(c => !BRANCH_COLORS.includes(c))].map(c => (
-                    <button aria-label={c} className={`fs-swatch ${d.color === c ? 'on' : ''}`} key={c} onClick={() => onUpdate({color: c})} style={{background: c}} type="button" />
-                  ))}
-                  <button className="fs-swatch fs-swatch-none" onClick={() => onUpdate({color: undefined, fill: undefined})} title="Use the branch colour" type="button">
-                    <X />
+                <div className="fs-color-panel">
+                  <h6>Branch colour</h6>
+                  <div className="fs-swatch-row">
+                    {[...BRANCH_COLORS, ...OPG_BRANCHES.filter(c => !BRANCH_COLORS.includes(c))].map(c => (
+                      <button aria-label={c} className={`fs-swatch ${d.color === c ? 'on' : ''}`} key={c} onClick={() => onUpdate({color: c})} style={{background: c}} type="button" />
+                    ))}
+                    <ColorInput onPick={c => onUpdate({color: c})} title="Any colour" value={d.color && !BRANCH_COLORS.includes(d.color) && !OPG_BRANCHES.includes(d.color) ? d.color : undefined} />
+                  </div>
+                  <h6>Fill this idea</h6>
+                  <div className="fs-swatch-row">
+                    {['blue', 'indigo', 'purple', 'pink', 'red', 'orange', 'yellow', 'green', 'teal', 'dark'].map(k => (
+                      <button aria-label={PALETTE[k].name} className={`fs-swatch ${d.fill === k ? 'on' : ''}`} key={k} onClick={() => onUpdate({fill: k, look: 'solid'})} style={{background: PALETTE[k].solid}} title={PALETTE[k].name} type="button" />
+                    ))}
+                    {GRADIENT_KEYS.slice(0, 5).map(k => (
+                      <button aria-label={GRADIENTS[k].name} className={`fs-swatch ${d.fill === `g:${k}` ? 'on' : ''}`} key={k} onClick={() => onUpdate({fill: `g:${k}`, look: 'solid'})} style={{background: `linear-gradient(135deg, ${GRADIENTS[k].from}, ${GRADIENTS[k].to})`}} title={GRADIENTS[k].name} type="button" />
+                    ))}
+                  </div>
+                  <button className="fs-link-btn" onClick={() => onUpdate({color: undefined, fill: undefined, look: undefined, ink: undefined})} type="button">
+                    Reset to the branch colour
                   </button>
                 </div>
               ) : (
-                <div className="fs-swatch-row">
-                  {fills.map(k => (
-                    <button
-                      aria-label={k}
-                      className={`fs-swatch ${(only('draw') ? d.stroke : d.fill) === k ? 'on' : ''}`}
-                      key={k}
-                      onClick={() => onUpdate(only('draw') ? {stroke: k} : {fill: k})}
-                      style={{background: swatch(k), borderColor: k === 'white' ? '#d5dae1' : undefined}}
-                      title={only('sticky') || only('draw') ? k : PALETTE[k].name}
-                      type="button"
-                    />
-                  ))}
+                <div className="fs-color-panel">
+                  {!only('text') && (
+                    <>
+                      <h6>{only('draw') ? 'Line colour' : 'Colour'}</h6>
+                      <div className="fs-swatch-row">
+                        {fills.map(k => (
+                          <button
+                            aria-label={k}
+                            className={`fs-swatch ${custom === k ? 'on' : ''}`}
+                            key={k}
+                            onClick={() => onUpdate(only('draw') ? {stroke: k} : {fill: k})}
+                            style={{background: swatch(k), borderColor: k === 'white' ? '#d5dae1' : undefined}}
+                            title={only('sticky') || only('draw') ? k : PALETTE[k].name}
+                            type="button"
+                          />
+                        ))}
+                        <ColorInput onPick={c => onUpdate(only('draw') ? {stroke: c} : {fill: c})} title="Any colour" value={isHex(custom) && !fills.includes(custom) ? custom : undefined} />
+                      </div>
+                    </>
+                  )}
+                  {canGradient && (
+                    <>
+                      <h6>Gradients</h6>
+                      <div className="fs-swatch-row">
+                        {GRADIENT_KEYS.map(k => (
+                          <button
+                            aria-label={GRADIENTS[k].name}
+                            className={`fs-swatch ${d.fill === `g:${k}` ? 'on' : ''}`}
+                            key={k}
+                            onClick={() => onUpdate({fill: `g:${k}`, ...(d.look === 'outline' ? {look: 'soft' as const} : {})})}
+                            style={{background: `linear-gradient(135deg, ${GRADIENTS[k].from}, ${GRADIENTS[k].to})`}}
+                            title={GRADIENTS[k].name}
+                            type="button"
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {only('shape') && (
+                    <div className="fs-panel-row">
+                      <h6>Look</h6>
+                      <div className="fs-seg">
+                        {(['soft', 'solid', 'outline'] as const).map(l => (
+                          <button className={look === l ? 'on' : ''} key={l} onClick={() => onUpdate({look: l})} type="button">
+                            {{soft: 'Soft', solid: 'Solid', outline: 'Outline'}[l]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {only('shape') && (
+                    <div className="fs-panel-row">
+                      <h6>Border</h6>
+                      <div className="fs-seg">
+                        {(['none', 'solid', 'dashed'] as const).map(b => (
+                          <button className={(d.border || 'none') === b ? 'on' : ''} key={b} onClick={() => onUpdate({border: b})} type="button">
+                            {{none: 'None', solid: 'Line', dashed: 'Dashed'}[b]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(hasText || only('frame')) && (
+                    <>
+                      <h6>Text colour</h6>
+                      <div className="fs-swatch-row">
+                        <button className={`fs-swatch fs-swatch-auto ${!d.ink ? 'on' : ''}`} onClick={() => onUpdate({ink: undefined})} title="Automatic" type="button">
+                          A
+                        </button>
+                        {TEXT_INKS.map(c => (
+                          <button aria-label={c} className={`fs-swatch ${d.ink === c ? 'on' : ''}`} key={c} onClick={() => onUpdate({ink: c})} style={{background: c, borderColor: c === '#ffffff' ? '#d5dae1' : undefined}} type="button" />
+                        ))}
+                        <ColorInput onPick={c => onUpdate({ink: c})} title="Any text colour" value={d.ink && !TEXT_INKS.includes(d.ink) ? d.ink : undefined} />
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             {pop === 'shape' && (
@@ -1936,12 +2588,79 @@ function SelectionToolbar({
               </div>
             )}
             {pop === 'size' && (
-              <div className="fs-seg">
-                {(['sm', 'md', 'lg', 'xl'] as const).map(s => (
-                  <button className={d.textSize === s ? 'on' : ''} key={s} onClick={() => onUpdate({textSize: s})} type="button">
-                    {{sm: 'Small', md: 'Medium', lg: 'Large', xl: 'Huge'}[s]}
+              <div className="fs-color-panel">
+                {!isMind && (
+                  <div className="fs-seg">
+                    {(['sm', 'md', 'lg', 'xl', '2xl'] as const).map(z => (
+                      <button className={d.textSize === z ? 'on' : ''} key={z} onClick={() => onUpdate({textSize: z})} type="button">
+                        {{sm: 'Small', md: 'Medium', lg: 'Large', xl: 'Huge', '2xl': 'Giant'}[z]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="fs-seg">
+                  {(
+                    [
+                      ['sans', 'Clean'],
+                      ['serif', 'Serif'],
+                      ['mono', 'Mono'],
+                      ['hand', 'Handwritten'],
+                    ] as const
+                  ).map(([k, l]) => (
+                    <button className={(d.font || 'sans') === k ? 'on' : ''} key={k} onClick={() => onUpdate({font: k})} style={{fontFamily: FONT_CSS[k]}} type="button">
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <div className="fs-seg">
+                  <button className={d.bold ? 'on' : ''} onClick={() => onUpdate({bold: !d.bold})} title="Bold" type="button">
+                    <Bold />
                   </button>
-                ))}
+                  <button className={d.italic ? 'on' : ''} onClick={() => onUpdate({italic: !d.italic})} title="Italic" type="button">
+                    <Italic />
+                  </button>
+                  <button className={d.underline ? 'on' : ''} onClick={() => onUpdate({underline: !d.underline})} title="Underline" type="button">
+                    <Underline />
+                  </button>
+                </div>
+              </div>
+            )}
+            {pop === 'fx' && (
+              <div className="fs-color-panel">
+                {(only('shape') || only('card') || only('image')) && (
+                  <div className="fs-panel-row">
+                    <h6>Shadow</h6>
+                    <div className="fs-seg">
+                      <button className={d.shadow ? 'on' : ''} onClick={() => onUpdate({shadow: true})} type="button">
+                        Lifted
+                      </button>
+                      <button className={!d.shadow ? 'on' : ''} onClick={() => onUpdate({shadow: false})} type="button">
+                        Flat
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="fs-panel-row">
+                  <h6>See-through</h6>
+                  <div className="fs-seg">
+                    {[1, 0.75, 0.5, 0.25].map(o => (
+                      <button className={(d.opacity || 1) === o ? 'on' : ''} key={o} onClick={() => onUpdate({opacity: o === 1 ? undefined : o})} type="button">
+                        {o * 100}%
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="fs-panel-row">
+                  <h6>Order</h6>
+                  <div className="fs-seg">
+                    <button onClick={() => onReorder(true)} title="Bring to front ( ] )" type="button">
+                      <ArrowUpToLine /> Front
+                    </button>
+                    <button onClick={() => onReorder(false)} title="Send to back ( [ )" type="button">
+                      <ArrowDownToLine /> Back
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
             {pop === 'icon' && (
@@ -2007,6 +2726,7 @@ function SelectionToolbar({
         )}
       </NodeToolbar>
       {canQuick &&
+        !pop &&
         (['r', 'b', 'l'] as Side[]).map(s => (
           <NodeToolbar className={`fs-quick fs-quick-${s}`} isVisible key={s} nodeId={single!.id} offset={24} position={{t: Position.Top, r: Position.Right, b: Position.Bottom, l: Position.Left}[s]}>
             <button aria-label="Add a connected box" onClick={() => onQuickAdd(single!.id, s)} title="Add a connected box" type="button">
@@ -2026,7 +2746,7 @@ function ToolbarBtn({children, label, onClick, active, danger}: {children: React
   );
 }
 
-function EdgeBar({edges, onUpdate, onLabel, onDelete}: {edges: Edge[]; onUpdate: (p: ED, extra?: Partial<Edge>) => void; onLabel: () => void; onDelete: () => void}) {
+function EdgeBar({edges, onUpdate, onLabel, onReverse, onDelete}: {edges: Edge[]; onUpdate: (p: ED, extra?: Partial<Edge>) => void; onLabel: () => void; onReverse: () => void; onDelete: () => void}) {
   const d = (edges[0].data || {}) as ED;
   const animated = edges.every(e => e.animated);
   return (
@@ -2049,6 +2769,7 @@ function EdgeBar({edges, onUpdate, onLabel, onDelete}: {edges: Edge[]; onUpdate:
         {LINE_COLORS.map(c => (
           <button aria-label={c} className={`fs-swatch fs-swatch-sm ${d.color === c ? 'on' : ''}`} key={c} onClick={() => onUpdate({color: c})} style={{background: c}} type="button" />
         ))}
+        <ColorInput onPick={c => onUpdate({color: c})} title="Any colour" value={d.color && !LINE_COLORS.includes(d.color) ? d.color : undefined} />
       </div>
       <span className="fs-tb-sep" />
       <div className="fs-seg">
@@ -2072,6 +2793,20 @@ function EdgeBar({edges, onUpdate, onLabel, onDelete}: {edges: Edge[]; onUpdate:
         ))}
       </div>
       <div className="fs-seg">
+        {(
+          [
+            ['triangle', '▶', 'Solid arrow'],
+            ['open', '›', 'Open arrow'],
+            ['dot', '●', 'Dot'],
+            ['diamond', '◆', 'Diamond'],
+          ] as const
+        ).map(([k, l, t]) => (
+          <button className={(d.head || 'triangle') === k ? 'on' : ''} key={k} onClick={() => onUpdate({head: k})} title={`Arrowhead: ${t}`} type="button">
+            {l}
+          </button>
+        ))}
+      </div>
+      <div className="fs-seg">
         {[2, 3, 4].map(w => (
           <button className={(d.width || 2) === w ? 'on' : ''} key={w} onClick={() => onUpdate({width: w})} title={`${w}px`} type="button">
             <span className="fs-line-glyph" style={{borderTopWidth: w}} />
@@ -2086,6 +2821,9 @@ function EdgeBar({edges, onUpdate, onLabel, onDelete}: {edges: Edge[]; onUpdate:
           <Type />
         </button>
       )}
+      <button className="fs-tb-btn" onClick={onReverse} title="Reverse direction" type="button">
+        <ArrowLeftRight />
+      </button>
       <button className="fs-tb-btn danger" onClick={onDelete} title="Delete" type="button">
         <Trash2 />
       </button>
@@ -2156,7 +2894,12 @@ function Shortcuts({isMind, onClose}: {isMind: boolean; onClose: () => void}) {
         ['Double-click / type', 'Edit text'],
         ['Drag from a dot', 'Connect (drop on empty space to add a box)'],
         ['Arrow keys', 'Nudge (Shift for more)'],
+        ['Double-click empty space', 'Add a box there'],
+        ['Right-click', 'Menu for the item, connector or board'],
         ['Ctrl+D', 'Duplicate'],
+        ['Ctrl+G', 'Group the selection in a section'],
+        ['Ctrl+Alt+C / V', 'Copy / paste style'],
+        ['[  ]', 'Send to back / bring to front'],
         ['Paste', 'Pictures, copied boxes, or text as notes'],
       ];
   const common: [string, string][] = [

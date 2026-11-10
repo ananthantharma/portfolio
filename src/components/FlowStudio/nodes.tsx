@@ -50,7 +50,7 @@ import {
 import React, {createContext, useContext, useEffect, useLayoutEffect, useRef} from 'react';
 
 import type {MindInfo} from './layout';
-import {CARD_STATUS, ED, FD, PALETTE, STICKY_COLORS} from './model';
+import {CARD_STATUS, ED, FD, onCanvas, paint, SHAPE_PATHS, stickyPaint} from './model';
 
 export const ICONS: Record<string, typeof Star> = {
   folder: Folder,
@@ -102,11 +102,29 @@ export interface StudioCtx {
   editingEdgeId: string | null;
   commitEdgeLabel: (id: string, label: string) => void;
   readOnly: boolean;
+  /** The board background is dark, so loose text and dark lines switch to light */
+  dark: boolean;
+  mindLine: 'curve' | 'elbow' | 'straight';
 }
 export const Studio = createContext<StudioCtx | null>(null);
 export const useStudio = () => useContext(Studio)!;
 
-const SIZE_PX: Record<string, number> = {sm: 12, md: 14, lg: 18, xl: 26};
+const SIZE_PX: Record<string, number> = {sm: 12, md: 14, lg: 18, xl: 26, '2xl': 44};
+export const FONT_CSS: Record<string, string> = {
+  sans: 'inherit',
+  serif: "Georgia, 'Times New Roman', serif",
+  mono: "'JetBrains Mono', 'Cascadia Code', Consolas, 'SF Mono', monospace",
+  hand: "'Segoe Print', 'Bradley Hand', 'Chalkboard SE', 'Comic Sans MS', cursive",
+};
+/** Font, slant and underline shared by every kind of text. */
+const typeStyle = (d: FD): React.CSSProperties => ({
+  fontFamily: d.font && d.font !== 'sans' ? FONT_CSS[d.font] : undefined,
+  fontStyle: d.italic ? 'italic' : undefined,
+  textDecoration: d.underline ? 'underline' : undefined,
+  textUnderlineOffset: d.underline ? 3 : undefined,
+});
+/** See-through and lifted items. */
+const boxStyle = (d: FD): React.CSSProperties | undefined => (d.opacity && d.opacity < 1 ? {opacity: d.opacity} : undefined);
 const SIDES: [string, Position][] = [
   ['t', Position.Top],
   ['r', Position.Right],
@@ -219,48 +237,72 @@ function Resizer({selected, d, keepAspect = false, minW = 50, minH = 30}: {selec
   );
 }
 
-const SVG_PATHS: Record<string, string> = {
-  diamond: 'M50 1 L99 50 L50 99 L1 50 Z',
-  parallelogram: 'M15 1 L99 1 L85 99 L1 99 Z',
-  hexagon: 'M13 1 L87 1 L99 50 L87 99 L13 99 L1 50 Z',
-  triangle: 'M50 1 L99 99 L1 99 Z',
-  document: 'M1 1 L99 1 L99 84 C76 70 26 100 1 86 Z',
-  cylinder: 'M1 12 C1 -3 99 -3 99 12 L99 88 C99 103 1 103 1 88 Z',
+const TEXT_PAD: Record<string, string> = {
+  diamond: '18% 22%',
+  triangle: '38% 22% 8%',
+  parallelogram: '8px 18%',
+  hexagon: '8px 18%',
+  cylinder: '20% 12px 8px',
+  chevron: '8px 22% 8px 24%',
+  arrow: '8px 30% 8px 10px',
+  callout: '6% 10px 30%',
+  star: '34% 28% 26%',
+  cloud: '26% 20% 20%',
+  octagon: '14% 14%',
+  pentagon: '30% 18% 10%',
+  trapezoid: '8px 20%',
+  cross: '36% 10%',
+  heart: '20% 22% 34%',
+  shield: '16% 18% 26%',
+  ellipse: '14% 14%',
 };
 
 export function ShapeNode({id, data, selected}: NodeProps) {
   const d = data as FD;
-  const pal = PALETTE[d.fill || 'blue'] || PALETTE.blue;
+  const pal = paint(d, 'blue');
   const shape = d.shape || 'rounded';
-  const border = d.border || 'none';
-  const svg = shape in SVG_PATHS || shape === 'ellipse';
+  const outline = d.look === 'outline';
+  const border = outline && (!d.border || d.border === 'none') ? 'solid' : d.border || 'none';
+  const svg = shape in SHAPE_PATHS || shape === 'ellipse';
   const strokeColor = border === 'none' ? 'transparent' : pal.stroke;
+  const strokeW = outline ? 2 : 1.5;
+  const gradId = `fs-g-${id}`;
+  const fillAttr = pal.grad ? `url(#${gradId})` : pal.bg;
   const textStyle: React.CSSProperties = {
     fontSize: SIZE_PX[d.textSize || 'md'],
     fontWeight: d.bold ? 700 : 550,
     textAlign: d.align || 'center',
     color: pal.ink,
-    padding: shape === 'diamond' ? '18% 22%' : shape === 'triangle' ? '38% 22% 8%' : shape === 'parallelogram' || shape === 'hexagon' ? '8px 18%' : shape === 'cylinder' ? '20% 12px 8px' : '8px 14px',
+    padding: TEXT_PAD[shape] || '8px 14px',
+    ...typeStyle(d),
   };
   const Icon = d.icon ? ICONS[d.icon] : null;
   return (
-    <div className={`fs-node fs-shape ${selected ? 'is-selected' : ''}`}>
+    <div className={`fs-node fs-shape ${selected ? 'is-selected' : ''} ${d.shadow ? 'has-shadow' : ''}`} style={boxStyle(d)}>
       <Resizer d={d} selected={!!selected} />
       {svg ? (
         <svg className="fs-shape-svg" preserveAspectRatio="none" viewBox="0 0 100 100">
-          {shape === 'ellipse' ? (
-            <ellipse cx="50" cy="50" fill={pal.fill} rx="49" ry="49" stroke={strokeColor} strokeDasharray={border === 'dashed' ? '6 4' : undefined} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-          ) : (
-            <path d={SVG_PATHS[shape]} fill={pal.fill} stroke={strokeColor} strokeDasharray={border === 'dashed' ? '6 4' : undefined} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          {pal.grad && (
+            <defs>
+              <linearGradient id={gradId} x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stopColor={pal.grad[0]} />
+                <stop offset="1" stopColor={pal.grad[1]} />
+              </linearGradient>
+            </defs>
           )}
-          {shape === 'cylinder' && <path d="M1 12 C1 27 99 27 99 12" fill="none" stroke={border === 'none' ? pal.stroke : strokeColor} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />}
+          {shape === 'ellipse' ? (
+            <ellipse cx="50" cy="50" fill={fillAttr} rx="49" ry="49" stroke={strokeColor} strokeDasharray={border === 'dashed' ? '6 4' : undefined} strokeWidth={strokeW} vectorEffect="non-scaling-stroke" />
+          ) : (
+            <path d={SHAPE_PATHS[shape]} fill={fillAttr} stroke={strokeColor} strokeDasharray={border === 'dashed' ? '6 4' : undefined} strokeLinejoin="round" strokeWidth={strokeW} vectorEffect="non-scaling-stroke" />
+          )}
+          {shape === 'cylinder' && <path d="M1 12 C1 27 99 27 99 12" fill="none" stroke={pal.grad ? 'rgba(255,255,255,0.55)' : pal.stroke} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />}
         </svg>
       ) : (
         <div
           className="fs-shape-box"
           style={{
-            background: pal.fill,
-            border: border === 'none' ? '1.5px solid transparent' : `1.5px ${border} ${pal.stroke}`,
+            background: pal.bg,
+            border: border === 'none' ? `${strokeW}px solid transparent` : `${strokeW}px ${border} ${pal.stroke}`,
             borderRadius: shape === 'pill' ? 999 : shape === 'rect' ? 6 : 14,
           }}
         />
@@ -277,11 +319,12 @@ export function ShapeNode({id, data, selected}: NodeProps) {
 
 export function StickyNode({id, data, selected}: NodeProps) {
   const d = data as FD;
+  const pal = stickyPaint(d);
   return (
-    <div className={`fs-node fs-sticky-wrap ${selected ? 'is-selected' : ''}`}>
+    <div className={`fs-node fs-sticky-wrap ${selected ? 'is-selected' : ''}`} style={boxStyle(d)}>
       <Resizer d={d} minH={80} minW={80} selected={!!selected} />
-      <div className="fs-sticky" style={{background: STICKY_COLORS[d.fill || 'yellow'] || STICKY_COLORS.yellow, transform: d.rotate ? `rotate(${d.rotate}deg)` : undefined}}>
-        <EditableText className="fs-sticky-text" id={id} placeholder="Write a note" style={{fontSize: SIZE_PX[d.textSize || 'lg'] - 1, fontWeight: d.bold ? 700 : 600, textAlign: d.align || 'left'}} value={d.label || ''} />
+      <div className="fs-sticky" style={{background: pal.bg, color: pal.ink, transform: d.rotate ? `rotate(${d.rotate}deg)` : undefined}}>
+        <EditableText className="fs-sticky-text" id={id} placeholder="Write a note" style={{fontSize: SIZE_PX[d.textSize || 'lg'] - 1, fontWeight: d.bold ? 700 : 600, textAlign: d.align || 'left', ...typeStyle(d)}} value={d.label || ''} />
       </div>
       <Handles />
       <Extras d={d} />
@@ -291,10 +334,17 @@ export function StickyNode({id, data, selected}: NodeProps) {
 
 export function TextNode({id, data, selected}: NodeProps) {
   const d = data as FD;
+  const {dark} = useStudio();
   return (
-    <div className={`fs-node fs-textnode ${selected ? 'is-selected' : ''}`}>
+    <div className={`fs-node fs-textnode ${selected ? 'is-selected' : ''}`} style={boxStyle(d)}>
       <Resizer d={d} minH={24} minW={40} selected={!!selected} />
-      <EditableText className="fs-free-text" id={id} placeholder="Text" style={{fontSize: SIZE_PX[d.textSize || 'lg'], fontWeight: d.bold ? 750 : 500, textAlign: d.align || 'left'}} value={d.label || ''} />
+      <EditableText
+        className="fs-free-text"
+        id={id}
+        placeholder="Text"
+        style={{fontSize: SIZE_PX[d.textSize || 'lg'], fontWeight: d.bold ? 750 : 500, textAlign: d.align || 'left', color: d.ink || (dark ? '#eef1f6' : undefined), ...typeStyle(d)}}
+        value={d.label || ''}
+      />
       <Handles />
       <Extras d={d} />
     </div>
@@ -312,18 +362,18 @@ const initials = (name: string) =>
 export function CardNode({id, data, selected}: NodeProps) {
   const d = data as FD;
   const {taskDone} = useStudio();
-  const pal = PALETTE[d.fill || 'purple'] || PALETTE.purple;
+  const pal = paint(d, 'purple');
   const st = CARD_STATUS[d.status || 'todo'];
   const done = d.taskId ? taskDone[d.taskId] : d.status === 'done';
   const due = d.due ? new Date(`${d.due}T12:00:00`) : null;
   return (
-    <div className={`fs-node fs-card ${selected ? 'is-selected' : ''}`} style={{borderLeftColor: pal.stroke}}>
+    <div className={`fs-node fs-card ${selected ? 'is-selected' : ''} ${d.shadow ? 'has-shadow' : ''}`} style={{borderLeftColor: pal.accent, ...boxStyle(d), ...typeStyle(d)}}>
       <Resizer d={d} minH={70} minW={150} selected={!!selected} />
       <div className="fs-card-head">
-        <span className="fs-card-dot" style={{background: pal.stroke}} />
+        <span className="fs-card-dot" style={{background: pal.accent}} />
         <EditableText className={`fs-card-title ${done ? 'is-done' : ''}`} id={id} placeholder="Card title" value={d.label || ''} />
         {d.owner && (
-          <span className="fs-avatar" style={{background: pal.stroke}} title={d.owner}>
+          <span className="fs-avatar" style={{background: pal.accent}} title={d.owner}>
             {initials(d.owner)}
           </span>
         )}
@@ -347,11 +397,11 @@ export function CardNode({id, data, selected}: NodeProps) {
 
 export function FrameNode({id, data, selected}: NodeProps) {
   const d = data as FD;
-  const pal = PALETTE[d.fill || 'gray'] || PALETTE.gray;
+  const pal = paint(d, 'gray');
   return (
-    <div className={`fs-frame ${selected ? 'is-selected' : ''}`} style={{background: `${pal.fill}66`, borderColor: selected ? pal.stroke : `${pal.stroke}aa`}}>
+    <div className={`fs-frame ${selected ? 'is-selected' : ''}`} style={{background: `${pal.flat}66`, borderColor: selected ? pal.stroke : `${pal.stroke}aa`}}>
       <Resizer d={d} minH={120} minW={160} selected={!!selected} />
-      <div className="fs-frame-title" style={{background: pal.fill, color: pal.ink}}>
+      <div className="fs-frame-title" style={{background: pal.bg, color: pal.ink, ...typeStyle(d)}}>
         <EditableText className="fs-frame-label" id={id} placeholder="Section" singleLine value={d.label || ''} />
       </div>
     </div>
@@ -373,11 +423,12 @@ export function smoothPath(pts: number[]) {
 
 export function DrawNode({data, selected}: NodeProps) {
   const d = data as FD;
+  const {dark} = useStudio();
   return (
-    <div className={`fs-node fs-draw ${selected ? 'is-selected' : ''}`}>
+    <div className={`fs-node fs-draw ${selected ? 'is-selected' : ''}`} style={boxStyle(d)}>
       <Resizer d={d} minH={10} minW={10} selected={!!selected} />
       <svg preserveAspectRatio="none" viewBox={`0 0 ${d.w0 || 100} ${d.h0 || 100}`}>
-        <path d={smoothPath(d.points || [])} fill="none" stroke={d.stroke || '#232838'} strokeLinecap="round" strokeLinejoin="round" strokeWidth={d.strokeWidth || 3} vectorEffect="non-scaling-stroke" />
+        <path d={smoothPath(d.points || [])} fill="none" stroke={onCanvas(d.stroke || '#232838', dark)} strokeLinecap="round" strokeLinejoin="round" strokeWidth={d.strokeWidth || 3} vectorEffect="non-scaling-stroke" />
       </svg>
     </div>
   );
@@ -386,7 +437,7 @@ export function DrawNode({data, selected}: NodeProps) {
 export function ImageNode({data, selected}: NodeProps) {
   const d = data as FD;
   return (
-    <div className={`fs-node fs-image ${selected ? 'is-selected' : ''}`}>
+    <div className={`fs-node fs-image ${selected ? 'is-selected' : ''} ${d.shadow ? 'has-shadow' : ''}`} style={boxStyle(d)}>
       <Resizer d={d} keepAspect minH={30} minW={30} selected={!!selected} />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {d.src && <img alt={d.label || ''} draggable={false} src={d.src} />}
@@ -405,11 +456,11 @@ export function MindNode({id, data, selected}: NodeProps) {
   const side = mind?.side[id] || 'r';
   const Icon = d.icon ? ICONS[d.icon] : null;
   const outward = layout === 'down' ? 'b' : side === 'l' ? 'l' : 'r';
-  const fill = d.fill ? PALETTE[d.fill] : undefined;
+  const fill = d.fill ? paint({fill: d.fill, look: d.look || 'solid', ink: d.ink}) : undefined;
   return (
     <div
       className={`fs-mind fs-mind-d${Math.min(depth, 2)} ${fill ? 'has-fill' : ''} ${selected ? 'is-selected' : ''} ${dropTarget === id ? 'is-drop' : ''}`}
-      style={{['--branch' as string]: color, ...(fill ? {background: fill.fill, color: fill.ink, borderColor: fill.stroke} : {})}}>
+      style={{['--branch' as string]: color, ...(fill ? {background: fill.bg, color: fill.ink, borderColor: fill.stroke} : d.ink ? {color: d.ink} : {}), ...typeStyle(d), fontWeight: d.bold ? 800 : undefined}}>
       {SIDES.map(([sid, pos]) => (
         <Handle className={`fs-handle-hidden fs-mind-h-${sid} ${count && sid === outward ? 'has-count' : ''}`} id={sid} isConnectable={false} key={sid} position={pos} type="source" />
       ))}
@@ -472,19 +523,32 @@ function EdgeLabelEditor({id, value}: {id: string; value: string}) {
 export function FlowEdge(props: EdgeProps) {
   const {id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected} = props;
   const d = (props.data || {}) as ED;
-  const {editingEdgeId} = useStudio();
+  const {editingEdgeId, dark} = useStudio();
   const params = {sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition};
   const [path, lx, ly] = d.path === 'bezier' ? getBezierPath(params) : d.path === 'straight' ? getStraightPath(params) : getSmoothStepPath({...params, borderRadius: 16, offset: 26});
-  const color = d.color || '#3a4250';
+  const color = onCanvas(d.color || '#3a4250', dark);
   const width = d.width || 2;
   const arrow = d.arrow || 'end';
+  const head = d.head || 'triangle';
   const marker = `fs-arrow-${id}`;
   const dash = d.dash === 'dashed' ? '8 6' : d.dash === 'dotted' ? '1.5 6' : undefined;
+  // Each head is drawn in the line's own colour, a little larger on thicker lines
+  const size = 12 + width * 1.5;
   return (
     <>
       <defs>
-        <marker id={marker} markerHeight="14" markerUnits="userSpaceOnUse" markerWidth="14" orient="auto-start-reverse" refX="11" refY="7" viewBox="0 0 14 14">
-          <path d="M2,2 L12,7 L2,12 Z" fill={color} stroke={color} strokeLinejoin="round" strokeWidth="1" />
+        <marker id={marker} markerHeight={size} markerUnits="userSpaceOnUse" markerWidth={size} orient="auto-start-reverse" refX={head === 'dot' ? 8 : head === 'diamond' ? 12 : 11} refY="7" viewBox="0 0 14 14">
+          <g fill={color} stroke={color}>
+            {head === 'open' ? (
+              <path d="M3,2 L11,7 L3,12" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+            ) : head === 'dot' ? (
+              <circle cx="8" cy="7" r="4" stroke="none" />
+            ) : head === 'diamond' ? (
+              <path d="M2,7 L7.5,2.5 L13,7 L7.5,11.5 Z" strokeLinejoin="round" strokeWidth="1" />
+            ) : (
+              <path d="M2,2 L12,7 L2,12 Z" strokeLinejoin="round" strokeWidth="1" />
+            )}
+          </g>
         </marker>
       </defs>
       {selected && <path d={path} fill="none" stroke="#7b68ee" strokeOpacity={0.25} strokeWidth={width + 8} />}
@@ -509,8 +573,10 @@ export function FlowEdge(props: EdgeProps) {
 
 export function MindEdge(props: EdgeProps) {
   const {id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition} = props;
+  const {mindLine} = useStudio();
   const color = ((props.data as ED)?.color as string) || '#9aa3b2';
-  const [path] = getBezierPath({sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, curvature: 0.45});
+  const params = {sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition};
+  const [path] = mindLine === 'straight' ? getStraightPath(params) : mindLine === 'elbow' ? getSmoothStepPath({...params, borderRadius: 14}) : getBezierPath({...params, curvature: 0.45});
   return <BaseEdge id={id} interactionWidth={0} path={path} style={{stroke: color, strokeWidth: ((props.data as ED)?.width as number) || 2.4, strokeLinecap: 'round'}} />;
 }
 
