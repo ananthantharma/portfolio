@@ -1,21 +1,21 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo */
 'use client';
 
-import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, FolderKanban, Inbox, Layers, ListTodo, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, Undo2, UserRound, X} from 'lucide-react';
+import {Archive, ArrowLeft, Building2, Check, CheckCheck, ChevronDown, ChevronRight, ChevronsRight, Copy, FileText, Flag, FolderKanban, Inbox, Layers, ListTodo, Loader2, Maximize2, Pencil, Plus, Search, Send, Sparkles, Tag, Trash2, Undo2, UserRound, X} from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, {useContext, useEffect, useId, useMemo, useRef, useState} from 'react';
 
 import AssignWorkWindow from '../Notes/AssignWorkWindow';
 import {api} from './api';
-import AttachmentGallery from './AttachmentGallery';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import NoteLinkModal from './NoteLinkModal';
 import {saveTaskChanges} from './taskActions';
+import TaskAttachments, {attachPendingFiles} from './TaskAttachments';
 import {AssigneePill, CopySubjectButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import TaskWidget from './TaskWidget';
 import styles from './TaskWorkspace.module.css';
-import {bucketOf, completedTime, daysUntil, PRIORITY_META, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
+import {bucketOf, completedTime, daysUntil, formatDue, parseQuickLine, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from './WorkspaceNavigation';
 
 // A task's page uses the full editor, so it loads when one is first opened
@@ -23,6 +23,25 @@ const TaskPageWindow = dynamic(() => import('./TaskPage'), {ssr: false});
 
 export type NoteContext = {id: string; title: string} | null;
 type Filter = 'open' | 'today' | 'note' | 'done' | 'archive';
+
+const PRIORITY_FLAG: Record<Task['priority'], string> = {None: '#a3a89a', Low: '#0ea5e9', Medium: '#f59e0b', High: '#e11d48'};
+const STATUS_OPTIONS = [
+  {key: 'todo', label: 'To do'},
+  {key: 'in-progress', label: 'In progress'},
+  {key: 'done', label: 'Done'},
+] as const;
+/** 5pm on a day counted from today, as the tasks store due dates. */
+const dueIn = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(17, 0, 0, 0);
+  return d.toISOString();
+};
+const DUE_PICKS: {label: string; days: number}[] = [
+  {label: 'Today', days: 0},
+  {label: 'Tomorrow', days: 1},
+  {label: 'In a week', days: 7},
+];
 
 export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}: {task?: Task; note?: NoteContext; onClose: () => void; draftKey?: string; defaults?: Partial<Task>; onCreated?: (task: Task) => void}) {
   const {drafts, setDraft, busy, run} = useTaskCollection();
@@ -33,7 +52,10 @@ export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}:
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [subtask, setSubtask] = useState('');
+  const [tagText, setTagText] = useState('');
   const [linking, setLinking] = useState(false);
+  // "Uploading 1 of 3…" while a new task's files go to Google Drive
+  const [progress, setProgress] = useState<string | null>(null);
   const openNote = useContext(OpenWorkspaceNoteContext);
   const prefix = useId();
   const pending = busy.includes(key);
@@ -45,6 +67,11 @@ export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}:
   const staff = useStaffList();
   // Keep a removed staff member selectable on tasks already assigned to them
   const assigneeKnown = !value.assignedTo || (staff || []).some(p => p._id === value.assignedTo?.staffId);
+  const status = value.isCompleted ? 'done' : value.status || 'todo';
+  const priority = value.priority || 'None';
+  const steps = value.subtasks || [];
+  const stepsDone = steps.filter(item => item.isCompleted).length;
+  const tags = (value.tags || []).map(tag => tag.trim()).filter(Boolean);
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -59,13 +86,19 @@ export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}:
         const payload = {...(task ? {} : defaults), ...draft, ...(draft.tags ? {tags: draft.tags.map(tag => tag.trim()).filter(Boolean)} : {}), title, ...(draft.sourcePageId !== undefined ? {sourcePageId: linkedId || null} : {}), ...(draft.vendorSectionId !== undefined || (!task && defaults?.vendorSectionId) ? {vendorSectionId: vendorIdOf(value)} : {})};
         if (task) {const result = await saveTaskChanges(task, payload); if (result.warning) setError(result.warning);}
         const created = task ? null : await api.create({priority: 'None', status: 'todo', isCompleted: false, ...payload});
+        if (created) {
+          // Files chosen before the task existed go to Google Drive now
+          const failed = await attachPendingFiles(key, created._id, (done, total) => setProgress(`Uploading file ${done + 1} of ${total}…`));
+          setProgress(null);
+          if (failed.length) window.alert(`The task was created, but ${failed.length === 1 ? 'this file' : 'these files'} could not be uploaded to Google Drive:\n\n${failed.join('\n')}\n\nOpen the task and add ${failed.length === 1 ? 'it' : 'them'} again.`);
+        }
         setDraft(key, null);
         setSaved(true);
         // A caller that saves more with the task (its page) closes the form itself
         if (created && onCreated) onCreated(created);
         else if (!task) onClose();
       });
-    } catch (cause) {setError(cause instanceof Error ? cause.message : 'Could not save. Your changes are still here.');}
+    } catch (cause) {setProgress(null); setError(cause instanceof Error ? cause.message : 'Could not save. Your changes are still here.');}
   };
   const action = async (operation: () => Promise<unknown>, close = false) => {
     setError(null);
@@ -78,69 +111,180 @@ export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}:
     if (Number.isNaN(parsed.getTime())) return '';
     return `${parsed.getFullYear()}-${String(parsed.getMonth()+1).padStart(2,'0')}-${String(parsed.getDate()).padStart(2,'0')}`;
   };
-  return <div className={styles.editor}>
-    <div className={styles.editorHeading}><span>{task ? 'TASK DETAILS' : 'NEW TASK'}</span><button aria-label="Close task details" onClick={onClose} type="button"><X size={16}/></button></div>
-    <form onSubmit={save}>
+  const dueDay = toDate(value.dueDate);
+  const addSteps = (text: string) => {
+    // A pasted list becomes one step per line
+    const names = text.split(/\r?\n/).map(line => line.replace(/^\s*(?:[-*•]|\d+[.)]|\[[ x]?\])\s*/i, '').trim()).filter(Boolean);
+    if (!names.length) return;
+    change({subtasks: [...steps, ...names.map(name => ({title: name.slice(0, 200), isCompleted: false}))]});
+    setSubtask('');
+  };
+  const addTags = (text: string) => {
+    const fresh = text.split(',').map(tag => tag.trim().replace(/^#/, '')).filter(tag => tag && !tags.includes(tag));
+    if (fresh.length) change({tags: [...tags, ...fresh]});
+    setTagText('');
+  };
+  const statusText = progress || (pending ? 'Saving…' : dirty ? 'Unsaved changes' : saved ? 'All changes saved' : task ? 'Up to date' : 'Not created yet');
+
+  return <div className={styles.editor} data-task-editor>
+    <div className={styles.editorHeading}><span>{task ? 'Task details' : 'New task'}</span><button aria-label="Close task details" onClick={onClose} title="Close" type="button"><X size={16}/></button></div>
+    <form
+      onKeyDown={e => {
+        // Ctrl/⌘+Enter saves from anywhere in the form
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {e.preventDefault(); e.currentTarget.requestSubmit();}
+      }}
+      onSubmit={save}>
       <fieldset disabled={pending}>
-        <label htmlFor={`${prefix}-title`}>Task name</label>
-        <textarea className={styles.titleInput} id={`${prefix}-title`} onChange={e => change({title: e.target.value})} placeholder="What needs to happen?" required rows={2} value={value.title || ''} />
-        <div className={styles.fieldGrid}>
-          <div><label htmlFor={`${prefix}-status`}>Status</label><select id={`${prefix}-status`} onChange={e => change({status: e.target.value, isCompleted: e.target.value === 'done'})} value={value.isCompleted ? 'done' : value.status || 'todo'}><option value="todo">To do</option><option value="in-progress">In progress</option><option value="done">Complete</option></select></div>
-          <div><label htmlFor={`${prefix}-priority`}>Priority</label><select id={`${prefix}-priority`} onChange={e => change({priority: e.target.value as Task['priority']})} value={value.priority || 'None'}>{Object.keys(PRIORITY_META).map(priority => <option key={priority}>{priority}</option>)}</select></div>
-          <div><label htmlFor={`${prefix}-due`}>Due date</label><input id={`${prefix}-due`} onChange={e => change({dueDate: e.target.value ? new Date(`${e.target.value}T17:00:00`).toISOString() : ''})} type="date" value={toDate(value.dueDate)}/></div>
-          <div><label htmlFor={`${prefix}-bucket`}>Category</label><select id={`${prefix}-bucket`} onChange={e => change({bucket: e.target.value as TaskBucket})} value={bucketOf(value)}>{TASK_BUCKETS.map(b => <option key={b.key} value={b.key}>{b.label}</option>)}</select></div>
-        </div>
-        <div className={styles.vendorLink}>
-          <label htmlFor={`${prefix}-assignee`}>Assigned to</label>
-          <div>
-            <select
-              id={`${prefix}-assignee`}
-              onChange={e => {
-                const person = (staff || []).find(p => p._id === e.target.value);
-                if (e.target.value === 'current') return;
-                change({assignedTo: person ? {staffId: person._id, name: person.name, email: person.email || ''} : null});
-              }}
-              value={value.assignedTo ? (assigneeKnown ? value.assignedTo.staffId || '' : 'current') : ''}>
-              <option value="">{staff === null ? 'Loading…' : 'Not assigned'}</option>
-              {!assigneeKnown && value.assignedTo && <option value="current">{value.assignedTo.name}</option>}
-              {(staff || []).map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
-            </select>
-            <AssigneePill assignee={value.assignedTo} />
-          </div>
-        </div>
-        <label htmlFor={`${prefix}-subject`}>Email subject</label>
-        <div className={styles.subjectField}>
-          <input id={`${prefix}-subject`} onChange={e => change({emailSubject: e.target.value})} placeholder="Paste the email chain's subject to find it in Outlook" value={value.emailSubject || ''}/>
-          <CopySubjectButton subject={value.emailSubject}/>
-        </div>
-        <label htmlFor={`${prefix}-notes`}>Description</label><textarea id={`${prefix}-notes`} onChange={e => change({notes: e.target.value})} placeholder="Add context, a plan, or a useful detail…" rows={4} value={value.notes || ''}/>
-        <label htmlFor={`${prefix}-tags`}>Tags</label><input id={`${prefix}-tags`} onChange={e => change({tags: e.target.value.split(',').map(tag => tag.trimStart())})} placeholder="Separate tags with commas" value={(value.tags || []).join(', ')}/>
-        <div className={styles.subtaskHeading}>Checklist <span>{value.subtasks?.filter(item => item.isCompleted).length || 0}/{value.subtasks?.length || 0}</span></div>
-        {(value.subtasks || []).map((item, index) => <div className={styles.subtask} key={item._id || index}><input aria-label={`Complete ${item.title}`} checked={item.isCompleted} onChange={e => change({subtasks: value.subtasks?.map((entry, i) => i === index ? {...entry, isCompleted: e.target.checked} : entry)})} type="checkbox"/><input aria-label={`Checklist item ${index+1}`} onChange={e => change({subtasks: value.subtasks?.map((entry, i) => i === index ? {...entry, title: e.target.value} : entry)})} value={item.title}/><button aria-label={`Remove ${item.title}`} onClick={() => change({subtasks: value.subtasks?.filter((_, i) => i !== index)})} type="button"><X size={14}/></button></div>)}
-        <div className={styles.addSubtask}><input aria-label="New checklist item" onChange={e => setSubtask(e.target.value)} onKeyDown={e => {if (e.key === 'Enter') {e.preventDefault(); if (subtask.trim()) {change({subtasks: [...(value.subtasks || []), {title: subtask.trim(), isCompleted: false}]}); setSubtask('');}}}} placeholder="Add a step…" value={subtask}/><button aria-label="Add checklist item" disabled={!subtask.trim()} onClick={() => {change({subtasks: [...(value.subtasks || []), {title: subtask.trim(), isCompleted: false}]}); setSubtask('');}} type="button"><Plus size={16}/></button></div>
-        <div className={styles.noteLink}>
-          <span><FileText size={14}/> Connected note</span>
-          {linkedId ? <div><button onClick={() => openNote ? openNote(linkedId) : window.location.assign(`/notes?pageId=${encodeURIComponent(linkedId)}`)} type="button">{linkedTitle || 'Open note'}</button><button aria-label="Unlink note" onClick={() => change({sourcePageId: null})} type="button"><X size={14}/></button></div> : <div>{note && <button onClick={() => change({sourcePageId: {_id: note.id, title: note.title}})} type="button">Link current note</button>}<button onClick={() => setLinking(true)} type="button">Choose a note</button></div>}
-        </div>
-        <div className={styles.vendorLink}>
-          <label htmlFor={`${prefix}-vendor`}>Vendor or project</label>
-          <div><VendorSelect id={`${prefix}-vendor`} onChange={vendor => change({vendorSectionId: vendor})} value={vendorOf(value) || (vendorIdOf(value) ? {_id: vendorIdOf(value)!, name: 'Linked vendor'} : null)}/>{vendorOf(value) && task && <VendorPill task={value as Task}/>}</div>
-        </div>
-        {!vendorIdOf(value) && (
-          <div className={styles.vendorLink}>
-            <label htmlFor={`${prefix}-group`}>My group</label>
-            <div>
-              <select id={`${prefix}-group`} onChange={e => change({taskGroupId: e.target.value || null})} value={value.taskGroupId || ''}>
-                <option value="">{taskGroups?.length ? 'No group' : 'No groups yet (create one from the task list)'}</option>
-                {(taskGroups || []).map(g => <option key={g._id} value={g._id}>{g.name}</option>)}
-              </select>
+        <label className={styles.srOnly} htmlFor={`${prefix}-title`}>Task name</label>
+        <textarea autoFocus={!task} className={styles.titleInput} id={`${prefix}-title`} onChange={e => change({title: e.target.value})} placeholder="What needs to happen?" required rows={2} value={value.title || ''} />
+
+        <div className={styles.props}>
+          <div className={styles.prop}>
+            <span id={`${prefix}-status`}>Status</span>
+            <div aria-labelledby={`${prefix}-status`} className={styles.seg} role="radiogroup">
+              {STATUS_OPTIONS.map(option => (
+                <button aria-checked={status === option.key} data-status={option.key} key={option.key} onClick={() => change({status: option.key, isCompleted: option.key === 'done'})} role="radio" type="button">
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
-        )}
-        <details className={styles.more}><summary>More options <ChevronDown size={14}/></summary><label htmlFor={`${prefix}-category`}>Label</label><input id={`${prefix}-category`} onChange={e => change({category: e.target.value})} placeholder="Optional, e.g. Vendor Management" value={value.category || ''}/><label htmlFor={`${prefix}-repeat`}>Repeat</label><select id={`${prefix}-repeat`} onChange={e => change({recurrence: {freq: e.target.value as NonNullable<Task['recurrence']>['freq'], interval: 1}})} value={value.recurrence?.freq || 'none'}><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><p>Repeating tasks need a due date. Completing one creates the next occurrence.</p><label htmlFor={`${prefix}-estimate`}>Estimated minutes</label><input id={`${prefix}-estimate`} min="0" onChange={e => change({estimatedTime: e.target.value ? Number(e.target.value) : 0})} type="number" value={value.estimatedTime ?? ''}/>{task?.attachments?.length ? <AttachmentGallery attachments={task.attachments} compact taskId={task._id}/> : null}</details>
+          <div className={styles.prop}>
+            <span id={`${prefix}-priority`}>Priority</span>
+            <div aria-labelledby={`${prefix}-priority`} className={styles.pills} role="radiogroup">
+              {(['None', 'Low', 'Medium', 'High'] as const).map(level => (
+                <button aria-checked={priority === level} data-level={level} key={level} onClick={() => change({priority: level})} role="radio" type="button">
+                  {level !== 'None' && <Flag fill={PRIORITY_FLAG[level]} size={12} style={{color: PRIORITY_FLAG[level]}} />}
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={styles.prop}>
+            <label htmlFor={`${prefix}-due`}>Due</label>
+            <div className={styles.due}>
+              <input id={`${prefix}-due`} onChange={e => change({dueDate: e.target.value ? new Date(`${e.target.value}T17:00:00`).toISOString() : ''})} type="date" value={dueDay}/>
+              <div>
+                {DUE_PICKS.map(pick => (
+                  <button aria-pressed={dueDay === toDate(dueIn(pick.days))} key={pick.label} onClick={() => change({dueDate: dueIn(pick.days)})} type="button">
+                    {pick.label}
+                  </button>
+                ))}
+                {dueDay && <button onClick={() => change({dueDate: ''})} title="No due date" type="button">Clear</button>}
+              </div>
+            </div>
+          </div>
+          <div className={styles.prop}>
+            <label htmlFor={`${prefix}-bucket`}>Category</label>
+            <select id={`${prefix}-bucket`} onChange={e => change({bucket: e.target.value as TaskBucket})} value={bucketOf(value)}>{TASK_BUCKETS.map(b => <option key={b.key} value={b.key}>{b.label}</option>)}</select>
+          </div>
+          <div className={styles.prop}>
+            <label htmlFor={`${prefix}-assignee`}>Assigned to</label>
+            <div className={styles.inline}>
+              <select
+                id={`${prefix}-assignee`}
+                onChange={e => {
+                  const person = (staff || []).find(p => p._id === e.target.value);
+                  if (e.target.value === 'current') return;
+                  change({assignedTo: person ? {staffId: person._id, name: person.name, email: person.email || ''} : null});
+                }}
+                value={value.assignedTo ? (assigneeKnown ? value.assignedTo.staffId || '' : 'current') : ''}>
+                <option value="">{staff === null ? 'Loading…' : 'Not assigned'}</option>
+                {!assigneeKnown && value.assignedTo && <option value="current">{value.assignedTo.name}</option>}
+                {(staff || []).map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+              </select>
+              <AssigneePill assignee={value.assignedTo} />
+            </div>
+          </div>
+        </div>
+
+        <label className={styles.blockLabel} htmlFor={`${prefix}-notes`}>Description</label>
+        <textarea id={`${prefix}-notes`} onChange={e => change({notes: e.target.value})} placeholder="Add context, a plan, or a useful detail…" rows={3} value={value.notes || ''}/>
+
+        <div className={styles.subtaskHeading}>
+          <span><ListTodo size={14}/> Checklist</span>
+          {steps.length > 0 && <i className={styles.stepBar}><b style={{width: `${Math.round((stepsDone / steps.length) * 100)}%`}} /></i>}
+          <span>{stepsDone}/{steps.length}</span>
+        </div>
+        {steps.map((item, index) => <div className={styles.subtask} key={item._id || index}><input aria-label={`Complete ${item.title}`} checked={item.isCompleted} onChange={e => change({subtasks: steps.map((entry, i) => i === index ? {...entry, isCompleted: e.target.checked} : entry)})} type="checkbox"/><input aria-label={`Checklist item ${index+1}`} data-done={item.isCompleted} onChange={e => change({subtasks: steps.map((entry, i) => i === index ? {...entry, title: e.target.value} : entry)})} value={item.title}/><button aria-label={`Remove ${item.title}`} onClick={() => change({subtasks: steps.filter((_, i) => i !== index)})} type="button"><X size={14}/></button></div>)}
+        <div className={styles.addSubtask}>
+          <input
+            aria-label="New checklist item"
+            onChange={e => setSubtask(e.target.value)}
+            onKeyDown={e => {if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {e.preventDefault(); addSteps(subtask);}}}
+            onPaste={e => {
+              const text = e.clipboardData.getData('text');
+              if (!/\n/.test(text.trim())) return;
+              e.preventDefault();
+              e.stopPropagation();
+              addSteps(text);
+            }}
+            placeholder="Add a step… (paste a list to add several)"
+            value={subtask}
+          />
+          <button aria-label="Add checklist item" disabled={!subtask.trim()} onClick={() => addSteps(subtask)} type="button"><Plus size={16}/></button>
+        </div>
+
+        <TaskAttachments pendingKey={task ? undefined : key} task={task} />
+
+        <div className={styles.group}>
+          <div className={styles.groupTitle}>Linked to</div>
+          <div className={styles.noteLink}>
+            <span><FileText size={14}/> Note</span>
+            {linkedId ? <div><button onClick={() => openNote ? openNote(linkedId) : window.location.assign(`/notes?pageId=${encodeURIComponent(linkedId)}`)} type="button">{linkedTitle || 'Open note'}</button><button aria-label="Unlink note" onClick={() => change({sourcePageId: null})} type="button"><X size={14}/></button></div> : <div>{note && <button onClick={() => change({sourcePageId: {_id: note.id, title: note.title}})} type="button">Link current note</button>}<button onClick={() => setLinking(true)} type="button">Choose a note</button></div>}
+          </div>
+          <div className={styles.vendorLink}>
+            <label htmlFor={`${prefix}-vendor`}>Vendor or project</label>
+            <div><VendorSelect id={`${prefix}-vendor`} onChange={vendor => change({vendorSectionId: vendor})} value={vendorOf(value) || (vendorIdOf(value) ? {_id: vendorIdOf(value)!, name: 'Linked vendor'} : null)}/>{vendorOf(value) && task && <VendorPill task={value as Task}/>}</div>
+          </div>
+          {!vendorIdOf(value) && (
+            <div className={styles.vendorLink}>
+              <label htmlFor={`${prefix}-group`}>My group</label>
+              <div>
+                <select id={`${prefix}-group`} onChange={e => change({taskGroupId: e.target.value || null})} value={value.taskGroupId || ''}>
+                  <option value="">{taskGroups?.length ? 'No group' : 'No groups yet (create one from the task list)'}</option>
+                  {(taskGroups || []).map(g => <option key={g._id} value={g._id}>{g.name}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+          <div className={styles.vendorLink}>
+            <label htmlFor={`${prefix}-subject`}>Email subject</label>
+            <div className={styles.subjectField}>
+              <input id={`${prefix}-subject`} onChange={e => change({emailSubject: e.target.value})} placeholder="Paste the email chain's subject to find it in Outlook" value={value.emailSubject || ''}/>
+              <CopySubjectButton subject={value.emailSubject}/>
+            </div>
+          </div>
+        </div>
+
+        <label className={styles.blockLabel} htmlFor={`${prefix}-tags`}>Tags</label>
+        <div className={styles.tags}>
+          {tags.map(tag => (
+            <span key={tag}>
+              #{tag}
+              <button aria-label={`Remove tag ${tag}`} onClick={() => change({tags: tags.filter(t => t !== tag)})} type="button"><X size={11}/></button>
+            </span>
+          ))}
+          <input
+            id={`${prefix}-tags`}
+            onBlur={() => tagText.trim() && addTags(tagText)}
+            onChange={e => (e.target.value.includes(',') ? addTags(e.target.value) : setTagText(e.target.value))}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && tagText.trim()) {e.preventDefault(); addTags(tagText);}
+              if (e.key === 'Backspace' && !tagText && tags.length) change({tags: tags.slice(0, -1)});
+            }}
+            placeholder={tags.length ? 'Add another…' : 'Type a tag and press Enter'}
+            value={tagText}
+          />
+        </div>
+
+        <details className={styles.more}><summary>More options <ChevronDown size={14}/></summary><label htmlFor={`${prefix}-category`}>Label</label><input id={`${prefix}-category`} onChange={e => change({category: e.target.value})} placeholder="Optional, e.g. Vendor Management" value={value.category || ''}/><label htmlFor={`${prefix}-repeat`}>Repeat</label><select id={`${prefix}-repeat`} onChange={e => change({recurrence: {freq: e.target.value as NonNullable<Task['recurrence']>['freq'], interval: 1}})} value={value.recurrence?.freq || 'none'}><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select><p>Repeating tasks need a due date. Completing one creates the next occurrence.</p><label htmlFor={`${prefix}-estimate`}>Estimated minutes</label><input id={`${prefix}-estimate`} min="0" onChange={e => change({estimatedTime: e.target.value ? Number(e.target.value) : 0})} type="number" value={value.estimatedTime ?? ''}/></details>
         {error && <div className={styles.error} role="alert">{error}</div>}
-        <div className={styles.saveRow}><span role="status">{pending ? 'Saving…' : dirty ? 'Unsaved changes' : saved ? 'All changes saved' : 'Up to date'}</span><button className={styles.primary} disabled={pending || (!!task && !dirty)} type="submit"><Check size={14}/>{task ? 'Save changes' : 'Create task'}</button></div>
       </fieldset>
+      <div className={styles.saveRow}>
+        <span role="status">{pending && <Loader2 className="animate-spin" size={13}/>}{statusText}</span>
+        <button className={styles.primary} disabled={pending || (!!task && !dirty)} title="Ctrl+Enter" type="submit"><Check size={14}/>{task ? 'Save changes' : 'Create task'}</button>
+      </div>
     </form>
     {task && <div className={styles.taskActions}>
       <button disabled={pending} onClick={() => void action(() => api.update(task._id, {isArchived: !task.isArchived}), true)}><Archive size={14}/>{task.isArchived ? 'Restore' : 'Archive'}</button>
@@ -684,18 +828,22 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
             onSubmit={e => {
               e.preventDefault();
               if (!quickTitle.trim() || busy.includes('quick')) return;
-              const title = quickTitle.trim();
+              const parsed = parseQuickLine(quickTitle);
+              const title = parsed.title || quickTitle.trim();
+              const dueDate = parsed.dueDate || (filter === 'today' ? new Date(new Date().setHours(17, 0, 0, 0)).toISOString() : null);
               void execute('quick', async () => {
                 await api.create({
                   title,
-                  priority: 'None',
+                  priority: parsed.priority,
                   status: 'todo',
                   bucket: newBucket,
-                  ...(filter === 'today' ? {dueDate: new Date(new Date().setHours(17, 0, 0, 0)).toISOString()} : {}),
+                  ...(dueDate ? {dueDate} : {}),
+                  ...(parsed.tags.length ? {tags: parsed.tags} : {}),
                   ...(filter === 'note' && note ? {sourcePageId: note.id} : {}),
                 });
                 setQuickTitle('');
-                setNotice(`Added to ${bucketLabel}`);
+                // Say what was understood, so a date or priority typed in the line is never a surprise
+                setNotice([`Added to ${bucketLabel}`, parsed.dueDate ? `due ${formatDue(parsed.dueDate)}` : '', parsed.priority !== 'None' ? `${parsed.priority} priority` : '', ...parsed.tags.map(tag => `#${tag}`)].filter(Boolean).join(' · '));
               });
             }}>
             <Plus size={15} />
@@ -713,6 +861,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
                 }
               }}
               placeholder={`Add to ${bucketLabel}, or paste an email for AI`}
+              title="Tips: end with a date (tomorrow, fri, next week), add !high / !med / !low or #tag"
               value={quickTitle}
             />
             <button aria-label="Add task" disabled={!quickTitle.trim() || busy.includes('quick')} type="submit">

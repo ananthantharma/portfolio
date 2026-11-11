@@ -8,6 +8,7 @@ import {createPortal} from 'react-dom';
 import RichTextEditor from '../Notes/RichTextEditor';
 import {api} from './api';
 import {saveTaskChanges} from './taskActions';
+import {clearPendingFiles, pendingFiles} from './TaskAttachments';
 import {AssigneePill, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import {NoteContext, TaskEditor} from './TaskWorkspace';
@@ -350,7 +351,7 @@ export function NewTaskWindow({note, defaults, draftKey, onClose, onCreated}: {n
   useEffect(() => setMaximized(read('TASK_PAGE_MAX', false)), []);
 
   const formDraft = drafts[draftKey];
-  const dirty = filled || !!(formDraft && Object.keys(formDraft).length);
+  const dirty = filled || !!(formDraft && Object.keys(formDraft).length) || pendingFiles(draftKey).length > 0;
   const liveTask = created ? tasks.find(t => t._id === created._id) || created : null;
 
   const onChange = (html: string) => {
@@ -392,6 +393,7 @@ export function NewTaskWindow({note, defaults, draftKey, onClose, onCreated}: {n
     if (dirty && !window.confirm('Discard this new task and its page?')) return;
     setDraft(draftKey, null);
     pageDrafts.delete(draftKey);
+    clearPendingFiles(draftKey);
     onClose();
   };
 
@@ -428,7 +430,7 @@ export function NewTaskWindow({note, defaults, draftKey, onClose, onCreated}: {n
         <header className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 sm:px-5 sm:py-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-[16px] font-semibold tracking-tight text-slate-900 sm:text-[18px]">{liveTask?.title || formDraft?.title?.trim() || 'New task'}</h2>
-            <p className="hidden text-[12px] text-slate-400 sm:block">Fill in the details and write on its page. Nothing is saved until you create the task.</p>
+            <p className="hidden text-[12.5px] text-slate-500 sm:block">Fill in the details, add files, and write on its page. Nothing is saved until you create the task (Ctrl+Enter).</p>
           </div>
           <div className="flex rounded-lg bg-slate-100 p-0.5 md:hidden">
             {side('details', 'Details')}

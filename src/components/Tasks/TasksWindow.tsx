@@ -34,6 +34,7 @@ import AssignWorkWindow from '../Notes/AssignWorkWindow';
 import {api} from './api';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
+import {AttachmentChip} from './TaskAttachments';
 import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import TaskChecklist from './TaskChecklist';
 import {NewTaskWindow, TaskPageView} from './TaskPage';
@@ -144,6 +145,26 @@ const CATEGORY_TAB_KEY = 'TASKS_CATEGORY_TAB';
 type CategoryTab = TaskBucket | 'all';
 const isOpenTask = (t: Task) => !t.isArchived && statusOf(t) !== 'done';
 
+// One-click narrowing of whatever list is showing
+type Focus = 'overdue' | 'today' | 'week' | 'high' | 'files' | 'nodate';
+const FOCUS: {key: Focus; label: string; tone: string; test: (t: Task) => boolean}[] = [
+  {key: 'overdue', label: 'Overdue', tone: 'rose', test: t => (daysUntil(t.dueDate) ?? 1) < 0},
+  {key: 'today', label: 'Due today', tone: 'amber', test: t => daysUntil(t.dueDate) === 0},
+  {key: 'week', label: 'Next 7 days', tone: 'sky', test: t => {
+    const d = daysUntil(t.dueDate);
+    return d !== null && d > 0 && d <= 7;
+  }},
+  {key: 'high', label: 'High priority', tone: 'rose', test: t => t.priority === 'High'},
+  {key: 'nodate', label: 'No date', tone: 'slate', test: t => !t.dueDate},
+  {key: 'files', label: 'Has files', tone: 'slate', test: t => (t.attachments?.length || 0) > 0},
+];
+const FOCUS_TONE: Record<string, string> = {
+  rose: 'border-rose-200 bg-rose-50 text-rose-700',
+  amber: 'border-amber-200 bg-amber-50 text-amber-800',
+  sky: 'border-sky-200 bg-sky-50 text-sky-700',
+  slate: 'border-slate-300 bg-slate-100 text-slate-800',
+};
+
 function read<T>(key: string, fallback: T): T {
   try {
     const v = localStorage.getItem(key);
@@ -189,6 +210,7 @@ export default function TasksWindow({
   const [boardBy, setBoardByState] = useState<BoardBy>('project');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  const [focus, setFocus] = useState<Focus | null>(null);
   // New task: its own window with a blank page beside the details
   const [creating, setCreating] = useState(false);
   const [quick, setQuick] = useState('');
@@ -344,14 +366,22 @@ export default function TasksWindow({
     return !q || `${t.title} ${t.notes || ''} ${t.category || ''} ${t.assignedTo?.name || ''} ${t.emailSubject || ''} ${(t.tags || []).join(' ')}`.toLowerCase().includes(q);
   };
 
+  // Everything in the current view, before a focus chip narrows it (the chips count from this)
+  const scoped = useMemo(
+    () => live.filter(t => inTab(t) && inScope(t, scope) && matchesQuery(t)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [live, scope, query, groupName, catTab],
+  );
+  const focusCounts = useMemo(() => Object.fromEntries(FOCUS.map(f => [f.key, scoped.filter(f.test).length])) as Record<Focus, number>, [scoped]);
+  const activeFocus = focus && focusCounts[focus] ? FOCUS.find(f => f.key === focus) : null;
   const visible = useMemo(() => {
-    const list = live.filter(t => inTab(t) && inScope(t, scope) && matchesQuery(t));
+    const list = activeFocus ? scoped.filter(activeFocus.test) : [...scoped];
     // Completed and Archive read best newest-first unless you choose another order
     if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'done') return list.sort((a, b) => completedTime(b) - completedTime(a));
     if (sort === 'smart' && scope.kind === 'smart' && scope.key === 'archive') return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     return list.sort(COMPARE[sort]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, scope, query, groupName, sort, catTab]);
+  }, [scoped, activeFocus, scope, sort]);
 
   const isDoneScope = scope.kind === 'smart' && (scope.key === 'done' || scope.key === 'archive');
   const defaultGroupBy: GroupBy = isDoneScope ? 'none' : scope.kind === 'group' ? 'category' : scope.kind === 'smart' && scope.key === 'waiting' ? 'person' : 'project';
@@ -692,6 +722,7 @@ export default function TasksWindow({
                 {sd}/{st}
               </button>
             )}
+            <AttachmentChip className="text-slate-400 hover:bg-slate-200/60 hover:text-slate-700" task={t} />
             {t.recurrence?.freq && t.recurrence.freq !== 'none' && <Repeat className="h-3.5 w-3.5 text-slate-400" />}
           </div>
         </div>
@@ -725,7 +756,7 @@ export default function TasksWindow({
             {menuButton(t)}
           </span>
         </div>
-        {(link || t.assignedTo?.name || st > 0 || t.dueDate || statusOf(t) === 'in-progress') && (
+        {(link || t.assignedTo?.name || st > 0 || t.dueDate || statusOf(t) === 'in-progress' || !!t.attachments?.length) && (
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
             {link && (
               <span className="flex items-center gap-1 text-[11.5px]" style={{color: TONES[link.kind].accent}}>
@@ -741,6 +772,9 @@ export default function TasksWindow({
                 {sd}/{st}
               </span>
             )}
+            <span onClick={e => e.stopPropagation()}>
+              <AttachmentChip className="text-slate-400 hover:bg-slate-100 hover:text-slate-700" size={12} task={t} />
+            </span>
             <span className="ml-auto">{dueText(t)}</span>
           </div>
         )}
@@ -958,6 +992,31 @@ export default function TasksWindow({
                 </button>
               )}
             </form>
+          )}
+
+          {!isDoneScope && FOCUS.some(f => focusCounts[f.key]) && (
+            <div aria-label="Narrow the list" className="mx-5 mt-2.5 flex flex-wrap items-center gap-1.5" role="group">
+              <span className="mr-0.5 text-[11.5px] text-slate-400">Show only</span>
+              {FOCUS.filter(f => focusCounts[f.key]).map(f => {
+                const on = activeFocus?.key === f.key;
+                return (
+                  <button
+                    aria-pressed={on}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[12px] font-semibold transition ${on ? FOCUS_TONE[f.tone] : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'}`}
+                    key={f.key}
+                    onClick={() => setFocus(on ? null : f.key)}
+                    type="button">
+                    {f.label}
+                    <span className={`tabular-nums ${on ? '' : 'text-slate-400'}`}>{focusCounts[f.key]}</span>
+                  </button>
+                );
+              })}
+              {activeFocus && (
+                <button className="ml-0.5 inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[12px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800" onClick={() => setFocus(null)} type="button">
+                  <X className="h-3 w-3" /> Clear
+                </button>
+              )}
+            </div>
           )}
 
           {error && (

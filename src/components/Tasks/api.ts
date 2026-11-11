@@ -56,6 +56,18 @@ export const api = {
     publish({type: 'remove', id});
     return result;
   }),
+  /** Record a file (already uploaded to Google Drive) on a task. */
+  addAttachment: (id: string, file: {fileId: string; name: string; type: string; size: number; webViewLink?: string}) => enqueue(id, async () => {
+    const task = await request<Task>(`/api/todos/${id}/attachments`, {method: 'POST', body: JSON.stringify(file)});
+    publish({type: 'upsert', task});
+    return task;
+  }),
+  /** Take a file off a task (a Drive file also goes to the Drive trash). */
+  removeAttachment: (id: string, attachmentId: string) => enqueue(id, async () => {
+    const task = await request<Task>(`/api/todos/${id}/attachments?attachmentId=${encodeURIComponent(attachmentId)}`, {method: 'DELETE'});
+    publish({type: 'upsert', task});
+    return task;
+  }),
   reorder: async (updates: {id: string; order: number}[]) => {
     await request<unknown>('/api/todos/reorder', {
       method: 'PUT',

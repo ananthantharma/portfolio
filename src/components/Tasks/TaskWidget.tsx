@@ -5,6 +5,7 @@ import {CalendarClock, Check, CircleCheck, FileText, Flag, Hourglass, Plus, X} f
 import React, {useEffect, useState} from 'react';
 
 import {api} from './api';
+import {AttachmentChip} from './TaskAttachments';
 import {AssigneePill, CopySubjectButton, glowStyle, GlowToggles, LinkVendorButton, VendorPill} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
 import styles from './TaskWorkspace.module.css';
@@ -191,9 +192,10 @@ export default function TaskWidget({
                   In progress
                 </span>
               )}
-              {!due && !inProgress && task.priority === 'None' && <span>To do</span>}
+              {!due && !inProgress && task.priority === 'None' && !task.attachments?.length && <span>To do</span>}
             </>
           )}
+          <AttachmentChip task={task} />
           <span className={styles.metaRight}>
             {vendorIdOf(task) ? !inGroup && <VendorPill task={task} /> : <span className={styles.hoverOnly}><LinkVendorButton task={task} /></span>}
             {!underPerson && <AssigneePill assignee={task.assignedTo} />}

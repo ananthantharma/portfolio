@@ -8,8 +8,11 @@ export interface Subtask {
 }
 
 export interface Attachment {
+  _id?: string;
   name: string;
   type: string;
+  /** Google Drive file id (files stored in Drive) */
+  fileId?: string;
   data?: string; // base64 data URL — set for pasted images and local file uploads
   webViewLink?: string;
   storageType?: 'local' | 'drive' | 'blob';
@@ -312,6 +315,35 @@ export function parseQuickAdd(input: string): ParsedQuickAdd {
 
   out.title = text.replace(/\s+/g, ' ').trim();
   return out;
+}
+
+/**
+ * The sidebar's quick add: understands "!high / !med / !low", "#tags", and a date at the very end
+ * ("… tomorrow", "… fri", "… next week", "… in 3 days"). Words inside the title are left alone.
+ */
+export function parseQuickLine(input: string): {title: string; priority: Task['priority']; dueDate: string | null; tags: string[]} {
+  let text = input.trim();
+  let dueDate: string | null = null;
+  const tail = text.match(/\s(today|tomorrow|tmr|next week|in \d+\s*d(?:ays?)?|in \d+\s*w(?:eeks?)?|sun(?:day)?|mon(?:day)?|tue(?:s(?:day)?)?|wed(?:nesday)?|thu(?:r(?:s(?:day)?)?)?|fri(?:day)?|sat(?:urday)?)$/i);
+  if (tail && tail.index) {
+    const parsed = parseQuickAdd(`x ${tail[1]}`);
+    if (parsed.dueDate) {
+      dueDate = parsed.dueDate;
+      text = text.slice(0, tail.index);
+    }
+  }
+  let priority: Task['priority'] = 'None';
+  const tags: string[] = [];
+  text = ` ${text}`
+    .replace(/\s!(high|hi|h|medium|med|m|low|lo|l)\b/i, (_, p: string) => {
+      priority = /^h/i.test(p) ? 'High' : /^m/i.test(p) ? 'Medium' : 'Low';
+      return ' ';
+    })
+    .replace(/\s#([\w-]+)/g, (_, tag: string) => {
+      tags.push(tag);
+      return ' ';
+    });
+  return {title: text.replace(/\s+/g, ' ').trim(), priority, dueDate, tags};
 }
 
 // ── Recurrence ────────────────────────────────────────────────────────────────
