@@ -20,12 +20,15 @@ export async function PUT(req: Request, {params}: {params: {id: string}}) {
     await dbConnect();
 
     const body = await req.json();
-    const update: Record<string, unknown> = {};
-    if (typeof body.title === 'string') update.title = body.title;
-    if (typeof body.description === 'string') update.description = body.description;
-    if (typeof body.content === 'string') update.content = body.content;
-    if (typeof body.category === 'string') update.category = body.category;
-    if (typeof body.favorite === 'boolean') update.favorite = body.favorite;
+    const set: Record<string, unknown> = {};
+    if (typeof body.title === 'string' && body.title.trim()) set.title = body.title.trim().slice(0, 200);
+    if (typeof body.description === 'string') set.description = body.description.slice(0, 500);
+    if (typeof body.content === 'string') set.content = body.content;
+    if (typeof body.category === 'string' && body.category.trim()) set.category = body.category.trim().slice(0, 60);
+    if (typeof body.favorite === 'boolean') set.favorite = body.favorite;
+    if (typeof body.pinned === 'boolean') set.pinned = body.pinned;
+    // "used": the prompt was just copied
+    const update: Record<string, unknown> = body.used === true ? {$set: {...set, lastUsedAt: new Date()}, $inc: {useCount: 1}} : {$set: set};
 
     const item = await PromptLibraryItem.findOneAndUpdate({_id: params.id, userEmail: session.user.email}, update, {
       new: true,

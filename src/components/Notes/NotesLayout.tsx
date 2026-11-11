@@ -1466,6 +1466,17 @@ const NotesLayout: React.FC = React.memo(() => {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [workspaceView, selectedSectionId, selectedCategoryId, handleAddPage, handleAddCategoryPage]);
 
+  // Alt+P opens the prompt library from anywhere in the workspace (notes or tasks)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.code !== 'KeyP') return;
+      e.preventDefault();
+      setIsPromptLibraryOpen(open => !open);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   // Fetch the editor in the background once the page has settled
   useEffect(() => {
     const warm = () => void loadNoteEditor();
@@ -1678,7 +1689,7 @@ const NotesLayout: React.FC = React.memo(() => {
                   {label: 'Bookmarks', tone: 'sand', Icon: BookmarkIcon, action: () => setIsBookmarksOpen(true)},
                   {label: 'Contacts', tone: 'sage', Icon: UserGroupIcon, action: handleOpenContactList},
                 ].map(({label, tone, Icon, action}) => (
-                  <button className={styles.quickTool} data-tone={tone} key={label} onClick={action} title={label}>
+                  <button className={styles.quickTool} data-tone={tone} key={label} onClick={action} title={label === 'Prompt Library' ? 'Prompt library (Alt+P)' : label}>
                     <Icon />
                     <span>{label}</span>
                   </button>

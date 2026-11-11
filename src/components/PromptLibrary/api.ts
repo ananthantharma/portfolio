@@ -5,6 +5,9 @@ export interface PromptLibraryItem {
   content: string;
   category: string;
   favorite?: boolean;
+  pinned?: boolean;
+  useCount?: number;
+  lastUsedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -14,6 +17,8 @@ export type PromptLibraryItemDraft = {
   description?: string;
   content: string;
   category: string;
+  favorite?: boolean;
+  pinned?: boolean;
 };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -32,7 +37,10 @@ export const promptLibraryApi = {
   list: () => request<PromptLibraryItem[]>('/api/prompts/library'),
   create: (payload: PromptLibraryItemDraft) =>
     request<PromptLibraryItem>('/api/prompts/library', {method: 'POST', body: JSON.stringify(payload)}),
-  update: (id: string, patch: Partial<PromptLibraryItemDraft> & {favorite?: boolean}) =>
+  update: (id: string, patch: Partial<PromptLibraryItemDraft> & {used?: boolean}) =>
     request<PromptLibraryItem>(`/api/prompts/library/${id}`, {method: 'PUT', body: JSON.stringify(patch)}),
   remove: (id: string) => request<unknown>(`/api/prompts/library/${id}`, {method: 'DELETE'}),
+  /** Rename a category on every prompt in it (or move them all into another one). */
+  renameCategory: (from: string, to: string) =>
+    request<{modified: number}>('/api/prompts/library/category', {method: 'PUT', body: JSON.stringify({from, to})}),
 };

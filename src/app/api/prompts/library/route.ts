@@ -42,10 +42,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const item = await PromptLibraryItem.create({
       userEmail: session.user.email,
-      title: body.title,
-      description: body.description || '',
-      content: body.content,
-      category: body.category || 'General',
+      title: String(body.title || '').trim().slice(0, 200) || 'Untitled prompt',
+      description: typeof body.description === 'string' ? body.description.slice(0, 500) : '',
+      content: typeof body.content === 'string' ? body.content : '',
+      category: (typeof body.category === 'string' && body.category.trim().slice(0, 60)) || 'General',
+      favorite: body.favorite === true,
+      pinned: body.pinned === true,
     });
 
     return NextResponse.json({success: true, data: item}, {status: 201});

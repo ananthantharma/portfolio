@@ -7,6 +7,9 @@ export interface IPromptLibraryItem extends Document {
   content: string;
   category: string;
   favorite: boolean;
+  pinned: boolean;
+  useCount: number;
+  lastUsedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +22,11 @@ const PromptLibraryItemSchema = new Schema<IPromptLibraryItem>(
     content: {type: String, default: ''},
     category: {type: String, required: true, default: 'General'},
     favorite: {type: Boolean, default: false},
+    // Pinned prompts sit at the top of the library
+    pinned: {type: Boolean, default: false},
+    // How often and how recently it was copied, for "Recent" and "Most used"
+    useCount: {type: Number, default: 0},
+    lastUsedAt: {type: Date, default: null},
   },
   {timestamps: true},
 );
