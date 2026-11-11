@@ -13,7 +13,7 @@ import {saveTaskChanges} from './taskActions';
 import TaskAttachments, {attachPendingFiles} from './TaskAttachments';
 import {AssigneePill, CopySubjectButton, taskGroupsApi, useStaffList, useTaskGroups, useVendorOptions, VendorPill, VendorSelect} from './TaskExtras';
 import {useTaskCollection} from './TaskProvider';
-import TaskWidget from './TaskWidget';
+import TaskRow from './TaskRow';
 import styles from './TaskWorkspace.module.css';
 import {bucketOf, completedTime, daysUntil, formatDue, parseQuickLine, smartCompare, statusOf, Task, TASK_BUCKETS, TaskBucket, vendorIdOf, vendorOf} from './types';
 import {OpenVendorContext, OpenWorkspaceNoteContext} from './WorkspaceNavigation';
@@ -227,8 +227,8 @@ export function TaskEditor({task, note, onClose, draftKey, defaults, onCreated}:
 
         <TaskAttachments pendingKey={task ? undefined : key} task={task} />
 
-        <div className={styles.group}>
-          <div className={styles.groupTitle}>Linked to</div>
+        <div className={styles.linkBox}>
+          <div className={styles.linkBoxTitle}>Linked to</div>
           <div className={styles.noteLink}>
             <span><FileText size={14}/> Note</span>
             {linkedId ? <div><button onClick={() => openNote ? openNote(linkedId) : window.location.assign(`/notes?pageId=${encodeURIComponent(linkedId)}`)} type="button">{linkedTitle || 'Open note'}</button><button aria-label="Unlink note" onClick={() => change({sourcePageId: null})} type="button"><X size={14}/></button></div> : <div>{note && <button onClick={() => change({sourcePageId: {_id: note.id, title: note.title}})} type="button">Link current note</button>}<button onClick={() => setLinking(true)} type="button">Choose a note</button></div>}
@@ -528,17 +528,15 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
   // Done and Archive read best as one recency-ordered list
   const showGroups = grouped && filter !== 'done' && filter !== 'archive';
 
-  // Each task is a card: click it to edit its title and checklist; "…" opens its page (details on phones)
-  const renderRow = (task: Task, inGroup: boolean, underPerson = false) => (
-    <TaskWidget
-      completedLabel={filter === 'done' ? `Done ${completedAgo(task).toLowerCase()}` : undefined}
-      inGroup={inGroup}
+  // One line per task; clicking the title opens its page (its details on phones)
+  const renderRow = (task: Task) => (
+    <TaskRow
+      completedLabel={filter === 'done' ? completedAgo(task) : undefined}
       key={task._id}
       onOpen={() => (mobile ? setSelected(task._id) : setPageTaskId(task._id))}
       onToggle={() => toggle(task)}
       selected={selected === task._id}
       task={task}
-      underPerson={underPerson}
     />
   );
 
@@ -628,10 +626,9 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
               ) : (
                 <button aria-expanded={!collapsed} className={styles.groupToggle} onClick={() => toggleGroup(group.key)}>
                   <ChevronDown className={styles.groupChevron} data-collapsed={collapsed} size={13} />
-                  <span className={styles.groupIcon}>{group.kind === 'person' ? initials : <Icon size={13} />}</span>
+                  <span className={styles.groupIcon} title={KIND_LABEL[group.kind] || undefined}>{group.kind === 'person' ? initials : <Icon size={12} />}</span>
                   <span className={styles.groupText}>
-                    {KIND_LABEL[group.kind] && <small className={styles.groupKind}>{KIND_LABEL[group.kind]}</small>}
-                    <strong className={styles.groupName}>{group.name}</strong>
+                    <strong className={styles.groupName} title={KIND_LABEL[group.kind] ? `${KIND_LABEL[group.kind]}: ${group.name}` : group.name}>{group.name}</strong>
                   </span>
                   <span className={styles.groupCount}>{group.tasks.length}</span>
                 </button>
@@ -667,8 +664,8 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
                 </span>
               )}
             </div>
-            {!collapsed && group.tasks.map(task => renderRow(task, isLinkGroup(group.kind), group.kind === 'person'))}
-            {!collapsed && !group.tasks.length && <p className={styles.groupEmpty}>No open tasks. Use + or “+ Group” on any task.</p>}
+            {!collapsed && group.tasks.map(task => renderRow(task))}
+            {!collapsed && !group.tasks.length && <p className={styles.groupEmpty}>Nothing open here</p>}
           </div>
         );
       })}
@@ -902,7 +899,7 @@ export default function TaskWorkspace({compact = false, mobile = false, note, on
             ) : showGroups ? (
               renderGroups()
             ) : (
-              visible.map(task => renderRow(task, false))
+              visible.map(task => renderRow(task))
             ))}
           {(!compact || !editor) && (filter === 'done' || filter === 'archive') && !loading && (
             <div className={styles.olderDone}>

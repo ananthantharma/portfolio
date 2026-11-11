@@ -25,6 +25,8 @@ export interface IToDo extends Document {
   tags?: string[];
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
+  /** Colour code chosen in the task lists */
+  color?: string | null;
   isMinimized?: boolean;
   // Sidebar category tab; tasks without one count as work
   bucket?: 'work' | 'personal-short' | 'personal-long' | 'career' | 'follow-up' | null;
@@ -84,6 +86,11 @@ const ToDoSchema = new Schema<IToDo>(
     neonColor: {
       type: String,
       enum: ['red', 'blue', 'green', null],
+      default: null,
+    },
+    color: {
+      type: String,
+      enum: ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', null],
       default: null,
     },
     isMinimized: {type: Boolean, default: false},

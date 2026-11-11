@@ -1,14 +1,14 @@
 /* eslint-disable react-memo/require-memo, react-memo/require-usememo, react/jsx-sort-props */
 'use client';
 
-import {Archive, ArchiveRestore, CalendarDays, Check, ChevronRight, Flag, Layers, Loader2, Trash2, UserRound} from 'lucide-react';
+import {Archive, ArchiveRestore, CalendarDays, Check, ChevronRight, Flag, Layers, Loader2, Trash2, UserRound, X} from 'lucide-react';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 
 import {api} from './api';
 import {saveTaskChanges} from './taskActions';
 import {initialsOf, useStaffList} from './TaskExtras';
-import {bucketOf, Status, statusOf, Task, TASK_BUCKETS} from './types';
+import {bucketOf, colorOf, colorPatch, Status, statusOf, Task, TASK_BUCKETS, TASK_COLOR_KEYS, TASK_COLORS} from './types';
 
 type Sub = 'category' | 'priority' | 'status' | 'due' | 'assign' | null;
 
@@ -130,6 +130,31 @@ export default function TaskQuickMenu({task, at, onClose, onNotice}: {task: Task
         {task.title}
       </p>
 
+      <div aria-label="Colour" className="mb-1 flex items-center gap-1.5 px-2.5 pb-2 pt-0.5" role="group">
+        <button
+          aria-label="No colour"
+          aria-pressed={!colorOf(task)}
+          className={`flex h-[18px] w-[18px] items-center justify-center rounded-full border-[1.5px] border-dashed border-slate-300 text-slate-400 hover:scale-110 ${!colorOf(task) ? 'ring-2 ring-slate-300 ring-offset-1' : ''}`}
+          disabled={saving}
+          onClick={() => update(colorPatch(null), 'Colour removed')}
+          title="No colour"
+          type="button">
+          <X className="h-2.5 w-2.5" />
+        </button>
+        {TASK_COLOR_KEYS.map(key => (
+          <button
+            aria-label={TASK_COLORS[key].label}
+            aria-pressed={colorOf(task) === key}
+            className="h-[18px] w-[18px] rounded-full transition hover:scale-110"
+            disabled={saving}
+            key={key}
+            onClick={() => update(colorPatch(key), `Coloured ${TASK_COLORS[key].label.toLowerCase()}`)}
+            style={{background: TASK_COLORS[key].dot, boxShadow: colorOf(task) === key ? `0 0 0 2px #fff, 0 0 0 3.5px ${TASK_COLORS[key].dot}` : undefined}}
+            title={TASK_COLORS[key].label}
+            type="button"
+          />
+        ))}
+      </div>
       {item('category', <Layers className="h-4 w-4" />, 'Category', TASK_BUCKETS.find(b => b.key === category)?.short)}
       {sub === 'category' &&
         subList(

@@ -35,7 +35,8 @@ import {api} from './api';
 import CaptureModal, {CaptureSeed} from './CaptureModal';
 import {saveTaskChanges} from './taskActions';
 import {AttachmentChip} from './TaskAttachments';
-import {CopySubjectButton, glowStyle, GlowToggles, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
+import {ColorButton, tintStyle} from './TaskRow';
+import {CopySubjectButton, initialsOf, LinkVendorButton, linkIcon, useTaskGroups, useVendorOptions} from './TaskExtras';
 import TaskChecklist from './TaskChecklist';
 import {NewTaskWindow, TaskPageView} from './TaskPage';
 import TaskQuickMenu, {CATEGORY_COLORS} from './TaskQuickMenu';
@@ -665,7 +666,7 @@ export default function TasksWindow({
             e.dataTransfer.effectAllowed = 'move';
             setDragTask(t._id);
           }}
-          style={glowStyle(t)}>
+          style={tintStyle(t)}>
           <div className="flex items-center gap-2">
             <button
               aria-expanded={isOpen}
@@ -698,7 +699,7 @@ export default function TasksWindow({
             </span>
             <span className="hidden shrink-0 items-center gap-0.5 group-hover:flex" onClick={e => e.stopPropagation()}>
               <CopySubjectButton size={13} subject={t.emailSubject} />
-              <GlowToggles size={12} task={t} />
+              <ColorButton task={t} />
             </span>
             <span className="shrink-0 text-right">
               {done && t.completedAt ? <span className="text-[12px] text-slate-400">{new Date(t.completedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span> : dueText(t)}
@@ -745,7 +746,7 @@ export default function TasksWindow({
           e.dataTransfer.setData('text/task-id', t._id);
           e.dataTransfer.effectAllowed = 'move';
         }}
-        style={glowStyle(t)}>
+        style={tintStyle(t)}>
         <div className="flex items-start gap-2">
           {priorityDot(t) && <span className="mt-1.5">{priorityDot(t)}</span>}
           <p className={`min-w-0 flex-1 text-[13px] leading-snug ${statusOf(t) === 'done' ? 'text-slate-400 line-through' : 'font-medium text-slate-800'}`}>

@@ -52,6 +52,8 @@ export interface Task {
   actualMinutes?: number;
   hasNeonBorder?: boolean;
   neonColor?: 'red' | 'blue' | 'green' | null;
+  /** Colour code (the row is tinted with it) */
+  color?: TaskColor | null;
   isMinimized?: boolean;
   bucket?: TaskBucket | 'follow-up' | null;
   /** Your own group (only used when the task isn't linked to a project or vendor) */
@@ -456,6 +458,27 @@ export function isPinned(task: Task): boolean {
 }
 
 /** The neon glow colour a task card shows, if any (same fields as the legacy highlight). */
+export type TaskColor = 'red' | 'orange' | 'yellow' | 'green' | 'teal' | 'blue' | 'purple' | 'pink';
+/** Row tint, text on that tint, and the solid colour for dots. */
+export const TASK_COLORS: Record<TaskColor, {label: string; bg: string; ink: string; dot: string}> = {
+  red: {label: 'Red', bg: '#fcebeb', ink: '#791f1f', dot: '#e24b4a'},
+  orange: {label: 'Orange', bg: '#faece7', ink: '#712b13', dot: '#d85a30'},
+  yellow: {label: 'Yellow', bg: '#faeeda', ink: '#633806', dot: '#ef9f27'},
+  green: {label: 'Green', bg: '#eaf3de', ink: '#27500a', dot: '#639922'},
+  teal: {label: 'Teal', bg: '#e1f5ee', ink: '#085041', dot: '#1d9e75'},
+  blue: {label: 'Blue', bg: '#e6f1fb', ink: '#0c447c', dot: '#378add'},
+  purple: {label: 'Purple', bg: '#eeedfe', ink: '#3c3489', dot: '#7f77dd'},
+  pink: {label: 'Pink', bg: '#fbeaf0', ink: '#72243e', dot: '#d4537e'},
+};
+export const TASK_COLOR_KEYS = Object.keys(TASK_COLORS) as TaskColor[];
+/** A task's colour; tasks highlighted with the older glow keep that colour. */
+export function colorOf(task: Pick<Task, 'color' | 'hasNeonBorder' | 'neonColor'>): TaskColor | null {
+  if (task.color && TASK_COLORS[task.color]) return task.color;
+  return task.hasNeonBorder && task.neonColor ? task.neonColor : null;
+}
+/** The update that sets (or clears) a colour, retiring the old glow at the same time. */
+export const colorPatch = (color: TaskColor | null) => ({color, hasNeonBorder: false, neonColor: null});
+
 export function glowOf(task: Pick<Task, 'hasNeonBorder' | 'neonColor'>): NonNullable<Task['neonColor']> | null {
   return task.hasNeonBorder && task.neonColor ? task.neonColor : null;
 }
