@@ -40,6 +40,7 @@ import {
   ArrowLeftRight,
   ArrowUpToLine,
   Blend,
+  Blocks,
   Bold,
   Check,
   ChevronLeft,
@@ -50,6 +51,7 @@ import {
   Diamond,
   Download,
   Frame,
+  GanttChart,
   GitBranch,
   Group,
   Hand,
@@ -57,6 +59,7 @@ import {
   Italic,
   Keyboard,
   Link2,
+  ListChecks,
   ListTree,
   Loader2,
   Lock,
@@ -87,6 +90,7 @@ import {
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {AiBuilder, AiResult} from './ai';
+import {BLOCK_BY_KEY, BLOCK_NAMES, BLOCK_TYPES, BlockEditor, BlockGlyph, blockNode, blockNodeTypes, BlockQuickStyle, BLOCKS, BlockType, toDate} from './blocks';
 import {layeredLayout, layoutMind, mindInfo} from './layout';
 import {
   applyTheme,
@@ -139,6 +143,8 @@ import {
 import {edgeTypes, FONT_CSS, ICON_KEYS, ICONS, nodeTypes, smoothPath, Studio, StudioCtx} from './nodes';
 
 type Tool = 'select' | 'hand' | 'shape' | 'sticky' | 'text' | 'card' | 'frame' | 'pen' | 'stamp';
+/** Built-in item types plus the blocks (made once so React Flow keeps them stable). */
+const NODE_TYPES = {...nodeTypes, ...blockNodeTypes};
 type Menu = {x: number; y: number; flow: {x: number; y: number}; on: 'node' | 'pane' | 'edge'; edgeId?: string};
 /** What "copy style" carries from one item to another. */
 const STYLE_KEYS = ['fill', 'look', 'ink', 'border', 'textSize', 'font', 'bold', 'italic', 'underline', 'shadow', 'opacity', 'align'] as const;
@@ -148,7 +154,7 @@ type SaveState = 'saved' | 'saving' | 'unsaved' | 'error';
 
 const OPPOSITE: Record<string, Side> = {t: 'b', b: 't', l: 'r', r: 'l'};
 const CLIP_PREFIX = 'FLOWSTUDIO:';
-const TEXT_TYPES = new Set(['shape', 'sticky', 'text', 'card', 'frame', 'mind']);
+const TEXT_TYPES = new Set(['shape', 'sticky', 'text', 'card', 'frame', 'mind', 'timeline', 'gantt', 'chart', 'diagram', 'checklist']);
 
 const read = <T,>(k: string, f: T): T => {
   try {
@@ -238,7 +244,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
   const [stickyColor, setStickyColor] = useState('yellow');
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
   const [penWidth, setPenWidth] = useState(3);
-  const [flyout, setFlyout] = useState<null | 'shape' | 'pen' | 'sticky' | 'stamp'>(null);
+  const [flyout, setFlyout] = useState<null | 'shape' | 'pen' | 'sticky' | 'stamp' | 'blocks'>(null);
   const [stamp, setStamp] = useState(STAMPS[0]);
   const [menu, setMenu] = useState<Menu | null>(null);
   const [styleClip, setStyleClip] = useState<Partial<FD> | null>(null);
@@ -590,6 +596,41 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
     addNodes([n], {edit: n.id});
     setTool('select');
     setFlyout(null);
+  };
+
+  /** Adds a timeline, chart, table or diagram and opens its details so the entries can be filled in. */
+  const insertBlock = (key: string, p: {x: number; y: number} = centerOfView(), extra: Partial<FD> = {}) => {
+    if (isMind || readOnly) return;
+    let n = blockNode(key, p.x, p.y, extra);
+    const f = frameAt(p);
+    if (f) {
+      const a = absOf(f.id);
+      n = {...n, parentId: f.id, position: {x: n.position.x - a.x, y: n.position.y - a.y}};
+    }
+    addNodes([n]);
+    setTool('select');
+    setFlyout(null);
+    if (!inspector) {
+      setInspector(true);
+      write('FS_INSPECTOR', true);
+    }
+  };
+  /** Turns the selected boxes, cards and notes into one block (left to right, or top to bottom). */
+  const selectionToBlock = (key: 'timeline-line' | 'gantt' | 'checklist' | 'diagram-process') => {
+    const sel = rf.getNodes().filter(n => n.selected && (n.data as FD).label && !BLOCK_TYPES.has(n.type || '') && n.type !== 'frame');
+    if (sel.length < 2) return setToast('Select two or more items that have text');
+    const b = rf.getNodesBounds(sel);
+    const across = b.width >= b.height;
+    const sorted = [...sel].sort((x, y) => (across ? absOf(x.id).x - absOf(y.id).x : absOf(x.id).y - absOf(y.id).y));
+    const items = sorted.map(n => {
+      const d = n.data as FD;
+      const due = d.due && toDate(d.due) ? d.due : undefined;
+      return {id: uid('b'), label: String(d.label).split('\n')[0].slice(0, 80), note: String(d.label).split('\n').slice(1).join(' ').slice(0, 120) || undefined, date: due, ...(key === 'checklist' ? {done: d.status === 'done'} : {}), ...(key === 'gantt' && due ? {end: due} : {})};
+    });
+    const spec = BLOCK_BY_KEY[key];
+    const dated = items.filter(i => i.date).length >= 2;
+    insertBlock(key, {x: b.x + Math.max(b.width, spec.w) / 2, y: b.y + b.height + 60 + (spec.h || 200) / 2}, {items, label: '', ...(key === 'timeline-line' ? {spacing: dated ? 'date' : 'even', today: dated} : {})});
+    setToast(`Made a ${BLOCK_NAMES[spec.type].toLowerCase()} from ${items.length} items. The originals are still there`);
   };
 
   const insertImage = async (file: File, at?: {x: number; y: number}) => {
@@ -1058,6 +1099,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
         c: () => setTool('card'),
         f: () => setTool('frame'),
         p: () => setTool('pen'),
+        b: () => setFlyout(f => (f === 'blocks' ? null : 'blocks')),
       };
       if (tools[k]) {
         e.preventDefault();
@@ -1335,7 +1377,8 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
     const raw = e.dataTransfer.getData('application/x-flowstudio');
     if (!raw) return;
     try {
-      const {tool: t, shape} = JSON.parse(raw) as {tool: Tool; shape?: ShapeKind};
+      const {tool: t, shape, block} = JSON.parse(raw) as {tool: Tool | 'block'; shape?: ShapeKind; block?: string};
+      if (t === 'block') return block && insertBlock(block, p);
       createAt(t, p, shape || shapeKind);
     } catch {
       // ignore
@@ -1387,6 +1430,8 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
 
   // ── Context for the nodes ────────────────────────────────────────────────
   const ctx: StudioCtx = {
+    patchData: (id, patch) => updateNodes([id], patch),
+    fitHeight: id => setNodes(ns => ns.map(n => (n.id === id && n.height !== undefined ? {...n, height: undefined, style: {...n.style, height: undefined}} : n))),
     editingId,
     startEdit,
     commitText,
@@ -1569,7 +1614,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
               edges={isMind ? mindEdges : edges}
               onNodesChange={onNodesChange}
               onEdgesChange={isMind ? undefined : changes => onEdgesChange(readOnly ? changes.filter(c => c.type === 'select') : changes)}
-              nodeTypes={nodeTypes}
+              nodeTypes={NODE_TYPES}
               edgeTypes={edgeTypes}
               onConnect={onConnect}
               onConnectEnd={onConnectEnd}
@@ -1636,7 +1681,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                   zoomable
                   className="fs-minimap"
                   nodeBorderRadius={6}
-                  nodeColor={n => (n.type === 'sticky' ? stickyPaint(n.data as FD).bg : n.type === 'mind' ? '#e4e7ec' : n.type === 'draw' ? 'transparent' : paint(n.data as FD, n.type === 'frame' ? 'gray' : 'blue').flat)}
+                  nodeColor={n => (BLOCK_TYPES.has(n.type || '') ? '#ffffff' : n.type === 'sticky' ? stickyPaint(n.data as FD).bg : n.type === 'mind' ? '#e4e7ec' : n.type === 'draw' ? 'transparent' : paint(n.data as FD, n.type === 'frame' ? 'gray' : 'blue').flat)}
                   maskColor={canvas.dark ? 'rgba(15,20,36,0.6)' : 'rgba(240,242,246,0.7)'}
                 />
               )}
@@ -1792,6 +1837,32 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                         </div>
                       )}
                     </div>
+                    <div className="fs-tool-wrap">
+                      <ToolBtn active={flyout === 'blocks'} icon={<Blocks />} label="Timelines, charts, tables and diagrams (B)" onClick={() => setFlyout(f => (f === 'blocks' ? null : 'blocks'))} className="fs-tool-blocks" />
+                      {flyout === 'blocks' && (
+                        <div className="fs-flyout fs-blocks-menu">
+                          {(['Timelines', 'Data', 'Diagrams'] as const).map(g => (
+                            <React.Fragment key={g}>
+                              <h6>{g === 'Data' ? 'Data and lists' : g}</h6>
+                              <div className="fs-blocks-grid">
+                                {BLOCKS.filter(b => b.group === g).map(b => (
+                                  <button
+                                    draggable
+                                    key={b.key}
+                                    onClick={() => insertBlock(b.key)}
+                                    onDragStart={e => e.dataTransfer.setData('application/x-flowstudio', JSON.stringify({tool: 'block', block: b.key}))}
+                                    title={`${b.name}: click to add, or drag onto the board`}
+                                    type="button">
+                                    <BlockGlyph k={b.key} />
+                                    {b.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <ToolBtn icon={<ImageIcon />} label="Picture (or paste / drop one)" onClick={() => fileRef.current?.click()} />
                     <span className="fs-palette-sep" />
                     <ToolBtn icon={<span className="fs-glyph">⇣</span>} label="Auto-arrange top to bottom" onClick={() => autoArrange('TB')} />
@@ -1829,6 +1900,12 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                   <button className="fs-btn" onClick={() => createAt('sticky', centerOfView())} type="button">
                     <StickyNote /> Sticky note
                   </button>
+                  <button className="fs-btn" onClick={() => insertBlock('timeline-line')} type="button">
+                    <GanttChart /> Timeline
+                  </button>
+                  <button className="fs-btn" onClick={() => setFlyout('blocks')} type="button">
+                    <Blocks /> Charts and more
+                  </button>
                   <button className="fs-btn fs-btn-ai" onClick={() => setPanel('ai')} type="button">
                     <Sparkles /> Build with AI
                   </button>
@@ -1853,6 +1930,15 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                         </button>
                         <button onClick={() => (createAt('frame', menu.flow), setMenu(null))} type="button">
                           <Frame /> Add a section here
+                        </button>
+                        <button onClick={() => (insertBlock('timeline-line', menu.flow), setMenu(null))} type="button">
+                          <GanttChart /> Add a timeline here
+                        </button>
+                        <button onClick={() => (insertBlock('table', menu.flow), setMenu(null))} type="button">
+                          <BlockGlyph k="table" /> Add a table here
+                        </button>
+                        <button onClick={() => (insertBlock('checklist', menu.flow), setMenu(null))} type="button">
+                          <ListChecks /> Add a checklist here
                         </button>
                         <hr />
                       </>
@@ -1903,6 +1989,20 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
                           <button onClick={() => (pasteStyle(), setMenu(null))} type="button">
                             <Paintbrush /> Paste style <kbd>Ctrl+Alt+V</kbd>
                           </button>
+                        )}
+                        {!isMind && selectedNodes.filter(n => (n.data as FD).label && !BLOCK_TYPES.has(n.type || '') && n.type !== 'frame').length > 1 && (
+                          <>
+                            <hr />
+                            <button onClick={() => (selectionToBlock('timeline-line'), setMenu(null))} type="button">
+                              <GanttChart /> Make a timeline from these
+                            </button>
+                            <button onClick={() => (selectionToBlock('diagram-process'), setMenu(null))} type="button">
+                              <BlockGlyph k="diagram-process" /> Make numbered steps from these
+                            </button>
+                            <button onClick={() => (selectionToBlock('checklist'), setMenu(null))} type="button">
+                              <ListChecks /> Make a checklist from these
+                            </button>
+                          </>
                         )}
                         {!isMind && (
                           <>
@@ -1984,7 +2084,7 @@ function EditorInner({boardId, name: initialName, initial, onBack}: EditorProps)
               edgesCount={isMind ? mindEdges.length : edges.length}
               settings={settings}
               onSettings={setSettings}
-              onUpdate={(id, patch) => updateNodes([id], patch)}
+              onUpdate={(id, patch, extra) => updateNodes([id], patch, extra)}
               onFocus={focusNode}
               onClose={() => setInspector(v => (write('FS_INSPECTOR', !v), !v))}
               onTaskLinked={(id, done) => setTaskDone(m => ({...m, [id]: done}))}
@@ -2293,7 +2393,12 @@ function ZoomBar({minimap, onMinimap}: {minimap: boolean; onMinimap: () => void}
   );
 }
 
-type Pop = null | 'fill' | 'shape' | 'icon' | 'badge' | 'align' | 'link' | 'size' | 'fx';
+/** The Insert-menu picture that matches a block's current style. */
+const blockKeyOf = (type: BlockType, variant?: string) => {
+  const k = type === 'gantt' || type === 'table' || type === 'checklist' ? type : `${type}-${variant || ''}`;
+  return BLOCK_BY_KEY[k] ? k : type === 'timeline' ? 'timeline-line' : type === 'chart' ? (variant === 'rings' ? 'chart-rings' : 'chart-bar') : type === 'diagram' ? (variant === 'stairs' ? 'diagram-stairs' : 'diagram-process') : 'table';
+};
+type Pop = null | 'fill' | 'shape' | 'icon' | 'badge' | 'align' | 'link' | 'size' | 'fx' | 'block';
 function SelectionToolbar({
   nodes,
   isMind,
@@ -2347,6 +2452,8 @@ function SelectionToolbar({
   const toggle = (p: Pop) => setPop(cur => (cur === p ? null : p));
   const single = nodes.length === 1 ? nodes[0] : null;
   const canQuick = single && !isMind && ['shape', 'sticky', 'card'].includes(single.type || '');
+  const anyBlock = nodes.some(n => BLOCK_TYPES.has(n.type || ''));
+  const blockType = types.size === 1 && anyBlock ? (nodes[0].type as BlockType) : null;
   // Keep the toolbar on screen: near an edge it lines up with that side of the selection instead of its middle
   const rf = useReactFlow();
   useViewport();
@@ -2388,7 +2495,14 @@ function SelectionToolbar({
           </>
         ) : (
           <>
-            {!only('image') && (
+            {blockType && (
+              <ToolbarBtn active={pop === 'block'} label="Style and colours" onClick={() => toggle('block')}>
+                <span className="fs-tb-block">
+                  <BlockGlyph k={blockKeyOf(blockType, d.variant)} />
+                </span>
+              </ToolbarBtn>
+            )}
+            {!only('image') && !anyBlock && (
               <ToolbarBtn label={only('text') ? 'Text colour' : 'Colour and look'} onClick={() => toggle('fill')}>
                 <span className="fs-dot" style={{background: dot}} />
               </ToolbarBtn>
@@ -2476,6 +2590,7 @@ function SelectionToolbar({
 
         {pop && (
           <div className={`fs-tb-pop ${popUp ? 'fs-tb-pop-up' : ''}`}>
+            {pop === 'block' && blockType && <BlockQuickStyle d={d} onDetails={onDetails} onUpdate={p => onUpdate(p)} type={blockType} />}
             {pop === 'fill' &&
               (isMind ? (
                 <div className="fs-color-panel">
@@ -2954,7 +3069,7 @@ function Inspector({
   edgesCount: number;
   settings: Settings;
   onSettings: (p: Partial<Settings>) => void;
-  onUpdate: (id: string, patch: Partial<FD>) => void;
+  onUpdate: (id: string, patch: Partial<FD>, extra?: Partial<Node>) => void;
   onFocus: (id: string) => void;
   onClose: () => void;
   onTaskLinked: (taskId: string, done: boolean) => void;
@@ -3024,14 +3139,15 @@ function Inspector({
   return (
     <aside className="fs-inspector">
       <header>
-        <span>{node ? ({shape: 'Shape', sticky: 'Sticky note', text: 'Text', card: 'Card', frame: 'Section', draw: 'Drawing', image: 'Picture', mind: 'Idea'}[node.type || 'shape'] || 'Item') : 'Board'}</span>
+        <span>{node ? ({shape: 'Shape', sticky: 'Sticky note', text: 'Text', card: 'Card', frame: 'Section', draw: 'Drawing', image: 'Picture', mind: 'Idea', ...BLOCK_NAMES}[node.type || 'shape'] || 'Item') : 'Board'}</span>
         <button aria-label="Close details" className="fs-icon-btn" onClick={onClose} type="button">
           <X />
         </button>
       </header>
       {node ? (
         <div className="fs-inspector-body">
-          {node.type !== 'draw' && node.type !== 'image' && field('label', node.type === 'frame' ? 'Section name' : 'Text', node.type !== 'frame' && node.type !== 'mind')}
+          {BLOCK_TYPES.has(node.type || '') && <BlockEditor node={node} onUpdate={(patch, extra) => onUpdate(node.id, patch, extra)} />}
+          {node.type !== 'draw' && node.type !== 'image' && !BLOCK_TYPES.has(node.type || '') && field('label', node.type === 'frame' ? 'Section name' : 'Text', node.type !== 'frame' && node.type !== 'mind')}
           {node.type === 'card' && (
             <>
               <div className="fs-field-row">

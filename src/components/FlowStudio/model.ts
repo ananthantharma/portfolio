@@ -73,6 +73,29 @@ export interface FD {
   order?: number;
   color?: string; // branch colour (set on first-level branches)
   collapsed?: boolean;
+  // blocks (timeline, gantt, table, chart, diagram, checklist)
+  variant?: string;
+  items?: BlockItem[];
+  cells?: string[][];
+  scheme?: string; // key of BLOCK_SCHEMES
+  spacing?: 'even' | 'date';
+  today?: boolean;
+  header?: boolean;
+  unit?: string;
+  bare?: boolean; // no card behind the block
+}
+
+/** One entry in a block: an event, a task bar, a chart value, a diagram part or a checklist line. */
+export interface BlockItem {
+  id: string;
+  label: string;
+  date?: string; // yyyy-mm-dd
+  end?: string; // yyyy-mm-dd (Gantt bars, phases)
+  note?: string;
+  color?: string; // "#rrggbb"; otherwise the block's colour scheme
+  value?: number; // chart value, or Gantt progress 0-100
+  done?: boolean;
+  milestone?: boolean;
 }
 
 export interface ED {
@@ -295,7 +318,8 @@ export function opgTheme(nodes: Node[], edges: Edge[], only?: Set<string>): {nod
         patch = n.id === rootId ? {fill: 'opgDark', color: OPG.dark} : branchColor[n.id] ? {color: branchColor[n.id]} : {color: undefined};
         break;
       default:
-        return n;
+        if (!BLOCK_KINDS.has(n.type || '')) return n;
+        patch = {scheme: 'opg', items: d.items?.map(({color: _c, ...rest}) => rest)};
     }
     return {...n, data: {...d, ...patch}};
   });
@@ -386,7 +410,8 @@ export function applyTheme(t: BoardTheme, nodes: Node[], edges: Edge[], only?: S
         patch = n.id === rootId ? {fill: t.rootFill, look: t.rootFill ? 'solid' : undefined, ink: undefined, color: t.rootFill ? t.branches[0] : undefined} : {color: branchColor[n.id], fill: undefined};
         break;
       default:
-        return n;
+        if (!BLOCK_KINDS.has(n.type || '')) return n;
+        patch = {scheme: THEME_SCHEME[t.key] || 'vivid', items: d.items?.map(({color: _c, ...rest}) => rest)};
     }
     return {...n, data: {...d, ...patch}};
   });
@@ -397,6 +422,21 @@ export function applyTheme(t: BoardTheme, nodes: Node[], edges: Edge[], only?: S
   });
   return {nodes: next, edges: nextEdges};
 }
+
+/** Item types that draw themselves from a list (timelines, charts, tables…). */
+export const BLOCK_KINDS = new Set(['timeline', 'gantt', 'table', 'chart', 'diagram', 'checklist']);
+/** The block colour scheme that goes with each board theme. */
+const THEME_SCHEME: Record<string, string> = {pastel: 'pastel', bold: 'vivid', minimal: 'mono', ocean: 'ocean', sunset: 'sunset', forest: 'forest', grape: 'grape', mono: 'mono', neon: 'vivid'};
+const SCHEME_FIRST: Record<string, string[]> = {
+  vivid: ['#7b68ee', '#3b82f6', '#0ea5e9', '#10b981', '#f59e0b'],
+  ocean: ['#1e3a8a', '#1d4ed8', '#2563eb', '#0284c7', '#0891b2'],
+  sunset: ['#be123c', '#db2777', '#ea580c', '#f59e0b', '#c026d3'],
+  forest: ['#14532d', '#15803d', '#16a34a', '#65a30d', '#0d9488'],
+  grape: ['#4c1d95', '#6d28d9', '#7c3aed', '#a855f7', '#c026d3'],
+  pastel: ['#a5b4fc', '#93c5fd', '#7dd3c0', '#a7e3a1', '#fcd581'],
+  mono: ['#111827', '#374151', '#4b5563', '#6b7280', '#9ca3af'],
+  opg: ['#0C2721', '#3F8F1E', '#66CC00', '#8CC63F', '#1f4d3f'],
+};
 
 export const BADGES = ['⭐', '🚩', '⚠️', '✅', '🔴', '⏱️', '💲', '📌', '❗', '🔒', '💡', '🎯'];
 
@@ -574,6 +614,29 @@ export function makePreview(nodes: Node[], edges: Edge[], kind: BoardKind, layou
   for (const n of nodes) {
     const b = abs.get(n.id);
     if (!b || n.type === 'draw' || n.type === 'image') continue;
+    if (BLOCK_KINDS.has(n.type || '')) {
+      // A white card with its entries sketched inside: rows for lists, a row of marks for timelines and diagrams
+      const d = n.data as FD;
+      const cols = SCHEME_FIRST[d.scheme || 'vivid'] || SCHEME_FIRST.vivid;
+      r.push([s(b.x - minX), s(b.y - minY), Math.max(s(b.w), 1.5), Math.max(s(b.h), 1.5), d.bare ? 'none' : '#ffffff', 1]);
+      const list: BlockItem[] = n.type === 'table' ? (d.cells || []).map((_, i) => ({id: String(i), label: ''})) : d.items || [];
+      const k = Math.min(list.length, 8);
+      const rows = n.type === 'gantt' || n.type === 'table' || n.type === 'checklist' || (n.type === 'chart' && d.variant === 'bar') || (n.type === 'timeline' && d.variant === 'vertical') || (n.type === 'diagram' && (d.variant === 'funnel' || d.variant === 'pyramid'));
+      for (let i = 0; i < k; i++) {
+        const c = isHex(list[i].color) ? list[i].color! : cols[i % cols.length];
+        if (rows) {
+          const rh = (b.h - 20) / k;
+          const w = n.type === 'gantt' ? b.w * 0.3 : n.type === 'diagram' ? b.w * (d.variant === 'funnel' ? 0.9 - (0.5 * i) / k : 0.3 + (0.6 * i) / k) : b.w - 24;
+          const x = n.type === 'gantt' ? b.x + 12 + (b.w - 24 - w) * (i / Math.max(k - 1, 1)) : b.x + (b.w - w) / 2;
+          r.push([s(x - minX), s(b.y + 10 + i * rh + rh * 0.2 - minY), Math.max(s(w), 1), Math.max(s(rh * 0.6), 0.8), c, 1]);
+        } else {
+          const cw = (b.w - 20) / k;
+          const h = n.type === 'chart' || (n.type === 'diagram' && d.variant === 'stairs') ? (b.h - 24) * (0.35 + (0.65 * ((i * 37) % 10)) / 10) : b.h * 0.34;
+          r.push([s(b.x + 10 + i * cw + cw * 0.15 - minX), s(b.y + (n.type === 'chart' || d.variant === 'stairs' ? b.h - 12 - h : (b.h - h) / 2) - minY), Math.max(s(cw * 0.7), 1), Math.max(s(h), 1), c, 1]);
+        }
+      }
+      continue;
+    }
     r.push([s(b.x - minX), s(b.y - minY), Math.max(s(b.w), 1.5), Math.max(s(b.h), 1.5), colorOf(n), n.type === 'frame' ? 2 : n.type === 'sticky' ? 3 : (n.data as FD).shape === 'pill' || n.type === 'mind' ? 1 : 0]);
     if (r.length > 90) break;
   }
@@ -665,6 +728,17 @@ export function connect(a: Node, b: Node, data: ED = {}): Edge {
   const box = (n: Node) => ({x: n.position.x, y: n.position.y, w: (n.width as number) || 200, h: (n.height as number) || 72});
   const [s, t] = autoSides(box(a), box(b));
   return flowEdge(a.id, b.id, data, s, t);
+}
+
+const day = (n: number) => {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const bi = (label: string, extra: Partial<BlockItem> = {}): BlockItem => ({id: uid('b'), label, ...extra});
+function block(type: string, x: number, y: number, w: number, h: number | undefined, data: Partial<FD>): Node {
+  return {id: uid('k'), type, position: {x, y}, width: w, ...(h ? {height: h} : {}), data: {label: '', ...data}};
 }
 
 export const TEMPLATES: Template[] = [
@@ -814,25 +888,136 @@ export const TEMPLATES: Template[] = [
   },
   {
     key: 'timeline',
-    name: 'Timeline / roadmap',
+    name: 'Project timeline',
     kind: 'whiteboard',
-    blurb: 'Phases in a row with milestones underneath',
+    blurb: 'Phases across the top, dated milestones below, with today marked',
     build: () => {
-      const phases = [
-        ['Discover', 'g:ocean'],
-        ['Plan', 'g:aurora'],
-        ['Build', 'g:grape'],
-        ['Launch', 'g:sunset'],
-        ['Improve', 'g:fire'],
-      ].map(([l, f], i) => shapeNode(i * 205, 0, l, {shape: 'chevron', fill: f, bold: true}, 220, 80));
-      const notes = [
-        ['Interviews and research', 'blue'],
-        ['Scope, budget, owners', 'green'],
-        ['Weekly demos', 'purple'],
-        ['Go-live checklist', 'orange'],
-        ['Feedback and fixes', 'pink'],
-      ].map(([l, f], i) => stickyNode(i * 205 + 20, 130, l, f, i % 2 ? 2 : -2));
-      return board('whiteboard', [textNode(0, -70, 'Roadmap', 'xl'), ...phases, ...notes]);
+      const phases = block('timeline', 0, 0, 940, 190, {
+        variant: 'phases',
+        today: true,
+        items: [
+          bi('Discover', {date: day(-30), end: day(-8), note: 'Research and interviews'}),
+          bi('Plan', {date: day(-7), end: day(14), note: 'Scope, budget, owners'}),
+          bi('Build', {date: day(15), end: day(60), note: 'Weekly demos'}),
+          bi('Launch', {date: day(61), end: day(75), note: 'Go-live checklist'}),
+          bi('Improve', {date: day(76), end: day(120), note: 'Feedback and fixes'}),
+        ],
+      });
+      const line = block('timeline', 0, 230, 940, 300, {
+        variant: 'line',
+        spacing: 'date',
+        today: true,
+        label: 'Key dates',
+        items: [
+          bi('Kickoff', {date: day(-28), note: 'Team and goals agreed'}),
+          bi('Research done', {date: day(-9)}),
+          bi('Plan approved', {date: day(13), note: 'Budget signed off'}),
+          bi('First demo', {date: day(30)}),
+          bi('Feature freeze', {date: day(58)}),
+          bi('Go live', {date: day(62), note: 'Launch day'}),
+          bi('Review', {date: day(118)}),
+        ],
+      });
+      return board('whiteboard', [textNode(0, -76, 'Project timeline', 'xl'), phases, line]);
+    },
+  },
+  {
+    key: 'gantt',
+    name: 'Gantt plan',
+    kind: 'whiteboard',
+    blurb: 'Tasks as bars on a calendar, with progress, milestones and today',
+    build: () => {
+      const g = block('gantt', 0, 0, 980, undefined, {
+        today: true,
+        label: 'Delivery plan',
+        items: [
+          bi('Requirements', {date: day(-14), end: day(-3), value: 100}),
+          bi('Design', {date: day(-6), end: day(12), value: 60}),
+          bi('Vendor selection', {date: day(-2), end: day(16), value: 30}),
+          bi('Build', {date: day(8), end: day(46), value: 15}),
+          bi('Testing', {date: day(38), end: day(58)}),
+          bi('Training', {date: day(50), end: day(60)}),
+          bi('Go live', {date: day(62), milestone: true}),
+          bi('Support', {date: day(62), end: day(84)}),
+        ],
+      });
+      const risks = stickyNode(1010, 0, 'Risks: vendor lead time, holiday cover', 'pink', 2);
+      const check = block('checklist', 1010, 210, 300, undefined, {label: 'Before go-live', items: [bi('Sign-off from finance', {done: true}), bi('Training booked'), bi('Comms sent'), bi('Rollback plan')]});
+      return board('whiteboard', [g, risks, check]);
+    },
+  },
+  {
+    key: 'roadmap',
+    name: 'Now, next, later',
+    kind: 'whiteboard',
+    blurb: 'A roadmap in three columns, without exact dates',
+    build: () => {
+      const cols = [
+        ['Now', 'green'],
+        ['Next', 'blue'],
+        ['Later', 'purple'],
+      ].map(([l, f], i) => frameNode(i * 330, 0, l, f, 310, 520));
+      const card = (col: number, row: number, label: string, extra: Partial<FD> = {}) => ({...cardNode(0, 0, label, extra), parentId: cols[col].id, position: {x: 20, y: 56 + row * 112}});
+      return board('whiteboard', [
+        ...cols,
+        textNode(0, -80, 'Roadmap', 'xl'),
+        card(0, 0, 'Self-service requests', {fill: 'green', status: 'doing', owner: 'Alex'}),
+        card(0, 1, 'Faster approvals', {fill: 'green', status: 'doing'}),
+        card(1, 0, 'Supplier portal', {fill: 'blue'}),
+        card(1, 1, 'Monthly reporting', {fill: 'blue'}),
+        card(2, 0, 'Mobile app', {fill: 'purple'}),
+        card(2, 1, 'AI triage', {fill: 'purple'}),
+      ]);
+    },
+  },
+  {
+    key: 'dashboard',
+    name: 'Status dashboard',
+    kind: 'whiteboard',
+    blurb: 'Progress rings, a chart, a budget donut, open items and a checklist',
+    build: () => {
+      const rings = block('chart', 0, 0, 600, 210, {variant: 'rings', label: 'Workstreams', unit: '%', items: [bi('Design', {value: 80}), bi('Build', {value: 45}), bi('Testing', {value: 20}), bi('Training', {value: 60})]});
+      const donut = block('chart', 630, 0, 420, 210, {variant: 'donut', label: 'Budget spent', unit: '$', scheme: 'ocean', items: [bi('People', {value: 48000}), bi('Software', {value: 22000}), bi('Vendors', {value: 18000})]});
+      const bars = block('chart', 0, 240, 600, 300, {variant: 'column', label: 'Requests per month', items: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m, i) => bi(m, {value: [32, 41, 38, 55, 61, 74][i]}))});
+      const check = block('checklist', 630, 240, 420, undefined, {label: 'This week', items: [bi('Steering update', {done: true}), bi('Close vendor questions'), bi('Plan the test cycle'), bi('Book training rooms')]});
+      const table = block('table', 0, 570, 1050, undefined, {
+        header: true,
+        cells: [
+          ['Risk or issue', 'Owner', 'Impact', 'Next step'],
+          ['Vendor lead time', 'Sam', 'High', 'Escalate on Friday'],
+          ['Test data not ready', 'Priya', 'Medium', 'Use last month’s extract'],
+          ['Holiday cover', 'Alex', 'Low', 'Agree backups'],
+        ],
+      });
+      return board('whiteboard', [textNode(0, -76, 'Project status', 'xl'), rings, donut, bars, check, table]);
+    },
+  },
+  {
+    key: 'priority',
+    name: 'Priority matrix',
+    kind: 'whiteboard',
+    blurb: 'Urgent against important, with notes to sort',
+    build: () => {
+      const m = block('diagram', 0, 0, 640, 540, {
+        variant: 'matrix',
+        label: '',
+        cells: [['More urgent →', 'More important →']],
+        items: [bi('Schedule', {note: 'Important, not urgent'}), bi('Do first', {note: 'Important and urgent'}), bi('Drop', {note: 'Neither'}), bi('Delegate', {note: 'Urgent, less important'})],
+      });
+      const notes = ['Quarterly plan', 'Reply to audit', 'Clean up files', 'Book travel'].map((l, i) => stickyNode(690, i * 130, l, ['yellow', 'pink', 'blue', 'green'][i], i % 2 ? 2 : -2));
+      return board('whiteboard', [textNode(0, -76, 'What matters most', 'xl'), m, ...notes.map(n => ({...n, height: 110}))]);
+    },
+  },
+  {
+    key: 'process-overview',
+    name: 'Process overview',
+    kind: 'whiteboard',
+    blurb: 'Numbered steps, a funnel of volumes and the improvement cycle',
+    build: () => {
+      const steps = block('diagram', 0, 0, 960, 230, {variant: 'process', items: [bi('Request', {note: 'Someone asks for it'}), bi('Review', {note: 'Check it is complete'}), bi('Approve', {note: 'Manager signs off'}), bi('Deliver', {note: 'Do the work'}), bi('Close', {note: 'Confirm and archive'})]});
+      const funnel = block('diagram', 0, 260, 460, 340, {variant: 'funnel', label: 'Volumes this quarter', scheme: 'ocean', items: [bi('Requests', {note: '1,200'}), bi('Complete', {note: '980'}), bi('Approved', {note: '760'}), bi('Delivered', {note: '702'})]});
+      const cycle = block('diagram', 500, 260, 460, 340, {variant: 'cycle', label: 'Improve', scheme: 'forest', items: [bi('Plan'), bi('Do'), bi('Check'), bi('Act')]});
+      return board('whiteboard', [textNode(0, -76, 'How requests flow', 'xl'), steps, funnel, cycle]);
     },
   },
   {

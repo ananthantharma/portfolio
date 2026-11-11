@@ -3,6 +3,7 @@
 
 import '@xyflow/react/dist/style.css';
 import './studio.css';
+import './blocks.css';
 
 import {ArrowLeft, Copy, Frame, GitBranch, LayoutGrid, Loader2, MoreHorizontal, Pencil, Plus, Search, Sparkles, Trash2, Upload, X} from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -220,7 +221,7 @@ function Gallery({onOpen}: {onOpen: (id: string) => void}) {
             </span>
             <span>
               <b>All templates</b>
-              <small>Journey, retro, SWOT, org chart…</small>
+              <small>Timelines, Gantt, dashboards, retro…</small>
             </span>
           </button>
         </section>

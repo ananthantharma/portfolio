@@ -105,6 +105,10 @@ export interface StudioCtx {
   /** The board background is dark, so loose text and dark lines switch to light */
   dark: boolean;
   mindLine: 'curve' | 'elbow' | 'straight';
+  /** Changes one item's data (with undo) */
+  patchData: (id: string, patch: Partial<FD>) => void;
+  /** Lets an item size its height to its content again (after a width-only resize) */
+  fitHeight: (id: string) => void;
 }
 export const Studio = createContext<StudioCtx | null>(null);
 export const useStudio = () => useContext(Studio)!;
@@ -117,14 +121,14 @@ export const FONT_CSS: Record<string, string> = {
   hand: "'Segoe Print', 'Bradley Hand', 'Chalkboard SE', 'Comic Sans MS', cursive",
 };
 /** Font, slant and underline shared by every kind of text. */
-const typeStyle = (d: FD): React.CSSProperties => ({
+export const typeStyle = (d: FD): React.CSSProperties => ({
   fontFamily: d.font && d.font !== 'sans' ? FONT_CSS[d.font] : undefined,
   fontStyle: d.italic ? 'italic' : undefined,
   textDecoration: d.underline ? 'underline' : undefined,
   textUnderlineOffset: d.underline ? 3 : undefined,
 });
 /** See-through and lifted items. */
-const boxStyle = (d: FD): React.CSSProperties | undefined => (d.opacity && d.opacity < 1 ? {opacity: d.opacity} : undefined);
+export const boxStyle = (d: FD): React.CSSProperties | undefined => (d.opacity && d.opacity < 1 ? {opacity: d.opacity} : undefined);
 const SIDES: [string, Position][] = [
   ['t', Position.Top],
   ['r', Position.Right],
@@ -132,7 +136,7 @@ const SIDES: [string, Position][] = [
   ['l', Position.Left],
 ];
 
-function Handles({hidden = false}: {hidden?: boolean}) {
+export function Handles({hidden = false}: {hidden?: boolean}) {
   return (
     <>
       {SIDES.map(([id, pos]) => (
@@ -143,7 +147,7 @@ function Handles({hidden = false}: {hidden?: boolean}) {
 }
 
 /** Text that reads like the node and turns editable in place on double-click. */
-function EditableText({id, value, className, style, placeholder, singleLine = false}: {id: string; value: string; className?: string; style?: React.CSSProperties; placeholder?: string; singleLine?: boolean}) {
+export function EditableText({id, value, className, style, placeholder, singleLine = false}: {id: string; value: string; className?: string; style?: React.CSSProperties; placeholder?: string; singleLine?: boolean}) {
   const {editingId, commitText, cancelEdit} = useStudio();
   const editing = editingId === id;
   const ref = useRef<HTMLDivElement>(null);
@@ -202,7 +206,7 @@ function EditableText({id, value, className, style, placeholder, singleLine = fa
   );
 }
 
-function Extras({d}: {d: FD}) {
+export function Extras({d}: {d: FD}) {
   const {taskDone} = useStudio();
   return (
     <>
@@ -221,7 +225,7 @@ function Extras({d}: {d: FD}) {
   );
 }
 
-function Resizer({selected, d, keepAspect = false, minW = 50, minH = 30}: {selected: boolean; d: FD; keepAspect?: boolean; minW?: number; minH?: number}) {
+export function Resizer({selected, d, keepAspect = false, minW = 50, minH = 30}: {selected: boolean; d: FD; keepAspect?: boolean; minW?: number; minH?: number}) {
   const {snapshot, touch, readOnly} = useStudio();
   return (
     <NodeResizer
