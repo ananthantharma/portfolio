@@ -290,7 +290,7 @@ export default function TaskAttachments({task, pendingKey}: {task?: Task; pendin
                 <AlertCircle size={12} /> {upload.error}
               </small>
             ) : (
-              <span className={styles.fileBar} role="progressbar" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(upload.progress * 100)}>
+              <span aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(upload.progress * 100)} className={styles.fileBar} role="progressbar">
                 <i style={{width: `${Math.max(4, upload.progress * 100)}%`}} />
               </span>
             )}
