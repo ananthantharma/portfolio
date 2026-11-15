@@ -16,7 +16,6 @@ import {
   FolderInput,
   Globe,
   Hash,
-  LayoutGrid,
   Library,
   Link2,
   List as ListIcon,
@@ -25,6 +24,7 @@ import {
   Paperclip,
   Pencil,
   Plus,
+  Rows3,
   Search,
   Star,
   Trash2,
@@ -295,6 +295,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
   const [query, setQuery] = useState('');
   const [sort, setSortState] = useState<Sort>('smart');
   const [layout, setLayoutState] = useState<'grid' | 'list'>('grid');
+  const downOnBackdrop = useRef(false);
   const [drawer, setDrawer] = useState<{id: string | null; draft: Draft; files: File[]} | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploads, setUploads] = useState<Record<string, {name: string; progress: number}>>({});
@@ -687,19 +688,29 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
     const detail = b.description?.trim() && b.description.trim().toLowerCase() !== b.title.trim().toLowerCase() ? b.description.trim() : '';
     return (
       <article
-        className={`group relative flex flex-col rounded-2xl border bg-white p-4 transition-all duration-200 ${
-          dropOn === b._id ? 'border-[#7d9b70] ring-4 ring-[#e0e7d9]' : 'border-zinc-200/80 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_12px_32px_-18px_rgba(0,0,0,0.35)]'
+        className={`group relative flex flex-col gap-3 rounded-2xl border bg-white p-4 transition-all duration-200 sm:flex-row sm:items-center sm:gap-4 ${
+          dropOn === b._id ? 'border-[#7d9b70] ring-4 ring-[#e0e7d9]' : 'border-zinc-200/80 hover:border-zinc-300 hover:shadow-[0_10px_30px_-20px_rgba(0,0,0,0.35)]'
         }`}
         key={b._id}
         onDoubleClick={e => !isTyping(e.target) && !(e.target as HTMLElement).closest('a,button') && startEdit(b)}
         {...dropProps(b)}>
-        <div className="flex items-start gap-3">
-          <SiteIcon b={b} />
+        <div className="flex min-w-0 flex-1 items-start gap-3.5">
+          <SiteIcon b={b} size={44} />
           <div className="min-w-0 flex-1">
-            <button className="block w-full truncate text-left text-[14.5px] font-semibold text-zinc-900 hover:text-[#405b43]" onClick={() => open(b)} title={hasLink(b) ? `Open ${hrefOf(b.url)}` : 'Download'} type="button">
-              {b.title}
-            </button>
-            <p className="mt-0.5 flex items-center gap-1 truncate text-[12px] text-zinc-400">
+            <div className="flex min-w-0 items-center gap-1">
+              <button className="min-w-0 truncate text-left text-[15px] font-semibold text-zinc-900 hover:text-[#405b43]" onClick={() => open(b)} title={hasLink(b) ? `Open ${hrefOf(b.url)}` : 'Download'} type="button">
+                {b.title}
+              </button>
+              <button
+                aria-label={b.favorite ? 'Remove from favourites' : 'Add to favourites'}
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${b.favorite ? 'text-amber-400 hover:bg-amber-50' : 'text-zinc-300 opacity-0 hover:bg-zinc-100 hover:text-zinc-500 group-hover:opacity-100'}`}
+                onClick={() => toggleFav(b)}
+                title={b.favorite ? 'Favourite' : 'Add to favourites'}
+                type="button">
+                <Star className="h-4 w-4" fill={b.favorite ? 'currentColor' : 'none'} />
+              </button>
+            </div>
+            <p className="flex min-w-0 items-center gap-1 text-[12px] text-zinc-400">
               {hasLink(b) ? (
                 <>
                   <Link2 className="h-3 w-3 flex-shrink-0" />
@@ -711,59 +722,47 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                   Document
                 </>
               )}
+              {b.lastOpenedAt ? <span className="flex-shrink-0">· opened {ago(b.lastOpenedAt)}</span> : null}
             </p>
-          </div>
-          <button
-            aria-label={b.favorite ? 'Remove from favourites' : 'Add to favourites'}
-            className={`-mr-1 -mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors ${b.favorite ? 'text-amber-400 hover:bg-amber-50' : 'text-zinc-300 opacity-0 hover:bg-zinc-100 hover:text-zinc-500 group-hover:opacity-100'}`}
-            onClick={() => toggleFav(b)}
-            title={b.favorite ? 'Favourite' : 'Add to favourites'}
-            type="button">
-            <Star className="h-[18px] w-[18px]" fill={b.favorite ? 'currentColor' : 'none'} />
-          </button>
-        </div>
-
-        {detail && <p className="mt-3 line-clamp-2 select-text text-[12.5px] leading-relaxed text-zinc-500">{detail}</p>}
-        {!!b.tags?.length && (
-          <div className="mt-2.5 flex flex-wrap gap-1">
-            {b.tags.slice(0, 5).map(t => (
-              <button className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800" key={t} onClick={() => setView(`tag:${t}`)} type="button">
-                #{t}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {(files.length > 0 || up) && (
-          <div className="mt-3 space-y-1.5">
-            {files.slice(0, 3).map(f => (
-              <FileChip busy={busyFile === f.id} compact={layout === 'grid'} f={f} key={f.id} onDownload={() => void download(b, f)} />
-            ))}
-            {files.length > 3 && (
-              <button className="text-[11.5px] font-medium text-zinc-500 hover:text-zinc-800" onClick={() => startEdit(b)} type="button">
-                +{files.length - 3} more file{files.length - 3 === 1 ? '' : 's'}
-              </button>
-            )}
-            {up && (
-              <div className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 px-2 py-1.5 text-[11.5px] text-zinc-500">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span className="min-w-0 flex-1 truncate">{up.name}</span>
-                <span className="tabular-nums">{Math.round(up.progress * 100)}%</span>
+            {detail && <p className="mt-1.5 line-clamp-2 select-text text-[13px] leading-relaxed text-zinc-500">{detail}</p>}
+            {(!!b.tags?.length || files.length > 0 || up) && (
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                {(b.tags || []).slice(0, 6).map(t => (
+                  <button className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800" key={t} onClick={() => setView(`tag:${t}`)} type="button">
+                    #{t}
+                  </button>
+                ))}
+                {files.slice(0, 4).map(f => (
+                  <div className="w-full sm:w-auto sm:max-w-[320px]" key={f.id}>
+                    <FileChip busy={busyFile === f.id} f={f} onDownload={() => void download(b, f)} />
+                  </div>
+                ))}
+                {files.length > 4 && (
+                  <button className="text-[11.5px] font-medium text-zinc-500 hover:text-zinc-800" onClick={() => startEdit(b)} type="button">
+                    +{files.length - 4} more
+                  </button>
+                )}
+                {up && (
+                  <div className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-300 px-2 py-1 text-[11.5px] text-zinc-500">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span className="max-w-[200px] truncate">{up.name}</span>
+                    <span className="tabular-nums">{Math.round(up.progress * 100)}%</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        <div className="mt-auto flex items-center gap-1 pt-3.5">
-          <button className="flex min-w-0 max-w-[55%] flex-shrink-0 items-center gap-1.5 rounded-md px-1 py-0.5 text-[11.5px] font-medium text-zinc-500 hover:bg-zinc-100" onClick={() => setView(`cat:${b.category || 'Other'}`)} title={b.category || 'Other'} type="button">
+        <div className="flex flex-shrink-0 items-center gap-1 pl-[58px] sm:pl-0">
+          <button className="mr-1 flex min-w-0 max-w-[160px] items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[12px] font-medium text-zinc-500 hover:bg-zinc-100" onClick={() => setView(`cat:${b.category || 'Other'}`)} title={b.category || 'Other'} type="button">
             <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{background: dotOf(b.category || 'Other')}} />
             <span className="truncate">{b.category || 'Other'}</span>
           </button>
-          {b.lastOpenedAt ? <span className="hidden min-w-0 truncate text-[11px] text-zinc-400 group-hover:hidden 2xl:inline">· {ago(b.lastOpenedAt)}</span> : null}
-          <span className="flex-1" />
+          <span className="flex-1 sm:hidden" />
           <span className="flex items-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">{cardActions(b)}</span>
           <button
-            className="ml-1 flex h-8 flex-shrink-0 items-center gap-1 rounded-lg bg-zinc-900 px-3 text-[12px] font-semibold text-white transition-colors hover:bg-[#405b43]"
+            className="ml-1 flex h-9 flex-shrink-0 items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#405b43]"
             onClick={() => open(b)}
             type="button">
             {hasLink(b) ? (
@@ -826,7 +825,14 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-label="Bookmarks and documents">
-      <div className="absolute inset-0 bg-zinc-950/30 backdrop-blur-[2px]" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-zinc-950/30 backdrop-blur-[2px]"
+        onClick={e => {
+          if (downOnBackdrop.current && e.target === e.currentTarget) onClose();
+          downOnBackdrop.current = false;
+        }}
+        onMouseDown={e => (downOnBackdrop.current = e.target === e.currentTarget)}
+      />
       <div
         className="relative flex h-[100dvh] w-full overflow-hidden bg-[#fafaf9] text-zinc-900 shadow-2xl ring-1 ring-black/5 sm:h-[88vh] sm:max-w-[1360px] sm:rounded-2xl"
         onDragOver={e => {
@@ -973,7 +979,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                     onClick={() => setLayout(l)}
                     title={l === 'grid' ? 'Cards' : 'List'}
                     type="button">
-                    {l === 'grid' ? <LayoutGrid className="h-4 w-4" /> : <ListIcon className="h-4 w-4" />}
+                    {l === 'grid' ? <Rows3 className="h-4 w-4" /> : <ListIcon className="h-4 w-4" />}
                   </button>
                 ))}
               </div>
@@ -1113,9 +1119,9 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
             )}
 
             {loading && !items.length ? (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="flex flex-col gap-2.5">
                 {[0, 1, 2, 3, 4, 5].map(i => (
-                  <div className="h-[150px] animate-pulse rounded-2xl bg-zinc-200/50" key={i} style={{animationDelay: `${i * 70}ms`}} />
+                  <div className="h-[84px] animate-pulse rounded-2xl bg-zinc-200/50" key={i} style={{animationDelay: `${i * 70}ms`}} />
                 ))}
               </div>
             ) : loadError ? (
@@ -1136,7 +1142,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
                 </p>
               </div>
             ) : layout === 'grid' ? (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{shown.map(Card)}</div>
+              <div className="flex flex-col gap-2.5">{shown.map(Card)}</div>
             ) : (
               <ul className="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white">{shown.map(Row)}</ul>
             )}
@@ -1159,7 +1165,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
 
         {/* ── Drawer: new / edit ── */}
         {drawer && (
-          <div className="absolute inset-0 z-20 flex justify-end bg-zinc-950/10" onClick={() => setDrawer(null)}>
+          <div className="absolute inset-0 z-20 flex justify-end bg-zinc-950/10">
             <section
               className="flex h-full w-full flex-col bg-white shadow-[-20px_0_60px_-30px_rgba(0,0,0,0.45)] sm:w-[440px]"
               onClick={e => e.stopPropagation()}
