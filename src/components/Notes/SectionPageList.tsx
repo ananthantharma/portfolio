@@ -121,15 +121,6 @@ function BadgePill({stat, collapsed}: {stat: BadgeStat; collapsed?: boolean}) {
   );
 }
 
-// ─── Page dot (page-level — small indicator, section header already shows count) ──
-
-function PageDot({stat}: {stat: BadgeStat}) {
-  const {getBadgeStyle} = useBadgeSettings();
-  if (!stat?.todo || stat.todo.count === 0) return null;
-  const {className, style} = getBadgeStyle(stat.todo.minDays);
-  return <span className={`flex-shrink-0 h-1.5 w-1.5 rounded-full ${className}`} style={style} />;
-}
-
 function formatTimeAgo(date: Date | string): string {
   const ms = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
@@ -143,6 +134,27 @@ function formatTimeAgo(date: Date | string): string {
   if (wks < 5) return `${wks}w ago`;
   return new Date(date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
 }
+
+// ─── Count pill (tree rows) ──────────────────────────────────────────────────
+
+/** A small rounded count on the right of a row; to-do counts carry their age colour as a dot. */
+function CountPill({n, stat, title}: {n?: number; stat?: BadgeStat; title?: string}) {
+  const {getBadgeStyle} = useBadgeSettings();
+  const todo = stat?.todo?.count ?? 0;
+  const value = n ?? todo;
+  if (!value) return null;
+  const dot = !n && todo ? getBadgeStyle(stat!.todo.minDays) : null;
+  return (
+    <span
+      className="flex h-5 min-w-[22px] flex-shrink-0 items-center justify-center gap-1 rounded-full border border-zinc-200 bg-white px-1.5 text-[10.5px] font-semibold tabular-nums text-zinc-600 shadow-[0_1px_0_rgba(0,0,0,0.02)]"
+      title={title ?? (dot ? `${todo} to-do${todo === 1 ? '' : 's'}` : undefined)}>
+      {dot && <span className={`h-1.5 w-1.5 rounded-full ${dot.className}`} style={dot.style} />}
+      {value}
+    </span>
+  );
+}
+
+const rowAction = 'flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700';
 
 // ─── Page row ─────────────────────────────────────────────────────────────────
 
@@ -162,13 +174,13 @@ interface PageRowProps {
   onToggleExpand?: (id: string) => void;
   isChild?: boolean;
   sortable?: boolean;
-  darkMode?: boolean;
   /** dnd-kit id (prefixed) — defaults to the raw page id */
   dndId?: string;
   /** Hide the "group under parent" action (not applicable to notebook-root pages) */
   hideGroupAction?: boolean;
 }
 
+/** One page in the tree: a small icon, the title, and a count; actions appear on hover. */
 const PageRow = React.memo<PageRowProps>(
   ({
     page,
@@ -186,152 +198,89 @@ const PageRow = React.memo<PageRowProps>(
     onToggleExpand,
     isChild,
     sortable = true,
-    darkMode = false,
     dndId,
     hideGroupAction = false,
   }) => {
     const PageIcon = getNoteIcon(page.icon, 'FileText');
     const isInactive = !!page.isInactive;
-
     const tint = page.color && page.color !== '#000000' ? page.color : undefined;
-    const avatarSize = isChild ? 'h-6 w-6' : 'h-8 w-8';
-    const action = darkMode
-      ? 'text-white/30 hover:bg-white/10 hover:text-white/70'
-      : 'text-zinc-400 hover:bg-zinc-200/70 hover:text-zinc-700';
+    const stop = (fn: () => void) => (e: React.MouseEvent) => {
+      e.stopPropagation();
+      fn();
+    };
 
     const inner = (
       <div
-        className={`group relative flex cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-[12.5px] transition-colors duration-150 ${
-          darkMode
-            ? isSelected
-              ? 'bg-white/[0.07] text-white/90 font-semibold'
-              : 'text-white/55 hover:bg-white/[0.05] hover:text-white/80'
-            : isSelected
-            ? 'bg-zinc-100 text-zinc-900 font-semibold'
+        className={`group relative flex h-8 cursor-pointer items-center gap-2 rounded-lg pl-2 pr-1 text-[13px] transition-colors duration-150 ${
+          isSelected
+            ? 'bg-zinc-100 font-semibold text-zinc-900'
             : isInactive
             ? 'text-zinc-400 hover:bg-zinc-50'
-            : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
+            : 'font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
         }`}
         data-page-id={page._id as string}
-        onClick={() => onSelect(page._id as string)}>
-        {/* Avatar */}
+        onClick={() => onSelect(page._id as string)}
+        title={page.updatedAt ? `${page.title || 'Untitled'} · edited ${formatTimeAgo(page.updatedAt)}` : page.title}>
+        {isSelected && <span className="absolute -left-[9px] top-1.5 bottom-1.5 w-[2px] rounded-full bg-[#405b43]" />}
         {page.image ? (
-          <span className={`flex ${avatarSize} flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-zinc-200`}>
-            <img
-              alt={page.title}
-              className="h-1/2 w-1/2 object-contain"
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-                (e.currentTarget.nextSibling as HTMLElement)?.classList.remove('hidden');
-              }}
-              src={`https://logo.clearbit.com/${page.image}`}
-            />
-            <PageIcon className="hidden h-1/2 w-1/2 text-zinc-500" />
-          </span>
+          <img alt="" className="h-4 w-4 flex-shrink-0 rounded object-contain" src={`https://logo.clearbit.com/${page.image}`} />
         ) : (
-          <span
-            className={`flex ${avatarSize} flex-shrink-0 items-center justify-center rounded-full text-white transition-colors ${
-              darkMode ? (isSelected ? 'bg-indigo-500' : 'bg-white/10') : tint && !isInactive ? '' : isInactive ? 'bg-zinc-300' : isSelected ? 'bg-[#405b43]' : 'bg-[#aab5a0]'
-            }`}
-            style={!darkMode && tint && !isInactive ? {background: tint} : undefined}>
-            <PageIcon className={isChild ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
-          </span>
+          <PageIcon
+            className={`h-4 w-4 flex-shrink-0 ${isInactive ? 'text-zinc-300' : tint ? '' : isSelected ? 'text-zinc-700' : 'text-zinc-400'}`}
+            style={tint && !isInactive ? {color: tint} : undefined}
+          />
         )}
 
-        {/* Title + timestamp */}
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className={`truncate leading-tight ${isInactive ? 'line-through decoration-zinc-300' : ''}`}>
-            {page.title || 'Untitled'}
-          </span>
-          {!isChild && page.updatedAt && (
-            <span className={`mt-0.5 truncate text-[10.5px] font-normal leading-none ${darkMode ? 'text-white/25' : 'text-zinc-400'}`}>
-              {formatTimeAgo(page.updatedAt)}
+        <span className={`min-w-0 flex-1 truncate ${isInactive ? 'line-through decoration-zinc-300' : ''}`}>{page.title || 'Untitled'}</span>
+
+        {/* Count and pin (hidden while the actions show) */}
+        <span className="flex flex-shrink-0 items-center gap-1 group-hover:hidden">
+          {page.isPinned && !isChild && (
+            <span title="Pinned">
+              <MapPinIcon className="h-3.5 w-3.5 text-amber-500" />
             </span>
           )}
+          {badgeStat && <CountPill stat={badgeStat} />}
         </span>
 
-        {/* Dot indicator — section header already shows the count */}
-        {badgeStat && <PageDot stat={badgeStat} />}
-
-        {/* Grouped pages toggle */}
-        {hasChildren && (
-          <button
-            className={`flex-shrink-0 rounded-full p-1 transition-colors ${action}`}
-            onClick={e => {
-              e.stopPropagation();
-              onToggleExpand?.(page._id as string);
-            }}
-            title={isExpanded ? 'Hide grouped pages' : 'Show grouped pages'}>
-            <ChevronDownIcon className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'}`} />
-          </button>
-        )}
-
         {/* Actions (hover) */}
-        <div className="hidden flex-shrink-0 items-center gap-0.5 group-hover:flex">
-          <button
-            className={`rounded-full p-1 transition-colors ${darkMode ? action : isInactive ? 'text-zinc-400 hover:bg-zinc-200/70 hover:text-green-600' : 'text-zinc-400 hover:bg-zinc-200/70 hover:text-amber-600'}`}
-            onClick={e => {
-              e.stopPropagation();
-              onToggleInactive(page._id as string, !isInactive);
-            }}
-            title={isInactive ? 'Mark active' : 'Mark inactive'}>
-            {isInactive ? <EyeIcon className="h-3 w-3" /> : <EyeSlashIcon className="h-3 w-3" />}
-          </button>
-          {!hideGroupAction && (
-            <button
-              className={`rounded-full p-1 transition-colors ${action}`}
-              onClick={e => {
-                e.stopPropagation();
-                onShowParentPicker(page._id as string);
-              }}
-              title="Group under parent">
-              <Squares2X2Icon className="h-3 w-3" />
+        <span className="hidden flex-shrink-0 items-center group-hover:flex">
+          {onTogglePin && !isChild && (
+            <button className={`${rowAction} ${page.isPinned ? 'text-amber-500' : ''}`} onClick={stop(() => onTogglePin(page._id as string, !page.isPinned))} title={page.isPinned ? 'Unpin' : 'Pin to the top'}>
+              <MapPinIcon className="h-3.5 w-3.5" />
             </button>
           )}
-          <button
-            className={`rounded-full p-1 transition-colors ${action}`}
-            onClick={e => {
-              e.stopPropagation();
-              onEdit(page);
-            }}
-            title="Rename">
-            <PencilIcon className="h-3 w-3" />
+          <button className={rowAction} onClick={stop(() => onEdit(page))} title="Rename">
+            <PencilIcon className="h-3.5 w-3.5" />
+          </button>
+          {!hideGroupAction && (
+            <button className={rowAction} onClick={stop(() => onShowParentPicker(page._id as string))} title="Group under another page">
+              <Squares2X2Icon className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button className={rowAction} onClick={stop(() => onMove(page))} title="Move page">
+            <FolderArrowDownIcon className="h-3.5 w-3.5" />
+          </button>
+          <button className={rowAction} onClick={stop(() => onToggleInactive(page._id as string, !isInactive))} title={isInactive ? 'Mark active' : 'Mark inactive'}>
+            {isInactive ? <EyeIcon className="h-3.5 w-3.5" /> : <EyeSlashIcon className="h-3.5 w-3.5" />}
           </button>
           <button
-            className={`rounded-full p-1 transition-colors ${action}`}
-            onClick={e => {
-              e.stopPropagation();
-              onMove(page);
-            }}
-            title="Move page">
-            <FolderArrowDownIcon className="h-3 w-3" />
-          </button>
-          <button
-            className={`rounded-full p-1 transition-colors ${darkMode ? 'text-white/30 hover:bg-white/10 hover:text-red-400' : 'text-zinc-400 hover:bg-red-50 hover:text-red-600'}`}
-            onClick={e => {
-              e.stopPropagation();
-              if (confirm('Delete this page?')) onDelete(page._id as string);
-            }}
+            className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600"
+            onClick={stop(() => confirm('Delete this page?') && onDelete(page._id as string))}
             title="Delete">
-            <TrashIcon className="h-3 w-3" />
+            <TrashIcon className="h-3.5 w-3.5" />
           </button>
-        </div>
-        {onTogglePin && !isChild ? (
+        </span>
+
+        {/* Grouped pages */}
+        {hasChildren && (
           <button
-            aria-label={page.isPinned ? 'Unpin page' : 'Pin page'}
-            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 ${
-              page.isPinned ? 'bg-amber-400 opacity-100 hover:bg-amber-500' : 'bg-zinc-300 opacity-0 hover:bg-zinc-400 group-hover:opacity-100'
-            }`}
-            onClick={e => {
-              e.stopPropagation();
-              onTogglePin(page._id as string, !page.isPinned);
-            }}
-            title={page.isPinned ? 'Unpin' : 'Pin to top of section'}>
-            <MapPinIcon className="h-3.5 w-3.5" />
+            aria-label={isExpanded ? 'Hide grouped pages' : 'Show grouped pages'}
+            className={rowAction}
+            onClick={stop(() => onToggleExpand?.(page._id as string))}
+            title={isExpanded ? 'Hide grouped pages' : 'Show grouped pages'}>
+            <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
-        ) : (
-          !isChild &&
-          !hasChildren && <ChevronRightIcon className={`h-3.5 w-3.5 flex-shrink-0 group-hover:hidden ${darkMode ? 'text-white/20' : 'text-zinc-300'}`} />
         )}
       </div>
     );
@@ -423,6 +372,26 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
     const [editPageColor, setEditPageColor] = useState('#000000');
     const [editPageIcon, setEditPageIcon] = useState('FileText');
     const [editPageImage, setEditPageImage] = useState<string | null>(null);
+
+    // Notebook-level pages fold like a section (remembered in this browser)
+    const [rootOpen, setRootOpen] = useState(true);
+    useEffect(() => {
+      try {
+        setRootOpen(localStorage.getItem('NOTES_ROOT_PAGES_OPEN') !== 'false');
+      } catch {
+        // storage unavailable
+      }
+    }, []);
+    const toggleRootOpen = useCallback(() => {
+      setRootOpen(prev => {
+        try {
+          localStorage.setItem('NOTES_ROOT_PAGES_OPEN', String(!prev));
+        } catch {
+          // storage unavailable
+        }
+        return !prev;
+      });
+    }, []);
 
     // ── Parent picker ─────────────────────────────────────────────────────────
     const [parentPickerFor, setParentPickerFor] = useState<string | null>(null);
@@ -815,7 +784,7 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           </li>
           {isExpanded && children.length > 0 && (
             <li>
-              <ul className="ml-[22px] space-y-0.5 border-l border-zinc-200 pl-2">
+              <ul className="ml-[15px] space-y-px border-l border-zinc-200 py-0.5 pl-2">
                 {children.map(child => {
                   const cid = child._id as string;
                   if (editingPageId === cid) {
@@ -959,151 +928,141 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
           onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
           sensors={sensors}>
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2">
           {/* ── Notebook-root pages (no section needed) ── */}
           <CategoryRootDrop>
             {isOver => (
-              <div
-                className={`mb-2 rounded-xl p-1 transition-all duration-150 ${
-                  isOver
-                    ? 'bg-[#eef3e8] ring-2 ring-inset ring-[#b9c9ad]'
-                    : 'bg-black/[0.015] ring-1 ring-inset ring-black/[0.04]'
-                }`}>
-                <div className="flex items-center justify-between px-1.5 py-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <InboxIcon className="h-3 w-3 flex-shrink-0 text-[#55734c]" />
-                    <span className="truncate text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">
-                      Pages
-                    </span>
-                    {categoryPages.length > 0 && (
-                      <span className="flex-shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-slate-400">
-                        {categoryPages.length}
-                      </span>
-                    )}
-                  </div>
+              <div className={`rounded-lg transition-colors duration-150 ${isOver ? 'bg-[#eef3e8] ring-2 ring-inset ring-[#b9c9ad]' : ''}`}>
+                <div className="group flex h-9 cursor-pointer items-center gap-2.5 rounded-lg px-2 text-zinc-700 transition-colors hover:bg-zinc-50" onClick={toggleRootOpen}>
+                  <InboxIcon className="h-[18px] w-[18px] flex-shrink-0 text-zinc-500" />
+                  <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold">Pages</span>
                   <button
-                    className="rounded-md p-0.5 text-slate-300 transition-all hover:bg-[#eef3e8] hover:text-[#55734c]"
-                    onClick={() => setIsAddingCatPage(true)}
+                    className={`${rowAction} hidden group-hover:flex`}
+                    onClick={e => {
+                      e.stopPropagation();
+                      if (!rootOpen) toggleRootOpen();
+                      setIsAddingCatPage(true);
+                    }}
                     title="New page (no section)">
-                    <PlusIcon className="h-3 w-3" />
+                    <PlusIcon className="h-3.5 w-3.5" />
                   </button>
+                  <span className="group-hover:hidden">
+                    <CountPill n={categoryPages.length} title={`${categoryPages.length} page${categoryPages.length === 1 ? '' : 's'}`} />
+                  </span>
+                  <ChevronDownIcon className={`h-4 w-4 flex-shrink-0 text-zinc-400 transition-transform duration-200 ${rootOpen ? 'rotate-180' : ''}`} />
                 </div>
 
-                {/* Add page directly to the notebook */}
-                {isAddingCatPage && (
-                  <div className="mx-1 mb-1.5 rounded-lg border border-[#dfe5d7] bg-white p-2 shadow-sm">
-                    <input
-                      autoFocus
-                      className="mb-1.5 w-full rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-800 outline-none transition-all placeholder-slate-300 focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9]"
-                      onChange={e => setNewCatPageTitle(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') handleAddCatPage();
-                        if (e.key === 'Escape') setIsAddingCatPage(false);
-                        e.stopPropagation();
-                      }}
-                      placeholder="Page title"
-                      value={newCatPageTitle}
-                    />
-                    <div className="flex justify-end gap-1.5">
-                      <button
-                        className="rounded-md px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                        onClick={() => setIsAddingCatPage(false)}>
-                        Cancel
-                      </button>
-                      <button
-                        className="rounded-md bg-[#405b43] px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-[#2e4731]"
-                        onClick={handleAddCatPage}>
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {rootOpen && (
+                  <div className="ml-[17px] border-l border-zinc-200 py-0.5 pl-2">
+                    {isAddingCatPage && (
+                      <div className="mb-1.5 rounded-lg border border-[#dfe5d7] bg-white p-2 shadow-sm">
+                        <input
+                          autoFocus
+                          className="mb-1.5 w-full rounded-md border border-slate-200 px-2 py-1.5 text-[12px] text-slate-800 outline-none transition-all placeholder-slate-300 focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9]"
+                          onChange={e => setNewCatPageTitle(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleAddCatPage();
+                            if (e.key === 'Escape') setIsAddingCatPage(false);
+                            e.stopPropagation();
+                          }}
+                          placeholder="Page title"
+                          value={newCatPageTitle}
+                        />
+                        <div className="flex justify-end gap-1.5">
+                          <button className="rounded-md px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" onClick={() => setIsAddingCatPage(false)}>
+                            Cancel
+                          </button>
+                          <button className="rounded-md bg-[#405b43] px-2.5 py-1 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-[#2e4731]" onClick={handleAddCatPage}>
+                            Add
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
-                {loadingCategoryPages ? (
-                  <div className="flex flex-col gap-1 px-1 pb-1">
-                    {[1, 2].map(i => (
-                      <div className="h-6 animate-pulse rounded bg-slate-100/80" key={i} />
-                    ))}
-                  </div>
-                ) : categoryPages.length > 0 ? (
-                  <SortableContext
-                    items={categoryPages.map(p => `cpage:${p._id as string}`)}
-                    strategy={verticalListSortingStrategy}>
-                    <ul className="space-y-0.5 px-0.5 pb-0.5">
-                      {categoryPages.map(page => {
-                        const pid = page._id as string;
-                        if (editingPageId === pid) {
-                          return (
-                            <li className="p-1" key={pid}>
-                              <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
-                                <div className="flex items-center gap-2">
-                                  <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
-                                  <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
-                                </div>
-                                <input
-                                  autoFocus
-                                  className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] text-gray-900 focus:border-[#7d9b70] focus:outline-none"
-                                  onChange={e => setEditPageTitle(e.target.value)}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter') handleRenamePage();
-                                    if (e.key === 'Escape') setEditingPageId(null);
-                                    e.stopPropagation();
-                                  }}
-                                  onPointerDown={e => e.stopPropagation()}
-                                  value={editPageTitle}
+                    {loadingCategoryPages ? (
+                      <div className="flex flex-col gap-1 py-1">
+                        {[1, 2].map(i => (
+                          <div className="h-6 animate-pulse rounded bg-slate-100/80" key={i} />
+                        ))}
+                      </div>
+                    ) : categoryPages.length > 0 ? (
+                      <SortableContext items={categoryPages.map(p => `cpage:${p._id as string}`)} strategy={verticalListSortingStrategy}>
+                        <ul className="space-y-px">
+                          {categoryPages.map(page => {
+                            const pid = page._id as string;
+                            if (editingPageId === pid) {
+                              return (
+                                <li className="p-1" key={pid}>
+                                  <div className="flex flex-col gap-1.5 rounded-xl border border-black/[0.06] bg-white p-2 shadow-lg">
+                                    <div className="flex items-center gap-2">
+                                      <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={editPageIcon} selectedImage={editPageImage} />
+                                      <ColorPicker onSelectColor={setEditPageColor} selectedColor={editPageColor} />
+                                    </div>
+                                    <input
+                                      autoFocus
+                                      className="w-full rounded border border-black/[0.06] bg-white px-2 py-1 text-[12px] text-gray-900 focus:border-[#7d9b70] focus:outline-none"
+                                      onChange={e => setEditPageTitle(e.target.value)}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') handleRenamePage();
+                                        if (e.key === 'Escape') setEditingPageId(null);
+                                        e.stopPropagation();
+                                      }}
+                                      onPointerDown={e => e.stopPropagation()}
+                                      value={editPageTitle}
+                                    />
+                                    <div className="flex justify-end gap-1">
+                                      <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
+                                        <XMarkIcon className="h-4 w-4" />
+                                      </button>
+                                      <button className="text-[#55734c] hover:text-green-600" onClick={handleRenamePage}>
+                                        <CheckIcon className="h-4 w-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </li>
+                              );
+                            }
+                            return (
+                              <li key={pid}>
+                                <PageRow
+                                  badgeStat={pageBadgeCounts?.[pid]}
+                                  dndId={`cpage:${pid}`}
+                                  hideGroupAction
+                                  isSelected={selectedPageId === pid}
+                                  onDelete={onDeletePage}
+                                  onEdit={startEditingPage}
+                                  onMove={onMovePage}
+                                  onSelect={onSelectCategoryPage}
+                                  onShowParentPicker={() => {}}
+                                  onToggleInactive={onToggleInactive}
+                                  page={page}
+                                  sortable
                                 />
-                                <div className="flex justify-end gap-1">
-                                  <button className="text-gray-500 hover:text-red-600" onClick={() => setEditingPageId(null)}>
-                                    <XMarkIcon className="h-4 w-4" />
-                                  </button>
-                                  <button className="text-[#55734c] hover:text-green-600" onClick={handleRenamePage}>
-                                    <CheckIcon className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        }
-                        return (
-                          <li key={pid}>
-                            <PageRow
-                              badgeStat={pageBadgeCounts?.[pid]}
-                              dndId={`cpage:${pid}`}
-                              hideGroupAction
-                              isChild
-                              isSelected={selectedPageId === pid}
-                              onDelete={onDeletePage}
-                              onEdit={startEditingPage}
-                              onMove={onMovePage}
-                              onSelect={onSelectCategoryPage}
-                              onShowParentPicker={() => {}}
-                              onToggleInactive={onToggleInactive}
-                              page={page}
-                              sortable
-                            />
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </SortableContext>
-                ) : (
-                  !isAddingCatPage && (
-                    <p className="px-1.5 pb-1.5 text-[10px] leading-snug text-slate-300">
-                      {isOver ? 'Drop to move here' : 'Pages without a section. Click + or drop a page here.'}
-                    </p>
-                  )
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </SortableContext>
+                    ) : (
+                      !isAddingCatPage && (
+                        <p className="px-2 py-1.5 text-[11px] leading-snug text-zinc-400">{isOver ? 'Drop to move here' : 'Pages without a section. Click + or drop a page here.'}</p>
+                      )
+                    )}
+                  </div>
                 )}
               </div>
             )}
           </CategoryRootDrop>
 
+          <div className="my-2.5 h-px bg-zinc-200/80" />
+
           {/* Sections label */}
-          <div className="mb-1 mt-1 flex items-center justify-between px-1.5">
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-slate-400">{sectionNoun.many}</p>
+          <div className="mb-1 flex items-center justify-between pl-2 pr-1">
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-zinc-400">{sectionNoun.many}</p>
             <button
               aria-pressed={sortSectionsAlpha}
-              className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-semibold transition-colors ${
-                sortSectionsAlpha ? 'bg-[#eef3e8] text-[#365238]' : 'text-slate-400 hover:bg-black/[0.04] hover:text-slate-600'
+              className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                sortSectionsAlpha ? 'bg-[#eef3e8] text-[#365238]' : 'text-zinc-400 hover:bg-black/[0.04] hover:text-zinc-600'
               }`}
               onClick={toggleSectionSort}
               title={sortSectionsAlpha ? 'Sorted A–Z. Click to use your own order.' : 'Sort sections A–Z'}>
@@ -1143,267 +1102,204 @@ const SectionPageList: React.FC<SectionPageListProps> = React.memo(
             </div>
           )}
 
-          {/* Sections DnD list */}
+          {/* Sections tree */}
           {loadingSections ? (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-7 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay: `${i * 100}ms`}} />
+                <div key={i} className="h-8 rounded-lg bg-slate-200/60 animate-pulse" style={{animationDelay: `${i * 100}ms`}} />
               ))}
             </div>
           ) : (
-              <SortableContext items={filteredSections.map(s => `sec:${s._id as string}`)} strategy={verticalListSortingStrategy}>
-                <ul className="space-y-2">
-                  {filteredSections.map(section => {
-                    const sid = section._id as string;
-                    const isSelectedSec = selectedSectionId === sid;
-                    const SectionIcon = getNoteIcon(section.icon, 'Folder');
-                    // ── Section edit form ──────────────────────────────────────
-                    if (editingSecId === sid) {
-                      return (
-                        <li key={sid}>
-                          <div className="rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-xl shadow-black/5 ring-1 ring-[#e0e7d9] z-20 relative">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">Rename Section</p>
-                            <input
-                              autoFocus
-                              className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] text-slate-800 mb-3 transition-all"
-                              onChange={e => setEditSecName(e.target.value)}
-                              onKeyDown={e => {
-                                if (e.key === 'Enter') handleRenameSection();
-                                if (e.key === 'Escape') setEditingSecId(null);
-                                e.stopPropagation();
-                              }}
-                              onPointerDown={e => e.stopPropagation()}
-                              value={editSecName}
-                            />
-                            <div className="flex items-center gap-2 mb-3">
-                              <IconPicker onSelectIcon={handleSecIconSelect} selectedIcon={editSecIcon} selectedImage={editSecImage} />
-                            </div>
-                            <ColorPicker onSelectColor={setEditSecColor} selectedColor={editSecColor} />
-                            <div className="flex justify-end gap-2 mt-3">
-                              <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setEditingSecId(null)}>
-                                Cancel
-                              </button>
-                              <button className="rounded-lg bg-[#405b43] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2e4731] shadow-sm transition-colors" onClick={handleRenameSection}>
-                                Save
-                              </button>
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    }
-
-                    const isDropTarget = dropTargetSec === sid;
-                    const isOpen = isSelectedSec && foldedSecId !== sid;
-                    const openTasks = sectionTaskCounts?.[sid] ?? 0;
-                    const todoCount = sectionBadgeCounts?.[sid]?.todo?.count ?? 0;
-                    const tint = section.color && section.color !== '#000000' ? section.color : undefined;
+            <SortableContext items={filteredSections.map(s => `sec:${s._id as string}`)} strategy={verticalListSortingStrategy}>
+              <ul className="space-y-px">
+                {filteredSections.map(section => {
+                  const sid = section._id as string;
+                  const isSelectedSec = selectedSectionId === sid;
+                  const SectionIcon = getNoteIcon(section.icon, 'Folder');
+                  if (editingSecId === sid) {
                     return (
                       <li key={sid}>
-                        <div
-                          className={`overflow-hidden rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 ${
-                            isDropTarget
-                              ? 'border-[#9fb592] bg-[#eef3e8] ring-2 ring-[#b9c9ad]'
-                              : isOpen
-                              ? 'border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_28px_-18px_rgba(0,0,0,0.35)]'
-                              : 'border-zinc-200/80 bg-zinc-100/70 hover:border-zinc-300/80 hover:bg-zinc-100'
-                          }`}>
-                        <SortableItem id={`sec:${sid}`}>
-                          {/* ── Card header ───────────────────────────────── */}
-                          <div
-                            className="group flex cursor-pointer items-center gap-2.5 p-2"
-                            onClick={() => {
-                              setFoldedSecId(null);
-                              onSelectSection(sid);
-                            }}>
-                            {/* A folded, selected section previews its first pages; others show their icon */}
-                            {isSelectedSec && !isOpen && rootPages.length > 1 ? (
-                              <span className="grid h-9 w-9 flex-shrink-0 grid-cols-2 gap-0.5">
-                                {rootPages.slice(0, 4).map(p => {
-                                  const MiniIcon = getNoteIcon(p.icon, 'FileText');
-                                  return (
-                                    <span className="flex items-center justify-center rounded-full bg-zinc-300 text-white" key={p._id as string}>
-                                      <MiniIcon className="h-2.5 w-2.5" />
-                                    </span>
-                                  );
-                                })}
-                              </span>
-                            ) : (
-                              <span
-                                className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-white transition-colors duration-200 ${
-                                  section.image ? 'bg-white ring-1 ring-zinc-200' : tint ? '' : isOpen ? 'bg-[#405b43]' : 'bg-[#aab5a0]'
-                                }`}
-                                style={!section.image && tint ? {background: tint} : undefined}>
-                                {section.image ? (
-                                  <img alt={section.name} className="h-4 w-4 object-contain" src={`https://logo.clearbit.com/${section.image}`} />
-                                ) : (
-                                  <SectionIcon className="h-4 w-4" />
-                                )}
-                              </span>
-                            )}
-                            <span className="flex min-w-0 flex-1 flex-col">
-                              <span className={`truncate text-[13.5px] leading-tight ${isOpen ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-800'}`}>
-                                {section.name}
-                              </span>
-                              <span className="mt-0.5 flex items-center gap-1.5 truncate text-[11px] leading-tight text-zinc-500">
-                                {isSelectedSec ? (
-                                  <span>
-                                    {pages.length} page{pages.length === 1 ? '' : 's'}
-                                  </span>
-                                ) : todoCount > 0 ? (
-                                  <span>
-                                    {todoCount} to-do{todoCount === 1 ? '' : 's'}
-                                  </span>
-                                ) : (
-                                  <span className="text-zinc-400">Open {sectionNoun.one}</span>
-                                )}
-                                {openTasks > 0 && (
-                                  <span
-                                    className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 text-[9.5px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200"
-                                    title={`${openTasks} open task${openTasks === 1 ? '' : 's'} linked`}>
-                                    <ClipboardDocumentListIcon className="h-2.5 w-2.5" />
-                                    {openTasks}
-                                  </span>
-                                )}
-                              </span>
-                            </span>
-
-                            {/* Badge */}
-                            {sectionBadgeCounts?.[sid] && <BadgePill stat={sectionBadgeCounts[sid]} />}
-
-                            {/* Section actions */}
-                            <div className="hidden flex-shrink-0 items-center gap-0.5 group-hover:flex">
-                              <button
-                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  setFoldedSecId(null);
-                                  onSelectSection(sid);
-                                  setIsAddingPage(true);
-                                }}
-                                title="New page in this section">
-                                <DocumentPlusIcon className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  startEditingSection(section);
-                                }}
-                                title="Rename section">
-                                <PencilIcon className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                className="rounded-full p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  if (confirm('Delete this section and all its pages?')) onDeleteSection(sid);
-                                }}
-                                title="Delete section">
-                                <TrashIcon className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                            {isOpen ? (
-                              <button
-                                aria-label="Fold section"
-                                className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-zinc-300 text-white transition-colors hover:bg-zinc-500"
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  setFoldedSecId(sid);
-                                }}
-                                title="Fold">
-                                <XMarkIcon className="h-3.5 w-3.5" />
-                              </button>
-                            ) : (
-                              <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-zinc-400 group-hover:hidden" />
-                            )}
+                        <div className="rounded-xl border border-[#dfe5d7] bg-white p-3 shadow-xl shadow-black/5 ring-1 ring-[#e0e7d9] z-20 relative">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">Rename Section</p>
+                          <input
+                            autoFocus
+                            className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium outline-none focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] text-slate-800 mb-3 transition-all"
+                            onChange={e => setEditSecName(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleRenameSection();
+                              if (e.key === 'Escape') setEditingSecId(null);
+                              e.stopPropagation();
+                            }}
+                            onPointerDown={e => e.stopPropagation()}
+                            value={editSecName}
+                          />
+                          <div className="flex items-center gap-2 mb-3">
+                            <IconPicker onSelectIcon={handleSecIconSelect} selectedIcon={editSecIcon} selectedImage={editSecImage} />
                           </div>
-                        </SortableItem>
-
-                        {/* ── Pages (only the selected section loads them) ── */}
-                        <div
-                          className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.2,0.9,0.25,1)]"
-                          style={{gridTemplateRows: isOpen ? '1fr' : '0fr'}}>
-                          <div className={`min-h-0 overflow-hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                        {isSelectedSec && (
-                          <div className="px-1.5 pb-2">
-                            <div className="border-t border-zinc-100 pt-1.5">
-
-                            {/* Add-page inline form */}
-                            {isAddingPage && (
-                              <div className="mb-1.5 rounded-xl border border-[#dfe5d7] bg-white p-2.5 shadow-lg shadow-black/5 ring-1 ring-[#e0e7d9]">
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">New Page</p>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
-                                  <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
-                                </div>
-                                <input
-                                  autoFocus
-                                  className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] focus:outline-none text-slate-800 mb-2 transition-all"
-                                  onChange={e => setNewPageTitle(e.target.value)}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter') handleAddPage();
-                                    if (e.key === 'Escape') setIsAddingPage(false);
-                                  }}
-                                  placeholder="Page title"
-                                  value={newPageTitle}
-                                />
-                                <div className="flex justify-end gap-1.5">
-                                  <button className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingPage(false)}>
-                                    Cancel
-                                  </button>
-                                  <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-[#405b43] text-white hover:bg-[#2e4731] transition-colors shadow-sm" onClick={handleAddPage}>
-                                    Add Page
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Pages loading */}
-                            {loadingPages ? (
-                              <div className="flex flex-col gap-1.5 py-1">
-                                {[1, 2, 3].map(i => (
-                                  <div key={i} className="h-6 rounded bg-slate-100/80 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
-                                ))}
-                              </div>
-                            ) : (
-                              <>
-                                {pinnedRoots.length > 0 && (
-                                  <div className="mb-1">
-                                    <p className="px-1.5 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Pinned</p>
-                                    <ul className="space-y-0.5">{pinnedRoots.map(page => renderRootPage(page, false))}</ul>
-                                    {otherRoots.length > 0 && (
-                                      <p className="px-1.5 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">All pages</p>
-                                    )}
-                                  </div>
-                                )}
-                                {otherRoots.length > 0 && (
-                                  <SortableContext items={otherRoots.map(p => `page:${p._id as string}`)} strategy={verticalListSortingStrategy}>
-                                    <ul className="space-y-0.5">{otherRoots.map(page => renderRootPage(page, true))}</ul>
-                                  </SortableContext>
-                                )}
-                                {!isAddingPage && (
-                                  <button
-                                    className="mt-0.5 flex w-full items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-zinc-700"
-                                    onClick={() => setIsAddingPage(true)}>
-                                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-300">
-                                      <PlusIcon className="h-3.5 w-3.5" />
-                                    </span>
-                                    New page
-                                  </button>
-                                )}
-                              </>
-                            )}
-                            </div>
+                          <ColorPicker onSelectColor={setEditSecColor} selectedColor={editSecColor} />
+                          <div className="flex justify-end gap-2 mt-3">
+                            <button className="rounded-lg px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors" onClick={() => setEditingSecId(null)}>
+                              Cancel
+                            </button>
+                            <button className="rounded-lg bg-[#405b43] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#2e4731] shadow-sm transition-colors" onClick={handleRenameSection}>
+                              Save
+                            </button>
                           </div>
-                        )}
-                          </div>
-                        </div>
                         </div>
                       </li>
                     );
-                  })}
-                </ul>
-              </SortableContext>
+                  }
+
+                  const isDropTarget = dropTargetSec === sid;
+                  const isOpen = isSelectedSec && foldedSecId !== sid;
+                  const openTasks = sectionTaskCounts?.[sid] ?? 0;
+                  const tint = section.color && section.color !== '#000000' ? section.color : undefined;
+                  return (
+                    <li key={sid}>
+                      <SortableItem id={`sec:${sid}`}>
+                        {/* ── Section row ── */}
+                        <div
+                          className={`group flex h-9 cursor-pointer items-center gap-2.5 rounded-lg px-2 transition-colors duration-150 ${
+                            isDropTarget
+                              ? 'bg-[#eef3e8] ring-2 ring-inset ring-[#b9c9ad]'
+                              : isSelectedSec
+                              ? 'bg-zinc-100/80 text-zinc-900'
+                              : 'text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900'
+                          }`}
+                          onClick={() => {
+                            if (isOpen) return setFoldedSecId(sid);
+                            setFoldedSecId(null);
+                            onSelectSection(sid);
+                          }}>
+                          {section.image ? (
+                            <img alt="" className="h-[18px] w-[18px] flex-shrink-0 rounded object-contain" src={`https://logo.clearbit.com/${section.image}`} />
+                          ) : (
+                            <SectionIcon className={`h-[18px] w-[18px] flex-shrink-0 ${tint ? '' : isSelectedSec ? 'text-[#405b43]' : 'text-zinc-500'}`} style={tint ? {color: tint} : undefined} />
+                          )}
+                          <span className={`min-w-0 flex-1 truncate text-[13.5px] ${isSelectedSec ? 'font-semibold' : 'font-medium'}`}>{section.name}</span>
+
+                          {/* Counts (hidden while the actions show) */}
+                          <span className="flex flex-shrink-0 items-center gap-1 group-hover:hidden">
+                            {openTasks > 0 && (
+                              <span
+                                className="inline-flex h-5 items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                                title={`${openTasks} open task${openTasks === 1 ? '' : 's'} linked`}>
+                                <ClipboardDocumentListIcon className="h-3 w-3" />
+                                {openTasks}
+                              </span>
+                            )}
+                            {isSelectedSec ? (
+                              <CountPill n={pages.length} title={`${pages.length} page${pages.length === 1 ? '' : 's'}`} />
+                            ) : (
+                              sectionBadgeCounts?.[sid] && <CountPill stat={sectionBadgeCounts[sid]} />
+                            )}
+                          </span>
+
+                          {/* Section actions */}
+                          <span className="hidden flex-shrink-0 items-center group-hover:flex">
+                            <button
+                              className={rowAction}
+                              onClick={e => {
+                                e.stopPropagation();
+                                setFoldedSecId(null);
+                                onSelectSection(sid);
+                                setIsAddingPage(true);
+                              }}
+                              title="New page in this section">
+                              <DocumentPlusIcon className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              className={rowAction}
+                              onClick={e => {
+                                e.stopPropagation();
+                                startEditingSection(section);
+                              }}
+                              title="Rename section">
+                              <PencilIcon className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              onClick={e => {
+                                e.stopPropagation();
+                                if (confirm('Delete this section and all its pages?')) onDeleteSection(sid);
+                              }}
+                              title="Delete section">
+                              <TrashIcon className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
+                          <ChevronDownIcon className={`h-4 w-4 flex-shrink-0 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </SortableItem>
+
+                      {/* ── Pages (only the selected section loads them) ── */}
+                      <div
+                        className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.2,0.9,0.25,1)]"
+                        style={{gridTemplateRows: isOpen ? '1fr' : '0fr'}}>
+                        <div className={`min-h-0 overflow-hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                          {isSelectedSec && (
+                            <div className="mb-1.5 ml-[17px] mt-0.5 border-l border-zinc-200 pl-2">
+                              {isAddingPage && (
+                                <div className="mb-1.5 rounded-xl border border-[#dfe5d7] bg-white p-2.5 shadow-lg shadow-black/5 ring-1 ring-[#e0e7d9]">
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#55734c] mb-2">New Page</p>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <IconPicker onSelectIcon={handlePageIconSelect} selectedIcon={newPageIcon} selectedImage={newPageImage} />
+                                    <ColorPicker onSelectColor={setNewPageColor} selectedColor={newPageColor} />
+                                  </div>
+                                  <input
+                                    autoFocus
+                                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] focus:border-[#7d9b70] focus:ring-2 focus:ring-[#e0e7d9] focus:outline-none text-slate-800 mb-2 transition-all"
+                                    onChange={e => setNewPageTitle(e.target.value)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') handleAddPage();
+                                      if (e.key === 'Escape') setIsAddingPage(false);
+                                    }}
+                                    placeholder="Page title"
+                                    value={newPageTitle}
+                                  />
+                                  <div className="flex justify-end gap-1.5">
+                                    <button className="rounded-lg px-2 py-1 text-[10px] text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" onClick={() => setIsAddingPage(false)}>
+                                      Cancel
+                                    </button>
+                                    <button className="rounded-lg px-2.5 py-1 text-[10px] font-semibold bg-[#405b43] text-white hover:bg-[#2e4731] transition-colors shadow-sm" onClick={handleAddPage}>
+                                      Add Page
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {loadingPages ? (
+                                <div className="flex flex-col gap-1.5 py-1">
+                                  {[1, 2, 3].map(i => (
+                                    <div key={i} className="h-6 rounded bg-slate-100/80 animate-pulse" style={{animationDelay: `${i * 80}ms`}} />
+                                  ))}
+                                </div>
+                              ) : (
+                                <>
+                                  {pinnedRoots.length > 0 && <ul className="space-y-px">{pinnedRoots.map(page => renderRootPage(page, false))}</ul>}
+                                  {otherRoots.length > 0 && (
+                                    <SortableContext items={otherRoots.map(p => `page:${p._id as string}`)} strategy={verticalListSortingStrategy}>
+                                      <ul className="space-y-px">{otherRoots.map(page => renderRootPage(page, true))}</ul>
+                                    </SortableContext>
+                                  )}
+                                  {!isAddingPage && (
+                                    <button
+                                      className="flex h-8 w-full items-center gap-2 rounded-lg pl-2 text-[12.5px] font-medium text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-[#405b43]"
+                                      onClick={() => setIsAddingPage(true)}>
+                                      <PlusIcon className="h-4 w-4" />
+                                      New page
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </SortableContext>
           )}
         </div>
         </DndContext>
