@@ -430,6 +430,35 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
     }
   };
   const toggleFav = (b: Bm) => void save(b._id, {favorite: !b.favorite}, {favorite: b.favorite});
+  const copyDescription = (b: Bm) => {
+    const text = b.description?.trim();
+    if (!text) return flash('This bookmark has no description', true);
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(`desc:${b._id}`);
+        setTimeout(() => setCopied(c => (c === `desc:${b._id}` ? null : c)), 1500);
+        flash('Description copied');
+      })
+      .catch(() => flash('Could not copy', true));
+  };
+  const DescCopy = ({b, small}: {b: Bm; small?: boolean}) => {
+    const has = !!b.description?.trim();
+    const done = copied === `desc:${b._id}`;
+    return (
+      <button
+        className={`flex flex-shrink-0 items-center justify-center gap-1.5 rounded-lg border text-[12.5px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+          small ? 'h-8 w-8' : 'h-9 px-3'
+        } ${done ? 'border-[#7d9b70] bg-[#eef3e8] text-[#405b43]' : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'}`}
+        disabled={!has}
+        onClick={() => copyDescription(b)}
+        title={has ? 'Copy the description' : 'No description to copy'}
+        type="button">
+        {done ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        {!small && (done ? 'Copied' : 'Copy')}
+      </button>
+    );
+  };
   const copy = (b: Bm, markdown = false) => {
     const text = markdown ? `[${b.title}](${hrefOf(b.url)})` : hrefOf(b.url);
     navigator.clipboard
@@ -761,6 +790,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
           </button>
           <span className="flex-1 sm:hidden" />
           <span className="flex items-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">{cardActions(b)}</span>
+          <span className="ml-1">{DescCopy({b})}</span>
           <button
             className="ml-1 flex h-9 flex-shrink-0 items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#405b43]"
             onClick={() => open(b)}
@@ -816,6 +846,7 @@ export default function BookmarkListModal({isOpen, onClose}: BookmarkListModalPr
         </span>
         <span className="hidden w-20 flex-shrink-0 text-right text-[11px] text-zinc-400 lg:inline">{b.lastOpenedAt ? ago(b.lastOpenedAt) : ago(addedAt(b))}</span>
         <span className="hidden flex-shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:flex">{cardActions(b)}</span>
+        {DescCopy({b, small: true})}
         <button className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-900 hover:text-white" onClick={() => open(b)} title={hasLink(b) ? 'Open' : 'Download'} type="button">
           {hasLink(b) ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownToLine className="h-4 w-4" />}
         </button>
