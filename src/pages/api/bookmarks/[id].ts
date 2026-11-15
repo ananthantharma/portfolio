@@ -5,11 +5,12 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 
 import clientPromise from '../../../lib/mongodb';
 import {authOptions} from '@/lib/auth';
+import {cleanAttachments, cleanTags, faviconFor} from '@/lib/bookmarkFields';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const {id} = req.query;
 
-  if (typeof id !== 'string') {
+  if (typeof id !== 'string' || !ObjectId.isValid(id)) {
     return res.status(400).json({error: 'Invalid bookmark ID'});
   }
 
@@ -28,43 +29,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const collection = db.collection('bookmarks');
 
     if (req.method === 'PUT') {
-      // Update bookmark - Ensure owned by user
-      const {title, url, category, description, tags} = req.body;
-
-      let hostname = '';
-      if (url && (url.startsWith('http://') || url.startsWith('https://')) && url.length > 8) {
-        try {
-          hostname = new URL(url).hostname;
-        } catch (e) {
-          // Safe fallback
-        }
+      // Only the fields that were sent change (so starring a bookmark doesn't wipe its notes)
+      const b = req.body || {};
+      const set: Record<string, unknown> = {updated_timestamp: Math.floor(Date.now() / 1000).toString()};
+      if (typeof b.title === 'string' && b.title.trim()) set.title = b.title.trim().slice(0, 300);
+      if (typeof b.url === 'string') {
+        set.url = b.url;
+        const icon = faviconFor(b.url);
+        if (icon) set.icon = icon;
       }
-
-      const updateData: any = {
-        title,
-        url,
-        category,
-        description,
-        tags: Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string' && t.trim()) : [],
-        updated_timestamp: Math.floor(Date.now() / 1000).toString(),
-      };
-
-      if (hostname) {
-        updateData.icon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+      if (typeof b.category === 'string' && b.category.trim()) {
+        set.category = b.category.trim().slice(0, 80);
+        set.path = [set.category];
       }
+      if (typeof b.description === 'string') set.description = b.description;
+      if (typeof b.notes === 'string') set.notes = b.notes.slice(0, 20000);
+      if (b.tags !== undefined) set.tags = cleanTags(b.tags);
+      if (typeof b.favorite === 'boolean') set.favorite = b.favorite;
+      if (b.attachments !== undefined) set.attachments = cleanAttachments(b.attachments);
 
-      const result = await collection.updateOne(
-        {_id: new ObjectId(id), userEmail: session.user.email},
-        {
-          $set: updateData,
-        },
-      );
+      // "opened": the bookmark was just opened, for "Recent" and "Most used"
+      const update: Record<string, unknown> = b.opened === true ? {$set: {...set, lastOpenedAt: Date.now()}, $inc: {openCount: 1}} : {$set: set};
+
+      const result = await collection.updateOne({_id: new ObjectId(id), userEmail: session.user.email}, update);
 
       if (result.matchedCount === 0) {
         return res.status(404).json({error: 'Bookmark not found or you do not have permission'});
       }
 
-      res.status(200).json({success: true});
+      res.status(200).json({success: true, icon: set.icon});
     } else if (req.method === 'DELETE') {
       // Delete bookmark - Ensure owned by user
       const result = await collection.deleteOne({_id: new ObjectId(id), userEmail: session.user.email});

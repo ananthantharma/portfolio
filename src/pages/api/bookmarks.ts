@@ -4,6 +4,7 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 
 import clientPromise from '../../lib/mongodb';
 import {authOptions} from '@/lib/auth';
+import {cleanAttachments, cleanTags, faviconFor} from '@/lib/bookmarkFields';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -19,24 +20,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB || 'qt_portfolio');
     const collection = db.collection('bookmarks');
+    const userEmail = session.user.email;
 
     if (req.method === 'GET') {
-      const bookmarks = await collection.find({userEmail: session.user.email}).sort({category: 1, title: 1}).toArray();
+      const bookmarks = await collection.find({userEmail}).sort({category: 1, title: 1}).toArray();
       res.status(200).json({bookmarks});
     } else if (req.method === 'POST') {
-      const {title, url, category, description, tags} = req.body;
+      const {title, url, category, description, tags, notes, favorite} = req.body;
 
       if (!title || typeof url !== 'string' || !category) {
         return res.status(400).json({error: 'Missing required fields'});
-      }
-
-      let hostname = '';
-      if (url && (url.startsWith('http://') || url.startsWith('https://')) && url.length > 8) {
-        try {
-          hostname = new URL(url).hostname;
-        } catch (e) {
-          // Safe fallback for invalid URLs
-        }
       }
 
       // A bookmark can also be a document kept in Google Drive (downloaded from the bookmarks list)
@@ -44,15 +37,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const isFile = kind === 'file' && typeof driveFileId === 'string' && /^[A-Za-z0-9_-]+$/.test(driveFileId);
 
       const newBookmark = {
-        userEmail: session.user.email,
-        title,
+        userEmail,
+        title: String(title).slice(0, 300),
         url,
-        category,
-        description: description || '',
-        tags: Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string' && t.trim()) : [],
+        category: String(category).slice(0, 80),
+        description: typeof description === 'string' ? description : '',
+        notes: typeof notes === 'string' ? notes.slice(0, 20000) : '',
+        tags: cleanTags(tags),
         path: [category],
+        favorite: favorite === true,
+        attachments: cleanAttachments(req.body.attachments),
+        openCount: 0,
         added_timestamp: Math.floor(Date.now() / 1000).toString(),
-        icon: hostname && !isFile ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=64` : '',
+        icon: isFile ? '' : faviconFor(url),
         ...(isFile
           ? {
               kind: 'file',
@@ -65,7 +62,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
 
       const result = await collection.insertOne(newBookmark);
-      res.status(201).json({success: true, id: result.insertedId});
+      res.status(201).json({success: true, id: result.insertedId, icon: newBookmark.icon});
+    } else if (req.method === 'PATCH') {
+      // Rename a category on every bookmark in it (renaming onto an existing one merges them)
+      const {action, from, to} = req.body || {};
+      if (action !== 'renameCategory' || typeof from !== 'string' || typeof to !== 'string' || !to.trim()) {
+        return res.status(400).json({error: 'Give the category a name'});
+      }
+      const name = to.trim().slice(0, 80);
+      const result = await collection.updateMany({userEmail, category: from}, {$set: {category: name, path: [name]}});
+      res.status(200).json({success: true, modified: result.modifiedCount});
     } else {
       res.status(405).json({error: 'Method not allowed'});
     }
